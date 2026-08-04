@@ -357,6 +357,14 @@ try{
 if(!S.settings._a2){S.settings._a2=1;}
 if(!S.settings._a3){S.settings._a3=1;S.settings.audioSpeed=0.9;S.pick=S.pick||[];}
 S.pick=S.pick||[];
+// _a4: known/mastered cards must never join the paper-practice list, and ★-mastered rests ~3 months
+if(!S.settings._a4){
+  S.settings._a4=1;
+  try{for(const k in S.cards){const c=S.cards[k];
+    if(c&&c.known){c.days=99;
+      if(c.mastAt&&c.st==='rev'&&c.S<90){c.S=90;c.due=Math.max(c.due||0,(c.last||Date.now())+90*86400000);}
+    }}}catch(e){}
+}
 const MASTER_S=45; // days of stability = "mastered"
 // backfill mastery timestamps for cards from before this feature
 try{for(const k in S.cards){const c=S.cards[k];if(c&&c.st==='rev'&&c.S>=MASTER_S&&!c.mastAt)c.mastAt=c.last||Date.now();}}catch(e){}
@@ -445,14 +453,14 @@ function markKnown(wid){ // "I already know this" — skip learning, verify in ~
     if(!S.settings.modes[m])return;
     const k=cardId(wid,m), c=S.cards[k];
     if(c&&c.st==='rev'&&c.S>=21)return;
-    S.cards[k]={st:'rev',S:21,D:4,due:Date.now()+fuzz(21)*DAY,last:Date.now(),reps:1,lapses:0,days:3,known:1};
+    S.cards[k]={st:'rev',S:21,D:4,due:Date.now()+fuzz(21)*DAY,last:Date.now(),reps:1,lapses:0,days:99,known:1};
   });
   save();
 }
-function markMastered(wid){ // "I've mastered this" — straight onto the shelf, verify in ~2 months
+function markMastered(wid){ // "I've mastered this" — straight onto the shelf, resurface in ~3 months, NO paper reps
   MODES.forEach(m=>{
     if(!S.settings.modes[m])return;
-    S.cards[cardId(wid,m)]={st:'rev',S:60,D:3,due:Date.now()+fuzz(60)*DAY,last:Date.now(),reps:1,lapses:0,days:3,known:1,mastAt:Date.now()};
+    S.cards[cardId(wid,m)]={st:'rev',S:90,D:3,due:Date.now()+fuzz(90)*DAY,last:Date.now(),reps:1,lapses:0,days:99,known:1,mastAt:Date.now()};
   });
   save();
 }
@@ -519,30 +527,34 @@ function badge(){const n=dueCount();const b=document.getElementById('bDue');b.te
 
 /* ---- PAPER PRACTICE ---- */
 function paperList(){
+  // day 1 = full drilling (×writeTarget), day 2 = a few reps (×5), day 3 = one re-exposure (×1).
+  // Words marked ✓known or ★mastered never appear here — you already own them.
   const d=new Date();d.setHours(0,0,0,0);const t0=d.getTime();
   const seen=new Set(),out=[];
   for(const cid in S.cards){
     if(!cid.endsWith(':prod'))continue;
-    const c=S.cards[cid]; if(!c||c.st===undefined||c.last<t0)continue;
+    const c=S.cards[cid]; if(!c||c.st===undefined||c.last<t0||c.known)continue;
     const wid=cid.split(':')[0], w=byId[wid];
     if(!w||seen.has(wid))continue;
-    if(c.st==='relearn'||c.lapses>0&&c.st!=='rev'){seen.add(wid);out.push({w,tag:'again'});}
-    else if((c.days||0)<=1){seen.add(wid);out.push({w,tag:'new'});}
-    else if((c.days||0)<=3){seen.add(wid);out.push({w,tag:'day '+c.days});}
+    const T=S.settings.writeTarget||20;
+    if(c.st==='relearn'||c.lapses>0&&c.st!=='rev'){seen.add(wid);out.push({w,tag:'again',reps:10});}
+    else if((c.days||0)<=1){seen.add(wid);out.push({w,tag:'day 1',reps:T});}
+    else if((c.days||0)===2){seen.add(wid);out.push({w,tag:'day 2',reps:5});}
+    else if((c.days||0)===3){seen.add(wid);out.push({w,tag:'day 3',reps:1});}
   }
-  return out;
+  const ord={'again':0,'day 1':1,'day 2':2,'day 3':3};
+  return out.sort((a,b)=>ord[a.tag]-ord[b.tag]);
 }
 function printPaperSheet(){
   const list=paperList(); if(!list.length)return;
-  const per=S.settings.writeTarget||20;
   const host=document.getElementById('printSheet');
-  let html='<h1>字卡 · paper practice — '+dkey(new Date())+' · write each character ×'+per+'</h1>';
+  let html='<h1>字卡 · paper practice — '+dkey(new Date())+' · day 1 ×'+(S.settings.writeTarget||20)+' · day 2 ×5 · day 3 ×1</h1>';
   list.forEach(it=>{
     const chars=[...it.w.t.split('（')[0]].filter(ch=>/\p{Script=Han}/u.test(ch));
     chars.forEach((ch,ci)=>{
       let boxes='';
-      for(let i=0;i<per;i++)boxes+='<div class="pbox">'+(i===0?ch:'')+'</div>';
-      html+='<div class="prow"><div class="plab">'+ch+(ci===0?'<span class="pm">'+esc(it.w.p)+' · '+esc(it.w.m)+'</span>':'')+'</div><div class="pboxes">'+boxes+'</div></div>';
+      for(let i=0;i<it.reps;i++)boxes+='<div class="pbox">'+(i===0?ch:'')+'</div>';
+      html+='<div class="prow"><div class="plab">'+ch+' <span class="pm">'+it.tag+' ×'+it.reps+(ci===0?' · '+esc(it.w.p)+' · '+esc(it.w.m):'')+'</span></div><div class="pboxes">'+boxes+'</div></div>';
     });
   });
   host.innerHTML=html;
@@ -578,10 +590,10 @@ function renderHome(){
     ${totalCards===0?'<div class="small muted" style="margin-top:12px;text-align:center">Nothing in your deck yet — open <span class="link" onclick="go(\'lib\')">Library</span> and add Lesson 1.</div>':''}
   </div>
   ${(()=>{const pl=paperList();if(!pl.length)return '';
-    return `<div class="card"><div class="row spread"><div class="lab" style="margin-bottom:0">Tonight's paper list · write each ×${S.settings.writeTarget}</div>
+    return `<div class="card"><div class="row spread"><div class="lab" style="margin-bottom:0">Tonight's paper list · day 1 ×${S.settings.writeTarget} · day 2 ×5 · day 3 ×1</div>
     <button class="btn sm ghost" onclick="printPaperSheet()">Print 田字格 sheet</button></div>
-    <div class="paper-chips" style="margin-top:12px">${pl.map(it=>`<div class="pchip"><span class="tag2">${it.tag}</span><span class="c zh">${esc(it.w.t.split('（')[0])}</span><span class="p">${esc(it.w.p)}</span></div>`).join('')}</div>
-    <div class="small muted" style="margin-top:10px">The characters you touched in writing reviews today — the ones your hand needs on real paper. The app brings them back tomorrow and the day after; the ×${S.settings.writeTarget} reps are yours.</div>
+    <div class="paper-chips" style="margin-top:12px">${pl.map(it=>`<div class="pchip"><span class="tag2">${it.tag} ×${it.reps}</span><span class="c zh">${esc(it.w.t.split('（')[0])}</span><span class="p">${esc(it.w.p)}</span></div>`).join('')}</div>
+    <div class="small muted" style="margin-top:10px">Today's new characters get the full ×${S.settings.writeTarget} drilling; yesterday's come back for a few reps; day-3 characters get one re-exposure and graduate to FSRS. ✓ and ★ words never appear here — you already own them.</div>
     </div>`;})()}
   <div class="card">
     <div class="lab">Progress</div>
@@ -597,7 +609,7 @@ function renderHome(){
     <details class="guide"><summary>How this app works ›</summary><div class="gd">
       <p><b>Adding words.</b> In the Library, tap ＋ next to a word (or "Study lesson") to put it in your deck. Each word becomes two cards: <b>Recognize</b> — see the 字, recall meaning + pronunciation — and <b>Write & pronounce</b> — see the English, write the character from memory and say it with correct tones. Already know a word from your simplified days? Tap ✓ instead: it skips the learning phase entirely and quietly resurfaces in ~3 weeks just to verify.</p>
       <p><b>Timing (FSRS).</b> Every grade feeds a memory model that estimates how long until you'd forget that exact card, and the next review lands just before that moment. Intervals stretch as a card gets stronger (10m → 1d → 3d → 8d → 20d…) and shrink when you miss. "Again" restarts a card through short steps, "Good" is the normal path, "Easy" jumps ahead. The small number under each button is the exact wait it will apply.</p>
-      <p><b>Early writing reps.</b> Days 2–3 matter most for handwriting, so Write cards are pinned to return on day 1, day 2, and day 3 regardless of grades — FSRS only takes over after that. Your ×20 drilling happens on real paper: the "Tonight's paper list" card collects exactly which characters to write, and prints a 田字格 tracing sheet.</p>
+      <p><b>Early writing reps.</b> New characters follow a taper on real paper: day 1 you write them ×20, day 2 they return for ×5, day 3 one last re-exposure — then FSRS takes over. The "Tonight's paper list" card collects exactly which characters are at which day and prints a 田字格 sheet with the right number of boxes. Words you mark ✓ or ★ skip paper entirely.</p>
       <p><b>Grammar.</b> The Grammar tab holds every pattern from the Zhong Chinese lessons, each drilled five ways: fill-in-the-blank, multiple choice, build-the-sentence, finish-the-sentence, and create-your-own. Mastery dots fill as you drill.</p>
       <p><b>Daily flow.</b> ~9 new words per day by default (Settings), plus whatever is due. Miss a day? Nothing is lost — cards simply wait.</p>
     </div></details>
@@ -1306,7 +1318,7 @@ function wrowHtml(w){
     ${st?`<span class="tag ${kn&&st.k!=='due'?'known':st.k}">${kn&&st.k!=='due'?'known':st.t}</span>`:''}
     ${spkBtn(w.id)}
     ${startable?`<button class="wbtn ${pi>-1?'on':''}" title="learn this next — jumps the textbook order" onclick="togglePick('${w.id}');if(!tracked('${w.id}'))trackWord('${w.id}');renderLib();badge()">${pi>-1?pi+1:'»'}</button>`:''}
-    <button class="wbtn kn ${wordMastAt(w.id)?'on':''}" title="Mastered — straight onto the shelf, verify in ~2 months" onclick="markMastered('${w.id}');renderLib();badge()">★</button>
+    <button class="wbtn kn ${wordMastAt(w.id)?'on':''}" title="Mastered — straight onto the shelf, resurfaces in ~3 months, no paper reps" onclick="markMastered('${w.id}');renderLib();badge()">★</button>
     <button class="wbtn kn ${kn?'on':''}" title="I know this — skip learning, verify in ~3 weeks" onclick="markKnown('${w.id}');renderLib();badge()">✓</button>
     <button class="wbtn ${st?'on':''}" title="${st?'remove from deck':'add to deck'}" onclick="${st?`if(confirm('Remove this word\\'s cards and progress?'))untrackWord('${w.id}')`:`trackWord('${w.id}')`};renderLib();badge()">${st?'−':'+'}</button>
   </div>`;
@@ -1440,7 +1452,7 @@ function renderSet(){
       <input type="number" min="0" max="100" value="${s.newPerDay}" onchange="S.settings.newPerDay=Math.max(0,parseInt(this.value)||0);save();badge()"></div>
     <div class="set-row"><div><b>Early writing reps</b><div class="d">writing cards forced back on day 1, 2 and 3 before FSRS takes over</div></div>
       <button class="tgl ${s.earlyDrill?'on':''}" onclick="S.settings.earlyDrill=!S.settings.earlyDrill;save();renderSet()"><i></i></button></div>
-    <div class="set-row"><div><b>Paper reps per character</b><div class="d">boxes per character on the printable 田字格 sheet</div></div>
+    <div class="set-row"><div><b>Day-1 paper reps</b><div class="d">boxes per new character on the 田字格 sheet; day 2 tapers to 5, day 3 to 1</div></div>
       <input type="number" min="1" max="100" value="${s.writeTarget}" onchange="S.settings.writeTarget=Math.max(1,parseInt(this.value)||20);save()"></div>
     <div class="set-row"><div><b>Desired retention</b><div class="d">higher = more frequent reviews. 90% is the sweet spot.</div></div>
       <div class="row"><input type="range" min="80" max="97" value="${Math.round(s.retention*100)}" oninput="S.settings.retention=this.value/100;save();this.nextElementSibling.textContent=this.value+'%'"><b>${Math.round(s.retention*100)}%</b></div></div>
