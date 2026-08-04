@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>師大 Book 1 · 字卡</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#faf9f7">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+:root{
+  --bg:#faf9f7; --panel:#ffffff; --tint:#f4f2ee; --ink:#1d1c1a; --mut:#98928a; --mut2:#c4bfb6;
+  --line:#eae7e2; --line2:#dedad3;
+  --acc:#0e7266; --accT:#e7f1ef;
+  --red:#bc4034; --amber:#a8681b; --blue:#33628f; --plum:#7c5296; --gold:#9a7328;
+  --t1:#bc4034; --t2:#2e7d54; --t3:#33628f; --t4:#7c5296; --t0:#98928a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Inter",Roboto,"Helvetica Neue",Arial,"Noto Sans TC",sans-serif;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.zh{font-family:"Noto Serif TC","Songti TC","PMingLiU",serif}
+.kai{font-family:"Kaiti TC","BiauKai","DFKai-SB","Noto Serif TC",serif}
+.wrap{max-width:760px;margin:0 auto;padding:26px 18px 110px}
+.mast{text-align:center;margin-bottom:22px}
+.mast .hanzi{font-size:26px;letter-spacing:.35em;margin-left:.35em;font-weight:600}
+.mast .eng{font-size:11.5px;color:var(--mut);letter-spacing:.14em;text-transform:uppercase;margin-top:4px}
+.tabs{display:flex;justify-content:center;gap:34px;border-bottom:1px solid var(--line);margin-bottom:26px}
+.tabs button{border:0;background:none;padding:10px 2px 12px;font-size:13.5px;font-weight:600;letter-spacing:.02em;color:var(--mut);cursor:pointer;position:relative}
+.tabs button.on{color:var(--ink)}
+.tabs button.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--ink);border-radius:2px}
+.tabs .b{font-size:10.5px;font-weight:700;color:#fff;background:var(--acc);border-radius:99px;padding:1px 6px;margin-left:5px;position:relative;top:-1px}
+.tabs .b.zero{background:var(--mut2)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin-bottom:16px}
+.lab{font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);margin-bottom:12px}
+.muted{color:var(--mut)} .small{font-size:12.5px}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.spread{justify-content:space-between}
+.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--ink);border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;background:var(--ink);color:#fff;letter-spacing:.01em}
+.btn:hover{opacity:.85}
+.btn.big{width:100%;padding:14px;font-size:15px;border-radius:12px}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line2)}
+.btn.ghost:hover{opacity:1;background:var(--tint)}
+.btn.sm{padding:5px 12px;font-size:12px;border-radius:8px;font-weight:600}
+.btn:disabled{opacity:.35;cursor:default}
+.link{color:var(--acc);cursor:pointer;text-decoration:none;font-weight:600}
+.link:hover{text-decoration:underline}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:0}
+.stat{padding:4px 14px;border-left:1px solid var(--line)}
+.stat:first-child{border-left:0;padding-left:0}
+.stat .n{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.stat .n .d{font-size:13px;color:var(--mut2);font-weight:600}
+.stat .l{font-size:11px;color:var(--mut);margin-top:1px;letter-spacing:.02em}
+.fc{display:flex;gap:8px;align-items:flex-end;height:64px;margin-top:18px}
+.fc .bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:10px;color:var(--mut)}
+.fc .bar i{display:block;width:100%;max-width:26px;background:var(--line2);border-radius:3px;min-height:2px}
+.fc .bar.t i{background:var(--acc)}
+.fc .bar b{color:var(--ink);font-size:10.5px;font-variant-numeric:tabular-nums}
+details.guide{border-top:1px solid var(--line);margin-top:18px;padding-top:14px}
+details.guide summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--mut);list-style:none}
+details.guide summary::-webkit-details-marker{display:none}
+details.guide .gd{font-size:13.5px;color:#4c4a44;margin-top:10px}
+details.guide .gd p{margin-bottom:9px}
+.search{width:100%;padding:11px 16px;border:1px solid var(--line);border-radius:12px;background:var(--panel);font-size:14px;margin-bottom:10px;outline:none}
+.search:focus{border-color:var(--line2)}
+.filters{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.filters button{border:1px solid transparent;background:transparent;border-radius:99px;padding:5px 12px;font-size:12px;cursor:pointer;color:var(--mut);font-weight:600}
+.filters button.on{background:var(--ink);color:#fff}
+.lesson{border:1px solid var(--line);border-radius:14px;margin-bottom:10px;background:var(--panel);overflow:hidden}
+.lesson>.head{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;user-select:none}
+.lesson>.head:hover{background:var(--tint)}
+.lesson .car{color:var(--mut2);font-size:12px;transition:.15s;flex:none}
+.lesson.open .car{transform:rotate(90deg)}
+.lesson .ttl{font-weight:600;font-size:14px}
+.lesson .sub{font-size:11.5px;color:var(--mut);margin-top:1px}
+.lesson .acts{margin-left:auto;display:flex;gap:6px;align-items:center;flex:none}
+.prog{height:3px;background:var(--tint)}
+.prog i{display:block;height:100%;background:var(--acc)}
+.wl{border-top:1px solid var(--line)}
+.wrow{display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--tint)}
+.wrow:last-child{border-bottom:0}
+.wrow .tr{font-size:24px;min-width:92px;line-height:1.3}
+.wrow .info{flex:1;min-width:0}
+.wrow .py{font-size:13px;font-weight:500}
+.wrow .mn{font-size:12.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);white-space:nowrap}
+.tag.due{color:var(--red)} .tag.ok{color:var(--acc)} .tag.mat{color:var(--gold)} .tag.known{color:var(--blue)}
+.tag.simp{color:var(--plum);text-transform:none;letter-spacing:0;font-size:11.5px}
+.wbtn{border:1px solid var(--line2);background:transparent;color:var(--mut);border-radius:8px;width:30px;height:30px;font-size:14px;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center}
+.wbtn:hover{background:var(--tint);color:var(--ink)}
+.wbtn.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.wbtn.kn{font-size:13px}
+.wbtn.kn.on{background:var(--acc);border-color:var(--acc)}
+.rev-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:12px;color:var(--mut)}
+.mtag{font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.mtag.rec{color:var(--acc)} .mtag.prod{color:var(--amber)}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:34px 24px;text-align:center;min-height:320px;display:flex;flex-direction:column;justify-content:center;gap:14px}
+.stage .bigzh{font-size:78px;line-height:1.25;font-weight:500}
+.stage .hint{color:var(--mut);font-size:12.5px}
+.stage .pyline{font-size:25px;font-weight:500}
+.stage .meaning{font-size:16.5px;max-width:480px;margin:0 auto;color:#37352f}
+.stage .pos{font-size:10px;font-weight:700;letter-spacing:.18em;color:var(--mut);text-transform:uppercase}
+.stage .simpnote{font-size:12.5px;color:var(--plum)}
+.grades{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.grades button{border:1px solid var(--line2);background:var(--panel);border-radius:12px;padding:10px 4px 8px;cursor:pointer;font-weight:700;font-size:13.5px}
+.grades button:hover{background:var(--tint)}
+.grades .iv{display:block;font-weight:500;font-size:10.5px;color:var(--mut);margin-top:1px;font-variant-numeric:tabular-nums}
+.grades .g1{color:var(--red)}.grades .g2{color:var(--amber)}.grades .g3{color:var(--acc)}.grades .g4{color:var(--blue)}
+.canv-box{margin:4px auto 0;position:relative;width:min(280px,100%)}
+canvas.pad{background:#fff;border:1px solid var(--line2);border-radius:14px;touch-action:none;width:100%;aspect-ratio:1;display:block}
+.canv-ghost{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:190px;color:rgba(29,28,26,.07);pointer-events:none;overflow:hidden}
+.canv-tools{display:flex;gap:8px;justify-content:center;align-items:center;margin-top:10px}
+.repchip{font-size:12px;font-weight:700;color:var(--acc);background:var(--accT);border-radius:99px;padding:4px 12px;font-variant-numeric:tabular-nums}
+.done{padding:46px 10px;text-align:center}
+.done .zhd{font-size:40px;margin-bottom:10px}
+kbd{background:var(--tint);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;font-size:11px;color:var(--mut)}
+.tone1{color:var(--t1)}.tone2{color:var(--t2)}.tone3{color:var(--t3)}.tone4{color:var(--t4)}.tone0{color:var(--t0)}
+.banner{background:#fbf4e4;border:1px solid #eedfb9;color:#8a6414;font-size:12.5px;border-radius:12px;padding:9px 14px;margin-bottom:14px;display:none}
+.set-row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--tint);gap:14px}
+.set-row:last-child{border-bottom:0}
+.set-row b{font-size:14px;font-weight:600}
+.set-row .d{font-size:12px;color:var(--mut);margin-top:1px;max-width:420px}
+input[type=range]{accent-color:var(--ink);width:130px}
+input[type=number]{width:64px;padding:7px;border:1px solid var(--line);border-radius:9px;background:var(--panel);font-size:14px;text-align:center;outline:none}
+.tgl{width:38px;height:22px;border-radius:99px;background:var(--line2);position:relative;cursor:pointer;flex:none;border:0}
+.tgl.on{background:var(--ink)}
+.tgl i{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
+.tgl.on i{left:19px}
+.foot{text-align:center;color:var(--mut2);font-size:11px;margin-top:26px;letter-spacing:.04em}
+/* ---- grammar ---- */
+.gpt{border:1px solid var(--line);border-radius:13px;margin-bottom:10px;background:var(--panel);overflow:hidden}
+.gpt>.gh{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer}
+.gpt>.gh:hover{background:var(--tint)}
+.gpt .gt{font-weight:600;font-size:14px}
+.gpt .ge{font-size:12px;color:var(--mut);margin-top:1px}
+.gdots{margin-left:auto;display:flex;gap:3px;flex:none}
+.gdot{width:7px;height:7px;border-radius:50%;background:var(--line2)}
+.gdot.on{background:var(--acc)}
+.gex{border-top:1px solid var(--tint);padding:12px 16px}
+.gsent{display:flex;align-items:baseline;gap:9px;padding:6px 0;flex-wrap:wrap}
+.gsent .z{font-size:17px}
+.gsent .e{font-size:12.5px;color:var(--mut)}
+.qbox{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px 22px;text-align:center;min-height:260px;display:flex;flex-direction:column;justify-content:center;gap:14px}
+.qtype{font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--plum)}
+.qzh{font-size:26px;line-height:1.6}
+.qzh .blank{display:inline-block;min-width:52px;border-bottom:2px solid var(--ink);margin:0 3px;color:var(--acc);font-weight:700}
+.qen{font-size:14px;color:var(--mut)}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;max-width:460px;margin:4px auto 0;width:100%}
+.opts button{border:1px solid var(--line2);background:var(--panel);border-radius:11px;padding:11px 8px;font-size:16px;cursor:pointer}
+.opts button:hover{background:var(--tint)}
+.opts button.right{background:#e3efe9;border-color:var(--acc);color:var(--acc)}
+.opts button.wrong{background:#fdeceb;border-color:var(--red);color:var(--red)}
+.opts.sm button{font-size:13.5px;line-height:1.5}
+.chunks,.answer-line{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:520px;margin:0 auto}
+.chunks button{border:1px solid var(--line2);background:var(--panel);border-radius:10px;padding:8px 13px;font-size:18px;cursor:pointer}
+.chunks button:disabled{opacity:.25}
+.answer-line{min-height:46px;background:var(--tint);border-radius:12px;padding:8px;align-items:center}
+.answer-line span{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:6px 11px;font-size:18px;cursor:pointer}
+.gtxt{width:100%;max-width:480px;margin:0 auto;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:17px;font-family:inherit;resize:vertical;min-height:64px;outline:none;background:var(--panel)}
+.qfoot{display:flex;gap:8px;justify-content:center;margin-top:6px}
+.qprog{font-size:11.5px;color:var(--mut);font-variant-numeric:tabular-nums}
+.gres{font-size:14px;font-weight:600}
+.gres.ok{color:var(--acc)} .gres.bad{color:var(--red)}
+/* paper practice */
+.paper-chips{display:flex;flex-wrap:wrap;gap:8px}
+.pchip{display:flex;flex-direction:column;align-items:center;background:var(--tint);border-radius:11px;padding:8px 12px;min-width:54px}
+.pchip .c{font-size:24px;line-height:1.3}
+.pchip .p{font-size:10px;color:var(--mut)}
+.pchip .tag2{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--amber)}
+#printSheet{display:none}
+@media print{
+  body>.wrap{display:none!important}
+  #printSheet{display:block!important;font-family:"Noto Serif TC","Songti TC",serif}
+  #printSheet .prow{page-break-inside:avoid;margin-bottom:4mm}
+  #printSheet .plab{font-size:11pt;margin-bottom:1.5mm}
+  #printSheet .plab .pm{color:#666;font-size:9pt;margin-left:3mm}
+  #printSheet .pboxes{display:flex;flex-wrap:wrap;gap:0}
+  #printSheet .pbox{width:11mm;height:11mm;border:0.25mm solid #bbb;margin:-0.25mm 0 0 -0.25mm;display:flex;align-items:center;justify-content:center;font-size:8.5mm;color:#ccc;background:
+    linear-gradient(to right,transparent 49.8%,#eee 49.8%,#eee 50.2%,transparent 50.2%),
+    linear-gradient(to bottom,transparent 49.8%,#eee 49.8%,#eee 50.2%,transparent 50.2%)}
+  #printSheet h1{font-size:14pt;margin-bottom:4mm}
+}
+/* ---- brain ---- */
+.hero-row{display:flex;align-items:flex-end;gap:26px;flex-wrap:wrap}
+.hero-big .n{font-size:46px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.hero-big .n .of{font-size:16px;color:var(--mut2);font-weight:600}
+.hero-big .l{font-size:11px;color:var(--mut);letter-spacing:.06em;text-transform:uppercase;margin-top:5px}
+.hero-sub{font-size:12.5px;color:var(--mut);padding-bottom:6px}
+.stagebar{display:flex;height:26px;border-radius:7px;overflow:hidden;gap:2px;margin-top:16px}
+.stagebar i{display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;min-width:2px;font-style:normal;font-variant-numeric:tabular-nums}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:11.5px;color:var(--mut)}
+.legend .sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1px solid rgba(0,0,0,.05)}
+.s0{background:#efede9;color:#a9a49b}
+.s1{background:#dcebe7;color:var(--ink)}
+.s2{background:#7fbfb3;color:#123f38}
+.s3{background:#2f9184;color:#fff}
+.s4{background:#0b5d54;color:#fff}
+.segbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:4px}
+.segbar .cap{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mut2);margin-right:2px}
+.segbar button{border:1px solid transparent;background:transparent;border-radius:99px;padding:4px 11px;font-size:12px;cursor:pointer;color:var(--mut);font-weight:600}
+.segbar button.on{background:var(--ink);color:#fff}
+.wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:4px}
+.wall.words{grid-template-columns:repeat(auto-fill,minmax(86px,1fr))}
+.tile{aspect-ratio:1;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;position:relative;transition:transform .08s}
+.tile:hover{transform:scale(1.12);z-index:2}
+.tile.sel{outline:2px solid var(--ink);outline-offset:1px}
+.wall.words .tile{aspect-ratio:auto;padding:8px 4px;font-size:15px;line-height:1.2}
+.tile .dot{position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:var(--red);border:1px solid #fff}
+.grp{margin:18px 0 8px;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--tint);padding-bottom:5px}
+.grp:first-of-type{margin-top:8px}
+.grp .gn{color:var(--mut2);font-weight:600;letter-spacing:.02em;text-transform:none}
+.ticker{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px}
+.tchip{flex:none;display:flex;flex-direction:column;align-items:center;gap:1px;background:var(--tint);border-radius:11px;padding:9px 13px;cursor:pointer}
+.tchip .c{font-size:21px;line-height:1.25}
+.tchip .d{font-size:10px;color:var(--mut)}
+.detail{border:1px solid var(--line2);border-radius:14px;padding:16px 18px;margin:14px 0;background:var(--tint);display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+.detail .big{font-size:54px;line-height:1.15}
+.detail .body{flex:1;min-width:220px}
+.detail .close{margin-left:auto;border:0;background:none;color:var(--mut);cursor:pointer;font-size:16px}
+.wchip{display:inline-block;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:3px 9px;margin:3px 4px 0 0;font-size:12.5px;cursor:pointer}
+.wchip:hover{border-color:var(--line2)}
+.kv{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--mut)}
+.kv b{color:var(--ink);font-weight:600}
+.membar{height:4px;border-radius:2px;background:var(--line);margin-top:10px;max-width:260px;overflow:hidden}
+.membar i{display:block;height:100%;background:var(--acc)}
+/* audio + strokes + timelapse */
+.spk{border:1px solid var(--line2);background:var(--panel);color:var(--mut);border-radius:99px;width:30px;height:30px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;flex:none}
+.spk:hover{background:var(--tint);color:var(--ink)}
+.spk svg{width:15px;height:15px;fill:currentColor}
+.spk.lg{width:38px;height:38px}.spk.lg svg{width:18px;height:18px}
+.strokerow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.strokebox{width:104px;height:104px;border:1px solid var(--line);border-radius:12px;background:#fff;position:relative}
+.strokebox svg{display:block}
+.stroketools{display:flex;gap:8px;justify-content:center;align-items:center;margin-top:8px}
+.tl-chart{width:100%;height:96px;display:block;margin-top:4px}
+.tl-scrub{width:100%;accent-color:var(--ink);margin-top:8px}
+.tl-cap{display:flex;justify-content:space-between;font-size:10.5px;color:var(--mut);margin-top:2px;font-variant-numeric:tabular-nums}
+.tl-banner{background:var(--accT);color:var(--acc);font-size:12px;font-weight:600;border-radius:9px;padding:7px 12px;margin-top:10px;display:flex;justify-content:space-between;align-items:center}
+select.vsel{max-width:230px;padding:7px 9px;border:1px solid var(--line);border-radius:9px;background:var(--panel);font-size:12.5px;outline:none;color:var(--ink)}
+@media(max-width:560px){.wrow .tr{min-width:70px;font-size:21px}.stage .bigzh{font-size:60px}.tabs{gap:20px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <div class="hanzi zh">字卡</div>
+    <div class="eng">Contemporary Chinese · Book 1 · 師大</div>
+  </header>
+  <div id="storageBanner" class="banner">Browser storage is unavailable here — progress lives in memory only. Export from Settings before closing.</div>
+  <div class="tabs">
+    <button id="tabHome" class="on" onclick="go('home')">Today<span id="bDue" class="b zero">0</span></button>
+    <button id="tabRev" onclick="go('rev')">Review</button>
+    <button id="tabGram" onclick="go('gram')">Grammar</button>
+    <button id="tabBrain" onclick="go('brain')">Brain</button>
+    <button id="tabLib" onclick="go('lib')">Library</button>
+    <button id="tabSet" onclick="go('set')">Settings</button>
+  </div>
+  <div id="vHome"></div>
+  <div id="vGram" style="display:none"></div>
+  <div id="vBrain" style="display:none"></div>
+  <div id="vLib" style="display:none"></div>
+  <div id="vRev" style="display:none"></div>
+  <div id="vSet" style="display:none"></div>
+  <div class="foot">FSRS-5 · vocabulary via Zhong Chinese · 加油</div>
+</div>
+<div id="printSheet"></div>
+<script>
+/* ============ DATA ============ */
+const WORDS = [{"id":"w1","l":1,"t":"陳月美","p":"Chén Yuèměi","pos":"","m":"a woman from Vietnam","s":"陈月美"},{"id":"w2","l":1,"t":"李明華","p":"Lǐ Mínghuá","pos":"","m":"a man from Taiwan","s":"李明华"},{"id":"w3","l":1,"t":"王開文","p":"Wáng Kāiwén","pos":"","m":"a man from the US","s":"王开文"},{"id":"w4","l":1,"t":"你","p":"nǐ","pos":"N","m":"you"},{"id":"w5","l":1,"t":"來","p":"lái","pos":"V","m":"to come","s":"来"},{"id":"w6","l":1,"t":"是","p":"shì","pos":"Vst","m":"to be"},{"id":"w7","l":1,"t":"小姐","p":"xiǎojiě","pos":"N","m":"Miss, Ms."},{"id":"w8","l":1,"t":"嗎","p":"ma","pos":"Ptc","m":"sentence final particle","s":"吗"},{"id":"w9","l":1,"t":"接","p":"jiē","pos":"V","m":"to pick sb up"},{"id":"w10","l":1,"t":"我們","p":"wǒmen","pos":"N","m":"we, us","s":"我们"},{"id":"w11","l":1,"t":"我","p":"wǒ","pos":"N","m":"I, me"},{"id":"w12","l":1,"t":"這","p":"zhè / zhèi","pos":"Det","m":"this","s":"这"},{"id":"w13","l":1,"t":"先生","p":"xiānshēng","pos":"N","m":"Mr."},{"id":"w14","l":1,"t":"好","p":"hǎo","pos":"Vs","m":"fine, well"},{"id":"w15","l":1,"t":"姓","p":"xìng","pos":"Vst","m":"to be surnamed"},{"id":"w16","l":1,"t":"叫","p":"jiào","pos":"Vst","m":"to be called, i.e., to have the first name xx"},{"id":"w17","l":1,"t":"你們","p":"nǐmen","pos":"N","m":"you (plural)","s":"你们"},{"id":"w18","l":1,"t":"臺灣","p":"Táiwān","pos":"","m":"Taiwan","s":"台湾"},{"id":"w19","l":1,"t":"歡迎","p":"huānyíng","pos":"Ph","m":"welcome","s":"欢迎"},{"id":"w20","l":1,"t":"請問","p":"qǐngwèn","pos":"Ph","m":"May I ask you... Excuse me, ...","s":"请问"},{"id":"w21","l":1,"t":"是的","p":"shìde","pos":"Ph","m":"yes"},{"id":"w22","l":1,"t":"謝謝","p":"xièxie","pos":"Ph","m":"Thank you.","s":"谢谢"},{"id":"w23","l":1,"t":"不客氣","p":"búkèqì","pos":"Ph","m":"You're welcome.","s":"不客气"},{"id":"w24","l":1,"t":"你好","p":"Nǐ hǎo","pos":"Ph","m":"How are you? Hello."},{"id":"w25","l":1,"t":"請","p":"qǐng","pos":"V","m":"please","s":"请"},{"id":"w26","l":1,"t":"喝","p":"hē","pos":"V","m":"to drink"},{"id":"w27","l":1,"t":"茶","p":"chá","pos":"N","m":"tea"},{"id":"w28","l":1,"t":"很","p":"hěn","pos":"Adv","m":"very"},{"id":"w29","l":1,"t":"好喝","p":"hǎohē","pos":"Vs","m":"(lit. good to drink) to taste good"},{"id":"w30","l":1,"t":"什麼","p":"shénme","pos":"N","m":"what","s":"什么"},{"id":"w31","l":1,"t":"人","p":"rén","pos":"N","m":"person, people"},{"id":"w32","l":1,"t":"喜歡","p":"xǐhuān","pos":"Vst","m":"to like","s":"喜欢"},{"id":"w33","l":1,"t":"呢","p":"ne","pos":"Ptc","m":"sentence final particle"},{"id":"w34","l":1,"t":"他","p":"tā","pos":"N","m":"he, him"},{"id":"w35","l":1,"t":"不","p":"bù","pos":"Adv","m":"not"},{"id":"w36","l":1,"t":"哪","p":"nǎ / něi","pos":"Det","m":"which"},{"id":"w37","l":1,"t":"要","p":"yào","pos":"Vaux","m":"to want to"},{"id":"w38","l":1,"t":"咖啡","p":"kāfēi","pos":"N","m":"coffee"},{"id":"w39","l":1,"t":"烏龍茶","p":"Wūlóng chá","pos":"","m":"Oolong tea","s":"乌龙茶"},{"id":"w40","l":1,"t":"日本","p":"Rìběn","pos":"","m":"Japan"},{"id":"w41","l":1,"t":"美國","p":"Měiguó","pos":"","m":"America","s":"美国"},{"id":"w42","l":1,"t":"對不起","p":"duìbùqǐ","pos":"Ph","m":"I'm sorry.","s":"对不起"},{"id":"w43","l":1,"t":"哪國","p":"nǎ guó / něi guó","pos":"Ph","m":"Which country?","s":"哪国"},{"id":"w44","l":2,"t":"張怡君","p":"Zhāng Yíjūn","pos":"","m":"a woman from Taiwan","s":"张怡君"},{"id":"w45","l":2,"t":"馬安同","p":"Mǎ Āntóng","pos":"","m":"a man from the Republic of Honduras","s":"马安同"},{"id":"w46","l":2,"t":"的","p":"de","pos":"Ptc","m":"modification marker"},{"id":"w47","l":2,"t":"家人","p":"jiārén","pos":"N","m":"family (members)"},{"id":"w48","l":2,"t":"家","p":"jiā","pos":"N","m":"home, house"},{"id":"w49","l":2,"t":"漂亮","p":"piàoliàng","pos":"Vs","m":"pretty"},{"id":"w50","l":2,"t":"房子","p":"fángzi","pos":"N","m":"house"},{"id":"w51","l":2,"t":"坐","p":"zuò","pos":"Vi","m":"to sit"},{"id":"w52","l":2,"t":"好","p":"hǎo","pos":"Ptc","m":"OK"},{"id":"w53","l":2,"t":"有","p":"yǒu","pos":"Vst","m":"to have"},{"id":"w54","l":2,"t":"多","p":"duō","pos":"Vs-pred","m":"many"},{"id":"w55","l":2,"t":"照片","p":"zhàopiàn","pos":"N","m":"photo"},{"id":"w56","l":2,"t":"都","p":"dōu","pos":"Adv","m":"all, both"},{"id":"w57","l":2,"t":"照相","p":"zhàoxiàng","pos":"V-sep","m":"to take a photo"},{"id":"w58","l":2,"t":"張","p":"zhāng","pos":"M","m":"measure word for flat objects (e.g., paper, tickets)","s":"张"},{"id":"w59","l":2,"t":"好看","p":"hǎokàn","pos":"Vs","m":"good-looking"},{"id":"w60","l":2,"t":"誰","p":"shéi","pos":"N","m":"who","s":"谁"},{"id":"w61","l":2,"t":"姐姐","p":"jiějie","pos":"N","m":"older sister"},{"id":"w62","l":2,"t":"妹妹","p":"mèimei","pos":"N","m":"younger sister"},{"id":"w63","l":2,"t":"爸爸","p":"bàba","pos":"N","m":"dad"},{"id":"w64","l":2,"t":"媽媽","p":"māma","pos":"N","m":"mom","s":"妈妈"},{"id":"w65","l":2,"t":"請進","p":"qǐng jìn","pos":"Ph","m":"Please come in!","s":"请进"},{"id":"w66","l":2,"t":"田中誠一","p":"Tiánzhōng Chéngyī","pos":"","m":"a man from Japan","s":"田中诚一"},{"id":"w67","l":2,"t":"伯母","p":"bómǔ","pos":"N","m":"aunt; here a polite term for a friend's mother regardless of age"},{"id":"w68","l":2,"t":"您","p":"nín","pos":"N","m":"you (honorific)"},{"id":"w69","l":2,"t":"名字","p":"míngzi","pos":"N","m":"name"},{"id":"w70","l":2,"t":"書","p":"shū","pos":"N","m":"book","s":"书"},{"id":"w71","l":2,"t":"哥哥","p":"gēge","pos":"N","m":"older brother"},{"id":"w72","l":2,"t":"老師","p":"lǎoshī","pos":"N","m":"teacher","s":"老师"},{"id":"w73","l":2,"t":"看書","p":"kànshū","pos":"V-sep","m":"to read","s":"看书"},{"id":"w74","l":2,"t":"幾","p":"jǐ","pos":"N","m":"how many","s":"几"},{"id":"w75","l":2,"t":"個","p":"ge","pos":"M","m":"general measure word","s":"个"},{"id":"w76","l":2,"t":"沒","p":"méi","pos":"Adv","m":"not","s":"没"},{"id":"w77","l":2,"t":"兄弟","p":"xiōngdì","pos":"N","m":"brothers"},{"id":"w78","l":2,"t":"姐妹","p":"jiěmèi","pos":"N","m":"sisters"},{"id":"w79","l":2,"t":"五","p":"wǔ","pos":"N","m":"five"},{"id":"w80","l":2,"t":"兩","p":"liǎng","pos":"N","m":"two","s":"两"},{"id":"w81","l":3,"t":"週末","p":"zhōumò","pos":"N","m":"weekend","s":"周末"},{"id":"w82","l":3,"t":"聽","p":"tīng","pos":"V","m":"to listen","s":"听"},{"id":"w83","l":3,"t":"音樂","p":"yīnyuè","pos":"N","m":"music","s":"音乐"},{"id":"w84","l":3,"t":"運動","p":"yùndòng","pos":"Vi","m":"to exercise","s":"运动"},{"id":"w85","l":3,"t":"打","p":"dǎ","pos":"V","m":"to play (ball games)"},{"id":"w86","l":3,"t":"網球","p":"wǎngqiú","pos":"N","m":"tennis","s":"网球"},{"id":"w87","l":3,"t":"棒球","p":"bàngqiú","pos":"N","m":"baseball"},{"id":"w88","l":3,"t":"和","p":"hàn","pos":"Conj","m":"and, as well as"},{"id":"w89","l":3,"t":"游泳","p":"yóuyǒng","pos":"V-sep","m":"to swim"},{"id":"w90","l":3,"t":"常","p":"cháng","pos":"Adv","m":"often"},{"id":"w91","l":3,"t":"籃球","p":"lánqiú","pos":"N","m":"basketball","s":"篮球"},{"id":"w92","l":3,"t":"也","p":"yě","pos":"Adv","m":"also"},{"id":"w93","l":3,"t":"踢","p":"tī","pos":"V","m":"to kick"},{"id":"w94","l":3,"t":"足球","p":"zúqiú","pos":"N","m":"soccer"},{"id":"w95","l":3,"t":"覺得","p":"juéde","pos":"Vst","m":"to feel, to think","s":"觉得"},{"id":"w96","l":3,"t":"好玩","p":"hǎowán","pos":"Vs","m":"interesting, fun"},{"id":"w97","l":3,"t":"明天","p":"míngtiān","pos":"N","m":"tomorrow"},{"id":"w98","l":3,"t":"早上","p":"zǎoshàng","pos":"N","m":"morning"},{"id":"w99","l":3,"t":"去","p":"qù","pos":"V","m":"to go"},{"id":"w100","l":3,"t":"怎麼樣","p":"zěnmeyàng","pos":"Vs","m":"How about it? How does that sound? What do you think?","s":"怎么样"},{"id":"w101","l":3,"t":"啊","p":"a","pos":"Ptc","m":"sentence-final particle"},{"id":"w102","l":3,"t":"做什麼","p":"zuò shénme","pos":"Ph","m":"do what","s":"做什么"},{"id":"w103","l":3,"t":"好啊","p":"hǎo a","pos":"Ph","m":"OK"},{"id":"w104","l":3,"t":"白如玉","p":"Bái Rúyù","pos":"","m":"a woman from the US"},{"id":"w105","l":3,"t":"今天","p":"jīntiān","pos":"N","m":"today"},{"id":"w106","l":3,"t":"晚上","p":"wǎnshàng","pos":"N","m":"evening, night"},{"id":"w107","l":3,"t":"看","p":"kàn","pos":"V","m":"to see, to watch"},{"id":"w108","l":3,"t":"電影","p":"diànyǐng","pos":"N","m":"movie","s":"电影"},{"id":"w109","l":3,"t":"妳","p":"nǐ","pos":"N","m":"you (female)"},{"id":"w110","l":3,"t":"想","p":"xiǎng","pos":"Vaux","m":"to want, to think"},{"id":"w111","l":3,"t":"還是","p":"háishì","pos":"Conj","m":"or (used in a question)","s":"还是"},{"id":"w112","l":3,"t":"吧","p":"ba","pos":"Ptc","m":"sentence-final particle for suggestion"},{"id":"w113","l":3,"t":"可以","p":"kěyǐ","pos":"Vaux","m":"could (possibility)"},{"id":"w114","l":3,"t":"學","p":"xué","pos":"V","m":"to learn, to study","s":"学"},{"id":"w115","l":3,"t":"中文","p":"Zhōngwén","pos":"N","m":"Chinese language"},{"id":"w116","l":3,"t":"一起","p":"yìqǐ","pos":"Adv","m":"together"},{"id":"w117","l":3,"t":"吃","p":"chī","pos":"V","m":"to eat"},{"id":"w118","l":3,"t":"晚飯","p":"wǎnfàn","pos":"N","m":"dinner","s":"晚饭"},{"id":"w119","l":3,"t":"菜","p":"cài","pos":"N","m":"cuisine"},{"id":"w120","l":3,"t":"越南","p":"Yuènán","pos":"","m":"Vietnam"},{"id":"w121","l":3,"t":"好不好","p":"hǎo bù hǎo","pos":"Ph","m":"How about...? How does that sound?"},{"id":"w122","l":4,"t":"一共","p":"yígòng","pos":"Adv","m":"altogether"},{"id":"w123","l":4,"t":"多少","p":"duōshǎo","pos":"N","m":"how much, how many"},{"id":"w124","l":4,"t":"錢","p":"qián","pos":"N","m":"money","s":"钱"},{"id":"w125","l":4,"t":"老闆","p":"lǎobǎn","pos":"N","m":"store-owner, boss","s":"老板"},{"id":"w126","l":4,"t":"買","p":"mǎi","pos":"V","m":"to buy","s":"买"},{"id":"w127","l":4,"t":"杯","p":"bēi","pos":"M","m":"cup"},{"id":"w128","l":4,"t":"熱","p":"rè","pos":"Vs","m":"hot","s":"热"},{"id":"w129","l":4,"t":"包子","p":"bāozi","pos":"N","m":"steamed buns with meat stuffing filling"},{"id":"w130","l":4,"t":"要","p":"yào","pos":"V","m":"to want, to need"},{"id":"w131","l":4,"t":"大","p":"dà","pos":"Vs","m":"large"},{"id":"w132","l":4,"t":"中","p":"zhōng","pos":"Vs-attr","m":"medium"},{"id":"w133","l":4,"t":"小","p":"xiǎo","pos":"Vs","m":"small"},{"id":"w134","l":4,"t":"幫","p":"bāng","pos":"Prep","m":"for","s":"帮"},{"id":"w135","l":4,"t":"微波","p":"wéibō","pos":"V","m":"to microwave"},{"id":"w136","l":4,"t":"百","p":"bǎi","pos":"N","m":"hundred"},{"id":"w137","l":4,"t":"塊","p":"kuài","pos":"M","m":"measure word for Chinese money","s":"块"},{"id":"w138","l":4,"t":"好的","p":"hǎode","pos":"Ph","m":"OK"},{"id":"w139","l":4,"t":"外帶","p":"wàidài","pos":"Ph","m":"take out, to go","s":"外带"},{"id":"w140","l":4,"t":"內用","p":"nèiyòng","pos":"Ph","m":"for here","s":"内用"},{"id":"w141","l":4,"t":"支","p":"zhī","pos":"M","m":"measure word for cell phones"},{"id":"w142","l":4,"t":"新","p":"xīn","pos":"Vs","m":"new"},{"id":"w143","l":4,"t":"手機","p":"shǒujī","pos":"N","m":"cell phone","s":"手机"},{"id":"w144","l":4,"t":"太","p":"tài","pos":"Adv","m":"too"},{"id":"w145","l":4,"t":"舊","p":"jiù","pos":"Vs","m":"old","s":"旧"},{"id":"w146","l":4,"t":"了","p":"le","pos":"Ptc","m":"sentence-final particle indicating the speaker's sense of certainty"},{"id":"w147","l":4,"t":"種","p":"zhǒng","pos":"M","m":"kind, type","s":"种"},{"id":"w148","l":4,"t":"能","p":"néng","pos":"Vaux","m":"can, to be able to"},{"id":"w149","l":4,"t":"上網","p":"shàngwǎng","pos":"V-sep","m":"to access the internet, to use the internet","s":"上网"},{"id":"w150","l":4,"t":"那","p":"nà / nèi","pos":"Det","m":"that"},{"id":"w151","l":4,"t":"貴","p":"guì","pos":"Vs","m":"expensive","s":"贵"},{"id":"w152","l":4,"t":"賣","p":"mài","pos":"V","m":"to sell","s":"卖"},{"id":"w153","l":4,"t":"便宜","p":"piányí","pos":"Vs","m":"cheap, inexpensive"},{"id":"w154","l":4,"t":"要","p":"yào","pos":"Vst","m":"to take, to require"},{"id":"w155","l":4,"t":"萬","p":"wàn","pos":"N","m":"ten thousand","s":"万"},{"id":"w156","l":4,"t":"千","p":"qiān","pos":"N","m":"thousand"},{"id":"w157","l":4,"t":"為什麼","p":"wèishénme","pos":"Ph","m":"why","s":"为什么"},{"id":"w158","l":5,"t":"牛肉","p":"niúròu","pos":"N","m":"beef"},{"id":"w159","l":5,"t":"麵","p":"miàn","pos":"N","m":"noodles","s":"面"},{"id":"w160","l":5,"t":"真","p":"zhēn","pos":"Adv","m":"really"},{"id":"w161","l":5,"t":"好吃","p":"hǎochī","pos":"Vs","m":"delicious"},{"id":"w162","l":5,"t":"說","p":"shuō","pos":"V","m":"say","s":"说"},{"id":"w163","l":5,"t":"少","p":"shǎo","pos":"Vs-pred","m":"few in number"},{"id":"w164","l":5,"t":"有名","p":"yǒumíng","pos":"Vs","m":"well known, famous"},{"id":"w165","l":5,"t":"小吃","p":"xiǎochī","pos":"N","m":"light repast, snack"},{"id":"w166","l":5,"t":"最","p":"zuì","pos":"Adv","m":"most"},{"id":"w167","l":5,"t":"湯","p":"tāng","pos":"N","m":"soup, broth","s":"汤"},{"id":"w168","l":5,"t":"這麼","p":"zhème","pos":"Adv","m":"so","s":"这么"},{"id":"w169","l":5,"t":"知道","p":"zhīdào","pos":"Vst","m":"to know"},{"id":"w170","l":5,"t":"家","p":"jiā","pos":"M","m":"measure word for restaurants, shops, etc."},{"id":"w171","l":5,"t":"店","p":"diàn","pos":"N","m":"shop, store"},{"id":"w172","l":5,"t":"一定","p":"yídìng","pos":"Adv","m":"really must, definitely"},{"id":"w173","l":5,"t":"點","p":"diǎn","pos":"V","m":"to order (meals)","s":"点"},{"id":"w174","l":5,"t":"碗","p":"wǎn","pos":"M","m":"a bowl of"},{"id":"w175","l":5,"t":"是啊","p":"shì a","pos":"Ph","m":"That's right."},{"id":"w176","l":5,"t":"小籠包","p":"xiǎolóngbāo","pos":"Ph","m":"xiaolongbao, e.g., small meat and cabbage-filled steamed buns","s":"小笼包"},{"id":"w177","l":5,"t":"臭豆腐","p":"chòu dòufǔ","pos":"Ph","m":"stinky tofu (fermented tofu)"},{"id":"w178","l":5,"t":"太好了","p":"tài hǎo le","pos":"Ph","m":"Excellent. Great."},{"id":"w179","l":5,"t":"昨天","p":"zuótiān","pos":"N","m":"yesterday"},{"id":"w180","l":5,"t":"餐廳","p":"cāntīng","pos":"N","m":"restaurant","s":"餐厅"},{"id":"w181","l":5,"t":"可是","p":"kěshì","pos":"Conj","m":"but, however"},{"id":"w182","l":5,"t":"辣","p":"là","pos":"Vs","m":"hot (spicy)"},{"id":"w183","l":5,"t":"怕","p":"pà","pos":"Vst","m":"(here) to not like, to fear"},{"id":"w184","l":5,"t":"所以","p":"suǒyǐ","pos":"Conj","m":"therefore, so"},{"id":"w185","l":5,"t":"自己","p":"zìjǐ","pos":"N","m":"self"},{"id":"w186","l":5,"t":"做飯","p":"zuòfàn","pos":"V-sep","m":"to cook","s":"做饭"},{"id":"w187","l":5,"t":"得","p":"de","pos":"Ptc","m":"complement marker"},{"id":"w188","l":5,"t":"會","p":"huì","pos":"Vaux","m":"to be able to, can","s":"会"},{"id":"w189","l":5,"t":"甜點","p":"tiándiǎn","pos":"N","m":"dessert","s":"甜点"},{"id":"w190","l":5,"t":"不錯","p":"búcuò","pos":"Vs","m":"not bad","s":"不错"},{"id":"w191","l":5,"t":"可以","p":"kěyǐ","pos":"Vaux","m":"could (possibility)"},{"id":"w192","l":5,"t":"教","p":"jiāo","pos":"V","m":"to teach"},{"id":"w193","l":5,"t":"到","p":"dào","pos":"Prep","m":"to"},{"id":"w194","l":5,"t":"有一點","p":"yǒu yìdiǎn","pos":"Ph","m":"a little","s":"有一点"},{"id":"w195","l":5,"t":"不好","p":"bù hǎo","pos":"Ph","m":"not well"},{"id":"w196","l":6,"t":"他們","p":"tāmen","pos":"N","m":"they (used for people only)","s":"他们"},{"id":"w197","l":6,"t":"學校","p":"xuéxiào","pos":"N","m":"school","s":"学校"},{"id":"w198","l":6,"t":"在","p":"zài","pos":"Vst","m":"to be located at"},{"id":"w199","l":6,"t":"山上","p":"shānshàng","pos":"N","m":"on a mountain, in the mountains"},{"id":"w200","l":6,"t":"哪裡","p":"nǎlǐ","pos":"N","m":"where","s":"哪里"},{"id":"w201","l":6,"t":"遠","p":"yuǎn","pos":"Vs","m":"far","s":"远"},{"id":"w202","l":6,"t":"那裡","p":"nàlǐ","pos":"N","m":"that place, there","s":"那里"},{"id":"w203","l":6,"t":"風景","p":"fēngjǐng","pos":"N","m":"scenery, landscape","s":"风景"},{"id":"w204","l":6,"t":"美","p":"měi","pos":"Vs","m":"beautiful"},{"id":"w205","l":6,"t":"前面","p":"qiánmiàn","pos":"N","m":"front"},{"id":"w206","l":6,"t":"海","p":"hǎi","pos":"N","m":"ocean"},{"id":"w207","l":6,"t":"後面","p":"hòumiàn","pos":"N","m":"back","s":"后面"},{"id":"w208","l":6,"t":"山","p":"shān","pos":"N","m":"mountain"},{"id":"w209","l":6,"t":"真的","p":"zhēnde","pos":"Adv","m":"really, truly"},{"id":"w210","l":6,"t":"地方","p":"dìfāng","pos":"N","m":"place"},{"id":"w211","l":6,"t":"現在","p":"xiànzài","pos":"N","m":"now","s":"现在"},{"id":"w212","l":6,"t":"附近","p":"fùjìn","pos":"N","m":"vicinity, near"},{"id":"w213","l":6,"t":"樓下","p":"lóuxià","pos":"N","m":"downstairs","s":"楼下"},{"id":"w214","l":6,"t":"找","p":"zhǎo","pos":"V","m":"to meet, to see"},{"id":"w215","l":6,"t":"朋友","p":"péngyǒu","pos":"N","m":"friend"},{"id":"w216","l":6,"t":"上課","p":"shàngkè","pos":"V-sep","m":"to go to class","s":"上课"},{"id":"w217","l":6,"t":"花蓮","p":"Huālián","pos":"","m":"name of a city on the eastern coast of Taiwan","s":"花莲"},{"id":"w218","l":6,"t":"聽說","p":"tīngshuō","pos":"Ph","m":"hear that","s":"听说"},{"id":"w219","l":6,"t":"近","p":"jìn","pos":"Vs","m":"near"},{"id":"w220","l":6,"t":"方便","p":"fāngbiàn","pos":"Vs","m":"convenient"},{"id":"w221","l":6,"t":"這裡","p":"zhèlǐ","pos":"N","m":"here, this place","s":"这里"},{"id":"w222","l":6,"t":"學生","p":"xuéshēng","pos":"N","m":"student","s":"学生"},{"id":"w223","l":6,"t":"在","p":"zài","pos":"Prep","m":"at"},{"id":"w224","l":6,"t":"東西","p":"dōngxi","pos":"N","m":"things, stuff","s":"东西"},{"id":"w225","l":6,"t":"外面","p":"wàimiàn","pos":"N","m":"outside"},{"id":"w226","l":6,"t":"裡面","p":"lǐmiàn","pos":"N","m":"inside","s":"里面"},{"id":"w227","l":6,"t":"商店","p":"shāngdiàn","pos":"N","m":"store, shop"},{"id":"w228","l":6,"t":"吃飯","p":"chīfàn","pos":"V-sep","m":"to have a meal","s":"吃饭"},{"id":"w229","l":6,"t":"宿舍","p":"sùshè","pos":"N","m":"dormitory"},{"id":"w230","l":6,"t":"樓","p":"lóu","pos":"N","m":"a storey, a floor","s":"楼"},{"id":"w231","l":6,"t":"棟","p":"dòng","pos":"M","m":"measure word for buildings","s":"栋"},{"id":"w232","l":6,"t":"大樓","p":"dàlóu","pos":"N","m":"a multi-storey building","s":"大楼"},{"id":"w233","l":6,"t":"圖書館","p":"túshūguǎn","pos":"N","m":"library","s":"图书馆"},{"id":"w234","l":6,"t":"旁邊","p":"pángbiān","pos":"N","m":"(by the) side, next to","s":"旁边"},{"id":"w235","l":6,"t":"教室","p":"jiàoshì","pos":"N","m":"classroom"},{"id":"w236","l":6,"t":"游泳池","p":"yóuyǒngchí","pos":"N","m":"swimming pool"},{"id":"w237","l":7,"t":"點","p":"diǎn","pos":"M","m":"o'clock","s":"点"},{"id":"w238","l":7,"t":"KTV","p":"KTV","pos":"N","m":"Karaoke"},{"id":"w239","l":7,"t":"唱歌","p":"chànggē","pos":"V-sep","m":"to sing"},{"id":"w240","l":7,"t":"分","p":"fēn","pos":"M","m":"minute"},{"id":"w241","l":7,"t":"見面","p":"jiànmiàn","pos":"V-sep","m":"meet","s":"见面"},{"id":"w242","l":7,"t":"從","p":"cóng","pos":"Prep","m":"from","s":"从"},{"id":"w243","l":7,"t":"中午","p":"zhōngwǔ","pos":"N","m":"noon"},{"id":"w244","l":7,"t":"得","p":"děi","pos":"Vaux","m":"to have to, must"},{"id":"w245","l":7,"t":"銀行","p":"yínháng","pos":"N","m":"bank","s":"银行"},{"id":"w246","l":7,"t":"時候","p":"shíhòu","pos":"N","m":"when","s":"时候"},{"id":"w247","l":7,"t":"後天","p":"hòutiān","pos":"N","m":"the day after tomorrow","s":"后天"},{"id":"w248","l":7,"t":"大安","p":"Dà'ān","pos":"","m":"Da-an (name of a KTV named after a district in Taipei, where Shida is also located)"},{"id":"w249","l":7,"t":"下次","p":"xià cì","pos":"Ph","m":"next time"},{"id":"w250","l":7,"t":"沒問題","p":"méi wèntí","pos":"Ph","m":"No problem.","s":"没问题"},{"id":"w251","l":7,"t":"對了","p":"duìle","pos":"Ph","m":"by the way","s":"对了"},{"id":"w252","l":7,"t":"有空","p":"yǒu kòng","pos":"Ph","m":"to have free time"},{"id":"w253","l":7,"t":"再見","p":"zàijiàn","pos":"Ph","m":"Goodbye.","s":"再见"},{"id":"w254","l":7,"t":"在","p":"zài","pos":"Vs","m":"progressive aspect verb; in the process of doing something"},{"id":"w255","l":7,"t":"午餐","p":"wǔcān","pos":"N","m":"lunch"},{"id":"w256","l":7,"t":"剛","p":"gāng","pos":"Adv","m":"just now","s":"刚"},{"id":"w257","l":7,"t":"下課","p":"xiàkè","pos":"V-sep","m":"to finish class","s":"下课"},{"id":"w258","l":7,"t":"下午","p":"xiàwǔ","pos":"N","m":"afternoon"},{"id":"w259","l":7,"t":"半","p":"bàn","pos":"N","m":"half"},{"id":"w260","l":7,"t":"比賽","p":"bǐsài","pos":"N","m":"game, competition","s":"比赛"},{"id":"w261","l":7,"t":"結束","p":"jiéshù","pos":"Vp","m":"to finish","s":"结束"},{"id":"w262","l":7,"t":"最近","p":"zuìjìn","pos":"N","m":"recently, lately"},{"id":"w263","l":7,"t":"忙","p":"máng","pos":"Vs","m":"busy"},{"id":"w264","l":7,"t":"每","p":"měi","pos":"Det","m":"every, each"},{"id":"w265","l":7,"t":"天","p":"tiān","pos":"M","m":"Measure word for day"},{"id":"w266","l":7,"t":"書法","p":"shūfǎ","pos":"N","m":"calligraphy","s":"书法"},{"id":"w267","l":7,"t":"課","p":"kè","pos":"N","m":"class","s":"课"},{"id":"w268","l":7,"t":"開始","p":"kāishǐ","pos":"Vp","m":"to begin, to start","s":"开始"},{"id":"w269","l":7,"t":"字","p":"zì","pos":"N","m":"character"},{"id":"w270","l":7,"t":"寫","p":"xiě","pos":"V","m":"to write","s":"写"},{"id":"w271","l":7,"t":"可以","p":"kěyǐ","pos":"Vaux","m":"may (permission)"},{"id":"w272","l":7,"t":"問","p":"wèn","pos":"V","m":"to ask","s":"问"},{"id":"w273","l":7,"t":"等一下","p":"děng yíxià","pos":"Ph","m":"later"},{"id":"w274","l":7,"t":"有事","p":"yǒu shì","pos":"Ph","m":"to be busy; to be engaged"},{"id":"w275","l":7,"t":"有意思","p":"yǒu yìsi","pos":"Ph","m":"to be interesting, to be fun"},{"id":"w276","l":8,"t":"坐","p":"zuò","pos":"V","m":"to take by, to travel by"},{"id":"w277","l":8,"t":"火車","p":"huǒchē","pos":"N","m":"train","s":"火车"},{"id":"w278","l":8,"t":"跟","p":"gēn","pos":"Prep","m":"with"},{"id":"w279","l":8,"t":"玩","p":"wán","pos":"V","m":"to have fun"},{"id":"w280","l":8,"t":"怎麼","p":"zěnme","pos":"Adv","m":"how","s":"怎么"},{"id":"w281","l":8,"t":"慢","p":"màn","pos":"Vs","m":"slow"},{"id":"w282","l":8,"t":"鐘頭","p":"zhōngtóu","pos":"N","m":"hour","s":"钟头"},{"id":"w283","l":8,"t":"比較","p":"bǐjiào","pos":"Adv","m":"(comparatively) more","s":"比较"},{"id":"w284","l":8,"t":"快","p":"kuài","pos":"Vs","m":"fast"},{"id":"w285","l":8,"t":"車票","p":"chēpiào","pos":"N","m":"(train, bus) ticket","s":"车票"},{"id":"w286","l":8,"t":"非常","p":"fēicháng","pos":"Adv","m":"very"},{"id":"w287","l":8,"t":"但是","p":"dànshì","pos":"Conj","m":"but, however"},{"id":"w288","l":8,"t":"又","p":"yòu","pos":"Adv","m":"both...and..."},{"id":"w289","l":8,"t":"舒服","p":"shūfú","pos":"Vs","m":"comfortable"},{"id":"w290","l":8,"t":"站","p":"zhàn","pos":"N","m":"station"},{"id":"w291","l":8,"t":"或是","p":"huòshì","pos":"Conj","m":"or"},{"id":"w292","l":8,"t":"臺南","p":"Táinán","pos":"","m":"a city in southwestern Taiwan","s":"台南"},{"id":"w293","l":8,"t":"高鐵","p":"gāotiě","pos":"","m":"High Speed Rail (HSR)","s":"高铁"},{"id":"w294","l":8,"t":"網路上","p":"wǎnglù shàng","pos":"Ph","m":"on the Internet","s":"网路上"},{"id":"w295","l":8,"t":"便利商店","p":"biànlì shāngdiàn","pos":"Ph","m":"convenience store"},{"id":"w296","l":8,"t":"同學","p":"tóngxué","pos":"N","m":"classmate","s":"同学"},{"id":"w297","l":8,"t":"參觀","p":"cānguān","pos":"V","m":"to visit (an institution)","s":"参观"},{"id":"w298","l":8,"t":"古代","p":"gǔdài","pos":"N","m":"ancient times"},{"id":"w299","l":8,"t":"騎","p":"qí","pos":"V","m":"to ride","s":"骑"},{"id":"w300","l":8,"t":"機車","p":"jīchē","pos":"N","m":"motorcycle, scooter","s":"机车"},{"id":"w301","l":8,"t":"載","p":"zài","pos":"V","m":"to give someone a ride (on / in a vehicle, e.g. motorcycle, bicycle or car)","s":"载"},{"id":"w302","l":8,"t":"捷運","p":"jiéyùn","pos":"N","m":"Mass Rapid Transit (MRT)","s":"捷运"},{"id":"w303","l":8,"t":"比","p":"bǐ","pos":"Prep","m":"(more...) than"},{"id":"w304","l":8,"t":"故宮博物院（故宮）","p":"Gùgōng Bówùyuàn","pos":"","m":"National Palace Museum","s":"故宫博物院（故宫）"},{"id":"w305","l":8,"t":"中國","p":"Zhōngguó","pos":"","m":"China","s":"中国"},{"id":"w306","l":8,"t":"公共汽車（公車）","p":"gōnggòng qìchē","pos":"Ph","m":"bus","s":"公共汽车（公车）"},{"id":"w307","l":8,"t":"不行","p":"bù xíng","pos":"Ph","m":"will not do"},{"id":"w308","l":8,"t":"計程車","p":"jìchéngchē","pos":"Ph","m":"taxi","s":"计程车"},{"id":"w309","l":8,"t":"差不多","p":"chābùduō","pos":"Ph","m":"about the same"},{"id":"w310","l":9,"t":"星期 + number","p":"xīngqí","pos":"N","m":"week"},{"id":"w311","l":9,"t":"回國","p":"huíguó","pos":"V-sep","m":"to return to one's country","s":"回国"},{"id":"w312","l":9,"t":"打算","p":"dǎsuàn","pos":"Vaux","m":"to plan to"},{"id":"w313","l":9,"t":"電視","p":"diànshì","pos":"N","m":"TV","s":"电视"},{"id":"w314","l":9,"t":"影片","p":"yǐngpiàn","pos":"N","m":"film"},{"id":"w315","l":9,"t":"旅行","p":"lǚxíng","pos":"Vi","m":"to travel"},{"id":"w316","l":9,"t":"功課","p":"gōngkè","pos":"N","m":"homework","s":"功课"},{"id":"w317","l":9,"t":"出去","p":"chūqù","pos":"Vi","m":"to go out"},{"id":"w318","l":9,"t":"大概","p":"dàgài","pos":"Adv","m":"approximately, about, probably"},{"id":"w319","l":9,"t":"放假","p":"fàngjià","pos":"Ph","m":"to have a holiday"},{"id":"w320","l":9,"t":"下個星期","p":"xià ge xīngqí","pos":"Ph","m":"next week","s":"下个星期"},{"id":"w321","l":9,"t":"有時候","p":"yǒu shíhòu","pos":"Ph","m":"sometimes","s":"有时候"},{"id":"w322","l":9,"t":"多久","p":"duō jiǔ","pos":"Ph","m":"how long"},{"id":"w323","l":9,"t":"臺東","p":"Táidōng","pos":"","m":"name of one of the major cities on the southeastern coast of Taiwan","s":"台东"},{"id":"w324","l":9,"t":"女 + noun","p":"nǚ","pos":"N","m":"girl-, female-"},{"id":"w325","l":9,"t":"number + 月","p":"yuè","pos":"N","m":"month of a year"},{"id":"w326","l":9,"t":"number + 號","p":"hào","pos":"N","m":"date, day of a month","s":"number + 号"},{"id":"w327","l":9,"t":"帶","p":"dài","pos":"V","m":"to take","s":"带"},{"id":"w328","l":9,"t":"她","p":"tā","pos":"N","m":"she, her"},{"id":"w329","l":9,"t":"還","p":"hái","pos":"Adv","m":"still, additionally","s":"还"},{"id":"w330","l":9,"t":"建議","p":"jiànyì","pos":"N","m":"suggestion","s":"建议"},{"id":"w331","l":9,"t":"夜市","p":"yèshì","pos":"N","m":"night market"},{"id":"w332","l":9,"t":"應該","p":"yīnggāi","pos":"Vaux","m":"should","s":"应该"},{"id":"w333","l":9,"t":"逛","p":"guàng","pos":"V","m":"to wander around, to look around"},{"id":"w334","l":9,"t":"特別","p":"tèbié","pos":"Vs","m":"special","s":"特别"},{"id":"w335","l":9,"t":"茶館","p":"cháguǎn","pos":"N","m":"tea house","s":"茶馆"},{"id":"w336","l":9,"t":"決定","p":"juédìng","pos":"Vp","m":"to decide","s":"决定"},{"id":"w337","l":9,"t":"要是","p":"yàoshì","pos":"Conj","m":"if"},{"id":"w338","l":9,"t":"就","p":"jiù","pos":"Adv","m":"then"},{"id":"w339","l":9,"t":"貓空","p":"Māokōng","pos":"","m":"name of a must-see place in Taipei to visit for fine tea and scenery","s":"猫空"},{"id":"w340","l":10,"t":"水果","p":"shuǐguǒ","pos":"N","m":"fruit"},{"id":"w341","l":10,"t":"黃色","p":"huángsè","pos":"N","m":"yellow","s":"黄色"},{"id":"w342","l":10,"t":"芒果","p":"mángguǒ","pos":"N","m":"mango"},{"id":"w343","l":10,"t":"給","p":"gěi","pos":"V","m":"to give","s":"给"},{"id":"w344","l":10,"t":"塊","p":"kuài","pos":"M","m":"measure word for pieces of food (e.g., meat, cake)","s":"块"},{"id":"w345","l":10,"t":"香","p":"xiāng","pos":"Vs","m":"fragrant"},{"id":"w346","l":10,"t":"甜","p":"tián","pos":"Vs","m":"sweet (taste)"},{"id":"w347","l":10,"t":"紅色","p":"hóngsè","pos":"N","m":"red","s":"红色"},{"id":"w348","l":10,"t":"西瓜","p":"xīguā","pos":"N","m":"watermelon"},{"id":"w349","l":10,"t":"吧","p":"ba","pos":"Ptc","m":"sentence-final particle for guessing"},{"id":"w350","l":10,"t":"對","p":"duì","pos":"Vs","m":"correct, right","s":"对"},{"id":"w351","l":10,"t":"以前","p":"yǐqián","pos":"N","m":"before"},{"id":"w352","l":10,"t":"機會","p":"jīhuì","pos":"N","m":"opportunity","s":"机会"},{"id":"w353","l":10,"t":"請","p":"qǐng","pos":"V","m":"to treat sb to sth","s":"请"},{"id":"w354","l":10,"t":"吃吃看","p":"chīchīkàn","pos":"Ph","m":"to have a taste, try it, taste it"},{"id":"w355","l":10,"t":"拍","p":"pāi","pos":"V","m":"to take (pictures)"},{"id":"w356","l":10,"t":"笑","p":"xiào","pos":"V","m":"to laugh, to smile"},{"id":"w357","l":10,"t":"開心","p":"kāixīn","pos":"Vs","m":"happy","s":"开心"},{"id":"w358","l":10,"t":"穿","p":"chuān","pos":"V","m":"to wear, to put on"},{"id":"w359","l":10,"t":"衣服","p":"yīfú","pos":"N","m":"clothes"},{"id":"w360","l":10,"t":"旅館","p":"lǚguǎn","pos":"N","m":"hotel","s":"旅馆"},{"id":"w361","l":10,"t":"太太","p":"tàitai","pos":"N","m":"wife"},{"id":"w362","l":10,"t":"男 + noun","p":"nán","pos":"N","m":"boy-, male-"},{"id":"w363","l":10,"t":"矮","p":"ǎi","pos":"Vs","m":"short (height)"},{"id":"w364","l":10,"t":"高","p":"gāo","pos":"Vs","m":"tall"},{"id":"w365","l":10,"t":"弟弟","p":"dìdi","pos":"N","m":"younger brother"},{"id":"w366","l":10,"t":"乾淨","p":"gānjìng","pos":"Vs","m":"clean","s":"干净"},{"id":"w367","l":10,"t":"窗戶","p":"chuānghù","pos":"N","m":"window","s":"窗户"},{"id":"w368","l":10,"t":"往","p":"wǎng","pos":"Prep","m":"toward, to"},{"id":"w369","l":10,"t":"藍色","p":"lánsè","pos":"N","m":"blue","s":"蓝色"},{"id":"w370","l":10,"t":"因為","p":"yīnwèi","pos":"Conj","m":"because","s":"因为"},{"id":"w371","l":10,"t":"住","p":"zhù","pos":"V","m":"to stay"},{"id":"w372","l":10,"t":"上個月","p":"shàng ge yuè","pos":"Ph","m":"last month","s":"上个月"},{"id":"w373","l":10,"t":"這些","p":"zhèxiē","pos":"Ph","m":"these","s":"这些"},{"id":"w374","l":11,"t":"租","p":"zū","pos":"V","m":"to rent"},{"id":"w375","l":11,"t":"房東","p":"fángdōng","pos":"N","m":"landlord","s":"房东"},{"id":"w376","l":11,"t":"客廳","p":"kètīng","pos":"N","m":"living room","s":"客厅"},{"id":"w377","l":11,"t":"廚房","p":"chúfáng","pos":"N","m":"kitchen","s":"厨房"},{"id":"w378","l":11,"t":"左邊","p":"zuǒbiān","pos":"N","m":"left (side)","s":"左边"},{"id":"w379","l":11,"t":"右邊","p":"yòubiān","pos":"N","m":"right (side)","s":"右边"},{"id":"w380","l":11,"t":"浴室","p":"yùshì","pos":"N","m":"bathroom"},{"id":"w381","l":11,"t":"超市","p":"chāoshì","pos":"N","m":"supermarket"},{"id":"w382","l":11,"t":"走路","p":"zǒulù","pos":"V-sep","m":"to walk"},{"id":"w383","l":11,"t":"分鐘","p":"fēnzhōng","pos":"M","m":"measure word for minutes","s":"分钟"},{"id":"w384","l":11,"t":"就","p":"jiù","pos":"Adv","m":"only, merely"},{"id":"w385","l":11,"t":"到","p":"dào","pos":"Vp","m":"arrive"},{"id":"w386","l":11,"t":"間","p":"jiān","pos":"M","m":"measure word for houses, rooms, etc.","s":"间"},{"id":"w387","l":11,"t":"空","p":"kōng","pos":"Vs","m":"vacant, empty"},{"id":"w388","l":11,"t":"房間","p":"fángjiān","pos":"N","m":"room","s":"房间"},{"id":"w389","l":11,"t":"套房","p":"tàofáng","pos":"N","m":"suite"},{"id":"w390","l":11,"t":"回去","p":"huíqù","pos":"Vi","m":"to go back, to return"},{"id":"w391","l":11,"t":"想","p":"xiǎng","pos":"V","m":"to think"},{"id":"w392","l":11,"t":"再","p":"zài","pos":"Adv","m":"and then"},{"id":"w393","l":11,"t":"電話","p":"diànhuà","pos":"N","m":"telephone","s":"电话"},{"id":"w394","l":11,"t":"給","p":"gěi","pos":"Prep","m":"to","s":"给"},{"id":"w395","l":11,"t":"林","p":"Lín","pos":"","m":"Chinese last name, common in Taiwan"},{"id":"w396","l":11,"t":"打電話","p":"dǎ diànhuà","pos":"Ph","m":"to make a phone call","s":"打电话"},{"id":"w397","l":11,"t":"喂","p":"wéi","pos":"Ptc","m":"a particle used in addressing people, especially over the phone"},{"id":"w398","l":11,"t":"房租","p":"fángzū","pos":"N","m":"rent (for a room or a house)"},{"id":"w399","l":11,"t":"已經","p":"yǐjīng","pos":"Adv","m":"already","s":"已经"},{"id":"w400","l":11,"t":"習慣","p":"xíguàn","pos":"Vs","m":"to get settled down, to get used to","s":"习惯"},{"id":"w401","l":11,"t":"問題","p":"wèntí","pos":"N","m":"problem, question","s":"问题"},{"id":"w402","l":11,"t":"熱水器","p":"rèshuǐqì","pos":"N","m":"water heater","s":"热水器"},{"id":"w403","l":11,"t":"好像","p":"hǎoxiàng","pos":"Adv","m":"to seem to be, to appear to be (often used to take the edge off of a comment)"},{"id":"w404","l":11,"t":"會","p":"huì","pos":"Vaux","m":"will","s":"会"},{"id":"w405","l":11,"t":"等","p":"děng","pos":"V","m":"to wait for"},{"id":"w406","l":11,"t":"那","p":"nà","pos":"Ptc","m":"then, in that case"},{"id":"w407","l":11,"t":"裝","p":"zhuāng","pos":"V","m":"to install","s":"装"},{"id":"w408","l":11,"t":"不過","p":"búguò","pos":"Conj","m":"however, but","s":"不过"},{"id":"w409","l":11,"t":"付","p":"fù","pos":"V","m":"to pay"},{"id":"w410","l":11,"t":"收到","p":"shōudào","pos":"Ph","m":"to receive"},{"id":"w411","l":11,"t":"不好意思","p":"bùhǎo yìsi","pos":"Ph","m":"sorry"},{"id":"w412","l":11,"t":"沒關係","p":"méi guānxi","pos":"Ph","m":"Not a problem","s":"没关系"},{"id":"w413","l":11,"t":"有線電視","p":"yǒuxiàn diànshì","pos":"Ph","m":"cable TV","s":"有线电视"},{"id":"w414","l":12,"t":"計畫","p":"jìhuà","pos":"V","m":"to plan to","s":"计划"},{"id":"w415","l":12,"t":"年","p":"nián","pos":"M","m":"measure word for year"},{"id":"w416","l":12,"t":"久","p":"jiǔ","pos":"Vs","m":"long (time)"},{"id":"w417","l":12,"t":"時間","p":"shíjiān","pos":"N","m":"time","s":"时间"},{"id":"w418","l":12,"t":"先","p":"xiān","pos":"Adv","m":"first"},{"id":"w419","l":12,"t":"念","p":"niàn","pos":"V","m":"to study"},{"id":"w420","l":12,"t":"大學","p":"dàxué","pos":"N","m":"university","s":"大学"},{"id":"w421","l":12,"t":"需要","p":"xūyào","pos":"Vst","m":"to need"},{"id":"w422","l":12,"t":"花","p":"huā","pos":"V","m":"to spend (time or money)"},{"id":"w423","l":12,"t":"獎學金","p":"jiǎngxuéjīn","pos":"N","m":"scholarship","s":"奖学金"},{"id":"w424","l":12,"t":"成績","p":"chéngjī","pos":"N","m":"grades","s":"成绩"},{"id":"w425","l":12,"t":"學費","p":"xuéfèi","pos":"N","m":"tuition","s":"学费"},{"id":"w426","l":12,"t":"公司","p":"gōngsī","pos":"N","m":"company"},{"id":"w427","l":12,"t":"替","p":"tì","pos":"Prep","m":"for, on behalf of"},{"id":"w428","l":12,"t":"希望","p":"xīwàng","pos":"Vst","m":"to hope"},{"id":"w429","l":12,"t":"以後","p":"yǐhòu","pos":"N","m":"in the future","s":"以后"},{"id":"w430","l":12,"t":"到","p":"dào","pos":"V","m":"to go/come to"},{"id":"w431","l":12,"t":"上班","p":"shàngbān","pos":"V-sep","m":"to go to work"},{"id":"w432","l":12,"t":"念書","p":"niànshū","pos":"V-sep","m":"to study","s":"念书"},{"id":"w433","l":12,"t":"累","p":"lèi","pos":"Vs","m":"tired"},{"id":"w434","l":12,"t":"語言中心","p":"yǔyán zhōngxīn","pos":"Ph","m":"language center","s":"语言中心"},{"id":"w435","l":12,"t":"加油","p":"jiāyóu","pos":"Ph","m":"keep up the good work"},{"id":"w436","l":12,"t":"工作","p":"gōngzuò","pos":"Vi","m":"to work"},{"id":"w437","l":12,"t":"去年","p":"qùnián","pos":"N","m":"last year"},{"id":"w438","l":12,"t":"做","p":"zuò","pos":"V","m":"to do, to engage in"},{"id":"w439","l":12,"t":"生意","p":"shēngyì","pos":"N","m":"business"},{"id":"w440","l":12,"t":"以後","p":"yǐhòu","pos":"N","m":"afterwards","s":"以后"},{"id":"w441","l":12,"t":"好","p":"hǎo","pos":"Vs","m":"easy to"},{"id":"w442","l":12,"t":"找","p":"zhǎo","pos":"V","m":"to look for"},{"id":"w443","l":12,"t":"工作","p":"gōngzuò","pos":"N","m":"job, work"},{"id":"w444","l":12,"t":"這樣","p":"zhèyàng","pos":"N","m":"this kind (of)","s":"这样"},{"id":"w445","l":12,"t":"國家","p":"guójiā","pos":"N","m":"country","s":"国家"},{"id":"w446","l":12,"t":"試","p":"shì","pos":"Vi","m":"to try","s":"试"},{"id":"w447","l":12,"t":"難","p":"nán","pos":"Vs","m":"hard to, difficult to","s":"难"},{"id":"w448","l":12,"t":"那麼","p":"nàme","pos":"Ptc","m":"then","s":"那么"},{"id":"w449","l":12,"t":"再","p":"zài","pos":"Adv","m":"again"},{"id":"w450","l":12,"t":"試試看","p":"shìshìkàn","pos":"Ph","m":"to give it a try, to try and see what happens","s":"试试看"},{"id":"w451","l":13,"t":"生日","p":"shēngrì","pos":"N","m":"birthday"},{"id":"w452","l":13,"t":"快樂","p":"kuàilè","pos":"Vs","m":"happy","s":"快乐"},{"id":"w453","l":13,"t":"回來","p":"huílái","pos":"Vi","m":"to come back","s":"回来"},{"id":"w454","l":13,"t":"啊","p":"a","pos":"Ptc","m":"a particle indicating a realization"},{"id":"w455","l":13,"t":"怎麼","p":"zěnme","pos":"Adv","m":"How come?","s":"怎么"},{"id":"w456","l":13,"t":"忘（了）","p":"wàngle","pos":"Vpt","m":"to forget"},{"id":"w457","l":13,"t":"記得","p":"jìde","pos":"Vst","m":"to remember","s":"记得"},{"id":"w458","l":13,"t":"當然","p":"dāngrán","pos":"Adv","m":"certainly, of course","s":"当然"},{"id":"w459","l":13,"t":"語言","p":"yǔyán","pos":"N","m":"language","s":"语言"},{"id":"w460","l":13,"t":"交換","p":"jiāohuàn","pos":"V","m":"to exchange","s":"交换"},{"id":"w461","l":13,"t":"那麼","p":"nàme","pos":"Adv","m":"so (very)","s":"那么"},{"id":"w462","l":13,"t":"熱心","p":"rèxīn","pos":"Vs","m":"with enthusiasm","s":"热心"},{"id":"w463","l":13,"t":"西班牙文","p":"Xībānyá wén","pos":"N","m":"the Spanish language"},{"id":"w464","l":13,"t":"一樣","p":"yíyàng","pos":"Vs","m":"the same, alike","s":"一样"},{"id":"w465","l":13,"t":"過","p":"guò","pos":"V","m":"to celebrate","s":"过"},{"id":"w466","l":13,"t":"左右","p":"zuǒyòu","pos":"N","m":"approximately"},{"id":"w467","l":13,"t":"門口","p":"ménkǒu","pos":"N","m":"gate, entrance","s":"门口"},{"id":"w468","l":13,"t":"西班牙","p":"Xībānyá","pos":"","m":"Spain"},{"id":"w469","l":13,"t":"生日快樂","p":"shēngrì kuàilè","pos":"Ph","m":"Happy Birthday.","s":"生日快乐"},{"id":"w470","l":13,"t":"我就是","p":"wǒ jiù shì","pos":"Ph","m":"(said of self on the phone) This is s/he speaking."},{"id":"w471","l":13,"t":"好久不見","p":"hǎojiǔ bújiàn","pos":"Ph","m":"long time no see","s":"好久不见"},{"id":"w472","l":13,"t":"不必客氣","p":"búbì kèqì","pos":"Ph","m":"No need to stand on formalities, i.e., It's my pleasure.","s":"不必客气"},{"id":"w473","l":13,"t":"太客氣","p":"tài kèqì","pos":"Ph","m":"That's very kind of you.","s":"太客气"},{"id":"w474","l":13,"t":"禮物","p":"lǐwù","pos":"N","m":"gift, present","s":"礼物"},{"id":"w475","l":13,"t":"今年","p":"jīnnián","pos":"N","m":"this year"},{"id":"w476","l":13,"t":"訂","p":"dìng","pos":"V","m":"to order (something in advance)","s":"订"},{"id":"w477","l":13,"t":"了","p":"le","pos":"Ptc","m":"verbal particle indicating a completed action"},{"id":"w478","l":13,"t":"豬腳","p":"zhūjiǎo","pos":"N","m":"pork knuckles","s":"猪脚"},{"id":"w479","l":13,"t":"麵線","p":"miànxiàn","pos":"N","m":"extra fine noodles","s":"面线"},{"id":"w480","l":13,"t":"蛋","p":"dàn","pos":"N","m":"egg"},{"id":"w481","l":13,"t":"一點","p":"yìdiǎn","pos":"Vs","m":"a little, some","s":"一点"},{"id":"w482","l":13,"t":"傳統","p":"chuántǒng","pos":"N","m":"tradition, customs","s":"传统"},{"id":"w483","l":13,"t":"年輕","p":"niánqīng","pos":"Vs","m":"young","s":"年轻"},{"id":"w484","l":13,"t":"蛋糕","p":"dàngāo","pos":"N","m":"cake"},{"id":"w485","l":13,"t":"對","p":"duì","pos":"Prep","m":"to","s":"对"},{"id":"w486","l":13,"t":"祝","p":"zhù","pos":"V","m":"to wish (somebody happiness, good luck, etc.)"},{"id":"w487","l":13,"t":"哪裡，哪裡","p":"Nǎlǐ, nǎlǐ","pos":"Ph","m":"Don't mention it. It's my pleasure.","s":"哪里，哪里"},{"id":"w488","l":13,"t":"大部分","p":"dà bùfèn","pos":"Ph","m":"most (of), mostly"},{"id":"w489","l":13,"t":"萬事如意","p":"wànshì rúyì","pos":"Ph","m":"May everything go your way.","s":"万事如意"},{"id":"w490","l":13,"t":"心想事成","p":"xīnxiǎng shìchéng","pos":"Ph","m":"May all your wishes come true."},{"id":"w491","l":14,"t":"天氣","p":"tiānqì","pos":"N","m":"weather","s":"天气"},{"id":"w492","l":14,"t":"冷","p":"lěng","pos":"Vs","m":"cold"},{"id":"w493","l":14,"t":"風","p":"fēng","pos":"N","m":"wind","s":"风"},{"id":"w494","l":14,"t":"滑雪","p":"huáxuě","pos":"V-sep","m":"to ski"},{"id":"w495","l":14,"t":"春天","p":"chūntiān","pos":"N","m":"spring (season)"},{"id":"w496","l":14,"t":"想","p":"xiǎng","pos":"Vst","m":"to miss (someone)"},{"id":"w497","l":14,"t":"新年","p":"xīnnián","pos":"N","m":"New Year"},{"id":"w498","l":14,"t":"快","p":"kuài","pos":"Adv","m":"soon"},{"id":"w499","l":14,"t":"父母","p":"fùmǔ","pos":"N","m":"parents"},{"id":"w500","l":14,"t":"冬天","p":"dōngtiān","pos":"N","m":"winter (season)"},{"id":"w501","l":14,"t":"明年","p":"míngnián","pos":"N","m":"next year"},{"id":"w502","l":14,"t":"秋天","p":"qiūtiān","pos":"N","m":"autumn (season)"},{"id":"w503","l":14,"t":"紅葉","p":"hóngyè","pos":"N","m":"red maple leaves","s":"红叶"},{"id":"w504","l":14,"t":"只","p":"zhǐ","pos":"Adv","m":"only, merely"},{"id":"w505","l":14,"t":"玉山","p":"Yùshān","pos":"","m":"Yu Shan (Mount Jade), tallest mountain in central Taiwan"},{"id":"w506","l":14,"t":"紐約","p":"Niǔyuē","pos":"","m":"New York","s":"纽约"},{"id":"w507","l":14,"t":"下雪","p":"xiàxuě","pos":"Ph","m":"to snow"},{"id":"w508","l":14,"t":"十二月底","p":"shí'èryuè dǐ","pos":"Ph","m":"the end of December"},{"id":"w509","l":14,"t":"雨","p":"yǔ","pos":"N","m":"rain"},{"id":"w510","l":14,"t":"傘","p":"sǎn","pos":"N","m":"umbrella","s":"伞"},{"id":"w511","l":14,"t":"颱風","p":"táifēng","pos":"N","m":"typhoon","s":"台风"},{"id":"w512","l":14,"t":"要","p":"yào","pos":"Adv","m":"will, going to"},{"id":"w513","l":14,"t":"夏天","p":"xiàtiān","pos":"N","m":"summer (season)"},{"id":"w514","l":14,"t":"濕","p":"shī","pos":"Vs","m":"wet","s":"湿"},{"id":"w515","l":14,"t":"討厭","p":"tǎoyàn","pos":"Vs","m":"annoying","s":"讨厌"},{"id":"w516","l":14,"t":"新聞","p":"xīnwén","pos":"N","m":"news","s":"新闻"},{"id":"w517","l":14,"t":"更","p":"gèng","pos":"Adv","m":"even (more, less, etc.)"},{"id":"w518","l":14,"t":"大家","p":"dàjiā","pos":"N","m":"everyone"},{"id":"w519","l":14,"t":"小心","p":"xiǎoxīn","pos":"Vs","m":"to be careful, to take care"},{"id":"w520","l":14,"t":"可怕","p":"kěpà","pos":"Vs","m":"scary"},{"id":"w521","l":14,"t":"停","p":"tíng","pos":"Vp","m":"to stop"},{"id":"w522","l":14,"t":"下雨","p":"xiàyǔ","pos":"Ph","m":"to rain"},{"id":"w523","l":14,"t":"這次","p":"zhè cì","pos":"Ph","m":"this time","s":"这次"},{"id":"w524","l":14,"t":"上次","p":"shàng cì","pos":"Ph","m":"last time"},{"id":"w525","l":14,"t":"慢走","p":"màn zǒu","pos":"Ph","m":"Bye. Take care."},{"id":"w526","l":15,"t":"醫生","p":"yīshēng","pos":"N","m":"doctor","s":"医生"},{"id":"w527","l":15,"t":"一直","p":"yìzhí","pos":"Adv","m":"continuously, all the way"},{"id":"w528","l":15,"t":"流","p":"liú","pos":"V","m":"to flow"},{"id":"w529","l":15,"t":"鼻水","p":"bíshuǐ","pos":"N","m":"snot, nasal mucus, a running nose"},{"id":"w530","l":15,"t":"頭","p":"tóu","pos":"N","m":"head","s":"头"},{"id":"w531","l":15,"t":"痛","p":"tòng","pos":"Vs","m":"painful"},{"id":"w532","l":15,"t":"胃口","p":"wèikǒu","pos":"N","m":"appetite"},{"id":"w533","l":15,"t":"差","p":"chā","pos":"Vs","m":"poor, bad"},{"id":"w534","l":15,"t":"喉嚨","p":"hóulóng","pos":"N","m":"throat","s":"喉咙"},{"id":"w535","l":15,"t":"發炎","p":"fāyán","pos":"Vp-sep","m":"to be inflamed","s":"发炎"},{"id":"w536","l":15,"t":"生病","p":"shēngbìng","pos":"Vp-sep","m":"to fall ill"},{"id":"w537","l":15,"t":"發燒","p":"fāshāo","pos":"Vp-sep","m":"to have a fever","s":"发烧"},{"id":"w538","l":15,"t":"感冒","p":"gǎnmào","pos":"Vp","m":"to catch/have a cold"},{"id":"w539","l":15,"t":"藥","p":"yào","pos":"N","m":"medicine","s":"药"},{"id":"w540","l":15,"t":"藥局","p":"yàojú","pos":"N","m":"pharmacy, drug store","s":"药局"},{"id":"w541","l":15,"t":"拿","p":"ná","pos":"V","m":"to get"},{"id":"w542","l":15,"t":"把","p":"bǎ","pos":"Ptc","m":"disposal marker"},{"id":"w543","l":15,"t":"水","p":"shuǐ","pos":"N","m":"water"},{"id":"w544","l":15,"t":"休息","p":"xiūxí","pos":"Vi","m":"to take a rest"},{"id":"w545","l":15,"t":"睡覺","p":"shuìjiào","pos":"V-sep","m":"to sleep","s":"睡觉"},{"id":"w546","l":15,"t":"早一點","p":"zǎo yìdiǎn","pos":"Ph","m":"a bit earlier","s":"早一点"},{"id":"w547","l":15,"t":"臉色","p":"liǎnsè","pos":"N","m":"a person's \"color\" (said of the face when healthy or sick, pleased or angry etc.)","s":"脸色"},{"id":"w548","l":15,"t":"難看","p":"nánkàn","pos":"Vs","m":"not to look good","s":"难看"},{"id":"w549","l":15,"t":"肚子","p":"dùzi","pos":"N","m":"stomach, abdomen"},{"id":"w550","l":15,"t":"吐","p":"tù","pos":"V","m":"to throw up, to vomit"},{"id":"w551","l":15,"t":"幾","p":"jǐ","pos":"N","m":"(a) few","s":"几"},{"id":"w552","l":15,"t":"次","p":"cì","pos":"M","m":"measure word for times, occurrences"},{"id":"w553","l":15,"t":"陪","p":"péi","pos":"V","m":"to go/stay with somebody, to accompany"},{"id":"w554","l":15,"t":"看病","p":"kànbìng","pos":"V-sep","m":"to see a doctor"},{"id":"w555","l":15,"t":"健康","p":"jiànkāng","pos":"N","m":"health"},{"id":"w556","l":15,"t":"保險","p":"bǎoxiǎn","pos":"N","m":"insurance","s":"保险"},{"id":"w557","l":15,"t":"跟","p":"gēn","pos":"Prep","m":"to"},{"id":"w558","l":15,"t":"油","p":"yóu","pos":"Vs","m":"oily, greasy"},{"id":"w559","l":15,"t":"冰","p":"bīng","pos":"Vs","m":"icy"},{"id":"w560","l":15,"t":"別","p":"bié","pos":"Adv","m":"don't (used in imperatives)","s":"别"},{"id":"w561","l":15,"t":"關心","p":"guānxīn","pos":"Vst","m":"to be concerned about","s":"关心"},{"id":"w562","l":15,"t":"包","p":"bāo","pos":"M","m":"measure word for bags, packages etc."},{"id":"w563","l":15,"t":"睡","p":"shuì","pos":"Vi","m":"to sleep"},{"id":"w564","l":15,"t":"小時","p":"xiǎoshí","pos":"N","m":"hour","s":"小时"},{"id":"w565","l":15,"t":"怎麼了","p":"zěnme le","pos":"Ph","m":"What's wrong?","s":"怎么了"},{"id":"w566","l":15,"t":"不用了","p":"búyòng le","pos":"Ph","m":"It's not necessary."},{"id":"w567","l":15,"t":"健康中心","p":"jiànkāng zhōngxīn","pos":"Ph","m":"health center"},{"id":"w568","l":15,"t":"回家","p":"huí jiā","pos":"Ph","m":"go home"},{"id":"w569","l":15,"t":"最好","p":"zuìhǎo","pos":"Ph","m":"It would be best.../ (You) should..."}];
+const GRAMMAR = {"1":[{"id":"g1-1","t":"Questions with 嗎","e":"Add 嗎 to the end of any statement to make a yes/no question — word order never changes.","tgt":["嗎"],"alt":["呢","吧","啊"],"s":[{"zh":"你是李小姐嗎？","en":"Are you Miss Li?"},{"zh":"這是咖啡嗎？","en":"Is this coffee?"},{"zh":"你要喝茶嗎？","en":"Do you want to drink tea?"},{"zh":"他是美國人嗎？","en":"Is he American?"}],"cy":"Turn any statement about yourself into a yes/no question with 嗎."},{"id":"g1-2","t":"姓 and 叫 — Introducing yourself","e":"姓 gives your surname; 叫 gives your full or given name.","tgt":["姓","叫"],"alt":["是","要"],"s":[{"zh":"我姓王。","en":"My surname is Wang."},{"zh":"我叫王開文。","en":"I'm called Wang Kaiwen."},{"zh":"請問你姓什麼？","en":"May I ask your surname?"},{"zh":"他叫李明華。","en":"He is called Li Minghua."}],"cy":"Introduce yourself twice: once with 姓, once with 叫."},{"id":"g1-3","t":"Bounce-back 呢","e":"呢 bounces a question back: 我很好，你呢？","tgt":["呢"],"alt":["嗎","吧","啊"],"s":[{"zh":"我很好，你呢？","en":"I'm good, and you?"},{"zh":"我喜歡喝茶，你呢？","en":"I like drinking tea, and you?"},{"zh":"我是美國人，你呢？","en":"I'm American, and you?"}],"cy":"State a preference of yours, then bounce it back with 呢."},{"id":"g1-4","t":"Negation with 不","e":"Place 不 directly before the verb to negate it.","tgt":["不"],"alt":["沒","很","都"],"s":[{"zh":"我不喜歡咖啡。","en":"I don't like coffee."},{"zh":"他不是日本人。","en":"He isn't Japanese."},{"zh":"我不喝烏龍茶。","en":"I don't drink oolong tea."}],"cy":"Say two things you don't do or don't like, using 不."}],"2":[{"id":"g2-1","t":"Possessive 的","e":"的 links possessor and noun: 我的家人 my family; also links descriptions: 漂亮的房子.","tgt":["的"],"alt":["得","了","都"],"s":[{"zh":"這是我的家人。","en":"This is my family."},{"zh":"那是老師的書。","en":"That is the teacher's book."},{"zh":"她的照片很好看。","en":"Her photos are good-looking."},{"zh":"他們的房子很漂亮。","en":"Their house is beautiful."}],"cy":"Describe two things you own using 的."},{"id":"g2-2","t":"Measure words 個 and 張","e":"Numbers need a measure word: 個 for people/general, 張 for flat things (photos, paper).","tgt":["個","張"],"alt":["杯","家","支"],"s":[{"zh":"我有兩個姐姐。","en":"I have two older sisters."},{"zh":"他有三個哥哥。","en":"He has three older brothers."},{"zh":"這是一張照片。","en":"This is one photo."},{"zh":"我要五張紙。","en":"I want five sheets of paper."}],"cy":"Count your family members with 個 and something flat with 張."},{"id":"g2-3","t":"有 and 沒有","e":"有 = to have / there is. Negate 有 with 沒, never 不.","tgt":["有","沒有"],"alt":["是","不是"],"s":[{"zh":"我有兩個姐姐。","en":"I have two older sisters."},{"zh":"你有兄弟嗎？","en":"Do you have brothers?"},{"zh":"我沒有妹妹。","en":"I don't have a younger sister."},{"zh":"這裡有很多照片。","en":"There are many photos here."}],"cy":"Say one thing you have (有) and one you don't (沒有)."},{"id":"g2-4","t":"都 — all / both","e":"都 goes AFTER the subject and BEFORE the verb: 我們都是學生.","tgt":["都"],"alt":["也","很","常"],"s":[{"zh":"我們都是學生。","en":"We are all students."},{"zh":"他們都很好看。","en":"They are all good-looking."},{"zh":"照片都很漂亮。","en":"The photos are all beautiful."}],"cy":"Say something true of your whole family/class using 都."},{"id":"g2-5","t":"幾 — how many","e":"幾 asks small quantities and always needs a measure word: 幾個, 幾張.","tgt":["幾"],"alt":["多少","什麼","誰"],"s":[{"zh":"你有幾個兄弟？","en":"How many brothers do you have?"},{"zh":"你家有幾個人？","en":"How many people are in your family?"},{"zh":"這是幾張照片？","en":"How many photos is this?"}],"cy":"Ask someone a 幾 + measure word question about their family."},{"id":"g2-6","t":"兩 vs 二","e":"Counting things: 兩 + measure word (兩個人). Counting numbers: 二 (一、二、三).","tgt":["兩"],"alt":["二","幾","個"],"s":[{"zh":"我有兩個姐姐。","en":"I have two older sisters."},{"zh":"他買了兩張照片。","en":"He bought two photos."},{"zh":"我們家有兩個哥哥。","en":"Our family has two older brothers."}],"cy":"Mention two of something you have, using 兩 + the right measure word."}],"3":[{"id":"g3-1","t":"打 vs 踢 — playing sports","e":"打 for hand sports (打籃球/棒球/網球); 踢 for foot sports (踢足球).","tgt":["打","踢"],"alt":["做","玩"],"s":[{"zh":"我常打籃球。","en":"I often play basketball."},{"zh":"他喜歡打網球。","en":"He likes playing tennis."},{"zh":"我們週末踢足球。","en":"We play soccer on weekends."}],"cy":"Say which sports you play, choosing 打 or 踢 correctly."},{"id":"g3-2","t":"想 — want / think","e":"想 + verb = want to; 想 + clause = think; 想 + person = miss.","tgt":["想"],"alt":["要","會","喜歡"],"s":[{"zh":"我想去看電影。","en":"I want to go watch a movie."},{"zh":"你想吃什麼？","en":"What do you want to eat?"},{"zh":"我想他是老師。","en":"I think he is a teacher."}],"cy":"Say two things you want to do this weekend with 想."},{"id":"g3-3","t":"還是 — or (in questions)","e":"還是 offers a choice in questions. In statements use 或是.","tgt":["還是"],"alt":["或是","也","和"],"s":[{"zh":"你想看電影還是聽音樂？","en":"Do you want to watch a movie or listen to music?"},{"zh":"你要喝茶還是咖啡？","en":"Do you want tea or coffee?"},{"zh":"我們今天去還是明天去？","en":"Do we go today or tomorrow?"}],"cy":"Ask a friend an A-還是-B question about the weekend."},{"id":"g3-4","t":"Suggestion 吧","e":"吧 softens a sentence into a suggestion (我們去吧) or a guess (你是美國人吧？).","tgt":["吧"],"alt":["嗎","呢","啊"],"s":[{"zh":"我們去看電影吧。","en":"Let's go watch a movie."},{"zh":"吃晚飯吧。","en":"Let's eat dinner."},{"zh":"你是美國人吧？","en":"You're American, right?"}],"cy":"Make two suggestions to a friend using 吧."},{"id":"g3-5","t":"好不好 / 怎麼樣","e":"Tag onto a suggestion to seek agreement: …，好不好？ …，怎麼樣？","tgt":["好不好","怎麼樣"],"alt":["是不是","對不對"],"s":[{"zh":"我們明天去游泳，好不好？","en":"Let's go swimming tomorrow, okay?"},{"zh":"今天晚上看電影，怎麼樣？","en":"How about watching a movie tonight?"}],"cy":"Propose a plan and tag it with 好不好 or 怎麼樣."},{"id":"g3-6","t":"也 — also","e":"也 sits after the subject, before the verb — never at the end.","tgt":["也"],"alt":["都","還","again"],"s":[{"zh":"我喜歡籃球，我也喜歡足球。","en":"I like basketball, and I also like soccer."},{"zh":"他也想去。","en":"He also wants to go."},{"zh":"我也常游泳。","en":"I also often swim."}],"cy":"Agree with something a friend likes using 也."},{"id":"g3-7","t":"常 — often","e":"常 before the verb: 我常運動.","tgt":["常"],"alt":["都","也","很"],"s":[{"zh":"我常運動。","en":"I often exercise."},{"zh":"你常看電影嗎？","en":"Do you often watch movies?"},{"zh":"我們常一起吃晚飯。","en":"We often eat dinner together."}],"cy":"Say two things you often do with 常."}],"4":[{"id":"g4-1","t":"多少 vs 幾","e":"多少 for big/unknown amounts & prices (no measure word needed); 幾 for small counts (needs measure word).","tgt":["多少","幾"],"alt":["什麼","怎麼"],"s":[{"zh":"這個多少錢？","en":"How much is this?"},{"zh":"一共多少錢？","en":"How much altogether?"},{"zh":"你要幾杯咖啡？","en":"How many cups of coffee do you want?"},{"zh":"你有幾個姐姐？","en":"How many older sisters do you have?"}],"cy":"Ask a shop owner the price of something with 多少錢."},{"id":"g4-2","t":"太…了 — too…","e":"太 + adjective + 了: the 了 is required — 太貴 alone sounds unfinished.","tgt":["太","了"],"alt":["很","真","最"],"s":[{"zh":"這個手機太貴了。","en":"This phone is too expensive."},{"zh":"那個包子太大了。","en":"That steamed bun is too big."},{"zh":"我的手機太舊了。","en":"My phone is too old."}],"cy":"Complain about two things with 太…了."},{"id":"g4-3","t":"能 vs 可以","e":"能 = ability/possibility; 可以 = permission/acceptability.","tgt":["能","可以"],"alt":["會","要"],"s":[{"zh":"這支手機能上網。","en":"This phone can go online."},{"zh":"你能幫我嗎？","en":"Can you help me?"},{"zh":"我可以看看嗎？","en":"May I take a look?"},{"zh":"這裡可以內用。","en":"You can dine in here."}],"cy":"Ask permission with 可以, then state an ability with 能."},{"id":"g4-4","t":"Measure words 杯 / 支 / 種","e":"杯 cups of drinks; 支 long thin objects (phones, pens); 種 kinds/types.","tgt":["杯","支","種"],"alt":["個","張","家"],"s":[{"zh":"我要一杯咖啡。","en":"I want one cup of coffee."},{"zh":"他買了一支手機。","en":"He bought a cell phone."},{"zh":"你們有幾種包子？","en":"How many kinds of steamed buns do you have?"}],"cy":"Order a drink and ask about types (種) of something."},{"id":"g4-5","t":"為什麼 — why","e":"為什麼 before the verb phrase asks why.","tgt":["為什麼"],"alt":["怎麼","什麼","多少"],"s":[{"zh":"為什麼這麼貴？","en":"Why is it so expensive?"},{"zh":"你為什麼要買新手機？","en":"Why do you want to buy a new phone?"}],"cy":"Ask why something is so expensive / so good with 為什麼."},{"id":"g4-6","t":"了 — change of state","e":"Sentence-final 了 marks a new situation: 包子冷了 the bun has gotten cold.","tgt":["了"],"alt":["的","得","嗎"],"s":[{"zh":"我的手機太舊了。","en":"My phone is too old now."},{"zh":"包子冷了。","en":"The bun has gotten cold."}],"cy":"Describe something that has changed recently with 了."}],"5":[{"id":"g5-1","t":"最 — superlative","e":"最 + adjective/verb = the most: 最有名, 最喜歡.","tgt":["最"],"alt":["很","太","更"],"s":[{"zh":"這家店最有名。","en":"This shop is the most famous."},{"zh":"牛肉麵是最好吃的。","en":"Beef noodle soup is the most delicious."},{"zh":"我最喜歡小籠包。","en":"I like xiaolongbao the most."}],"cy":"Name your favorite Taiwanese food using 最."},{"id":"g5-2","t":"真 vs 很","e":"真 = really! (exclamation, surprise); 很 = neutral 'very'.","tgt":["真","很"],"alt":["太","最"],"s":[{"zh":"這個真好吃！","en":"This is really delicious!"},{"zh":"你真會做飯。","en":"You really know how to cook."},{"zh":"這個很好吃。","en":"This is (very) delicious."}],"cy":"React to a meal with 真, then describe it neutrally with 很."},{"id":"g5-3","t":"有一點 — a little (negative)","e":"有一點 + adjective implies mild complaint: 有一點辣 a bit (too) spicy.","tgt":["有一點"],"alt":["一點","很","真"],"s":[{"zh":"這個菜有一點辣。","en":"This dish is a little spicy."},{"zh":"湯有一點鹹。","en":"The soup is a little salty."}],"cy":"Politely complain about a dish with 有一點."},{"id":"g5-4","t":"會 — learned ability","e":"會 = can (because you learned it): 我會做飯. Compare 能 (circumstances), 可以 (permission).","tgt":["會"],"alt":["能","可以","要"],"s":[{"zh":"我會做飯。","en":"I can cook."},{"zh":"你會說中文嗎？","en":"Can you speak Chinese?"},{"zh":"她會做小籠包。","en":"She can make xiaolongbao."}],"cy":"Say two skills you have with 會 and one you don't (不會)."},{"id":"g5-5","t":"可是 and 所以","e":"可是 = but; 所以 = so/therefore.","tgt":["可是","所以"],"alt":["因為","還是"],"s":[{"zh":"我喜歡臭豆腐，可是我朋友不喜歡。","en":"I like stinky tofu, but my friend doesn't."},{"zh":"我怕辣，所以我不吃。","en":"I'm afraid of spicy food, so I don't eat it."},{"zh":"這個很好吃，所以我常來。","en":"This is delicious, so I come often."}],"cy":"Make one sentence with 可是 and one with 所以 about food."},{"id":"g5-6","t":"Measure words 碗 and 家","e":"碗 bowls of food; 家 businesses/shops/restaurants.","tgt":["碗","家"],"alt":["杯","個","張"],"s":[{"zh":"我要一碗牛肉麵。","en":"I want one bowl of beef noodle soup."},{"zh":"這家店很有名。","en":"This shop is very famous."},{"zh":"那家餐廳不錯。","en":"That restaurant is pretty good."}],"cy":"Order a bowl of something at a famous 店 using both 碗 and 家."},{"id":"g5-7","t":"得 — complement marker","e":"Verb + 得 + how well: 他做得很好. The 得 links a verb to its quality.","tgt":["得"],"alt":["的","了","地"],"s":[{"zh":"他做得很好。","en":"He does it very well."},{"zh":"你說得對。","en":"You're right."},{"zh":"她吃得很少。","en":"She eats very little."}],"cy":"Compliment someone's cooking or Chinese with V + 得 + …"}],"6":[{"id":"g6-1","t":"在 — location verb","e":"在 states location: X 在 place; also 'at' before place + verb: 我在教室上課.","tgt":["在"],"alt":["有","是","到"],"s":[{"zh":"圖書館在哪裡？","en":"Where is the library?"},{"zh":"學校在山上。","en":"The school is on the mountain."},{"zh":"我在教室上課。","en":"I attend class in the classroom."},{"zh":"他們在外面吃飯。","en":"They are eating outside."}],"cy":"Say where you live and where you study using 在."},{"id":"g6-2","t":"Position words","e":"前面 front, 後面 back, 旁邊 beside, 裡面 inside, 外面 outside, 附近 nearby.","tgt":["前面","旁邊","附近","後面"],"alt":["裡面","外面"],"s":[{"zh":"學校前面有海。","en":"In front of the school there is the ocean."},{"zh":"圖書館旁邊是教室。","en":"Beside the library is the classroom."},{"zh":"商店在宿舍附近。","en":"The shop is near the dormitory."}],"cy":"Describe what's around your home with two position words."},{"id":"g6-3","t":"這裡 / 那裡 / 哪裡","e":"Here / there / where.","tgt":["哪裡","這裡","那裡"],"alt":["什麼","誰"],"s":[{"zh":"你在哪裡？","en":"Where are you?"},{"zh":"我在這裡。","en":"I'm here."},{"zh":"那裡的風景很美。","en":"The scenery there is very beautiful."}],"cy":"Ask where something is, then answer with 這裡/那裡."},{"id":"g6-4","t":"遠 and 近","e":"X 離 Y 遠/近 — far/near from. 離 marks the reference point.","tgt":["遠","近","離"],"alt":["快","慢"],"s":[{"zh":"學校離這裡遠嗎？","en":"Is the school far from here?"},{"zh":"宿舍離教室很近。","en":"The dormitory is very close to the classroom."},{"zh":"海離學校不遠。","en":"The ocean is not far from the school."}],"cy":"Say how far your home is from school using 離…遠/近."},{"id":"g6-5","t":"聽說 — I heard that…","e":"聽說 + clause reports hearsay.","tgt":["聽說"],"alt":["知道","覺得","想"],"s":[{"zh":"聽說花蓮的風景很美。","en":"I heard Hualien's scenery is beautiful."},{"zh":"聽說那裡的小吃很好吃。","en":"I heard the snacks there are delicious."}],"cy":"Report something you heard about Taiwan with 聽說."},{"id":"g6-6","t":"Measure words 樓 and 棟","e":"樓 floors (三樓 3rd floor); 棟 whole buildings.","tgt":["樓","棟"],"alt":["間","家","個"],"s":[{"zh":"我住在三樓。","en":"I live on the third floor."},{"zh":"教室在五樓。","en":"The classroom is on the fifth floor."},{"zh":"那棟大樓是圖書館。","en":"That building is the library."}],"cy":"Say which floor you live on and point out a building with 棟."}],"7":[{"id":"g7-1","t":"Telling time — 點 and 分","e":"X點Y分; 半 = half past. Time words go BEFORE the verb.","tgt":["點","分","半"],"alt":["號","月"],"s":[{"zh":"現在幾點？","en":"What time is it now?"},{"zh":"你幾點下課？","en":"What time does your class end?"},{"zh":"我們三點半見面。","en":"We meet at 3:30."}],"cy":"Say when you get up, start class, and eat dinner."},{"id":"g7-2","t":"從…到… — from…to…","e":"Works for time and places: 從三點到五點, 從學校到銀行.","tgt":["從","到"],"alt":["在","離"],"s":[{"zh":"從三點到五點我有課。","en":"From 3:00 to 5:00 I have class."},{"zh":"從星期一到星期五我上課。","en":"From Monday to Friday I attend class."},{"zh":"從學校到銀行很近。","en":"From school to the bank is close."}],"cy":"Describe your class schedule with 從…到…"},{"id":"g7-3","t":"得 (děi) — must / have to","e":"得 before a verb = have to. Same character as complement 得(de) — context decides.","tgt":["得"],"alt":["要","會","能"],"s":[{"zh":"我得去銀行。","en":"I have to go to the bank."},{"zh":"你得早一點來。","en":"You have to come earlier."},{"zh":"明天我得上課。","en":"Tomorrow I have to attend class."}],"cy":"List two things you have to do tomorrow with 得."},{"id":"g7-4","t":"剛 — just now","e":"剛 before the verb: it happened moments ago.","tgt":["剛"],"alt":["常","再","就"],"s":[{"zh":"我剛下課。","en":"I just finished class."},{"zh":"他剛到。","en":"He just arrived."},{"zh":"比賽剛結束。","en":"The game just ended."}],"cy":"Say two things that just happened with 剛."},{"id":"g7-5","t":"每 — every","e":"每 + measure word + noun; usually pairs with 都: 我每天都上課.","tgt":["每","都"],"alt":["常","也"],"s":[{"zh":"我每天都上課。","en":"I have class every day."},{"zh":"每個星期六我去KTV。","en":"Every Saturday I go to KTV."}],"cy":"Describe a routine with 每…都…"},{"id":"g7-6","t":"…的時候 — when…","e":"Clause + 的時候 = when/while: 下課的時候.","tgt":["的時候"],"alt":["以後","以前"],"s":[{"zh":"下課的時候，你在哪裡？","en":"When class ended, where were you?"},{"zh":"我忙的時候，不能見面。","en":"When I'm busy, I can't meet."},{"zh":"你有空的時候，我們去唱歌吧。","en":"When you're free, let's go sing."}],"cy":"Say what you do 有空的時候 (when free)."},{"id":"g7-7","t":"有空 vs 有事","e":"有空 = free; 有事 = busy / have something on.","tgt":["有空","有事"],"alt":["有課","沒有"],"s":[{"zh":"你明天有空嗎？","en":"Are you free tomorrow?"},{"zh":"我下午有空。","en":"I'm free in the afternoon."},{"zh":"對不起，我今天有事。","en":"Sorry, I'm busy today."}],"cy":"Invite a friend out, and decline politely using 有事."}],"8":[{"id":"g8-1","t":"坐 vs 騎 — transport","e":"坐 for vehicles you sit inside (火車/高鐵/捷運/公車/計程車); 騎 for ones you straddle (機車/腳踏車).","tgt":["坐","騎"],"alt":["開","走"],"s":[{"zh":"我坐火車去臺南。","en":"I take the train to Tainan."},{"zh":"他坐捷運上課。","en":"He takes the MRT to class."},{"zh":"我騎機車去學校。","en":"I ride a scooter to school."}],"cy":"Say how you get to school and how you'd travel to Tainan."},{"id":"g8-2","t":"比 — comparison","e":"A 比 B + adjective: 高鐵比火車快. Add amount after: 快兩個鐘頭.","tgt":["比"],"alt":["跟","比較","更"],"s":[{"zh":"高鐵比火車快。","en":"The HSR is faster than the train."},{"zh":"捷運比公車方便。","en":"The MRT is more convenient than the bus."},{"zh":"高鐵比火車快兩個鐘頭。","en":"The HSR is two hours faster than the train."}],"cy":"Compare two ways to travel with 比."},{"id":"g8-3","t":"比較 — relatively / prefer","e":"比較 + adjective/verb softens comparison: 我比較喜歡坐火車.","tgt":["比較"],"alt":["比","最","更"],"s":[{"zh":"我比較喜歡坐火車。","en":"I prefer taking the train."},{"zh":"高鐵比較舒服。","en":"The HSR is more comfortable."},{"zh":"這個比較好。","en":"This one is better."}],"cy":"State a soft preference with 比較喜歡."},{"id":"g8-4","t":"又…又… — both…and…","e":"又 A 又 B stacks two qualities: 又快又舒服.","tgt":["又"],"alt":["也","都","和"],"s":[{"zh":"高鐵又快又舒服。","en":"The HSR is both fast and comfortable."},{"zh":"這個地方又遠又貴。","en":"This place is both far and expensive."}],"cy":"Describe something with 又…又…"},{"id":"g8-5","t":"怎麼 — how","e":"怎麼 + verb asks method: 怎麼去？ 怎麼買票？","tgt":["怎麼"],"alt":["為什麼","什麼","哪裡"],"s":[{"zh":"你怎麼去臺南？","en":"How do you get to Tainan?"},{"zh":"怎麼買票？","en":"How do you buy tickets?"}],"cy":"Ask how to get somewhere and how to buy the ticket."},{"id":"g8-6","t":"或是 vs 還是","e":"或是 = or in statements; 還是 = or in questions.","tgt":["或是","還是"],"alt":["也是","可是"],"s":[{"zh":"你可以坐火車或是高鐵。","en":"You can take the train or the HSR."},{"zh":"你要坐火車還是高鐵？","en":"Do you want the train or the HSR?"}],"cy":"Give a friend two options (或是), then ask which they want (還是)."},{"id":"g8-7","t":"Duration — 鐘頭","e":"Verb + 要 + duration: 坐火車要四個鐘頭.","tgt":["鐘頭"],"alt":["點","分鐘","小時"],"s":[{"zh":"坐火車要四個鐘頭。","en":"The train takes four hours."},{"zh":"高鐵只要一個半鐘頭。","en":"The HSR only takes an hour and a half."}],"cy":"Say how long your commute takes with 要…鐘頭/分鐘."}],"9":[{"id":"g9-1","t":"Days & dates","e":"星期+number (星期天 Sunday); dates: 月 + 號: 三月五號.","tgt":["星期","號","月"],"alt":["點","天"],"s":[{"zh":"我星期三有課。","en":"I have class on Wednesday."},{"zh":"星期六你有空嗎？","en":"Are you free on Saturday?"},{"zh":"我的生日是三月五號。","en":"My birthday is March 5th."}],"cy":"Say your birthday and one weekly commitment."},{"id":"g9-2","t":"打算 — to plan","e":"打算 + verb phrase directly (no 要): 我打算下個星期去臺東.","tgt":["打算"],"alt":["希望","想","要"],"s":[{"zh":"你打算什麼時候回國？","en":"When do you plan to return home?"},{"zh":"我打算下個星期去臺東。","en":"I plan to go to Taitung next week."},{"zh":"放假的時候，你打算做什麼？","en":"What do you plan to do on vacation?"}],"cy":"Share your holiday plan with 打算."},{"id":"g9-3","t":"要是…就… — if…then…","e":"要是 A，(subject) 就 B: 就 comes after the subject in the result clause.","tgt":["要是","就"],"alt":["因為","所以"],"s":[{"zh":"要是明天下雨，我就不出去。","en":"If it rains tomorrow, I won't go out."},{"zh":"要是你有空，我們就一起去。","en":"If you're free, let's go together."},{"zh":"要是你想去夜市，我就帶你去。","en":"If you want the night market, I'll take you."}],"cy":"Make an if-then plan for the weekend with 要是…就…"},{"id":"g9-4","t":"應該 — should","e":"應該 suggests (softer than must): 你應該去貓空看看.","tgt":["應該"],"alt":["得","會","要"],"s":[{"zh":"你應該去貓空看看。","en":"You should go check out Maokong."},{"zh":"我們應該早一點決定。","en":"We should decide earlier."}],"cy":"Give a friend two recommendations for Taipei with 應該."},{"id":"g9-5","t":"多久 — how long","e":"多久 asks duration: 你要去多久？","tgt":["多久"],"alt":["多少","幾點","什麼時候"],"s":[{"zh":"你要去多久？","en":"How long will you go for?"},{"zh":"從臺北到臺東要多久？","en":"How long from Taipei to Taitung?"}],"cy":"Ask a classmate how long they'll study Chinese with 多久."},{"id":"g9-6","t":"還 — still / in addition","e":"還 = still (還在/還沒) or additionally (還想去…).","tgt":["還"],"alt":["就","再","又"],"s":[{"zh":"你還在學校嗎？","en":"Are you still at school?"},{"zh":"我還沒決定。","en":"I still haven't decided."},{"zh":"我想去夜市，還想去茶館。","en":"I want the night market, and also a teahouse."}],"cy":"Say something you still haven't done with 還沒."},{"id":"g9-7","t":"有時候 — sometimes","e":"有時候 before the clause: 有時候我在家看電視.","tgt":["有時候"],"alt":["常","每天","的時候"],"s":[{"zh":"有時候我在家看電視。","en":"Sometimes I watch TV at home."},{"zh":"我有時候會去那家茶館。","en":"I sometimes go to that teahouse."}],"cy":"Describe two 'sometimes' habits with 有時候."}],"10":[{"id":"g10-1","t":"Colors + 的","e":"Color + 色 + 的 + noun: 黃色的芒果 (or short: 黃芒果).","tgt":["黃色","紅色","藍色"],"alt":["顏色"],"s":[{"zh":"我要買黃色的芒果。","en":"I want to buy yellow mangoes."},{"zh":"她穿紅色的衣服。","en":"She wears red clothes."},{"zh":"這是藍色的窗戶。","en":"This is a blue window."}],"cy":"Describe what you're wearing today with colors + 的."},{"id":"g10-2","t":"給 — to give / for","e":"給 + person + thing (給你一個芒果); or 給 + person + verb (我給你看 I'll show you).","tgt":["給"],"alt":["幫","替","跟"],"s":[{"zh":"我給你一個芒果。","en":"I give you a mango."},{"zh":"這是給你的。","en":"This is for you."},{"zh":"給我拍一張照片。","en":"Take a photo for me."}],"cy":"Offer something to a friend with 給."},{"id":"g10-3","t":"V-V-看 — try doing","e":"Doubling the verb + 看 = give it a try: 吃吃看, 穿穿看.","tgt":["吃吃看","穿穿看","看看"],"alt":["試試看"],"s":[{"zh":"這個芒果很甜，你吃吃看。","en":"This mango is sweet — try it."},{"zh":"這件衣服很好看，你穿穿看。","en":"This looks nice — try it on."}],"cy":"Urge a friend to try a food and to try on clothes with V-V-看."},{"id":"g10-4","t":"因為…所以… — because…so…","e":"Both halves usually appear together in Chinese.","tgt":["因為","所以"],"alt":["可是","要是"],"s":[{"zh":"因為芒果很甜，所以我很喜歡。","en":"Because mangoes are sweet, I like them a lot."},{"zh":"因為他很高，所以打籃球打得很好。","en":"Because he's tall, he plays basketball well."}],"cy":"Explain why you like something with 因為…所以…"},{"id":"g10-5","t":"以前 — before / in the past","e":"以前 opens a past-time frame; clause + 以前 = before doing X.","tgt":["以前"],"alt":["以後","現在","上個月"],"s":[{"zh":"以前我不喜歡吃芒果。","en":"Before, I didn't like mangoes."},{"zh":"來臺灣以前，我沒吃過西瓜。","en":"Before coming to Taiwan, I'd never eaten watermelon."}],"cy":"Contrast a past habit (以前) with now (現在)."},{"id":"g10-6","t":"這些 / 那些 — these / those","e":"Plural demonstratives: 這些水果, 那些衣服.","tgt":["這些","那些"],"alt":["這個","那個"],"s":[{"zh":"這些水果都很甜。","en":"These fruits are all sweet."},{"zh":"那些衣服很好看。","en":"Those clothes look nice."}],"cy":"Point out things around you with 這些/那些."}],"11":[{"id":"g11-1","t":"就 — only / right away","e":"就 conveys 'merely/immediately': 走路就五分鐘; 出門就到了; 就是這間.","tgt":["就"],"alt":["才","再","還"],"s":[{"zh":"走路就五分鐘。","en":"It's only a 5-minute walk."},{"zh":"房租就一萬塊。","en":"The rent is only 10,000 NT."},{"zh":"往右轉就是超市。","en":"Turn right and there's the supermarket."},{"zh":"我就住在這裡。","en":"I live right here."}],"cy":"Brag how close something is to your place using 就."},{"id":"g11-2","t":"到 — arrive / until / result","e":"到 = arrive (我到了), up to (住到下個月), and result complement (看到/聽到/收到).","tgt":["到"],"alt":["在","去","從"],"s":[{"zh":"我到了。","en":"I've arrived."},{"zh":"我在這裡住到下個月。","en":"I'm staying here until next month."},{"zh":"房東已經收到了。","en":"The landlord already received it."}],"cy":"Text a friend that you've arrived and until when you'll stay."},{"id":"g11-3","t":"間 — rooms; 空 — vacant","e":"間 measures rooms: 一間套房; 空 = empty/free: 空房間, 你有空嗎.","tgt":["間","空"],"alt":["棟","樓","家"],"s":[{"zh":"我要租一間套房。","en":"I want to rent a studio."},{"zh":"有空房間嗎？","en":"Are there vacant rooms?"},{"zh":"這裡有三間空房間。","en":"There are three empty rooms here."}],"cy":"Ask a landlord about vacant rooms using 間 and 空."},{"id":"g11-4","t":"左邊 / 右邊","e":"X 的左邊/右邊; 往右邊走 go right.","tgt":["左邊","右邊"],"alt":["旁邊","前面","後面"],"s":[{"zh":"左邊是廚房，右邊是浴室。","en":"Kitchen on the left, bathroom on the right."},{"zh":"超市在旅館的左邊。","en":"The supermarket is left of the hotel."}],"cy":"Describe your room layout with 左邊/右邊."},{"id":"g11-5","t":"再 — again / then","e":"再 = again (再說一次) and 'then, afterwards': 先看房子，再決定.","tgt":["再"],"alt":["又","還","就"],"s":[{"zh":"我想再去一次。","en":"I want to go once more."},{"zh":"先看房子，再決定。","en":"First see the place, then decide."},{"zh":"我回去想想，再告訴你。","en":"I'll think it over, then tell you."}],"cy":"Politely delay a decision with 先…再…"},{"id":"g11-6","t":"已經…了 — already","e":"已經 + verb + 了: 我已經付房租了.","tgt":["已經","了"],"alt":["還沒","剛"],"s":[{"zh":"我已經付房租了。","en":"I've already paid the rent."},{"zh":"他已經習慣了。","en":"He's already used to it."},{"zh":"已經很晚了。","en":"It's already very late."}],"cy":"Say two things you've already done today with 已經…了."},{"id":"g11-7","t":"好像 — it seems","e":"好像 softens claims: 熱水器好像壞了.","tgt":["好像"],"alt":["一定","真的","當然"],"s":[{"zh":"熱水器好像壞了。","en":"The water heater seems broken."},{"zh":"他好像不在家。","en":"He doesn't seem to be home."},{"zh":"這間房間好像比較小。","en":"This room seems smaller."}],"cy":"Report a problem to your landlord softly with 好像."},{"id":"g11-8","t":"不好意思 / 沒關係","e":"不好意思 = sorry/excuse me; the reply is 沒關係 it's fine.","tgt":["不好意思","沒關係"],"alt":["對不起","謝謝"],"s":[{"zh":"不好意思，我忘了。","en":"Sorry, I forgot."},{"zh":"不好意思，可以問你一個問題嗎？","en":"Excuse me, may I ask a question?"},{"zh":"沒關係，明天可以。","en":"No problem, tomorrow works."}],"cy":"Apologize for being late and accept an apology."},{"id":"g11-9","t":"不過 — however","e":"不過 = but (softer than 可是): 這間不大，不過很乾淨.","tgt":["不過"],"alt":["可是","所以","因為"],"s":[{"zh":"這間套房不大，不過很乾淨。","en":"This studio isn't big, but it's clean."},{"zh":"房租有點貴，不過有家具。","en":"Rent's a bit high, but it's furnished."}],"cy":"Weigh an apartment's pros/cons with 不過."}],"12":[{"id":"g12-1","t":"先…再… — first…then…","e":"Sequences plans: 先念大學，再工作.","tgt":["先","再"],"alt":["就","才","又"],"s":[{"zh":"先念大學，再工作。","en":"First university, then work."},{"zh":"我想先吃飯，再去看電影。","en":"I want to eat first, then see a movie."},{"zh":"先在語言中心念一年，再念大學。","en":"First a year at the language center, then university."}],"cy":"Lay out your study-then-work plan with 先…再…"},{"id":"g12-2","t":"花 — to spend","e":"花 + time/money (+ verb): 花很多時間學中文; 學費要花二十萬.","tgt":["花"],"alt":["要","買","用"],"s":[{"zh":"我每天花兩個小時念書。","en":"I spend two hours studying daily."},{"zh":"念大學要花很多錢。","en":"University costs a lot."},{"zh":"你花了多久？","en":"How long did you spend?"}],"cy":"Say how much time you spend on Chinese every day with 花."},{"id":"g12-3","t":"需要 — to need","e":"需要 + noun or verb: 需要時間, 需要念四年.","tgt":["需要"],"alt":["想要","希望","應該"],"s":[{"zh":"你需要幫忙嗎？","en":"Do you need help?"},{"zh":"需要多少錢？","en":"How much money is needed?"},{"zh":"不需要擔心。","en":"No need to worry."}],"cy":"State two things you need to reach your goal with 需要."},{"id":"g12-4","t":"以後 — after / in the future","e":"Clause + 以後 = after X; alone = in the future.","tgt":["以後"],"alt":["以前","的時候","現在"],"s":[{"zh":"念完大學以後，我想找工作。","en":"After university, I want to find work."},{"zh":"下課以後我們去吃飯吧。","en":"After class let's eat."},{"zh":"以後想做什麼？","en":"What do you want to do in the future?"}],"cy":"Describe your after-graduation plan with …以後."},{"id":"g12-5","t":"希望 — to hope","e":"希望 + clause: 我希望找到好工作.","tgt":["希望"],"alt":["打算","需要","覺得"],"s":[{"zh":"我希望找到好工作。","en":"I hope to find a good job."},{"zh":"他希望能拿到獎學金。","en":"He hopes to get a scholarship."},{"zh":"希望你能幫我。","en":"I hope you can help me."}],"cy":"Share two hopes for your year in Taiwan with 希望."},{"id":"g12-6","t":"替 — on behalf of","e":"替 + person + verb: 公司替我付學費.","tgt":["替"],"alt":["給","幫","跟"],"s":[{"zh":"公司替我付學費。","en":"The company pays my tuition."},{"zh":"我替你問問看。","en":"I'll ask for you."},{"zh":"替我加油！","en":"Cheer for me!"}],"cy":"Offer to do something for a friend with 替."},{"id":"g12-7","t":"試試看 — give it a try","e":"試試看 / V+試試看: 你試試看; 做試試看.","tgt":["試試看"],"alt":["看看","吃吃看"],"s":[{"zh":"你試試看。","en":"You try and see."},{"zh":"我試試看，可能會成功。","en":"I'll try — maybe it'll work."},{"zh":"試試看再說。","en":"Try first, then talk."}],"cy":"Encourage yourself about a hard task with 試試看 and 加油."}],"13":[{"id":"g13-1","t":"祝 — wishing someone","e":"祝 + person + wish: 祝你生日快樂！ 祝你萬事如意！","tgt":["祝"],"alt":["請","給","對"],"s":[{"zh":"祝你生日快樂！","en":"Wishing you a happy birthday!"},{"zh":"祝你萬事如意！","en":"May everything go your way!"},{"zh":"祝你心想事成！","en":"May your wishes come true!"}],"cy":"Write a birthday message stacking two 祝 wishes."},{"id":"g13-2","t":"怎麼 — how come?","e":"怎麼 + verb can mean surprised 'how come': 你怎麼忘了？","tgt":["怎麼"],"alt":["為什麼","什麼","多久"],"s":[{"zh":"你怎麼忘了？","en":"How come you forgot?"},{"zh":"他怎麼還沒來？","en":"Why hasn't he come yet?"},{"zh":"怎麼說？","en":"How do you say it?"}],"cy":"Express surprise that a friend forgot something with 怎麼."},{"id":"g13-3","t":"忘了 vs 記得","e":"忘了 forgot (done); 記得 remember (state): 記得帶書 remember to bring the book.","tgt":["忘了","記得"],"alt":["知道","想"],"s":[{"zh":"我忘了帶錢。","en":"I forgot to bring money."},{"zh":"你記得嗎？","en":"Do you remember?"},{"zh":"記得打電話給我。","en":"Remember to call me."}],"cy":"Admit something you forgot, then a reminder with 記得."},{"id":"g13-4","t":"當然 — of course","e":"當然 answers emphatically: 當然記得！","tgt":["當然"],"alt":["一定","真的","好像"],"s":[{"zh":"當然記得！","en":"Of course I remember!"},{"zh":"當然可以。","en":"Of course you can."},{"zh":"當然要去。","en":"Of course I'll go."}],"cy":"Answer an invitation enthusiastically with 當然."},{"id":"g13-5","t":"跟…一樣 — same as","e":"A 跟 B 一樣 (+adjective): 今年跟去年一樣熱.","tgt":["一樣","跟"],"alt":["比","也","都"],"s":[{"zh":"這個跟那個一樣。","en":"This one is the same as that one."},{"zh":"我的想法跟你一樣。","en":"My thoughts are the same as yours."},{"zh":"今年跟去年一樣熱。","en":"This year is as hot as last year."}],"cy":"Compare two things that are alike with 跟…一樣."},{"id":"g13-6","t":"過 — celebrate / experience","e":"過生日 celebrate; verb+過 = have done before: 我去過臺灣.","tgt":["過"],"alt":["了","在","到"],"s":[{"zh":"你怎麼過生日？","en":"How do you celebrate your birthday?"},{"zh":"我去過臺灣。","en":"I've been to Taiwan."},{"zh":"你吃過豬腳麵線嗎？","en":"Have you eaten pork knuckle noodles?"}],"cy":"Ask a friend two 'have you ever' questions with V+過."},{"id":"g13-7","t":"左右 — approximately","e":"Amount + 左右: 十個人左右, 五點左右.","tgt":["左右"],"alt":["差不多","大概","一點"],"s":[{"zh":"他三十歲左右。","en":"He's around thirty."},{"zh":"我們十個人左右會去。","en":"About ten of us will go."},{"zh":"五點左右見面吧。","en":"Let's meet around five."}],"cy":"Estimate a party's size and time with 左右."},{"id":"g13-8","t":"哪裡哪裡 — humble reply","e":"Deflect a compliment: 哪裡哪裡 / 不必客氣 replies politely.","tgt":["哪裡哪裡","不必客氣"],"alt":["謝謝","不客氣"],"s":[{"zh":"哪裡哪裡。","en":"Not at all (you flatter me)."},{"zh":"不必客氣。","en":"Don't mention it."},{"zh":"你太客氣了。","en":"You're too kind."}],"cy":"Respond humbly to '你中文說得真好！'"}],"14":[{"id":"g14-1","t":"Weather + change 了","e":"天氣變冷了 it's gotten cold; 下雨了 it's started raining.","tgt":["了"],"alt":["嗎","的","得"],"s":[{"zh":"天氣變冷了。","en":"The weather has gotten cold."},{"zh":"下雨了！","en":"It's (started) raining!"},{"zh":"雨停了。","en":"The rain stopped."}],"cy":"Describe today's weather change with …了."},{"id":"g14-2","t":"只 — only","e":"只 before the verb: 台北只有冬天冷.","tgt":["只"],"alt":["就","都","才"],"s":[{"zh":"只有一個。","en":"There's only one."},{"zh":"台北只有冬天冷。","en":"Taipei is only cold in winter."},{"zh":"只要十分鐘。","en":"It only takes ten minutes."}],"cy":"Say what you only like about one season with 只."},{"id":"g14-3","t":"更 — even more","e":"更 + adjective raises the degree: 今天比昨天更冷.","tgt":["更"],"alt":["最","很","太"],"s":[{"zh":"今天比昨天更冷。","en":"Today is even colder than yesterday."},{"zh":"台北比高雄更濕。","en":"Taipei is even more humid than Kaohsiung."},{"zh":"颱風天更可怕。","en":"Typhoon days are even scarier."}],"cy":"Escalate a comparison with 比…更…"},{"id":"g14-4","t":"要…了 / 快…了 — about to","e":"Imminent events: 要下雨了; 快新年了.","tgt":["要","快","了"],"alt":["就","剛"],"s":[{"zh":"要下雨了。","en":"It's about to rain."},{"zh":"颱風要來了。","en":"The typhoon is coming."},{"zh":"快新年了。","en":"New Year is almost here."},{"zh":"快到了。","en":"Almost there."}],"cy":"Warn a friend something's about to happen with 要…了."},{"id":"g14-5","t":"這次 / 上次 / 下次","e":"This time / last time / next time.","tgt":["這次","上次","下次"],"alt":["有時候","每次"],"s":[{"zh":"這次的颱風很大。","en":"This typhoon is big."},{"zh":"上次的天氣很好。","en":"The weather was good last time."},{"zh":"這次比上次冷。","en":"This time is colder than last time."}],"cy":"Compare this time with last time using 這次/上次."},{"id":"g14-6","t":"討厭 — to dislike","e":"討厭 + noun/clause: 我討厭下雨.","tgt":["討厭"],"alt":["喜歡","怕","愛"],"s":[{"zh":"我討厭下雨。","en":"I hate rain."},{"zh":"他很討厭颱風。","en":"He really hates typhoons."},{"zh":"真討厭！","en":"How annoying!"}],"cy":"Vent about weather you hate with 討厭."},{"id":"g14-7","t":"小心 / 慢走","e":"小心 be careful (小心風！); 慢走 = 'take care' when someone leaves.","tgt":["小心","慢走"],"alt":["再見","加油"],"s":[{"zh":"路上小心。","en":"Be careful on the road."},{"zh":"大家要小心。","en":"Everyone be careful."},{"zh":"您慢走。","en":"Take care (goodbye)."}],"cy":"Send off a guest politely with 小心 and 慢走."}],"15":[{"id":"g15-1","t":"一直 — continuously","e":"一直 + verb: it keeps happening: 一直流鼻水.","tgt":["一直"],"alt":["常常","剛","又"],"s":[{"zh":"我一直流鼻水。","en":"I keep having a runny nose."},{"zh":"雨一直下。","en":"It keeps raining."},{"zh":"我一直在等你。","en":"I've been waiting for you all along."}],"cy":"Describe a symptom that won't stop with 一直."},{"id":"g15-2","t":"Body part + 痛","e":"頭痛, 肚子痛, 喉嚨痛 — say where it hurts.","tgt":["痛"],"alt":["病","累","辣"],"s":[{"zh":"我頭痛。","en":"My head hurts."},{"zh":"我肚子痛，吐了幾次。","en":"My stomach hurts; I vomited a few times."},{"zh":"喉嚨很痛。","en":"My throat really hurts."}],"cy":"Tell a doctor two places that hurt."},{"id":"g15-3","t":"把 — disposal construction","e":"把 + object + verb + result: 把藥吃了 take the medicine. The verb needs a complement.","tgt":["把"],"alt":["被","給","跟"],"s":[{"zh":"把藥吃了。","en":"Take the medicine."},{"zh":"把水喝完。","en":"Drink all the water."},{"zh":"醫生把藥給了我。","en":"The doctor gave me the medicine."}],"cy":"Give someone two 把-commands (finish the water, take the medicine)."},{"id":"g15-4","t":"別 — don't (command)","e":"別 + verb forbids gently: 別擔心, 別吃冰的.","tgt":["別"],"alt":["不","沒","不要"],"s":[{"zh":"別吃冰的。","en":"Don't eat cold things."},{"zh":"別擔心。","en":"Don't worry."},{"zh":"別客氣。","en":"Don't be polite."}],"cy":"Give a sick friend two 別-instructions."},{"id":"g15-5","t":"怎麼了 — what's wrong?","e":"怎麼了 asks what happened: 你怎麼了？","tgt":["怎麼了"],"alt":["怎麼樣","為什麼"],"s":[{"zh":"你怎麼了？","en":"What's wrong with you?"},{"zh":"沒事。","en":"Nothing's wrong."},{"zh":"我生病了。","en":"I'm sick."}],"cy":"Check in on a sick friend with 怎麼了, and answer as them."},{"id":"g15-6","t":"不用了 — no need","e":"不用(了) declines an offer politely: 不用陪我去.","tgt":["不用"],"alt":["不要","沒有","別"],"s":[{"zh":"不用了，謝謝。","en":"No need, thanks."},{"zh":"不用擔心。","en":"No need to worry."},{"zh":"不用陪我去。","en":"No need to come with me."}],"cy":"Politely decline help twice with 不用."},{"id":"g15-7","t":"最好 — had better","e":"最好 + verb gives strong advice: 最好在家休息.","tgt":["最好"],"alt":["應該","可以","得"],"s":[{"zh":"你最好多喝水。","en":"You'd better drink more water."},{"zh":"最好早一點睡。","en":"Best to sleep early."},{"zh":"感冒的話，最好在家休息。","en":"With a cold, best to rest at home."}],"cy":"Give a sick classmate advice with 最好 + 別."},{"id":"g15-8","t":"次 & 小時 — times & hours","e":"吐了幾次 how many times; 睡了八個小時 slept 8 hours; 一天吃三次藥.","tgt":["次","小時"],"alt":["個","天","鐘頭"],"s":[{"zh":"一天吃三次藥。","en":"Take medicine three times a day."},{"zh":"你睡了幾個小時？","en":"How many hours did you sleep?"},{"zh":"我看了兩次醫生。","en":"I saw the doctor twice."}],"cy":"Describe your sleep and medicine schedule with 次 and 小時."}]};
+const LESSON_TITLES = {1:"Welcome to Taiwan!",2:"My Family",3:"What Are You Doing Over the Weekend?",4:"Excuse Me. How Much Does That Cost in Total?",5:"Beef Noodles Are Really Delicious",6:"Their School Is Up in the Mountains",7:"Going to KTV at 9 o'clock in the Morning",8:"Taking a Train to Tainan",9:"Where Will You Go for the Holidays?",10:"The Fruit in Taiwan Tastes Really Good",11:"I Would Like to Rent a Place",12:"How Long Will You Be Studying Chinese in Taiwan?",13:"Happy Birthday!",14:"It's So Cold!",15:"I Don't Feel Well"};
+const byId = {}; WORDS.forEach(w=>byId[w.id]=w);
+const isName = w => /^a (woman|man) from/.test(w.m);
+
+/* ============ SAFE STORAGE ============ */
+const store = (()=>{try{const t='__t';localStorage.setItem(t,'1');localStorage.removeItem(t);return localStorage;}catch(e){document.addEventListener('DOMContentLoaded',()=>{document.getElementById('storageBanner').style.display='block'});const m={};return{getItem:k=>k in m?m[k]:null,setItem:(k,v)=>{m[k]=String(v)},removeItem:k=>{delete m[k]}}}})();
+const KEY='shida_b1_fsrs_v2';
+
+/* ============ STATE ============ */
+let S = {cards:{}, settings:{retention:0.9, newPerDay:9, maxRev:200, modes:{rec:true,prod:true}, includeNames:false, ghost:true, earlyDrill:true, writeTarget:20, autoplayAudio:true, speechRate:0.85, voiceName:'', strokeAnim:true}, log:{}, intro:{}, hist:{d:[],s:[]} };
+// cards: "wid:mode" -> {st:'learn'|'rev'|'relearn', S,D, due, last, reps, lapses, days, known, susp}
+try{
+  const raw=store.getItem(KEY);
+  if(raw){const p=JSON.parse(raw); S={...S,...p, settings:{...S.settings,...(p.settings||{}), modes:{rec:true,prod:true,...((p.settings||{}).modes||{})}}};}
+  else{
+    const old=store.getItem('shida_b1_fsrs_v1');
+    if(old){ // migrate v1 (hw/mean/pin) -> v2 (rec/prod)
+      const p=JSON.parse(old);
+      const cards={};
+      for(const cid in (p.cards||{})){
+        const parts=cid.split(':'), wid=parts[0], m=parts[1], c=p.cards[cid];
+        if(m==='mean')cards[wid+':rec']=c;
+        else if(m==='hw')cards[wid+':prod']=c;
+        else if(m==='pin'){const k=wid+':prod'; if(!cards[k]||cards[k].st===undefined)cards[k]=(cards[k]&&cards[k].st!==undefined)?cards[k]:c;}
+      }
+      S.cards=cards; S.log=p.log||{}; S.intro={};
+      const os=p.settings||{};
+      S.settings.retention=os.retention||0.9;
+      S.settings.maxRev=os.maxRev||200;
+      S.settings.includeNames=!!os.includeNames;
+      S.settings.ghost=os.ghost!==false;
+      save();
+    }
+  }
+}catch(e){}
+// one-time audio tune-up: slower default speech for the synthesis fallback
+if(!S.settings._a2){S.settings._a2=1;S.settings.speechRate=0.7;}
+const MASTER_S=45; // days of stability = "mastered"
+// backfill mastery timestamps for cards from before this feature
+try{for(const k in S.cards){const c=S.cards[k];if(c&&c.st==='rev'&&c.S>=MASTER_S&&!c.mastAt)c.mastAt=c.last||Date.now();}}catch(e){}
+function save(){try{store.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+/* ============ FSRS-5 ============ */
+const W=[0.40255,1.18385,3.173,15.69105,7.1949,0.5345,1.4604,0.0046,1.54575,0.1192,1.01925,1.9395,0.11,0.29605,2.2698,0.2315,2.9898,0.51655,0.6621];
+const DECAY=-0.5, FACTOR=19/81, DAY=86400000, MIN=60000;
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const retrievability=(t,s)=>Math.pow(1+FACTOR*t/s,DECAY);
+function nextIntervalDays(s){const r=S.settings.retention;return clamp(Math.round(s/FACTOR*(Math.pow(r,1/DECAY)-1)),1,365);}
+const initS=g=>W[g-1];
+const initD=g=>clamp(W[4]-Math.exp(W[5]*(g-1))+1,1,10);
+function updD(d,g){let nd=d-W[6]*(g-3)*((10-d)/9);nd=W[7]*initD(4)+(1-W[7])*nd;return clamp(nd,1,10);}
+function stabRecall(s,d,r,g){const hard=g===2?W[15]:1, easy=g===4?W[16]:1;return s*(Math.exp(W[8])*(11-d)*Math.pow(s,-W[9])*(Math.exp(W[10]*(1-r))-1)*hard*easy+1);}
+function stabForget(s,d,r){return Math.min(s, W[11]*Math.pow(d,-W[12])*(Math.pow(s+1,W[13])-1)*Math.exp(W[14]*(1-r)));}
+function stabShort(s,g){return s*Math.exp(W[17]*(g-3+W[18]));}
+function fuzz(days){if(days<3)return days;const f=days*0.05;return Math.round(days+(Math.random()*2-1)*f);}
+// early-drill: force writing cards back on day 1, 2, 3 before FSRS takes over
+function capEarly(c,cid,days){
+  if(!S.settings.earlyDrill||modeOf(cid)!=='prod')return days;
+  const d=(c&&c.days)||0;
+  if(d===0)return Math.min(days,1);
+  if(d===1)return Math.min(days,2);
+  if(d===2)return Math.min(days,3);
+  return days;
+}
+function previewIv(c,cid,g){
+  const now=Date.now();
+  const fmt=d=>d+'d';
+  if(!c||c.st===undefined){
+    if(g===1)return'1m'; if(g===2)return'5m'; if(g===3)return'10m';
+    return fmt(capEarly(c,cid,nextIntervalDays(initS(4))));
+  }
+  if(c.st==='learn'||c.st==='relearn'){
+    if(g===1)return'1m'; if(g===2)return'5m';
+    return fmt(capEarly(c,cid,Math.max(1,nextIntervalDays(stabShort(c.S,g)))));
+  }
+  const t=Math.max(0.01,(now-c.last)/DAY), r=retrievability(t,c.S);
+  if(g===1)return'5m';
+  return fmt(capEarly(c,cid,nextIntervalDays(stabRecall(c.S,c.D,r,g))));
+}
+function wordStartedBefore(wid){return MODES.some(m=>{const c=S.cards[cardId(wid,m)];return c&&c.st!==undefined;});}
+function rate(cid,g){
+  const now=Date.now(); let c=S.cards[cid];
+  const today=dkey(new Date());
+  S.log[today]=S.log[today]||{rev:0,new:0};
+  const schedule=(days)=>{days=capEarly(c,cid,days);c.due=now+fuzz(days)*DAY;c.days=(c.days||0)+1;};
+  if(!c||c.st===undefined){
+    const wid=cid.split(':')[0];
+    if(!wordStartedBefore(wid))S.intro[today]=(S.intro[today]||0)+1;
+    c={st:'learn',S:initS(g),D:initD(g),due:0,last:now,reps:1,lapses:0,days:0};
+    S.cards[cid]=c;
+    S.log[today].new++;
+    if(g===1)c.due=now+1*MIN; else if(g===2)c.due=now+5*MIN; else if(g===3)c.due=now+10*MIN;
+    else {c.st='rev'; schedule(nextIntervalDays(c.S));}
+  } else if(c.st==='learn'||c.st==='relearn'){
+    S.log[today].rev++;
+    c.reps++;c.last=now;c.S=stabShort(c.S,g);
+    if(g===1)c.due=now+1*MIN; else if(g===2)c.due=now+5*MIN;
+    else {c.st='rev'; schedule(Math.max(1,nextIntervalDays(c.S)));}
+  } else {
+    S.log[today].rev++;
+    const t=Math.max(0.01,(now-c.last)/DAY), r=retrievability(t,c.S);
+    c.D=updD(c.D,g); c.reps++; c.last=now;
+    if(g===1){c.lapses++;c.S=stabForget(c.S,c.D,r);c.st='relearn';c.due=now+5*MIN;}
+    else {c.S=stabRecall(c.S,c.D,r,g);schedule(nextIntervalDays(c.S));}
+  }
+  // mastery timestamps for the Brain view
+  if(c.st==='rev'&&c.S>=MASTER_S){if(!c.mastAt)c.mastAt=now;}
+  else if(c.mastAt){delete c.mastAt;}
+  save();
+}
+
+/* ============ CARDS / MODES ============ */
+const MODES=['rec','prod'];
+const MODE_LABEL={rec:'Recognize · 認字',prod:'Write & pronounce · 寫字'};
+function cardId(wid,m){return wid+':'+m;}
+function wordOf(cid){return byId[cid.split(':')[0]];}
+function modeOf(cid){return cid.split(':')[1];}
+function tracked(wid){return MODES.some(m=>S.cards[cardId(wid,m)]);}
+function trackWord(wid){MODES.forEach(m=>{if(S.settings.modes[m]&&!S.cards[cardId(wid,m)])S.cards[cardId(wid,m)]={};});save();}
+function untrackWord(wid){MODES.forEach(m=>{delete S.cards[cardId(wid,m)];});save();}
+function markKnown(wid){ // "I already know this" — skip learning, verify in ~3 weeks
+  MODES.forEach(m=>{
+    if(!S.settings.modes[m])return;
+    const k=cardId(wid,m), c=S.cards[k];
+    if(c&&c.st==='rev'&&c.S>=21)return;
+    S.cards[k]={st:'rev',S:21,D:4,due:Date.now()+fuzz(21)*DAY,last:Date.now(),reps:1,lapses:0,days:3,known:1};
+  });
+  save();
+}
+function markMastered(wid){ // "I've mastered this" — straight onto the shelf, verify in ~2 months
+  MODES.forEach(m=>{
+    if(!S.settings.modes[m])return;
+    S.cards[cardId(wid,m)]={st:'rev',S:60,D:3,due:Date.now()+fuzz(60)*DAY,last:Date.now(),reps:1,lapses:0,days:3,known:1,mastAt:Date.now()};
+  });
+  save();
+}
+function isKnown(wid){return MODES.some(m=>(S.cards[cardId(wid,m)]||{}).known);}
+function wordStatus(wid){
+  let states=MODES.map(m=>S.cards[cardId(wid,m)]).filter(Boolean);
+  if(!states.length)return null;
+  const real=states.filter(c=>c.st!==undefined);
+  if(!real.length)return{k:'new',t:'queued'};
+  if(real.some(c=>c.due<=Date.now()))return{k:'due',t:'due'};
+  if(real.length===states.length&&Math.min(...real.map(c=>c.S||0))>=21)return{k:'mat',t:'solid'};
+  return{k:'ok',t:'learning'};
+}
+function dkey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+
+/* ============ QUEUE ============ */
+function buildQueue(){
+  const now=Date.now(), today=dkey(new Date());
+  const introToday=S.intro[today]||0;
+  const learn=[],rev=[],freshAll=[];
+  for(const cid in S.cards){
+    const c=S.cards[cid], w=wordOf(cid); if(!w)continue;
+    if(c.susp)continue;
+    if(!S.settings.includeNames&&isName(w))continue;
+    if(!S.settings.modes[modeOf(cid)])continue;
+    if(c.st===undefined){freshAll.push(cid);continue;}
+    if(c.due<=now){(c.st==='rev'?rev:learn).push(cid);}
+  }
+  learn.sort((a,b)=>S.cards[a].due-S.cards[b].due);
+  rev.sort((a,b)=>S.cards[a].due-S.cards[b].due);
+  const mOrd={rec:0,prod:1};
+  freshAll.sort((a,b)=>{const wa=wordOf(a),wb=wordOf(b);return wa.l-wb.l||parseInt(wa.id.slice(1))-parseInt(wb.id.slice(1))||mOrd[modeOf(a)]-mOrd[modeOf(b)];});
+  // newPerDay counts WORDS, not cards: both cards of an introduced word may start the same day
+  const allowance=Math.max(0,S.settings.newPerDay-introToday);
+  const planned=new Set(); const fresh=[];
+  for(const cid of freshAll){
+    const wid=cid.split(':')[0];
+    if(wordStartedBefore(wid)||planned.has(wid)){fresh.push(cid);continue;}
+    if(planned.size<allowance){planned.add(wid);fresh.push(cid);}
+  }
+  return {learn,rev:rev.slice(0,S.settings.maxRev),fresh};
+}
+function dueCount(){const q=buildQueue();return q.learn.length+q.rev.length+q.fresh.length;}
+
+/* ============ TONE COLORING ============ */
+const toneMarks={'ā':1,'á':2,'ǎ':3,'à':4,'ē':1,'é':2,'ě':3,'è':4,'ī':1,'í':2,'ǐ':3,'ì':4,'ō':1,'ó':2,'ǒ':3,'ò':4,'ū':1,'ú':2,'ǔ':3,'ù':4,'ǖ':1,'ǘ':2,'ǚ':3,'ǜ':4};
+function tonePinyin(p){
+  return p.split(/(\s+|\/|,|·|\+)/).map(part=>{
+    if(/^\s*$|^\/$|^,$|^\+$/.test(part))return part;
+    let tone=0;
+    for(const ch of part){if(toneMarks[ch]){tone=toneMarks[ch];break;}}
+    return '<span class="tone'+tone+'">'+part+'</span>';
+  }).join('');
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+/* ============ VIEWS ============ */
+let view='home', openLessons={}, libFilter='all', libSearch='';
+function go(v){view=v;['Home','Rev','Gram','Brain','Lib','Set'].forEach(x=>{document.getElementById('tab'+x).classList.toggle('on',v===x.toLowerCase());document.getElementById('v'+x).style.display=v===x.toLowerCase()?'':'none';});
+  if(v==='home')renderHome(); if(v==='gram')renderGram(); if(v==='brain')renderBrain(); if(v==='lib')renderLib(); if(v==='rev')startReview(); if(v==='set')renderSet();
+}
+function badge(){const n=dueCount();const b=document.getElementById('bDue');b.textContent=n;b.classList.toggle('zero',n===0);}
+
+/* ---- PAPER PRACTICE ---- */
+function paperList(){
+  const d=new Date();d.setHours(0,0,0,0);const t0=d.getTime();
+  const seen=new Set(),out=[];
+  for(const cid in S.cards){
+    if(!cid.endsWith(':prod'))continue;
+    const c=S.cards[cid]; if(!c||c.st===undefined||c.last<t0)continue;
+    const wid=cid.split(':')[0], w=byId[wid];
+    if(!w||seen.has(wid))continue;
+    if(c.st==='relearn'||c.lapses>0&&c.st!=='rev'){seen.add(wid);out.push({w,tag:'again'});}
+    else if((c.days||0)<=1){seen.add(wid);out.push({w,tag:'new'});}
+    else if((c.days||0)<=3){seen.add(wid);out.push({w,tag:'day '+c.days});}
+  }
+  return out;
+}
+function printPaperSheet(){
+  const list=paperList(); if(!list.length)return;
+  const per=S.settings.writeTarget||20;
+  const host=document.getElementById('printSheet');
+  let html='<h1>字卡 · paper practice — '+dkey(new Date())+' · write each character ×'+per+'</h1>';
+  list.forEach(it=>{
+    const chars=[...it.w.t.split('（')[0]].filter(ch=>/\p{Script=Han}/u.test(ch));
+    chars.forEach((ch,ci)=>{
+      let boxes='';
+      for(let i=0;i<per;i++)boxes+='<div class="pbox">'+(i===0?ch:'')+'</div>';
+      html+='<div class="prow"><div class="plab">'+ch+(ci===0?'<span class="pm">'+esc(it.w.p)+' · '+esc(it.w.m)+'</span>':'')+'</div><div class="pboxes">'+boxes+'</div></div>';
+    });
+  });
+  host.innerHTML=html;
+  window.print();
+}
+/* ---- HOME ---- */
+function renderHome(){
+  const q=buildQueue();
+  const trackedWords=WORDS.filter(w=>tracked(w.id));
+  const mature=Object.values(S.cards).filter(c=>c.st==='rev'&&c.S>=21).length;
+  const totalCards=Object.keys(S.cards).length;
+  const charSet=new Set(), tradDiff=new Set();
+  trackedWords.forEach(w=>{ if(MODES.some(m=>(S.cards[cardId(w.id,m)]||{}).st!==undefined)){ for(const ch of w.t){ if(/\p{Script=Han}/u.test(ch)){charSet.add(ch); if(w.s)tradDiff.add(ch);} } } });
+  let streak=0;const d=new Date();
+  if(!S.log[dkey(d)])d.setDate(d.getDate()-1);
+  while(S.log[dkey(d)]&&(S.log[dkey(d)].rev+S.log[dkey(d)].new)>0){streak++;d.setDate(d.getDate()-1);}
+  const fc=[0,0,0,0,0,0,0];const now=Date.now();
+  Object.values(S.cards).forEach(c=>{if(c.st===undefined||c.susp)return;const days=Math.floor((c.due-now)/DAY);if(days<0)fc[0]++;else if(days<7)fc[days]++;});
+  const fmax=Math.max(1,...fc);
+  const names=['today','+1','+2','+3','+4','+5','+6'];
+  const total=q.learn.length+q.rev.length+q.fresh.length;
+  document.getElementById('vHome').innerHTML=`
+  <div class="card">
+    <div class="row spread">
+      <div>
+        <div class="lab" style="margin-bottom:4px">Ready now</div>
+        <div class="small muted">${q.rev.length} due · ${q.learn.length} learning · ${q.fresh.length} new</div>
+      </div>
+      <div style="font-size:38px;font-weight:700;font-variant-numeric:tabular-nums">${total}</div>
+    </div>
+    <div style="margin-top:16px"><button class="btn big" onclick="go('rev')" ${total===0?'disabled':''}>${total===0?'All caught up':'Start reviewing'}</button></div>
+    ${totalCards===0?'<div class="small muted" style="margin-top:12px;text-align:center">Nothing in your deck yet — open <span class="link" onclick="go(\'lib\')">Library</span> and add Lesson 1.</div>':''}
+  </div>
+  ${(()=>{const pl=paperList();if(!pl.length)return '';
+    return `<div class="card"><div class="row spread"><div class="lab" style="margin-bottom:0">Tonight's paper list · write each ×${S.settings.writeTarget}</div>
+    <button class="btn sm ghost" onclick="printPaperSheet()">Print 田字格 sheet</button></div>
+    <div class="paper-chips" style="margin-top:12px">${pl.map(it=>`<div class="pchip"><span class="tag2">${it.tag}</span><span class="c zh">${esc(it.w.t.split('（')[0])}</span><span class="p">${esc(it.w.p)}</span></div>`).join('')}</div>
+    <div class="small muted" style="margin-top:10px">The characters you touched in writing reviews today — the ones your hand needs on real paper. The app brings them back tomorrow and the day after; the ×${S.settings.writeTarget} reps are yours.</div>
+    </div>`;})()}
+  <div class="card">
+    <div class="lab">Progress</div>
+    <div class="stats">
+      <div class="stat"><div class="n">${trackedWords.length}<span class="d">/${WORDS.length}</span></div><div class="l">words in deck</div></div>
+      <div class="stat"><div class="n">${charSet.size}</div><div class="l">characters met</div></div>
+      <div class="stat"><div class="n">${tradDiff.size}</div><div class="l">trad ≠ simp</div></div>
+      <div class="stat"><div class="n">${mature}</div><div class="l">solid cards</div></div>
+      <div class="stat"><div class="n">${streak}</div><div class="l">day streak</div></div>
+    </div>
+    <div class="fc">${fc.map((v,i)=>`<div class="bar ${i===0?'t':''}"><i style="height:${Math.round(v/fmax*44)+2}px"></i><span>${names[i]}</span><b>${v}</b></div>`).join('')}</div>
+    <div class="small muted" style="margin-top:6px;text-align:center">cards coming due over the next week</div>
+    <details class="guide"><summary>How this app works ›</summary><div class="gd">
+      <p><b>Adding words.</b> In the Library, tap ＋ next to a word (or "Study lesson") to put it in your deck. Each word becomes two cards: <b>Recognize</b> — see the 字, recall meaning + pronunciation — and <b>Write & pronounce</b> — see the English, write the character from memory and say it with correct tones. Already know a word from your simplified days? Tap ✓ instead: it skips the learning phase entirely and quietly resurfaces in ~3 weeks just to verify.</p>
+      <p><b>Timing (FSRS).</b> Every grade feeds a memory model that estimates how long until you'd forget that exact card, and the next review lands just before that moment. Intervals stretch as a card gets stronger (10m → 1d → 3d → 8d → 20d…) and shrink when you miss. "Again" restarts a card through short steps, "Good" is the normal path, "Easy" jumps ahead. The small number under each button is the exact wait it will apply.</p>
+      <p><b>Early writing reps.</b> Days 2–3 matter most for handwriting, so Write cards are pinned to return on day 1, day 2, and day 3 regardless of grades — FSRS only takes over after that. Your ×20 drilling happens on real paper: the "Tonight's paper list" card collects exactly which characters to write, and prints a 田字格 tracing sheet.</p>
+      <p><b>Grammar.</b> The Grammar tab holds every pattern from the Zhong Chinese lessons, each drilled five ways: fill-in-the-blank, multiple choice, build-the-sentence, finish-the-sentence, and create-your-own. Mastery dots fill as you drill.</p>
+      <p><b>Daily flow.</b> ~9 new words per day by default (Settings), plus whatever is due. Miss a day? Nothing is lost — cards simply wait.</p>
+    </div></details>
+  </div>`;
+  badge();
+}
+
+/* ============ AUDIO (speechSynthesis, best zh-TW voice) ============ */
+let VOICES=[];
+function loadVoices(){try{VOICES=(window.speechSynthesis?speechSynthesis.getVoices():[]).filter(v=>/^(zh|cmn)/i.test(v.lang)||/中文|國語|粵語|普通话/.test(v.name));}catch(e){VOICES=[];}}
+if(window.speechSynthesis){loadVoices();try{speechSynthesis.onvoiceschanged=loadVoices;}catch(e){}}
+function rankVoice(v){
+  let s=0; const nm=v.name+' '+v.lang;
+  if(/國語|臺灣|Taiwan/i.test(nm))s+=50;
+  if(/zh[-_]TW/i.test(v.lang))s+=25;
+  if(/Google/i.test(v.name))s+=30;
+  if(/Mei-?Jia|美佳|Yating|雅婷|Hsiao|曉|Ting-?Ting|婷|Xiaoxiao|Female|女/i.test(nm))s+=40;
+  if(/Liang|Aaron|YunJhe|雲哲|Kangkang|Male|男/i.test(nm))s-=30;
+  if(/zh[-_]CN|cmn/i.test(v.lang))s+=8;
+  if(/粵|Cantonese|HK/i.test(nm))s-=40;
+  if(!v.localService)s+=6;
+  return s;
+}
+/* bundled neural audio (female standard Mandarin) with speech-synthesis fallback */
+const AUDIO_MISS={};
+let curAudio=null;
+function audioKey(t){t=String(t).split('（')[0];const h=t.replace(/[^㐀-鿿]/g,'');return h||t.replace(/[^A-Za-z0-9]/g,'');}
+function hasTwVoice(){if(!VOICES.length)loadVoices();return VOICES.some(v=>/zh[-_]TW/i.test(v.lang)||/國語|臺灣|Taiwan|Mei-?Jia/i.test(v.name));}
+let APACK=null,APACKP=null,AIDX=null,AURL={};
+function loadPack(){
+  if(APACK)return Promise.resolve(true);
+  if(APACKP)return APACKP;
+  APACKP=Promise.all([
+    fetch('assets/audio-index.json').then(r=>{if(!r.ok)throw 0;return r.json()}),
+    fetch('assets/audio.pack').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()})
+  ]).then(([idx,buf])=>{AIDX=idx;APACK=buf;return true;}).catch(()=>false);
+  return APACKP;
+}
+function playBundled(text,onFail){
+  const k=audioKey(text);
+  if(!k||AUDIO_MISS[k]){onFail();return;}
+  loadPack().then(ok=>{
+    if(!ok||!AIDX[k]){AUDIO_MISS[k]=1;onFail();return;}
+    try{
+      if(!AURL[k]){
+        const[o,l]=AIDX[k];
+        AURL[k]=URL.createObjectURL(new Blob([APACK.slice(o,o+l)],{type:'audio/mpeg'}));
+      }
+      if(curAudio){try{curAudio.pause();}catch(e){}}
+      const a=new Audio(AURL[k]);
+      curAudio=a;
+      a.onerror=()=>{AUDIO_MISS[k]=1;onFail();};
+      a.play().catch(()=>{AUDIO_MISS[k]=1;onFail();});
+    }catch(e){onFail();}
+  });
+}
+function playAudio(text){
+  const mode=S.settings.audioSrc||'auto';
+  // Taiwanese-accented system voices (Google 國語（臺灣）, Mei-Jia) beat the bundled
+  // mainland-accented recording — prefer them whenever one exists.
+  if(mode==='bundled'){playBundled(text,()=>speakText(text));return;}
+  if(mode==='system'){speakText(text);return;}
+  if(hasTwVoice()){speakText(text);}else{playBundled(text,()=>speakText(text));}
+}
+function pickVoice(){
+  if(!VOICES.length)loadVoices();
+  if(S.settings.voiceName){const m=VOICES.find(v=>v.name===S.settings.voiceName);if(m)return m;}
+  return VOICES.slice().sort((a,b)=>rankVoice(b)-rankVoice(a))[0]||null;
+}
+function speakText(text){
+  if(!window.speechSynthesis||!text)return;
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    const v=pickVoice(); if(v){u.voice=v;u.lang=v.lang;}else u.lang='zh-TW';
+    u.rate=S.settings.speechRate||0.85;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function speakWord(wid){
+  const w=byId[wid]; if(!w)return;
+  playAudio(w.t);
+}
+const SPK_SVG='<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a3.5 3.5 0 0 0-2-3.15v6.3a3.5 3.5 0 0 0 2-3.15zm-2-6.7v2.06A5 5 0 0 1 18 12a5 5 0 0 1-3.5 4.64v2.06A7 7 0 0 0 20 12a7 7 0 0 0-5.5-6.7z"/></svg>';
+function spkBtn(wid,lg){return '<button class="spk'+(lg?' lg':'')+'" title="pronounce" onclick="event.stopPropagation();speakWord(\''+wid+'\')">'+SPK_SVG+'</button>';}
+
+/* ============ GRAMMAR DRILLS ============ */
+let gramLesson=1, gq=null, gramOpen={};
+const GPOOL=['嗎','呢','吧','的','得','都','也','很','不','沒','了','還是','或是','可以','會','能','想','要','先','再','就','比','跟','給','把','別','最','更','太','常','剛','已經','應該','打算','因為','所以','可是','不過','要是','一樣','每','只','又','從','到','在','離','當然','好像','需要','希望','一直','最好'];
+const DICT=(()=>{const s=new Set(GPOOL);WORDS.forEach(w=>{const h=w.t.split('（')[0].replace(/[^㐀-鿿]/g,'');if(h)s.add(h);});return s;})();
+function segZh(zh){
+  const clean=zh.replace(/[。？！]/g,'');
+  const parts=clean.split(/(，)/).filter(Boolean);
+  const out=[];
+  for(const part of parts){
+    if(part==='，'){out.push('，');continue;}
+    let i=0;
+    while(i<part.length){
+      let hit=null;
+      for(let L=Math.min(5,part.length-i);L>=2;L--){
+        if(DICT.has(part.substr(i,L))){hit=part.substr(i,L);break;}
+      }
+      if(hit){out.push(hit);i+=hit.length;}
+      else{out.push(part[i]);i++;}
+    }
+  }
+  // merge lone singles with a neighbor to keep chips meaningful
+  const merged=[];
+  for(const c of out){
+    if(c.length===1&&c!=='，'&&merged.length&&merged[merged.length-1].length===1&&merged[merged.length-1]!=='，')merged[merged.length-1]+=c;
+    else merged.push(c);
+  }
+  return merged;
+}
+function shuf(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function sample(a,n,excl){const pool=a.filter(x=>!excl.includes(x));return shuf(pool).slice(0,n);}
+function gStat(id){return S.gram&&S.gram[id]?S.gram[id]:{n:0,ok:0};}
+function gMark(id,ok){S.gram=S.gram||{};const g=S.gram[id]=S.gram[id]||{n:0,ok:0};g.n++;if(ok)g.ok++;save();}
+function gDots(id){const g=gStat(id);const d=g.n===0?0:(g.ok/g.n>=0.8&&g.n>=6)?3:(g.ok/g.n>=0.6&&g.n>=3)?2:1;return '<span class="gdots">'+[1,2,3].map(i=>'<span class="gdot'+(i<=d?' on':'')+'"></span>').join('')+'</span>';}
+function tgtIn(p,zh){return p.tgt.find(t=>zh.includes(t));}
+/* question builders — each returns {type,p,html-parts...} */
+function buildQuestion(p,type){
+  const sents=p.s.filter(s=>tgtIn(p,s.zh));
+  const s=(type==='fib'||type==='mc')&&sents.length?sents[Math.floor(Math.random()*sents.length)]:p.s[Math.floor(Math.random()*p.s.length)];
+  if(type==='fib'){
+    const t=tgtIn(p,s.zh)||p.tgt[0];
+    const opts=shuf([t,...sample(p.alt.concat(GPOOL),3,[t,...p.tgt])]);
+    return {type,p,s,t,opts,blanked:s.zh.replace(t,'⬚')};
+  }
+  if(type==='mc'){
+    const t=tgtIn(p,s.zh)||p.tgt[0];
+    const altTok=(p.alt[0]&&!s.zh.includes(p.alt[0]))?p.alt[0]:sample(GPOOL,1,[t])[0];
+    const c1=s.zh.replace(t,altTok);
+    const c2=s.zh.replace(t,'');
+    const segs=segZh(s.zh);
+    let c3=s.zh;
+    if(segs.length>2){const sw=shuf(segs.slice());c3=sw.join('')+(s.zh.match(/[。？！]$/)||[''])[0];if(c3===s.zh)c3=segs.slice().reverse().join('');}
+    const opts=shuf([...new Set([s.zh,c1,c2,c3])].slice(0,4));
+    return {type,p,s,opts,correct:s.zh};
+  }
+  if(type==='build'){
+    let chunks=segZh(s.zh);
+    let sh=shuf(chunks);
+    let guard=0; while(sh.join('')===chunks.join('')&&guard++<5)sh=shuf(chunks);
+    return {type,p,s,chunks,shuffled:sh,picked:[]};
+  }
+  if(type==='finish'){
+    const cut=Math.max(2,Math.floor(s.zh.length*0.45));
+    return {type,p,s,head:s.zh.slice(0,cut)};
+  }
+  return {type:'create',p,s};
+}
+const GTYPES=[['fib','Fill in the blank'],['mc','Multiple choice'],['build','Build the sentence'],['finish','Finish the sentence'],['create','Create your own']];
+function startGramQuiz(scope){ // scope: array of points
+  const pts=scope.filter(p=>p.s.length);
+  const qs=[];
+  const types=GTYPES.map(t=>t[0]);
+  const n=Math.min(12,Math.max(6,pts.length*2));
+  for(let i=0;i<n;i++){
+    const p=pts[i%pts.length];
+    qs.push(buildQuestion(p,types[Math.floor(Math.random()*types.length)]));
+  }
+  gq={qs:shuf(qs),i:0,ok:0,state:'ask',chosen:null};
+  renderGram();
+}
+function gramAnswer(ok){const q=gq.qs[gq.i];gMark(q.p.id,ok);if(ok)gq.ok++;gq.state='done';renderGram();}
+function gramPick(idx){ // fib / mc click
+  const q=gq.qs[gq.i];
+  if(gq.state!=='ask')return;
+  gq.chosen=idx;
+  const ok=q.type==='fib'?q.opts[idx]===q.t:q.opts[idx]===q.correct;
+  gramAnswer(ok);
+}
+function gramChunk(i){
+  const q=gq.qs[gq.i];
+  if(q.picked.includes(i))return;
+  q.picked.push(i);
+  if(q.picked.length===q.shuffled.length){
+    const built=q.picked.map(x=>q.shuffled[x]).join('');
+    gramAnswer(built===q.chunks.join(''));
+  } else renderGram();
+}
+function gramUnchunk(k){const q=gq.qs[gq.i];q.picked.splice(k,1);renderGram();}
+function gramNext(){gq.i++;gq.state='ask';gq.chosen=null;renderGram();}
+function renderGram(){
+  const el=document.getElementById('vGram');
+  window.AUDS=window.AUDS||[];
+  const aud=t=>{const i=AUDS.push(t)-1;return '<button class="spk" title="listen" onclick="event.stopPropagation();playAudio(AUDS['+i+'])">'+SPK_SVG+'</button>';};
+  if(gq){ /* ---- quiz runner ---- */
+    if(gq.i>=gq.qs.length){
+      const pct=Math.round(gq.ok/gq.qs.length*100);
+      el.innerHTML=`<div class="card done"><div class="zhd zh">${pct>=80?'太好了！':pct>=50?'不錯！':'加油！'}</div>
+        <div style="font-weight:600;font-size:16px">${gq.ok} / ${gq.qs.length} correct · ${pct}%</div>
+        <div class="muted small" style="margin-top:4px">every answer updates the mastery dots on the grammar points</div>
+        <div class="qfoot" style="margin-top:16px"><button class="btn ghost" onclick="gq=null;renderGram()">Back to points</button><button class="btn" onclick="startGramQuiz(GRAMMAR[gramLesson]||[])">Drill again</button></div></div>`;
+      return;
+    }
+    const q=gq.qs[gq.i], p=q.p, done=gq.state==='done';
+    let body='';
+    if(q.type==='fib'){
+      body=`<div class="qzh zh">${esc(q.blanked).replace('⬚','<span class="blank">'+(done?esc(q.t):'&nbsp;&nbsp;')+'</span>')}</div>
+      <div class="qen">${esc(q.s.en)}</div>
+      <div class="opts">${q.opts.map((o,i)=>`<button class="zh ${done?(o===q.t?'right':(gq.chosen===i?'wrong':'')):''}" onclick="gramPick(${i})">${esc(o)}</button>`).join('')}</div>`;
+    } else if(q.type==='mc'){
+      body=`<div class="qen" style="font-size:15.5px;color:var(--ink)">Which one says: “${esc(q.s.en)}”</div>
+      <div class="opts sm" style="grid-template-columns:1fr">${q.opts.map((o,i)=>`<button class="zh ${done?(o===q.correct?'right':(gq.chosen===i?'wrong':'')):''}" onclick="gramPick(${i})">${esc(o)}</button>`).join('')}</div>`;
+    } else if(q.type==='build'){
+      body=`<div class="qen">Build: “${esc(q.s.en)}”</div>
+      <div class="answer-line">${q.picked.map((x,k)=>`<span class="zh" onclick="gramUnchunk(${k})">${esc(q.shuffled[x])}</span>`).join('')||'<span style="border:0;background:none;color:var(--mut2)">tap the pieces in order…</span>'}</div>
+      <div class="chunks">${q.shuffled.map((c,i)=>`<button class="zh" ${q.picked.includes(i)?'disabled':''} onclick="gramChunk(${i})">${esc(c)}</button>`).join('')}</div>
+      ${done?`<div class="qzh zh" style="font-size:20px">${esc(q.s.zh)} ${aud(q.s.zh)}</div>`:''}`;
+    } else if(q.type==='finish'){
+      body=`<div class="qen">Finish it: “${esc(q.s.en)}”</div>
+      <div class="qzh zh">${esc(q.head)}<span class="blank">…</span></div>
+      ${done?`<div class="qzh zh" style="color:var(--acc)">${esc(q.s.zh)} ${aud(q.s.zh)}</div>`
+      :`<textarea class="gtxt zh" id="gramInp" placeholder="say it aloud or type the rest…"></textarea>
+        <div class="qfoot"><button class="btn" onclick="gq.state='reveal';renderGram()">Reveal</button></div>`}
+      ${gq.state==='reveal'?`<div class="qzh zh" style="color:var(--acc)">${esc(q.s.zh)} ${aud(q.s.zh)}</div>
+        <div class="qfoot"><button class="btn ghost" onclick="gramAnswer(false)">Missed it</button><button class="btn" onclick="gramAnswer(true)">Got it ✓</button></div>`:''}`;
+    } else { // create
+      body=`<div class="qen" style="font-size:15px;color:var(--ink)">${esc(p.cy||('Write your own sentence using 「'+p.tgt[0]+'」'))}</div>
+      <div class="qen">pattern: <b class="zh" style="color:var(--acc)">${p.tgt.map(esc).join(' / ')}</b></div>
+      ${gq.state==='ask'?`<textarea class="gtxt zh" id="gramInp" placeholder="寫你自己的句子…"></textarea>
+        <div class="qfoot"><button class="btn" onclick="gq.state='reveal';renderGram()">Compare with model</button></div>`:''}
+      ${gq.state==='reveal'?`<div class="gsent" style="justify-content:center"><span class="z zh">${esc(q.s.zh)}</span>${aud(q.s.zh)}</div><div class="qen">${esc(q.s.en)}</div>
+        <div class="qfoot"><button class="btn ghost" onclick="gramAnswer(false)">Needs work</button><button class="btn" onclick="gramAnswer(true)">Mine works ✓</button></div>`:''}`;
+    }
+    el.innerHTML=`
+    <div class="rev-top"><span class="qtype">${GTYPES.find(t=>t[0]===q.type)[1]}</span><span class="qprog">${gq.i+1} / ${gq.qs.length} · ${esc(p.t)}</span></div>
+    <div class="qbox">${body}</div>
+    ${done?`<div class="qfoot" style="margin-top:12px"><span class="gres ${(q.type==='fib'?q.opts[gq.chosen]===q.t:q.type==='mc'?q.opts[gq.chosen]===q.correct:true)?'ok':'bad'}"></span><button class="btn" onclick="gramNext()">Next →</button></div>
+    <div class="small muted" style="text-align:center;margin-top:8px">${esc(p.e)}</div>`:''}`;
+    return;
+  }
+  /* ---- browse mode ---- */
+  const pts=GRAMMAR[gramLesson]||[];
+  el.innerHTML=`
+  <div class="filters" style="margin-bottom:14px">${Array.from({length:15},(_,i)=>i+1).map(ln=>`<button class="${gramLesson===ln?'on':''}" onclick="gramLesson=${ln};gramOpen={};renderGram()">${ln}</button>`).join('')}</div>
+  <div class="card" style="padding:16px 20px">
+    <div class="row spread">
+      <div><b>Lesson ${gramLesson} · ${LESSON_TITLES[gramLesson]}</b><div class="small muted">${pts.length} grammar points · drills mix all five exercise types</div></div>
+      <button class="btn" onclick="startGramQuiz(GRAMMAR[gramLesson]||[])">Drill lesson ${gramLesson}</button>
+    </div>
+  </div>
+  ${pts.map((p,i)=>{
+    const open=!!gramOpen[i];
+    return `<div class="gpt">
+      <div class="gh" onclick="gramOpen[${i}]=!gramOpen[${i}];renderGram()">
+        <span class="car" style="color:var(--mut2);font-size:11px">${open?'▼':'▶'}</span>
+        <div><div class="gt">${esc(p.t)}</div>${open?'':`<div class="ge">${esc(p.e)}</div>`}</div>
+        ${gDots(p.id)}
+        <button class="btn sm ghost" style="flex:none" onclick="event.stopPropagation();startGramQuiz([GRAMMAR[gramLesson][${i}]])">Drill</button>
+      </div>
+      ${open?`<div class="gex"><div class="ge" style="margin-bottom:8px">${esc(p.e)}</div>
+        ${p.s.map(s=>`<div class="gsent"><span class="z zh">${esc(s.zh)}</span>${aud(s.zh)}<span class="e">${esc(s.en)}</span></div>`).join('')}
+      </div>`:''}
+    </div>`;
+  }).join('')}`;
+}
+
+/* ============ STROKE ORDER (Hanzi Writer) ============ */
+let HWPromise=null;
+function ensureHW(){
+  if(window.HanziWriter)return Promise.resolve(true);
+  if(HWPromise)return HWPromise;
+  HWPromise=new Promise(res=>{
+    const tryLoad=srcs=>{
+      if(!srcs.length)return res(false);
+      const s=document.createElement('script'); s.src=srcs[0];
+      s.onload=()=>res(!!window.HanziWriter); s.onerror=()=>tryLoad(srcs.slice(1));
+      document.head.appendChild(s);
+    };
+    tryLoad(['assets/hanzi-writer.min.js','https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js','https://cdnjs.cloudflare.com/ajax/libs/hanzi-writer/3.5.0/hanzi-writer.min.js']);
+  });
+  return HWPromise;
+}
+let STROKES=null,STROKESP=null;
+function loadStrokes(){
+  if(STROKES)return Promise.resolve(STROKES);
+  if(STROKESP)return STROKESP;
+  STROKESP=fetch('assets/strokes.json').then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>{STROKES=d;return d;}).catch(()=>{STROKES={};return STROKES;});
+  return STROKESP;
+}
+function strokeDataLoader(char,onComplete,onErr){
+  loadStrokes().then(d=>{
+    if(d[char]){onComplete(d[char]);return;}
+    fetch('https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0.1/'+encodeURIComponent(char)+'.json').then(r=>{if(!r.ok)throw 0;return r.json()}).then(onComplete).catch(()=>onErr&&onErr());
+  });
+}
+let strokeWriters=[];
+function renderStrokes(hostId,text,opts){
+  opts=opts||{};
+  const host=document.getElementById(hostId); if(!host)return;
+  const chars=[...text].filter(ch=>/\p{Script=Han}/u.test(ch));
+  if(!chars.length)return;
+  ensureHW().then(ok=>{
+    if(!ok){host.style.display='none';const fb=document.getElementById(hostId+'-fb');if(fb)fb.style.display='';return;}
+    host.innerHTML=chars.map((c,i)=>'<div class="strokebox" id="'+hostId+'-c'+i+'"></div>').join('');
+    strokeWriters=[];
+    const size=opts.size||102;
+    chars.forEach((ch,i)=>{
+      try{
+        const wtr=HanziWriter.create(hostId+'-c'+i,ch,{
+          width:size,height:size,padding:6,
+          strokeColor:'#1d1c1a',outlineColor:'#e3dfd8',radicalColor:'#0e7266',
+          strokeAnimationSpeed:1.05,delayBetweenStrokes:110,delayBetweenLoops:2500,
+          showCharacter:false,showOutline:true,
+          charDataLoader:(c,onC)=>strokeDataLoader(c,onC,()=>{const b=document.getElementById(hostId+'-c'+i);if(b)b.style.display='none';})
+        });
+        strokeWriters.push(wtr);
+      }catch(e){}
+    });
+    playStrokes();
+    setTimeout(()=>{ // if no stroke data ever arrived, fall back to the static character
+      if(!host.querySelector('svg path')){
+        host.style.display='none';
+        const t=document.querySelector('.stroketools'); if(t)t.style.display='none';
+        const fb=document.getElementById(hostId+'-fb'); if(fb)fb.style.display='';
+      }
+    },3500);
+  });
+}
+function playStrokes(){
+  const ws=strokeWriters.slice(); if(!ws.length)return;
+  const next=i=>{ if(i>=ws.length)return; try{ws[i].animateCharacter({onComplete:()=>setTimeout(()=>next(i+1),260)});}catch(e){next(i+1);} };
+  ws.forEach(w=>{try{w.hideCharacter({duration:0})}catch(e){}});
+  next(0);
+}
+
+/* ============ TIME-LAPSE SNAPSHOTS ============ */
+function stageString(){return WORDS.map(w=>wordStage(w.id)).join('');}
+function takeSnapshot(){
+  try{
+    if(!S.hist)S.hist={d:[],s:[]};
+    const today=dkey(new Date()), s=stageString();
+    const n=S.hist.d.length;
+    if(n&&S.hist.d[n-1]===today){if(S.hist.s[n-1]!==s){S.hist.s[n-1]=s;save();}return;}
+    S.hist.d.push(today);S.hist.s.push(s);
+    if(S.hist.d.length>400){S.hist.d.shift();S.hist.s.shift();}
+    save();
+  }catch(e){}
+}
+
+/* ---- BRAIN ---- */
+let brainView='chars', brainGroup='stage', brainSel=null, brainTime=null;
+const STAGE_NAMES=['Not started','Learning','Young','Solid','Mastered'];
+const STAGE_DESC=['not yet studied','in short-step drilling (first days)','memory holds < 3 weeks','memory holds 3–6 weeks','memory holds 6+ weeks'];
+function wordCards(wid){return MODES.filter(m=>S.settings.modes[m]).map(m=>S.cards[cardId(wid,m)]).filter(Boolean);}
+function wordStage(wid){
+  const cards=wordCards(wid); if(!cards.length)return 0;
+  const started=cards.filter(c=>c.st!==undefined);
+  if(!started.length)return 0;
+  if(started.length<cards.length||started.some(c=>c.st==='learn'||c.st==='relearn'))return 1;
+  const minS=Math.min(...started.map(c=>c.S));
+  if(minS<7)return 1; if(minS<21)return 2; if(minS<MASTER_S)return 3; return 4;
+}
+function wordMem(wid){ // current recall probability (weakest card)
+  const started=wordCards(wid).filter(c=>c.st!==undefined&&c.st==='rev');
+  if(!started.length)return null;
+  return Math.min(...started.map(c=>retrievability(Math.max(0.01,(Date.now()-c.last)/DAY),c.S)));
+}
+function wordDueNow(wid){return wordCards(wid).some(c=>c.st!==undefined&&c.due<=Date.now());}
+function wordMastAt(wid){
+  const cards=wordCards(wid); if(!cards.length)return null;
+  if(!cards.every(c=>c.mastAt))return null;
+  return Math.max(...cards.map(c=>c.mastAt));
+}
+function studyWords(){return WORDS.filter(w=>!isName(w)||S.settings.includeNames);}
+const SIMP_CHAR={}; WORDS.forEach(w=>{if(w.s&&w.s.length===w.t.length){for(let i=0;i<w.t.length;i++){if(w.t[i]!==w.s[i])SIMP_CHAR[w.t[i]]=w.s[i];}}});
+function charModel(){
+  const map=new Map();
+  studyWords().forEach(w=>{
+    for(const ch of w.t){
+      if(!/\p{Script=Han}/u.test(ch))continue;
+      if(!map.has(ch))map.set(ch,{ch,words:[],stage:0,due:false,lesson:99,mem:null,mastAt:null});
+      const e=map.get(ch);
+      e.words.push(w.id);
+      e.lesson=Math.min(e.lesson,w.l);
+      const st=wordStage(w.id);
+      if(st>e.stage){e.stage=st;}
+      if(wordDueNow(w.id))e.due=true;
+      const m=wordMem(w.id); if(m!==null)e.mem=e.mem===null?m:Math.max(e.mem,m);
+      const ma=wordMastAt(w.id); if(ma&&(!e.mastAt||ma<e.mastAt||e.mastAt===null))e.mastAt=e.mastAt?Math.max(e.mastAt,ma):ma;
+    }
+  });
+  return [...map.values()];
+}
+function firstTone(p){for(const ch of p){if(toneMarks[ch])return toneMarks[ch];}return 0;}
+function posGroup(w){
+  if(isName(w))return 'Names';
+  const p=w.pos;
+  if(!p)return 'Proper nouns';
+  if(/^Vs/.test(p))return 'Adjectives 形';
+  if(/^V/.test(p))return 'Verbs 動';
+  if(p==='N')return 'Nouns 名';
+  if(p==='Adv')return 'Adverbs 副';
+  if(p==='M')return 'Measure words 量';
+  if(p==='Ptc')return 'Particles 助';
+  if(p==='Det')return 'Determiners';
+  if(p==='Prep')return 'Prepositions';
+  if(p==='Conj')return 'Conjunctions';
+  if(p==='Ph')return 'Phrases 語';
+  return 'Other';
+}
+function fmtAgo(ts){const d=Math.floor((Date.now()-ts)/DAY);return d<=0?'today':d===1?'1d ago':d+'d ago';}
+function fmtDueIn(c){
+  if(!c||c.st===undefined)return 'not started';
+  const ms=c.due-Date.now();
+  if(ms<=0)return 'due now';
+  if(ms<DAY)return 'due in '+Math.max(1,Math.round(ms/3600000))+'h';
+  return 'due in '+Math.round(ms/DAY)+'d';
+}
+function stageCounts(items){const c=[0,0,0,0,0];items.forEach(i=>c[i.stage!==undefined?i.stage:wordStage(i.id)]++);return c;}
+function tileTitle(label,stage,mem,due){
+  let t=label+' · '+STAGE_NAMES[stage];
+  if(mem!==null&&mem!==undefined)t+=' · memory now '+Math.round(mem*100)+'%';
+  if(due)t+=' · due for review';
+  return t;
+}
+function tlChart(){
+  const H=S.hist,n=H.d.length; if(n<2)return '';
+  const Wd=640,Hh=88;
+  let maxTot=1; const layers=[];
+  for(let i=0;i<n;i++){
+    const c=[0,0,0,0,0];
+    for(const d of H.s[i])c[+d]++;
+    layers.push(c);
+    maxTot=Math.max(maxTot,c[1]+c[2]+c[3]+c[4]);
+  }
+  const x=i=>n===1?0:i/(n-1)*Wd;
+  const y=v=>Hh-4-(v/maxTot)*(Hh-10);
+  // stack bottom→top: mastered, solid, young, learning
+  const order=[4,3,2,1];
+  const cum=layers.map(c=>{let a=0;const m={};order.forEach(st=>{a+=c[st];m[st]=a;});return m;});
+  let polys='';
+  order.forEach((st,k)=>{
+    let top='',bot='';
+    for(let i=0;i<n;i++)top+=(i?' ':'')+x(i).toFixed(1)+','+y(cum[i][st]).toFixed(1);
+    for(let i=n-1;i>=0;i--)bot+=' '+x(i).toFixed(1)+','+(k===0?Hh-4:y(cum[i][order[k-1]])).toFixed(1);
+    const cls='s'+st;
+    const col={4:'#0b5d54',3:'#2f9184',2:'#7fbfb3',1:'#dcebe7'}[st];
+    polys+='<polygon points="'+top+bot+'" fill="'+col+'"><title>'+STAGE_NAMES[st]+'</title></polygon>';
+  });
+  return '<svg class="tl-chart" viewBox="0 0 '+Wd+' '+Hh+'" preserveAspectRatio="none">'+polys+'</svg>';
+}
+function renderBrain(){
+  const el=document.getElementById('vBrain');
+  takeSnapshot();
+  const nSnap=S.hist.d.length;
+  const past=brainTime!==null&&nSnap&&brainTime<nSnap-1;
+  const snap=past?S.hist.s[brainTime]:null;
+  let chars=charModel().sort((a,b)=>a.lesson-b.lesson||a.stage-b.stage);
+  let words=studyWords().map(w=>({...w,stage:wordStage(w.id),due:wordDueNow(w.id),mem:wordMem(w.id),mastAt:wordMastAt(w.id)}));
+  if(past){
+    const idx={};WORDS.forEach((w,i)=>idx[w.id]=i);
+    words=words.map(w=>({...w,stage:+(snap[idx[w.id]]||0),due:false,mem:null,mastAt:null}));
+    const ws={};words.forEach(w=>ws[w.id]=w.stage);
+    chars=chars.map(c=>({...c,stage:Math.max(0,...c.words.map(wid=>ws[wid]||0)),due:false,mem:null}));
+  }
+  const isChars=brainView==='chars';
+  const items=isChars?chars:words;
+  const counts=stageCounts(isChars?chars:words.map(w=>({stage:w.stage})));
+  const total=items.length, mastered=counts[4];
+  // ----- hero + stacked stage bar -----
+  const totalSeen=total-counts[0];
+  const segs=counts.map((n,i)=>({n,i})).filter(s=>s.n>0);
+  const barHtml='<div class="stagebar">'+segs.map(s=>{
+    const pct=s.n/total*100;
+    return '<i class="s'+s.i+'" style="flex:'+s.n+'" title="'+STAGE_NAMES[s.i]+': '+s.n+'">'+(pct>7?s.n:'')+'</i>';
+  }).join('')+'</div>'
+  +'<div class="legend">'+counts.map((n,i)=>'<span><span class="sw s'+i+'"></span>'+STAGE_NAMES[i]+' · '+n+'</span>').join('')
+  +'<span><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--red);margin-right:5px;vertical-align:1px"></span>due now</span></div>';
+  // ----- mastered ticker -----
+  const masteredWords=words.filter(w=>w.mastAt).sort((a,b)=>b.mastAt-a.mastAt);
+  const tickerHtml=masteredWords.length
+    ? '<div class="ticker">'+masteredWords.slice(0,30).map(w=>'<div class="tchip" onclick="brainSel={type:\'word\',id:\''+w.id+'\'};renderBrain()"><span class="c zh">'+esc(w.t)+'</span><span class="d">'+fmtAgo(w.mastAt)+'</span></div>').join('')+'</div>'
+    : '<div class="small muted">Nothing mastered yet — a word joins this shelf once both its cards hold for '+MASTER_S+'+ days. Keep reviewing; the first ones usually land after a few weeks.</div>';
+  // ----- controls -----
+  const groups=isChars?[['stage','Stage'],['lesson','Lesson'],['simp','Trad ≠ Simp']]:[['stage','Stage'],['lesson','Lesson'],['pos','Word type'],['tone','Tone']];
+  if(!groups.some(g=>g[0]===brainGroup))brainGroup='stage';
+  const ctrlHtml='<div class="segbar"><span class="cap">View</span>'
+    +[['chars','Characters'],['words','Words']].map(v=>'<button class="'+(brainView===v[0]?'on':'')+'" onclick="brainView=\''+v[0]+'\';brainSel=null;renderBrain()">'+v[1]+'</button>').join('')
+    +'</div><div class="segbar"><span class="cap">Group</span>'
+    +groups.map(g=>'<button class="'+(brainGroup===g[0]?'on':'')+'" onclick="brainGroup=\''+g[0]+'\';renderBrain()">'+g[1]+'</button>').join('')+'</div>';
+  // ----- detail panel -----
+  let detailHtml='';
+  if(brainSel){
+    if(brainSel.type==='char'){
+      const e=chars.find(c=>c.ch===brainSel.id);
+      if(e){
+        const mem=e.mem!==null?Math.round(e.mem*100):null;
+        detailHtml='<div class="detail"><div><div class="big zh">'+esc(e.ch)+'</div><div style="text-align:center;margin-top:6px"><button class="spk" title="pronounce" onclick="speakText(\''+esc(e.ch)+'\')">'+SPK_SVG+'</button></div></div>'
+        +'<div id="bdStrokes" class="strokerow" style="align-self:center"></div><div class="body">'
+        +'<div class="row" style="gap:8px"><span class="tag '+(e.stage>=3?'mat':e.stage>0?'ok':'')+'">'+STAGE_NAMES[e.stage]+'</span>'
+        +(SIMP_CHAR[e.ch]?'<span class="tag simp">简 '+esc(SIMP_CHAR[e.ch])+'</span>':'<span class="tag">same in simplified</span>')
+        +(e.due?'<span class="tag due">due now</span>':'')+'</div>'
+        +(mem!==null?'<div class="kv"><span>memory right now <b>'+mem+'%</b></span><span>first met in <b>Lesson '+e.lesson+'</b></span></div><div class="membar"><i style="width:'+mem+'%"></i></div>':'<div class="kv"><span>first appears in <b>Lesson '+e.lesson+'</b></span></div>')
+        +'<div style="margin-top:10px">'+e.words.map(wid=>{const w=byId[wid];return '<span class="wchip zh" onclick="brainSel={type:\'word\',id:\''+wid+'\'};renderBrain()">'+esc(w.t)+' <span class="muted">'+esc(w.p)+'</span></span>';}).join('')+'</div>'
+        +'</div><button class="close" onclick="brainSel=null;renderBrain()">✕</button></div>';
+      }
+    } else {
+      const w=words.find(x=>x.id===brainSel.id);
+      if(w){
+        const mem=w.mem!==null?Math.round(w.mem*100):null;
+        const cardLine=MODES.filter(m=>S.settings.modes[m]).map(m=>{
+          const c=S.cards[cardId(w.id,m)];
+          const nm=m==='rec'?'Recognize':'Write';
+          if(!c)return '<span>'+nm+' <b>—</b></span>';
+          if(c.st===undefined)return '<span>'+nm+' <b>queued</b></span>';
+          return '<span>'+nm+' <b>'+(c.S<1?'<1':Math.round(c.S))+'d hold</b> · '+fmtDueIn(c)+'</span>';
+        }).join('');
+        detailHtml='<div class="detail"><div class="big zh">'+esc(w.t)+'</div><div class="body">'
+        +'<div class="row" style="gap:8px"><span class="pyline" style="font-size:18px">'+tonePinyin(esc(w.p))+'</span>'+spkBtn(w.id)+'</div>'
+        +'<div class="small" style="margin-top:2px">'+esc(w.m)+'</div>'
+        +'<div class="row" style="gap:8px;margin-top:8px"><span class="tag '+(w.stage>=3?'mat':w.stage>0?'ok':'')+'">'+STAGE_NAMES[w.stage]+'</span>'
+        +(w.s?'<span class="tag simp">简 '+esc(w.s)+'</span>':'')
+        +(w.mastAt?'<span class="tag known">mastered '+fmtAgo(w.mastAt)+'</span>':'')+'</div>'
+        +'<div class="kv">'+cardLine+(mem!==null?'<span>memory now <b>'+mem+'%</b></span>':'')+'</div>'
+        +(mem!==null?'<div class="membar"><i style="width:'+mem+'%"></i></div>':'')
+        +'</div><button class="close" onclick="brainSel=null;renderBrain()">✕</button></div>';
+      }
+    }
+  }
+  // ----- grouped walls -----
+  function tile(it){
+    if(isChars){
+      const sel=brainSel&&brainSel.type==='char'&&brainSel.id===it.ch;
+      return '<div class="tile zh s'+it.stage+(sel?' sel':'')+'" title="'+esc(tileTitle(it.ch,it.stage,it.mem,it.due))+'" onclick="brainSel={type:\'char\',id:\''+it.ch+'\'};renderBrain()">'+esc(it.ch)+(it.due?'<span class="dot"></span>':'')+'</div>';
+    }
+    const sel=brainSel&&brainSel.type==='word'&&brainSel.id===it.id;
+    return '<div class="tile zh s'+it.stage+(sel?' sel':'')+'" title="'+esc(tileTitle(it.t+' '+it.p,it.stage,it.mem,it.due))+'" onclick="brainSel={type:\'word\',id:\''+it.id+'\'};renderBrain()">'+esc(it.t)+(it.due?'<span class="dot"></span>':'')+'</div>';
+  }
+  function wall(list){return '<div class="wall'+(isChars?'':' words')+'">'+list.map(tile).join('')+'</div>';}
+  let groupsHtml='';
+  const grpHdr=(name,list,note)=>'<div class="grp"><span>'+name+(note?' <span class="gn">· '+note+'</span>':'')+'</span><span class="gn">'+list.length+'</span></div>';
+  if(brainGroup==='stage'){
+    [4,3,2,1,0].forEach(st=>{
+      const list=items.filter(i=>i.stage===st);
+      if(!list.length)return;
+      groupsHtml+=grpHdr(STAGE_NAMES[st],list,STAGE_DESC[st])+wall(list);
+    });
+  } else if(brainGroup==='lesson'){
+    for(let ln=1;ln<=15;ln++){
+      const list=isChars?items.filter(i=>i.lesson===ln):items.filter(i=>i.l===ln);
+      if(!list.length)continue;
+      groupsHtml+=grpHdr('Lesson '+ln,list,LESSON_TITLES[ln])+wall(list);
+    }
+  } else if(brainGroup==='simp'){
+    const diff=items.filter(i=>SIMP_CHAR[i.ch]), same=items.filter(i=>!SIMP_CHAR[i.ch]);
+    groupsHtml+=grpHdr('Different in simplified',diff,'your ongoing trad list')+wall(diff)+grpHdr('Same in both scripts',same,'')+wall(same);
+  } else if(brainGroup==='pos'){
+    const order=['Nouns 名','Verbs 動','Adjectives 形','Adverbs 副','Measure words 量','Particles 助','Phrases 語','Determiners','Prepositions','Conjunctions','Proper nouns','Names','Other'];
+    const bins={}; items.forEach(w=>{const g=posGroup(w);(bins[g]=bins[g]||[]).push(w);});
+    order.forEach(g=>{if(bins[g])groupsHtml+=grpHdr(g,bins[g],'')+wall(bins[g]);});
+  } else if(brainGroup==='tone'){
+    const names={1:'1st tone ˉ',2:'2nd tone ˊ',3:'3rd tone ˇ',4:'4th tone ˋ',0:'Neutral / other'};
+    [1,2,3,4,0].forEach(t=>{
+      const list=items.filter(w=>firstTone(w.p)===t);
+      if(!list.length)return;
+      groupsHtml+=grpHdr(names[t],list,'by first syllable')+wall(list);
+    });
+  }
+  // ----- time-lapse card -----
+  const chart=tlChart();
+  const scrubVal=past?brainTime:nSnap-1;
+  const tlHtml=`<div class="card"><div class="lab">Time-lapse</div>
+    ${chart||'<div class="small muted">Recording started today — from now on the app snapshots your brain daily, and this becomes a scrubbable film of the wall filling in over the semester.</div>'}
+    ${nSnap>=2?`<input type="range" class="tl-scrub" min="0" max="${nSnap-1}" value="${scrubVal}" onchange="brainTime=(+this.value===S.hist.d.length-1)?null:+this.value;renderBrain()">
+    <div class="tl-cap"><span>${S.hist.d[0]}</span><span>${S.hist.d[nSnap-1]}</span></div>`:''}
+    ${past?`<div class="tl-banner"><span>Viewing your brain on ${S.hist.d[brainTime]}</span><span class="link" onclick="brainTime=null;renderBrain()">back to today →</span></div>`:''}
+  </div>`;
+  el.innerHTML=`
+  <div class="card">
+    <div class="hero-row">
+      <div class="hero-big"><div class="n">${mastered}<span class="of"> / ${total}</span></div><div class="l">${isChars?'characters':'words'} mastered${past?' · '+S.hist.d[brainTime]:''}</div></div>
+      <div class="hero-sub">${totalSeen} ${isChars?'characters':'words'} in your head so far · a ${isChars?'character':'word'} counts as mastered once every card holds ${MASTER_S}+ days</div>
+    </div>
+    ${barHtml}
+  </div>
+  ${tlHtml}
+  <div class="card"><div class="lab">Mastered shelf · newest first</div>${tickerHtml}</div>
+  <div class="card">
+    ${ctrlHtml}
+    ${detailHtml}
+    ${groupsHtml}
+    <div class="small muted" style="margin-top:16px">Deeper teal = stronger memory. Tap any tile for its story — red dot means it's waiting in your review queue.</div>
+  </div>`;
+  if(brainSel&&brainSel.type==='char'&&S.settings.strokeAnim)renderStrokes('bdStrokes',brainSel.id,{});
+}
+
+/* ---- LIBRARY ---- */
+function renderLib(){
+  const el=document.getElementById('vLib');
+  let html=`<input class="search" placeholder="Search 字 · pinyin · meaning" value="${esc(libSearch)}" oninput="libSearch=this.value;renderLib()">
+  <div class="filters">
+    ${[['all','All'],['tracked','In deck'],['due','Due'],['untracked','Not started'],['simp','Trad ≠ Simp']].map(([k,t])=>`<button class="${libFilter===k?'on':''}" onclick="libFilter='${k}';renderLib()">${t}</button>`).join('')}
+  </div>`;
+  const q=libSearch.trim().toLowerCase();
+  for(let ln=1;ln<=15;ln++){
+    const ws=WORDS.filter(w=>w.l===ln).filter(w=>{
+      if(q&&!(w.t.includes(q)||w.p.toLowerCase().includes(q)||w.m.toLowerCase().includes(q)))return false;
+      const st=wordStatus(w.id);
+      if(libFilter==='tracked'&&!st)return false;
+      if(libFilter==='untracked'&&st)return false;
+      if(libFilter==='due'&&(!st||st.k!=='due'))return false;
+      if(libFilter==='simp'&&!w.s)return false;
+      return true;
+    });
+    if(!ws.length&&(q||libFilter!=='all'))continue;
+    const all=WORDS.filter(w=>w.l===ln);
+    const nTracked=all.filter(w=>tracked(w.id)).length;
+    const open=!!openLessons[ln]||q||libFilter!=='all';
+    html+=`<div class="lesson ${open?'open':''}">
+      <div class="head" onclick="openLessons[${ln}]=!openLessons[${ln}];renderLib()">
+        <span class="car">▶</span>
+        <div><div class="ttl">Lesson ${ln} · ${LESSON_TITLES[ln]}</div><div class="sub">${nTracked} of ${all.length} in deck</div></div>
+        <div class="acts">
+          ${nTracked<all.length?`<button class="btn sm ghost" onclick="event.stopPropagation();WORDS.filter(w=>w.l===${ln}).forEach(w=>trackWord(w.id));renderLib();badge()">Study lesson</button>
+          <button class="btn sm ghost" title="mark whole lesson as already known" onclick="event.stopPropagation();if(confirm('Mark all of Lesson ${ln} as already known? They skip learning and re-check in about 3 weeks.')){WORDS.filter(w=>w.l===${ln}).forEach(w=>markKnown(w.id));renderLib();badge();}">Know it all</button>`
+          :`<button class="btn sm ghost" onclick="event.stopPropagation();if(confirm('Remove all Lesson ${ln} cards and their progress?')){WORDS.filter(w=>w.l===${ln}).forEach(w=>untrackWord(w.id));renderLib();badge();}">Remove</button>`}
+        </div>
+      </div>
+      <div class="prog"><i style="width:${all.length?Math.round(nTracked/all.length*100):0}%"></i></div>
+      ${open?`<div class="wl">${ws.map(w=>wrowHtml(w)).join('')}</div>`:''}
+    </div>`;
+  }
+  el.innerHTML=html;
+}
+function wrowHtml(w){
+  const st=wordStatus(w.id), kn=isKnown(w.id);
+  return `<div class="wrow">
+    <div class="tr zh">${esc(w.t)}</div>
+    <div class="info">
+      <div class="py">${tonePinyin(esc(w.p))}${w.pos?` <span class="tag">${esc(w.pos)}</span>`:''}${w.s?` <span class="tag simp">简 ${esc(w.s)}</span>`:''}</div>
+      <div class="mn">${esc(w.m)}</div>
+    </div>
+    ${st?`<span class="tag ${kn&&st.k!=='due'?'known':st.k}">${kn&&st.k!=='due'?'known':st.t}</span>`:''}
+    ${spkBtn(w.id)}
+    <button class="wbtn kn ${wordMastAt(w.id)?'on':''}" title="Mastered — straight onto the shelf, verify in ~2 months" onclick="markMastered('${w.id}');renderLib();badge()">★</button>
+    <button class="wbtn kn ${kn?'on':''}" title="I know this — skip learning, verify in ~3 weeks" onclick="markKnown('${w.id}');renderLib();badge()">✓</button>
+    <button class="wbtn ${st?'on':''}" title="${st?'remove from deck':'add to deck'}" onclick="${st?`if(confirm('Remove this word\\'s cards and progress?'))untrackWord('${w.id}')`:`trackWord('${w.id}')`};renderLib();badge()">${st?'−':'+'}</button>
+  </div>`;
+}
+
+/* ---- REVIEW ---- */
+let rq=null, cur=null, revealed=false, undoState=null, sessionN=0, padReps=0, hintShown=false;
+function startReview(){rq=buildQueue();sessionN=0;nextCard();}
+function pickNext(){
+  const now=Date.now();
+  const learnDue=rq.learn.filter(cid=>S.cards[cid]&&S.cards[cid].st!==undefined&&S.cards[cid].due<=now);
+  if(learnDue.length)return learnDue[0];
+  if(rq.rev.length)return rq.rev[0];
+  if(rq.fresh.length)return rq.fresh[0];
+  if(rq.learn.length)return rq.learn[0];
+  return null;
+}
+function nextCard(){cur=pickNext();revealed=false;padReps=0;hintShown=false;renderRev();}
+function renderRev(){
+  const el=document.getElementById('vRev');
+  badge();
+  if(!cur){
+    el.innerHTML=`<div class="card done">
+      <div class="zhd zh">做得好</div>
+      <div style="font-weight:600;font-size:16px;margin-bottom:4px">All caught up</div>
+      <div class="muted small">${sessionN} card${sessionN===1?'':'s'} this session. FSRS will have the next batch waiting at the right moment.</div>
+      <div style="margin-top:18px"><button class="btn ghost" onclick="go('home')">Back to Today</button></div>
+    </div>`;return;
+  }
+  const w=wordOf(cur), m=modeOf(cur), c=S.cards[cur]||{};
+  const isNew=c.st===undefined;
+  const remaining=rq.learn.length+rq.rev.length+rq.fresh.length;
+  let front='',back='';
+  if(m==='rec'){
+    front=`<div class="bigzh zh">${esc(w.t)}</div><div class="hint">meaning · pinyin · tones — say it aloud</div>`;
+    back=`<div class="bigzh zh" style="font-size:56px">${esc(w.t)}</div>
+      ${w.pos?`<div class="pos">${esc(w.pos)}</div>`:''}
+      <div class="meaning">${esc(w.m)}</div>
+      <div class="row" style="justify-content:center;gap:9px"><span class="pyline">${tonePinyin(esc(w.p))}</span>${spkBtn(w.id)}</div>
+      ${w.s?`<div class="simpnote">简体 ${esc(w.s)}</div>`:''}`;
+  } else {
+    front=`${w.pos?`<div class="pos">${esc(w.pos)}</div>`:''}
+      <div class="meaning" style="font-size:19px">${esc(w.m)}</div>
+      ${hintShown?`<div class="pyline" style="font-size:22px">${tonePinyin(esc(w.p))}</div>`:`<div class="hint"><span class="link" onclick="hintShown=true;renderRev()">show pinyin hint</span></div>`}
+      <div class="hint">write the 字 from memory — and say it with tones</div>
+      <div class="canv-box"><canvas id="pad" class="pad"></canvas></div>
+      <div class="canv-tools"><button class="btn sm ghost" onclick="clearPad()">Clear</button></div>`;
+    back=`<div id="strokeHost" class="strokerow"></div>
+      <div id="strokeHost-fb" class="bigzh kai" style="font-size:80px;display:none">${esc(w.t)}</div>
+      <div class="stroketools"><button class="btn sm ghost" onclick="playStrokes()">Replay strokes ▶</button></div>
+      <div class="row" style="justify-content:center;gap:9px"><span class="pyline" style="font-size:21px">${tonePinyin(esc(w.p))}</span>${spkBtn(w.id)}</div>
+      ${w.s?`<div class="simpnote">简体 ${esc(w.s)}</div>`:''}
+      <div class="canv-box"><div class="canv-ghost kai" id="ghost" style="display:${S.settings.ghost?'flex':'none'}">${esc(w.t[0]||'')}</div><canvas id="pad" class="pad"></canvas></div>
+      <div class="canv-tools"><button class="btn sm ghost" onclick="clearPad()">Clear</button><button class="btn sm ghost" onclick="toggleGhost()">${S.settings.ghost?'Hide':'Show'} trace</button></div>`;
+  }
+  el.innerHTML=`
+  <div class="rev-top">
+    <span class="mtag ${m}">${MODE_LABEL[m]}</span>
+    <span>${isNew?'<b style="color:var(--acc)">new</b> · ':''}${remaining} left${isNew?` · <span class="link" onclick="skipKnown('k')">know ✓</span> · <span class="link" onclick="skipKnown('m')">mastered ★</span>`:''}${undoState?' · <span class="link" onclick="doUndo()">undo</span>':''}</span>
+  </div>
+  <div class="stage">${revealed?back:front}</div>
+  ${revealed?`<div class="grades">
+      <button onclick="grade(1)"><span class="g1">Again</span><span class="iv">${previewIv(isNew?null:c,cur,1)}</span></button>
+      <button onclick="grade(2)"><span class="g2">Hard</span><span class="iv">${previewIv(isNew?null:c,cur,2)}</span></button>
+      <button onclick="grade(3)"><span class="g3">Good</span><span class="iv">${previewIv(isNew?null:c,cur,3)}</span></button>
+      <button onclick="grade(4)"><span class="g4">Easy</span><span class="iv">${previewIv(isNew?null:c,cur,4)}</span></button>
+    </div>
+    <div class="small muted" style="text-align:center;margin-top:10px"><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd></div>`
+  :`<div style="margin-top:16px"><button class="btn big" onclick="reveal()">Show answer</button></div>
+    <div class="small muted" style="text-align:center;margin-top:10px"><kbd>space</kbd></div>`}`;
+  const pad=document.getElementById('pad'); if(pad)initPad(pad);
+  if(revealed){
+    if(S.settings.autoplayAudio)setTimeout(()=>speakWord(w.id),120);
+    if(m==='prod'){
+      if(S.settings.strokeAnim){renderStrokes('strokeHost',w.t.split('（')[0],{});}
+      else{const h=document.getElementById('strokeHost');if(h)h.style.display='none';const t=document.querySelector('.stroketools');if(t)t.style.display='none';const fb=document.getElementById('strokeHost-fb');if(fb)fb.style.display='';}
+    }
+  }
+}
+function reveal(){let drawing=null;const old=document.getElementById('pad');if(old&&old._snap)drawing=old._snap();revealed=true;renderRev();if(drawing){const pad=document.getElementById('pad');if(pad)restorePad(pad,drawing);}}
+function skipKnown(level){if(!cur)return;const wid=cur.split(':')[0];(level==='m'?markMastered:markKnown)(wid);['learn','rev','fresh'].forEach(k=>{rq[k]=rq[k].filter(cid=>cid.split(':')[0]!==wid);});undoState=null;nextCard();}
+function grade(g){
+  if(!cur)return;
+  undoState={cid:cur,card:S.cards[cur]?JSON.parse(JSON.stringify(S.cards[cur])):{},log:JSON.parse(JSON.stringify(S.log)),intro:JSON.parse(JSON.stringify(S.intro))};
+  rate(cur,g);sessionN++;
+  ['learn','rev','fresh'].forEach(k=>{const i=rq[k].indexOf(cur);if(i>-1)rq[k].splice(i,1);});
+  const c=S.cards[cur];
+  if(c.due<=Date.now()+15*MIN&&(c.st==='learn'||c.st==='relearn'))rq.learn.push(cur);
+  nextCard();
+}
+function doUndo(){if(!undoState)return;const had=Object.keys(undoState.card).length;S.cards[undoState.cid]=had?undoState.card:{};S.log=undoState.log;S.intro=undoState.intro;save();cur=undoState.cid;undoState=null;revealed=true;sessionN=Math.max(0,sessionN-1);renderRev();}
+function toggleGhost(){S.settings.ghost=!S.settings.ghost;save();renderRev();}
+
+/* scratchpad */
+function initPad(cv){
+  const dpr=window.devicePixelRatio||1;
+  const w=cv.clientWidth;cv.width=w*dpr;cv.height=w*dpr;
+  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
+  ctx.lineWidth=6.5;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#1d1c1a';
+  let down=false,px=0,py=0;
+  const pos=e=>{const r=cv.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top];};
+  cv.addEventListener('pointerdown',e=>{down=true;const p=pos(e);px=p[0];py=p[1];cv.setPointerCapture(e.pointerId);e.preventDefault();});
+  cv.addEventListener('pointermove',e=>{if(!down)return;const p=pos(e);ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(p[0],p[1]);ctx.stroke();px=p[0];py=p[1];e.preventDefault();});
+  cv.addEventListener('pointerup',()=>down=false);
+  cv._snap=()=>{try{return cv.toDataURL()}catch(e){return null}};
+}
+function restorePad(cv,dataUrl){const img=new Image();img.onload=()=>{const ctx=cv.getContext('2d');ctx.drawImage(img,0,0,cv.clientWidth,cv.clientWidth);};img.src=dataUrl;}
+function clearPad(){const cv=document.getElementById('pad');if(!cv)return;const ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);}
+
+/* ---- SETTINGS ---- */
+function renderSet(){
+  const s=S.settings;
+  document.getElementById('vSet').innerHTML=`
+  <div class="card"><div class="lab">Card types</div>
+    ${MODES.map(m=>`<div class="set-row"><div><b>${MODE_LABEL[m]}</b><div class="d">${m==='rec'?'see the 字 → recall meaning + pronunciation':'see the English → write the 字 + say the tones'}</div></div>
+      <button class="tgl ${s.modes[m]?'on':''}" onclick="S.settings.modes.${m}=!S.settings.modes.${m};save();renderSet();badge()"><i></i></button></div>`).join('')}
+    <div class="set-row"><div><b>Include names</b><div class="d">people like 陳月美 — off by default</div></div>
+      <button class="tgl ${s.includeNames?'on':''}" onclick="S.settings.includeNames=!S.settings.includeNames;save();renderSet();badge()"><i></i></button></div>
+  </div>
+  <div class="card"><div class="lab">Schedule</div>
+    <div class="set-row"><div><b>New words per day</b><div class="d">each word = up to 2 cards; 8–10 is your target pace</div></div>
+      <input type="number" min="0" max="100" value="${s.newPerDay}" onchange="S.settings.newPerDay=Math.max(0,parseInt(this.value)||0);save();badge()"></div>
+    <div class="set-row"><div><b>Early writing reps</b><div class="d">writing cards forced back on day 1, 2 and 3 before FSRS takes over</div></div>
+      <button class="tgl ${s.earlyDrill?'on':''}" onclick="S.settings.earlyDrill=!S.settings.earlyDrill;save();renderSet()"><i></i></button></div>
+    <div class="set-row"><div><b>Paper reps per character</b><div class="d">boxes per character on the printable 田字格 sheet</div></div>
+      <input type="number" min="1" max="100" value="${s.writeTarget}" onchange="S.settings.writeTarget=Math.max(1,parseInt(this.value)||20);save()"></div>
+    <div class="set-row"><div><b>Desired retention</b><div class="d">higher = more frequent reviews. 90% is the sweet spot.</div></div>
+      <div class="row"><input type="range" min="80" max="97" value="${Math.round(s.retention*100)}" oninput="S.settings.retention=this.value/100;save();this.nextElementSibling.textContent=this.value+'%'"><b>${Math.round(s.retention*100)}%</b></div></div>
+    <div class="set-row"><div><b>Max reviews per day</b></div>
+      <input type="number" min="10" max="1000" value="${s.maxRev}" onchange="S.settings.maxRev=Math.max(10,parseInt(this.value)||200);save();badge()"></div>
+  </div>
+  <div class="card"><div class="lab">Audio & strokes</div>
+    <div class="set-row"><div><b>Audio source</b><div class="d">Taiwanese voice = your device's zh-TW voice (Google 國語（臺灣）in Chrome, 美佳 Mei-Jia on Apple). Recording = bundled neural audio — works offline but mainland-accented.</div></div>
+      <select class="vsel" onchange="S.settings.audioSrc=this.value;save()">
+        <option value="auto" ${(s.audioSrc||'auto')==='auto'?'selected':''}>Auto — Taiwanese voice when available</option>
+        <option value="system" ${s.audioSrc==='system'?'selected':''}>Taiwanese system voice only</option>
+        <option value="bundled" ${s.audioSrc==='bundled'?'selected':''}>Bundled recording (offline)</option>
+      </select></div>
+    <div class="set-row"><div><b>Pronunciation voice</b><div class="d">in Chrome, pick “Google 國語（臺灣）” — Google-quality Taiwanese female Mandarin</div></div>
+      <div class="row"><select class="vsel" onchange="S.settings.voiceName=this.value;save()">
+        <option value="">Auto — best available</option>
+        ${VOICES.slice().sort((a,b)=>rankVoice(b)-rankVoice(a)).map(v=>`<option value="${esc(v.name)}" ${S.settings.voiceName===v.name?'selected':''}>${esc(v.name)} (${esc(v.lang)})</option>`).join('')}
+      </select><button class="btn ghost sm" onclick="speakText('歡迎你來臺灣')">Test</button></div></div>
+    <div class="set-row"><div><b>Auto-play on reveal</b><div class="d">hear every word when the answer shows</div></div>
+      <button class="tgl ${s.autoplayAudio?'on':''}" onclick="S.settings.autoplayAudio=!S.settings.autoplayAudio;save();renderSet()"><i></i></button></div>
+    <div class="set-row"><div><b>Speech speed</b></div>
+      <div class="row"><input type="range" min="60" max="110" value="${Math.round((s.speechRate||0.85)*100)}" oninput="S.settings.speechRate=this.value/100;save();this.nextElementSibling.textContent=this.value+'%'"><b>${Math.round((s.speechRate||0.85)*100)}%</b></div></div>
+    <div class="set-row"><div><b>Stroke-order animations</b><div class="d">writing-card answers draw themselves stroke by stroke</div></div>
+      <button class="tgl ${s.strokeAnim?'on':''}" onclick="S.settings.strokeAnim=!S.settings.strokeAnim;save();renderSet()"><i></i></button></div>
+  </div>
+  <div class="card"><div class="lab">Backup</div>
+    <div class="row">
+      <button class="btn ghost sm" onclick="exportData()">Export progress</button>
+      <button class="btn ghost sm" onclick="document.getElementById('impFile').click()">Import</button>
+      <input id="impFile" type="file" accept=".json" style="display:none" onchange="importData(this)">
+      <button class="btn ghost sm" style="color:var(--red);border-color:#e8d5d2" onclick="if(confirm('Really erase ALL progress?')){S={cards:{},settings:S.settings,log:{},intro:{}};save();renderSet();badge();}">Reset</button>
+    </div>
+    <div class="small muted" style="margin-top:10px">Everything auto-saves. Export a JSON occasionally as insurance.</div>
+  </div>`;
+}
+function exportData(){
+  const blob=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='shida-b1-progress-'+dkey(new Date())+'.json';a.click();
+}
+function importData(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const p=JSON.parse(r.result);if(!p.cards)throw 0;S=p;save();alert('Imported ✓');renderSet();badge();}catch(e){alert('That file does not look like a progress export.')}};
+  r.readAsText(f);
+}
+
+document.addEventListener('keydown',e=>{
+  if(view!=='rev'||!cur)return;
+  if(e.code==='Space'&&!revealed){e.preventDefault();reveal();}
+  else if(revealed&&['1','2','3','4'].includes(e.key)){grade(parseInt(e.key));}
+});
+
+takeSnapshot();
+renderHome();badge();
+if('serviceWorker' in navigator&&/^https?:/.test(location.protocol)){try{navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}}
+</script>
+</body>
+</html>
