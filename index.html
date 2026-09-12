@@ -340,6 +340,15 @@ select.vsel{max-width:230px;padding:7px 9px;border:1px solid var(--line);border-
   .qp,.qL{display:none}
 }
 
+
+/* ---- v16: library search ---- */
+.searchwrap{position:relative}
+.searchx{position:absolute;right:9px;top:50%;transform:translateY(-50%);border:0;background:transparent;
+  color:var(--mut2);cursor:pointer;font-size:14px;line-height:1;padding:6px;border-radius:7px}
+.searchx:hover{background:var(--tint);color:var(--ink)}
+.lnchip{display:inline-block;margin-left:7px;font-size:10px;color:var(--mut2);letter-spacing:.04em;
+  border:1px solid var(--line2);border-radius:99px;padding:1px 7px;vertical-align:1px}
+#libResults .wl{border-top:1px solid var(--line2);margin-top:8px}
 </style>
 </head>
 <body>
@@ -1385,7 +1394,7 @@ function renderLib(){
   el.innerHTML=html;
 }
 function togglePick(wid){S.pick=S.pick||[];const i=S.pick.indexOf(wid);if(i>-1)S.pick.splice(i,1);else S.pick.push(wid);save();}
-function wrowHtml(w){
+function wrowHtml(w,showLn){
   const st=wordStatus(w.id), kn=isKnown(w.id);
   const startable=!st||st.k==='new';
   const pi=(S.pick||[]).indexOf(w.id);
@@ -1393,7 +1402,7 @@ function wrowHtml(w){
     <div class="tr zh">${esc(w.t)}</div>
     <div class="info">
       <div class="py">${tonePinyin(esc(w.p))}${w.pos?` <span class="tag">${esc(w.pos)}</span>`:''}${w.s?` <span class="tag simp">简 ${esc(w.s)}</span>`:''}</div>
-      <div class="mn">${esc(w.m)}</div>
+      <div class="mn">${esc(w.m)}${showLn?` <span class="lnchip">${esc(lnLabel(w.l))}${dlgTag(w.id)}</span>`:''}</div>
     </div>
     ${st?`<span class="tag ${kn&&st.k!=='due'?'known':st.k}">${kn&&st.k!=='due'?'known':st.t}</span>`:''}
     ${spkBtn(w.id)}
@@ -2264,6 +2273,222 @@ function qPanel(){
   </div>`;
 }
 
+
+
+/* ============================================================
+   v16 — Library search, rebuilt.
+   Was: every keystroke re-rendered all 30 lesson accordions,
+   ran 60 full scans of WORDS, built ~1MB of HTML for a broad
+   query, and replaced the <input> itself (killing caret + IME).
+   Now: prebuilt index, tone-insensitive pinyin, ranked flat
+   results, capped + chunked painting, persistent input node.
+   ============================================================ */
+var LIBIDX=null, libTimer=null, libComposing=false, libShowAll=false, libPaintTok=0;
+var LIB_PAGE=45;          /* rows painted synchronously */
+var LIB_CHUNK=60;         /* rows appended per animation frame */
+
+function libStrip(s){
+  /* ā→a etc. so "lese"/"laji" both find 垃圾 and "nuli" finds 努力 */
+  return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+}
+/* Thorne learned mainland readings; he will type those. Taiwan reading stays
+   primary everywhere in the UI — these are search aliases only. */
+var READ_ALIAS={'垃圾':'laji','星期':'xingqi','法國':'faguo','網路':'wangluo','期':'qi',
+  '和':'he','企業':'qiye','危險':'weixian'};
+function buildLibIdx(){
+  if(LIBIDX)return LIBIDX;
+  LIBIDX=WORDS.map(w=>{
+    const p=libStrip(w.p);
+    const pn=p.replace(/[^a-z0-9]/g,'');
+    const al=READ_ALIAS[w.t]||'';
+    return {w, t:w.t, p, pn, alias:al, m:libStrip(w.m)};
+  });
+  return LIBIDX;
+}
+function libWordStart(hay,q){
+  let i=hay.indexOf(q);
+  while(i>-1){ if(i===0||!/[a-z0-9]/.test(hay[i-1]))return true; i=hay.indexOf(q,i+1); }
+  return false;
+}
+/* higher = better. 0 means no match. */
+function libScore(e,q,qn){
+  if(e.t===q)return 100;
+  if(e.t.indexOf(q)===0)return 92;
+  if(e.t.indexOf(q)>-1)return 84;
+  if(qn){
+    if(e.pn===qn)return 76;
+    if(e.alias&&e.alias===qn)return 74;
+    if(e.pn.indexOf(qn)===0)return 68;
+    if(e.alias&&e.alias.indexOf(qn)===0)return 66;
+    if(e.p.indexOf(qn)>-1||e.pn.indexOf(qn)>-1)return 52;
+  }
+  if(e.m===q)return 48;
+  if(e.m.indexOf(q)===0)return 40;
+  if(libWordStart(e.m,q))return 32;
+  if(e.m.indexOf(q)>-1)return 18;
+  return 0;
+}
+function libPassesFilter(w){
+  if(!S.settings.includeNames&&isName(w))return false;
+  if(libFilter==='all')return true;
+  const st=wordStatus(w.id);
+  if(libFilter==='tracked')return !!st;
+  if(libFilter==='untracked')return !st;
+  if(libFilter==='due')return !!st&&st.k==='due';
+  if(libFilter==='simp')return !!w.s;
+  return true;
+}
+function libMatches(q){
+  const idx=buildLibIdx();
+  const qq=libStrip(q).trim();
+  const qn=qq.replace(/[^a-z0-9]/g,'');
+  /* one Latin letter matches 80% of the dictionary as a substring, which is noise
+     and slow. Demand a real match: 字, pinyin prefix, or start of a meaning word. */
+  const floor=(qq.length===1&&/^[a-z0-9]$/.test(qq))?66:1;
+  const hits=[];
+  for(let k=0;k<idx.length;k++){
+    const e=idx[k];
+    const s=libScore(e,qq,qn);
+    if(s<floor)continue;
+    if(!libPassesFilter(e.w))continue;
+    hits.push({w:e.w,s:s,k:k});
+  }
+  hits.sort((a,b)=>b.s-a.s || a.w.l-b.w.l || a.k-b.k);
+  return hits;
+}
+
+/* ---------- chrome: built once, never rebuilt while typing ---------- */
+function libEnsureChrome(){
+  const el=document.getElementById('vLib');
+  if(document.getElementById('libChrome'))return;
+  el.innerHTML=`<div id="libChrome"></div><div id="libResults"></div>`;
+  document.getElementById('libChrome').innerHTML=`
+    <div class="searchwrap">
+      <input id="libQ" class="search" placeholder="Search 字 · pinyin · meaning — tones optional"
+             autocomplete="off" autocorrect="off" spellcheck="false" value="${esc(libSearch)}">
+      <button id="libQx" class="searchx" title="clear" style="display:${libSearch?'':'none'}">✕</button>
+    </div>
+    <div class="segbar"><span class="cap">Book</span>
+      <button data-bk="1">一 Book 1</button>
+      <button data-bk="2">二 Book 2</button>
+    </div>
+    <div class="filters">
+      ${[['all','All'],['tracked','In deck'],['due','Due'],['untracked','Not started'],['simp','Trad ≠ Simp']]
+        .map(([k,t])=>`<button data-f="${k}">${t}</button>`).join('')}
+    </div>`;
+  const inp=document.getElementById('libQ');
+  inp.addEventListener('compositionstart',()=>{libComposing=true;});
+  inp.addEventListener('compositionend',()=>{libComposing=false;libQueue(inp.value);});
+  inp.addEventListener('input',()=>{ if(!libComposing) libQueue(inp.value); });
+  inp.addEventListener('keydown',e=>{ if(e.key==='Escape'){inp.value='';libQueue('');} });
+  document.getElementById('libQx').addEventListener('click',()=>{
+    inp.value=''; libQueue(''); inp.focus();
+  });
+  document.getElementById('libChrome').addEventListener('click',e=>{
+    const b=e.target.closest('button[data-bk],button[data-f]'); if(!b)return;
+    if(b.dataset.bk){libBook=+b.dataset.bk;openLessons={};}
+    else{libFilter=b.dataset.f;}
+    libShowAll=false; libSyncChrome(); renderLibResults();
+  });
+}
+function libSyncChrome(){
+  const c=document.getElementById('libChrome'); if(!c)return;
+  c.querySelectorAll('button[data-bk]').forEach(b=>b.classList.toggle('on',+b.dataset.bk===libBook));
+  c.querySelectorAll('button[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===libFilter));
+  const x=document.getElementById('libQx'); if(x)x.style.display=libSearch?'':'none';
+  const inp=document.getElementById('libQ');
+  if(inp&&inp.value!==libSearch&&document.activeElement!==inp)inp.value=libSearch;
+}
+function libQueue(v){
+  libSearch=v; libShowAll=false;
+  const x=document.getElementById('libQx'); if(x)x.style.display=v?'':'none';
+  clearTimeout(libTimer);
+  libTimer=setTimeout(renderLibResults,90);
+}
+
+/* ---------- results ---------- */
+function renderLibResults(){
+  const box=document.getElementById('libResults'); if(!box)return;
+  const keepScroll=window.scrollY;                 /* row buttons re-render; don't jump */
+  requestAnimationFrame(()=>{if(Math.abs(window.scrollY-keepScroll)>4)window.scrollTo(0,keepScroll);});
+  const tok=++libPaintTok;                     /* cancels any in-flight chunked paint */
+  const q=libSearch.trim();
+  if(q){
+    const hits=libMatches(q);
+    if(!hits.length){
+      box.innerHTML=`<div class="card"><div class="small muted" style="text-align:center;padding:18px 0">
+        Nothing matches <b>${esc(q)}</b>${libFilter!=='all'?` in <b>${esc(libFilter)}</b>`:''}.
+        ${libFilter!=='all'?`<div style="margin-top:8px"><span class="link" onclick="libFilter='all';libSyncChrome();renderLibResults()">search all words instead</span></div>`:''}
+      </div></div>`;
+      return;
+    }
+    const cap=libShowAll?hits.length:Math.min(hits.length,LIB_PAGE);
+    box.innerHTML=`<div class="card">
+      <div class="row spread" style="margin-bottom:4px">
+        <div class="lab" style="margin-bottom:0">${hits.length} match${hits.length===1?'':'es'}</div>
+        ${hits.length>LIB_PAGE&&!libShowAll?`<button class="btn sm ghost" onclick="libShowAll=true;renderLibResults()">Show all ${hits.length}</button>`:''}
+      </div>
+      <div class="wl" id="libRows"></div>
+      <div class="small muted" id="libMore" style="margin-top:10px"></div>
+    </div>`;
+    const rows=document.getElementById('libRows');
+    const first=Math.min(cap,LIB_PAGE);
+    rows.innerHTML=hits.slice(0,first).map(h=>wrowHtml(h.w,true)).join('');
+    if(cap>first){
+      /* paint the rest across frames so the keystroke never blocks */
+      let i=first;
+      const step=()=>{
+        if(tok!==libPaintTok)return;
+        const end=Math.min(i+LIB_CHUNK,cap);
+        rows.insertAdjacentHTML('beforeend',hits.slice(i,end).map(h=>wrowHtml(h.w,true)).join(''));
+        i=end;
+        if(i<cap)requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }
+    const more=document.getElementById('libMore');
+    if(more)more.textContent = hits.length>cap
+      ? `Showing the ${cap} closest matches of ${hits.length}.`
+      : (hits.length>6?`Ranked: exact 字 first, then pinyin, then meaning.`:'');
+    return;
+  }
+  /* no query — the lesson accordions, unchanged in behaviour */
+  const lnStart=(libBook-1)*15+1, lnEnd=libBook*15;
+  let html='';
+  for(let ln=lnStart;ln<=lnEnd;ln++){
+    const all=LESSON_WORDS[ln]||[];
+    const ws=all.filter(libPassesFilter);
+    if(!ws.length&&libFilter!=='all')continue;
+    const nTracked=all.filter(w=>tracked(w.id)).length;
+    const open=!!openLessons[ln]||libFilter!=='all';
+    html+=`<div class="lesson ${open?'open':''}">
+      <div class="head" onclick="openLessons[${ln}]=!openLessons[${ln}];renderLibResults()">
+        <span class="car">▶</span>
+        <div><div class="ttl">${lnLabel(ln)} · ${LESSON_TITLES[ln]}</div><div class="sub">${nTracked} of ${all.length} in deck</div></div>
+        <div class="acts">
+          <button class="btn sm" onclick="event.stopPropagation();startTriage(${ln})" title="step through this lesson word by word and sort it">Triage</button>
+          ${hasDlg(ln)?`<button class="btn sm ghost" onclick="event.stopPropagation();startTriage(${ln},1)" title="only the Dialogue I words — the 聽寫一 set">Triage 聽寫一</button>
+          <button class="btn sm ghost" onclick="event.stopPropagation();startTriage(${ln},2)" title="only the Dialogue II words — the 聽寫二 set">Triage 聽寫二</button>`:''}
+          ${nTracked<all.length?`<button class="btn sm ghost" onclick="event.stopPropagation();(LESSON_WORDS[${ln}]||[]).forEach(w=>trackWord(w.id));renderLib();badge()">Study lesson</button>
+          <button class="btn sm ghost" title="mark whole lesson as already known" onclick="event.stopPropagation();if(confirm('Mark all of ${lnLabel(ln)} as already known? They skip learning and re-check in about 3 weeks.')){(LESSON_WORDS[${ln}]||[]).forEach(w=>markKnown(w.id));renderLib();badge();}">Know it all</button>`
+          :`<button class="btn sm ghost" onclick="event.stopPropagation();if(confirm('Remove all ${lnLabel(ln)} cards and their progress?')){(LESSON_WORDS[${ln}]||[]).forEach(w=>untrackWord(w.id));renderLib();badge();}">Remove</button>`}
+        </div>
+      </div>
+      <div class="prog"><i style="width:${all.length?Math.round(nTracked/all.length*100):0}%"></i></div>
+      ${open?`<div class="wl">${ws.map(w=>wrowHtml(w)).join('')}</div>`:''}
+    </div>`;
+  }
+  box.innerHTML=html;
+}
+
+/* lesson buckets, built once — replaces 60 full WORDS scans per render */
+var LESSON_WORDS={};
+(function(){for(const w of WORDS){(LESSON_WORDS[w.l]=LESSON_WORDS[w.l]||[]).push(w);}})();
+
+renderLib=function(){
+  if(tri)return renderTriage();
+  libEnsureChrome(); libSyncChrome(); renderLibResults();
+};
 
 /* everything above is defined now — redo the initial paint */
 try{ go((typeof view!=='undefined'&&view)?view:'home'); badge(); }catch(e){}
