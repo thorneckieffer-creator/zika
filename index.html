@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
-:root{
+:root{--cjk:"Songti TC","Noto Serif TC","Songti SC","STSong","PMingLiU","MingLiU",serif;
   /* day — rice paper, tea, a little lantern red */
   --bg:#f3edde; --panel:#fbf7eb; --tint:#ece4d0; --ink:#2a241c; --mut:#94886e; --mut2:#c6bba0;
   --line:#e3d9c1; --line2:#d3c7aa;
@@ -40,9 +40,13 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:999;op
 html[data-theme="dark"] body::after{mix-blend-mode:screen;opacity:.05}
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
-body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Inter",Roboto,"Helvetica Neue",Arial,"Noto Sans TC",sans-serif;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
-.zh{font-family:"Noto Serif TC","Songti TC","PMingLiU",serif}
-.kai{font-family:"Kaiti TC","BiauKai","DFKai-SB","Noto Serif TC",serif}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Inter",Roboto,"Helvetica Neue",Arial,var(--cjk);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.zh{font-family:var(--cjk)}
+/* classic 明體 — the face 當代中文課程 and MTC handouts are set in.
+   Local system faces only: a CJK webfont is several MB and would break offline use. */
+.serif-en{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif}
+.meaning,.bigzh,.zhd,.gtxt,.pos{font-family:var(--cjk)}
+.kai{font-family:"Kaiti TC","BiauKai","DFKai-SB","Noto Serif TC","Songti TC",serif}
 .wrap{max-width:760px;margin:0 auto;padding:26px 18px 110px}
 .mast{text-align:center;margin-bottom:22px;position:relative}
 .seal{display:inline-flex;align-items:center;justify-content:center;background:var(--lant);color:var(--sealFg);font-family:"Kaiti TC","BiauKai","Noto Serif TC",serif;font-size:23px;letter-spacing:.18em;padding:7px 10px 7px 13px;border-radius:7px;transform:rotate(-2.5deg);box-shadow:inset 0 0 0 1.5px rgba(250,240,220,.35), 0 2px 8px rgba(80,30,20,.18)}
@@ -204,7 +208,7 @@ html[data-theme="dark"] .banner{background:#3a2f1b;border-color:#57431f;color:#d
 #printSheet{display:none}
 @media print{
   body>.wrap{display:none!important}
-  #printSheet{display:block!important;font-family:"Noto Serif TC","Songti TC",serif}
+  #printSheet{display:block!important;font-family:var(--cjk)}
   #printSheet .prow{page-break-inside:avoid;margin-bottom:4mm}
   #printSheet .plab{font-size:11pt;margin-bottom:1.5mm}
   #printSheet .plab .pm{color:#666;font-size:9pt;margin-left:3mm}
@@ -307,6 +311,30 @@ select.vsel{max-width:230px;padding:7px 9px;border:1px solid var(--line);border-
 .examcard .clock{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
 .exlist{margin:6px 0 10px 18px;font-size:13px}
 .exlist li{margin-bottom:3px}
+
+
+/* ---- v14: up-next queue ---- */
+.qload{display:flex;flex-wrap:wrap;gap:7px;margin:13px 0 4px;align-items:center}
+.qsel{border:1px solid var(--line2);background:var(--panel);color:var(--ink);border-radius:9px;
+  padding:6px 9px;font-size:13px;font-family:inherit;cursor:pointer;outline:none}
+.qlist{margin-top:10px;border-top:1px solid var(--line2)}
+.qrow{display:grid;grid-template-columns:26px auto 1fr 1.4fr auto auto;align-items:center;gap:9px;
+  padding:8px 2px;border-bottom:1px solid var(--line2);font-size:13px}
+.qrow.later{opacity:.42}
+.qn{font-size:11px;color:var(--mut2);font-variant-numeric:tabular-nums;text-align:right}
+.qz{font-size:19px;white-space:nowrap}
+.qp{font-size:12px;color:var(--mut);white-space:nowrap}
+.qm{color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qL{font-size:10px;color:var(--mut2);letter-spacing:.04em;white-space:nowrap}
+.qacts{display:flex;gap:3px}
+.qb{border:1px solid var(--line2);background:var(--panel);color:var(--mut);border-radius:7px;
+  width:25px;height:25px;line-height:1;cursor:pointer;font-size:11px;padding:0}
+.qb:hover{background:var(--tint);color:var(--ink)}
+.qb.x:hover{color:var(--red);border-color:#e8d5d2}
+@media(max-width:620px){
+  .qrow{grid-template-columns:22px auto 1fr auto;gap:7px}
+  .qp,.qL{display:none}
+}
 
 </style>
 </head>
@@ -624,10 +652,10 @@ function renderHome(){
       </div>
       <div style="font-size:38px;font-weight:700;font-variant-numeric:tabular-nums">${total}</div>
     </div>
-    ${(S.pick||[]).length?`<div class="small" style="margin-top:12px"><span class="muted">Your picks, up next:</span> <span class="zh">${S.pick.slice(0,12).map(wid=>byId[wid]?byId[wid].t:'').filter(Boolean).join('、')}</span></div>`:''}
     <div style="margin-top:16px"><button class="btn big" onclick="go('rev')" ${total===0?'disabled':''}>${total===0?'All caught up':'Start reviewing'}</button></div>
     ${totalCards===0?'<div class="small muted" style="margin-top:12px;text-align:center">Nothing in your deck yet — open <span class="link" onclick="go(\'lib\')">Library</span> and add Lesson 1.</div>':''}
   </div>
+  ${qPanel()}
   ${(()=>{const pl=paperList();if(!pl.length)return '';
     return `<div class="card"><div class="row spread"><div class="lab" style="margin-bottom:0">Tonight's paper list · day 1 ×${S.settings.writeTarget} · day 2 ×5 · day 3 ×1</div>
     <button class="btn sm ghost" onclick="printPaperSheet()">Print 田字格 sheet</button></div>
@@ -1492,16 +1520,24 @@ function renderSet(){
       <button class="tgl ${s.includeNames?'on':''}" onclick="S.settings.includeNames=!S.settings.includeNames;save();renderSet();badge()"><i></i></button></div>
   </div>
   <div class="card"><div class="lab">Schedule</div>
-    <div class="set-row"><div><b>New words per day</b><div class="d">each word = up to 2 cards; 8–10 is your target pace</div></div>
-      <input type="number" min="0" max="100" value="${s.newPerDay}" onchange="S.settings.newPerDay=Math.max(0,parseInt(this.value)||0);save();badge()"></div>
+    <div class="set-row"><div><b>New words per day</b><div class="d">how many fresh words may start each day. Unlimited lets a whole lesson in at once — the Up next queue decides the order.</div></div>
+      <div class="row" style="gap:7px">
+        <input type="number" min="0" max="999" value="${s.newPerDay}" ${s.newUnlimited?'disabled':''} onchange="S.settings.newPerDay=Math.max(0,parseInt(this.value)||0);save();renderSet();badge()">
+        <button class="btn sm ${s.newUnlimited?'':'ghost'}" onclick="S.settings.newUnlimited=!S.settings.newUnlimited;save();renderSet();badge()">∞</button>
+      </div></div>
     <div class="set-row"><div><b>Early recall reps</b><div class="d">recall cards forced back on day 1, 2 and 3 before FSRS takes over</div></div>
       <button class="tgl ${s.earlyDrill?'on':''}" onclick="S.settings.earlyDrill=!S.settings.earlyDrill;save();renderSet()"><i></i></button></div>
     <div class="set-row"><div><b>Day-1 paper reps</b><div class="d">boxes per new character on the 田字格 sheet; day 2 tapers to 5, day 3 to 1</div></div>
       <input type="number" min="1" max="100" value="${s.writeTarget}" onchange="S.settings.writeTarget=Math.max(1,parseInt(this.value)||20);save()"></div>
     <div class="set-row"><div><b>Desired retention</b><div class="d">higher = more frequent reviews. 90% is the sweet spot.</div></div>
       <div class="row"><input type="range" min="80" max="97" value="${Math.round(s.retention*100)}" oninput="S.settings.retention=this.value/100;save();this.nextElementSibling.textContent=this.value+'%'"><b>${Math.round(s.retention*100)}%</b></div></div>
-    <div class="set-row"><div><b>Max reviews per day</b></div>
-      <input type="number" min="10" max="1000" value="${s.maxRev}" onchange="S.settings.maxRev=Math.max(10,parseInt(this.value)||200);save();badge()"></div>
+    <div class="set-row"><div><b>Max reviews per day</b><div class="d">a ceiling on due cards, so a backlog can't bury you. ∞ shows everything that's due.</div></div>
+      <div class="row" style="gap:7px">
+        <input type="number" min="10" max="9999" value="${s.maxRev}" ${s.revUnlimited?'disabled':''} onchange="S.settings.maxRev=Math.max(10,parseInt(this.value)||200);save();renderSet();badge()">
+        <button class="btn sm ${s.revUnlimited?'':'ghost'}" onclick="S.settings.revUnlimited=!S.settings.revUnlimited;save();renderSet();badge()">∞</button>
+      </div></div>
+    <div class="set-row"><div><b>Separate the two cards of a word</b><div class="d">once you've done one direction today, its partner waits for tomorrow — so the second one is a real test, not a re-read. Day-1 pairs are exempt.</div></div>
+      <button class="tgl ${s.burySib?'on':''}" onclick="S.settings.burySib=!S.settings.burySib;save();renderSet();badge()"><i></i></button></div>
   </div>
   <div class="card"><div class="lab">Audio & strokes</div>
     <div class="set-row"><div><b>Audio source</b><div class="d">Taiwanese voice = your device's zh-TW voice (Google 國語（臺灣）in Chrome, 美佳 Mei-Jia on Apple). Recording = bundled neural audio — works offline but mainland-accented.</div></div>
@@ -1551,7 +1587,7 @@ document.addEventListener('keydown',e=>{
    v11 — MTC mode: Triage, Drill (認字/聲調/聽寫/造句/口說)
    ============================================================ */
 S.hard = S.hard || [];
-if(!S.settings.curLesson) S.settings.curLesson = 21; /* B2 L6 */
+if(!S.settings.curLesson) S.settings.curLesson = 22; /* B2 L7 */
 if(!S.settings._v11){ S.settings._v11=1; save(); }
 
 function isHard(wid){return (S.hard||[]).includes(wid);}
@@ -2033,6 +2069,175 @@ applyTheme(S.settings.theme||(window.matchMedia&&matchMedia('(prefers-color-sche
 (()=>{const h=new Date().getHours();const g=h<5?'夜深了，加油':h<11?'早安':h<14?'午安':h<18?'下午好':'晚上好';const el=document.getElementById('greet');if(el)el.textContent=g+'，Thorne';})();
 renderHome();badge();
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol)){try{navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}}
+
+
+/* ============================================================
+   v14 — queue control: sibling burying, uncapped intake,
+         and an editable "Up next" priority queue.
+   ============================================================ */
+var qOpen=false;
+S.sib = S.sib || {};                              /* {dayKey:{wid:cid}} — who owns the word today */
+if(S.settings.burySib===undefined) S.settings.burySib = true;
+if(S.settings.newUnlimited===undefined) S.settings.newUnlimited = false;
+if(S.settings.revUnlimited===undefined) S.settings.revUnlimited = false;
+S.pick = S.pick || [];
+
+/* keep S.sib from growing forever — only today and yesterday matter */
+(function pruneSib(){
+  const keep=[dkey(new Date()), dkey(new Date(Date.now()-864e5))];
+  for(const k in S.sib) if(!keep.includes(k)) delete S.sib[k];
+})();
+
+function sibToday(){const t=dkey(new Date());S.sib[t]=S.sib[t]||{};return S.sib[t];}
+/* claim a word for one card — called on every grade */
+function sibClaim(cid){
+  if(!S.settings.burySib)return;
+  const wid=cid.split(':')[0], m=sibToday();
+  if(!m[wid]) m[wid]=cid;
+}
+/* a started card is buried when its word is already owned today by its sibling */
+function sibBuried(cid){
+  if(!S.settings.burySib)return false;
+  const wid=cid.split(':')[0], owner=sibToday()[wid];
+  return !!owner && owner!==cid;
+}
+
+/* ---------- queue: burying + uncapped intake ---------- */
+buildQueue=function(){
+  const now=Date.now(), today=dkey(new Date());
+  const introToday=S.intro[today]||0;
+  const learn=[],rev=[],freshAll=[];
+  for(const cid in S.cards){
+    const c=S.cards[cid], w=wordOf(cid); if(!w)continue;
+    if(c.susp)continue;
+    if(!S.settings.includeNames&&isName(w))continue;
+    if(!S.settings.modes[modeOf(cid)])continue;
+    if(c.st===undefined){freshAll.push(cid);continue;}   /* new pairs are never buried */
+    if(sibBuried(cid))continue;                          /* sibling already done today */
+    if(c.due<=now){(c.st==='rev'?rev:learn).push(cid);}
+  }
+  learn.sort((a,b)=>S.cards[a].due-S.cards[b].due);
+  rev.sort((a,b)=>S.cards[a].due-S.cards[b].due);
+
+  /* both siblings due and neither claimed yet → keep the earlier one, defer the other */
+  if(S.settings.burySib){
+    const seen={};
+    const thin=list=>list.filter(cid=>{
+      const wid=cid.split(':')[0];
+      if(seen[wid])return false;
+      seen[wid]=cid; return true;
+    });
+    const L=thin(learn), R=thin(rev);
+    learn.length=0; learn.push(...L);
+    rev.length=0;   rev.push(...R);
+  }
+
+  const mOrd={rec:0,prod:1};
+  const pickIdx=wid=>{const i=(S.pick||[]).indexOf(wid);return i===-1?9999:i;};
+  freshAll.sort((a,b)=>{const wa=wordOf(a),wb=wordOf(b);return pickIdx(wa.id)-pickIdx(wb.id)||wa.l-wb.l||parseInt(wa.id.slice(1))-parseInt(wb.id.slice(1))||mOrd[modeOf(a)]-mOrd[modeOf(b)];});
+
+  const allowance = S.settings.newUnlimited ? Infinity : Math.max(0,S.settings.newPerDay-introToday);
+  const planned=new Set(); const fresh=[];
+  for(const cid of freshAll){
+    const wid=cid.split(':')[0];
+    if(wordStartedBefore(wid)||planned.has(wid)){fresh.push(cid);continue;}
+    if(planned.size<allowance){planned.add(wid);fresh.push(cid);}
+  }
+  const revCap = S.settings.revUnlimited ? rev.length : S.settings.maxRev;
+  return {learn,rev:rev.slice(0,revCap),fresh};
+};
+
+/* claim the word the moment it's graded */
+rate=(function(orig){return function(cid,g){orig.apply(this,arguments);sibClaim(cid);};})(rate);
+
+/* ---------- the Up-next queue panel ---------- */
+function qToggle(){qOpen=!qOpen;renderHome();}
+function qMove(i,d){
+  const j=i+d; if(j<0||j>=S.pick.length)return;
+  const a=S.pick[i]; S.pick[i]=S.pick[j]; S.pick[j]=a; save(); renderHome();
+}
+function qTop(i){const w=S.pick.splice(i,1)[0];S.pick.unshift(w);save();renderHome();}
+function qDrop(i){S.pick.splice(i,1);save();renderHome();}
+function qClear(){if(S.pick.length&&confirm('Clear the whole up-next list? The words stay in your deck — they just lose their priority.')){S.pick=[];save();renderHome();}}
+
+/* bulk-load a lesson's not-yet-started words onto the end of the queue */
+function qLoadLesson(ln,limit){
+  const add=WORDS.filter(w=>w.l===ln)
+    .filter(w=>S.settings.includeNames||!isName(w))
+    .filter(w=>!isKnown(w.id)&&!wordMastAt(w.id))
+    .filter(w=>!wordStartedBefore(w.id))
+    .map(w=>w.id)
+    .filter(wid=>!S.pick.includes(wid));
+  const take = limit?add.slice(0,limit):add;
+  take.forEach(wid=>{if(!tracked(wid))trackWord(wid);S.pick.push(wid);});
+  save(); renderHome(); badge();
+  return take.length;
+}
+function qLoadHard(){
+  const add=(S.hard||[]).filter(wid=>!wordStartedBefore(wid)&&!S.pick.includes(wid));
+  add.forEach(wid=>{if(!tracked(wid))trackWord(wid);S.pick.push(wid);});
+  save(); renderHome(); badge();
+}
+
+function qStartingToday(){
+  const today=dkey(new Date());
+  const used=S.intro[today]||0;
+  if(S.settings.newUnlimited)return S.pick.length;
+  return Math.max(0,Math.min(S.pick.length, S.settings.newPerDay-used));
+}
+
+function qPanel(){
+  const byId={}; WORDS.forEach(w=>byId[w.id]=w);
+  const today=dkey(new Date());
+  const used=S.intro[today]||0;
+  const cap=S.settings.newUnlimited?'∞':S.settings.newPerDay;
+  const willStart=qStartingToday();
+  const n=S.pick.length;
+  const ln=S.settings.curLesson||21;
+
+  const rows=S.pick.map((wid,i)=>{
+    const w=byId[wid]; if(!w)return '';
+    const on = S.settings.newUnlimited || i < willStart;
+    return `<div class="qrow ${on?'':'later'}">
+      <span class="qn">${i+1}</span>
+      <span class="zh qz">${esc(w.t.split('（')[0])}</span>
+      <span class="qp">${esc(w.p)}</span>
+      <span class="qm">${esc(w.m)}</span>
+      <span class="qL">${esc(lnLabel(w.l))}</span>
+      <span class="qacts">
+        <button class="qb" title="send to top" onclick="qTop(${i})">⤒</button>
+        <button class="qb" title="up" onclick="qMove(${i},-1)">▲</button>
+        <button class="qb" title="down" onclick="qMove(${i},1)">▼</button>
+        <button class="qb x" title="remove" onclick="qDrop(${i})">✕</button>
+      </span></div>`;
+  }).join('');
+
+  return `<div class="card">
+    <div class="row spread">
+      <div><div class="lab" style="margin-bottom:2px">Up next · ${n} queued</div>
+        <div class="small muted">${S.settings.newUnlimited
+          ? `<b style="color:var(--acc)">Unlimited</b> — all ${n} start today`
+          : `${used} of ${cap} new words started today · <b style="color:var(--acc)">${willStart}</b> more will start now`}</div></div>
+      <button class="btn sm ghost" onclick="qToggle()">${qOpen?'Hide':'Edit queue'}</button>
+    </div>
+    ${qOpen?`
+    <div class="qload">
+      <select class="qsel" onchange="S.settings.curLesson=+this.value;save();renderHome()">
+        ${Array.from({length:30},(_,k)=>k+1).map(x=>`<option value="${x}" ${x===ln?'selected':''}>${esc(lnLabel(x))} — ${WORDS.filter(y=>y.l===x&&!isName(y)).length} words</option>`).join('')}
+      </select>
+      <button class="btn sm ghost" onclick="qLoadLesson(${ln})">Load all</button>
+      <button class="btn sm ghost" onclick="qLoadLesson(${ln},10)">+10</button>
+      <button class="btn sm ghost" onclick="qLoadLesson(${ln},20)">+20</button>
+      <button class="btn sm ghost" onclick="qLoadHard()">Hard list</button>
+      ${n?`<button class="btn sm ghost" style="color:var(--red);border-color:#e8d5d2" onclick="qClear()">Clear</button>`:''}
+    </div>
+    ${n?`<div class="qlist">${rows}</div>
+    <div class="small muted" style="margin-top:10px">Order is the order they'll be introduced. ${S.settings.newUnlimited?'':'Greyed rows are past the new-word cap for today — raise it, or switch to unlimited in Settings → Schedule.'} A word leaves this list the moment it starts.</div>`
+    :`<div class="small muted" style="margin-top:12px">Nothing queued. Load a lesson above, or use <span class="link" onclick="go('lib')">Triage a lesson</span> — anything you mark <b>Hard</b> lands here automatically.</div>`}`
+    :(n?`<div class="small" style="margin-top:10px"><span class="zh">${S.pick.slice(0,14).map(wid=>byId[wid]?esc(byId[wid].t.split('（')[0]):'').filter(Boolean).join('、')}</span>${n>14?` <span class="muted">+${n-14}</span>`:''}</div>`:'')}
+  </div>`;
+}
+
 </script>
 </body>
 </html>
