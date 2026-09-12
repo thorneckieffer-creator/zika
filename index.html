@@ -2088,8 +2088,8 @@ if('serviceWorker' in navigator&&/^https?:/.test(location.protocol)){try{navigat
    that lesson's words belong to Dialogue I. Everything after is
    Dialogue II. Taken from the textbook vocabulary lists.
    ============================================================ */
-const DLGSPLIT={22:19};   /* B2 L7: 垃圾…怎麼辦 = D1 (19), 聊…路上 = D2 (23) */
-const DLG={};
+var DLGSPLIT={22:19};   /* B2 L7: 垃圾…怎麼辦 = D1 (19), 聊…路上 = D2 (23) */
+var DLG={};
 (function(){for(const k in DLGSPLIT){const n=+DLGSPLIT[k];
   WORDS.filter(w=>w.l===+k).forEach((w,i)=>{DLG[w.id]=i<n?1:2;});}})();
 function dlgOf(wid){return DLG[wid]||0;}
