@@ -480,7 +480,7 @@ function rate(cid,g){
 
 /* ============ CARDS / MODES ============ */
 const MODES=['rec','prod'];
-const MODE_LABEL={rec:'Recognize · 認字',prod:'Write & pronounce · 寫字'};
+const MODE_LABEL={rec:'Recognize · 認字',prod:'Recall · 回想'};
 function cardId(wid,m){return wid+':'+m;}
 function wordOf(cid){return byId[cid.split(':')[0]];}
 function modeOf(cid){return cid.split(':')[1];}
@@ -646,9 +646,9 @@ function renderHome(){
     <div class="fc">${fc.map((v,i)=>`<div class="bar ${i===0?'t':''}"><i style="height:${Math.round(v/fmax*44)+2}px"></i><span>${names[i]}</span><b>${v}</b></div>`).join('')}</div>
     <div class="small muted" style="margin-top:6px;text-align:center">cards coming due over the next week</div>
     <details class="guide"><summary>How this app works ›</summary><div class="gd">
-      <p><b>Adding words.</b> In the Library, tap ＋ next to a word (or "Study lesson") to put it in your deck. Each word becomes two cards: <b>Recognize</b> — see the 字, recall meaning + pronunciation — and <b>Write & pronounce</b> — see the English, write the character from memory and say it with correct tones. Already know a word from your simplified days? Tap ✓ instead: it skips the learning phase entirely and quietly resurfaces in ~3 weeks just to verify.</p>
+      <p><b>Adding words.</b> In the Library, tap ＋ next to a word (or "Study lesson") to put it in your deck. Each word becomes two recognition cards: <b>Recognize</b> — see the 字, recall its meaning, pinyin and tones — and <b>Recall</b> — see the English, recall which 字 it is and say it with the right tones. Neither asks you to write on screen; handwriting lives on paper and in Skritter. Already know a word from your simplified days? Tap ✓ instead: it skips the learning phase entirely and quietly resurfaces in ~3 weeks just to verify.</p>
       <p><b>Timing (FSRS).</b> Every grade feeds a memory model that estimates how long until you'd forget that exact card, and the next review lands just before that moment. Intervals stretch as a card gets stronger (10m → 1d → 3d → 8d → 20d…) and shrink when you miss. "Again" restarts a card through short steps, "Good" is the normal path, "Easy" jumps ahead. The small number under each button is the exact wait it will apply.</p>
-      <p><b>Early writing reps.</b> New characters follow a taper on real paper: day 1 you write them ×20, day 2 they return for ×5, day 3 one last re-exposure — then FSRS takes over. The "Tonight's paper list" card collects exactly which characters are at which day and prints a 田字格 sheet with the right number of boxes. Words you mark ✓ or ★ skip paper entirely.</p>
+      <p><b>Early reps &amp; paper.</b> New characters follow a taper on real paper: day 1 you write them ×20, day 2 they return for ×5, day 3 one last re-exposure — then FSRS takes over. The "Tonight's paper list" card collects exactly which characters are at which day and prints a 田字格 sheet with the right number of boxes. Words you mark ✓ or ★ skip paper entirely.</p>
       <p><b>Grammar.</b> The Grammar tab holds every pattern from the Zhong Chinese lessons, each drilled five ways: fill-in-the-blank, multiple choice, build-the-sentence, finish-the-sentence, and create-your-own. Mastery dots fill as you drill.</p>
       <p><b>Daily flow.</b> ~9 new words per day by default (Settings), plus whatever is due. Miss a day? Nothing is lost — cards simply wait.</p>
     </div></details>
@@ -1221,7 +1221,7 @@ function renderBrain(){
         const mem=w.mem!==null?Math.round(w.mem*100):null;
         const cardLine=MODES.filter(m=>S.settings.modes[m]).map(m=>{
           const c=S.cards[cardId(w.id,m)];
-          const nm=m==='rec'?'Recognize':'Write';
+          const nm=m==='rec'?'Recognize':'Recall';
           if(!c)return '<span>'+nm+' <b>—</b></span>';
           if(c.st===undefined)return '<span>'+nm+' <b>queued</b></span>';
           return '<span>'+nm+' <b>'+(c.S<1?'<1':Math.round(c.S))+'d hold</b> · '+fmtDueIn(c)+'</span>';
@@ -1409,19 +1409,16 @@ function renderRev(){
       ${compLines(w.t)}`;
   } else {
     front=`${w.pos?`<div class="pos">${esc(w.pos)}</div>`:''}
-      <div class="meaning" style="font-size:19px">${esc(w.m)}</div>
-      ${hintShown?`<div class="pyline" style="font-size:22px">${tonePinyin(esc(w.p))}</div>`:`<div class="hint"><span class="link" onclick="hintShown=true;renderRev()">show pinyin hint</span></div>`}
-      <div class="hint">write the 字 from memory — and say it with tones</div>
-      <div class="canv-box"><canvas id="pad" class="pad"></canvas></div>
-      <div class="canv-tools"><button class="btn sm ghost" onclick="clearPad()">Clear</button></div>`;
-    back=`<div id="strokeHost" class="strokerow"></div>
-      <div id="strokeHost-fb" class="bigzh kai" style="font-size:80px;display:none">${esc(w.t)}</div>
-      <div class="stroketools"><button class="btn sm ghost" onclick="playStrokes()">Replay strokes ▶</button></div>
+      <div class="meaning" style="font-size:23px">${esc(w.m)}</div>
+      ${hintShown?`<div class="pyline" style="font-size:26px">${tonePinyin(esc(w.p))}</div>`:`<div class="hint"><span class="link" onclick="hintShown=true;renderRev()">show pinyin hint</span></div>`}
+      <div class="hint">which 字? — say it aloud with the tones, then check</div>`;
+    back=`<div class="bigzh zh" style="font-size:56px">${esc(w.t)}</div>
+      ${S.settings.strokeAnim?`<div id="strokeHost" class="strokerow"></div>
+      <div class="stroketools"><button class="btn sm ghost" onclick="playStrokes()">Replay strokes ▶</button></div>`:''}
+      <div class="pos" style="text-align:center">${esc(w.m)}</div>
       <div class="row" style="justify-content:center;gap:9px"><span class="pyline" style="font-size:21px">${tonePinyin(esc(w.p))}</span>${spkBtn(w.id)}</div>
       ${w.s?`<div class="simpnote">简体 ${esc(w.s)}</div>`:''}
-      ${compLines(w.t)}
-      <div class="canv-box"><div class="canv-ghost kai" id="ghost" style="display:${S.settings.ghost?'flex':'none'}">${esc(w.t[0]||'')}</div><canvas id="pad" class="pad"></canvas></div>
-      <div class="canv-tools"><button class="btn sm ghost" onclick="clearPad()">Clear</button><button class="btn sm ghost" onclick="toggleGhost()">${S.settings.ghost?'Hide':'Show'} trace</button></div>`;
+      ${compLines(w.t)}`;
   }
   el.innerHTML=`
   <div class="rev-top">
@@ -1441,9 +1438,8 @@ function renderRev(){
   const pad=document.getElementById('pad'); if(pad)initPad(pad);
   if(revealed){
     if(S.settings.autoplayAudio)setTimeout(()=>speakWord(w.id),120);
-    if(m==='prod'){
-      if(S.settings.strokeAnim){renderStrokes('strokeHost',w.t.split('（')[0],{});}
-      else{const h=document.getElementById('strokeHost');if(h)h.style.display='none';const t=document.querySelector('.stroketools');if(t)t.style.display='none';const fb=document.getElementById('strokeHost-fb');if(fb)fb.style.display='';}
+    if(m==='prod'&&S.settings.strokeAnim&&document.getElementById('strokeHost')){
+      renderStrokes('strokeHost',w.t.split('（')[0],{});
     }
   }
 }
@@ -1488,8 +1484,9 @@ function clearPad(){const cv=document.getElementById('pad');if(!cv)return;const 
 function renderSet(){
   const s=S.settings;
   document.getElementById('vSet').innerHTML=`
+  ${bkPanel()}
   <div class="card"><div class="lab">Card types</div>
-    ${MODES.map(m=>`<div class="set-row"><div><b>${MODE_LABEL[m]}</b><div class="d">${m==='rec'?'see the 字 → recall meaning + pronunciation':'see the English → write the 字 + say the tones'}</div></div>
+    ${MODES.map(m=>`<div class="set-row"><div><b>${MODE_LABEL[m]}</b><div class="d">${m==='rec'?'see the 字 → recall meaning + pinyin + tones':'see the English → recall the 字, its pinyin and its tones'}</div></div>
       <button class="tgl ${s.modes[m]?'on':''}" onclick="S.settings.modes.${m}=!S.settings.modes.${m};save();renderSet();badge()"><i></i></button></div>`).join('')}
     <div class="set-row"><div><b>Include names</b><div class="d">people like 陳月美 — off by default</div></div>
       <button class="tgl ${s.includeNames?'on':''}" onclick="S.settings.includeNames=!S.settings.includeNames;save();renderSet();badge()"><i></i></button></div>
@@ -1497,7 +1494,7 @@ function renderSet(){
   <div class="card"><div class="lab">Schedule</div>
     <div class="set-row"><div><b>New words per day</b><div class="d">each word = up to 2 cards; 8–10 is your target pace</div></div>
       <input type="number" min="0" max="100" value="${s.newPerDay}" onchange="S.settings.newPerDay=Math.max(0,parseInt(this.value)||0);save();badge()"></div>
-    <div class="set-row"><div><b>Early writing reps</b><div class="d">writing cards forced back on day 1, 2 and 3 before FSRS takes over</div></div>
+    <div class="set-row"><div><b>Early recall reps</b><div class="d">recall cards forced back on day 1, 2 and 3 before FSRS takes over</div></div>
       <button class="tgl ${s.earlyDrill?'on':''}" onclick="S.settings.earlyDrill=!S.settings.earlyDrill;save();renderSet()"><i></i></button></div>
     <div class="set-row"><div><b>Day-1 paper reps</b><div class="d">boxes per new character on the 田字格 sheet; day 2 tapers to 5, day 3 to 1</div></div>
       <input type="number" min="1" max="100" value="${s.writeTarget}" onchange="S.settings.writeTarget=Math.max(1,parseInt(this.value)||20);save()"></div>
@@ -1529,7 +1526,7 @@ function renderSet(){
     <div class="set-row"><div><b>Character stories</b><div class="d">component breakdown (女＋馬＝媽) on card answers; full etymology in the Brain</div></div>
       <button class="tgl ${s.showComp!==false?'on':''}" onclick="S.settings.showComp=S.settings.showComp===false?true:false;save();renderSet()"><i></i></button></div>
   </div>
-  ${bkPanel()}`;
+  `;
 }
 function exportData(){
   const blob=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
