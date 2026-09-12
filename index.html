@@ -2092,9 +2092,11 @@ var DLGSPLIT={22:19};   /* B2 L7: 垃圾…怎麼辦 = D1 (19), 聊…路上 = D
 var DLG={};
 (function(){for(const k in DLGSPLIT){const n=+DLGSPLIT[k];
   WORDS.filter(w=>w.l===+k).forEach((w,i)=>{DLG[w.id]=i<n?1:2;});}})();
-function dlgOf(wid){return DLG[wid]||0;}
-function hasDlg(ln){return !!DLGSPLIT[ln];}
-function dlgWords(ln,d){return WORDS.filter(w=>w.l===ln&&(S.settings.includeNames||!isName(w))&&dlgOf(w.id)===d);}
+/* defensive: the app's first render runs before this block executes, so these
+   must never throw on undefined — otherwise the rest of the script dies. */
+function dlgOf(wid){return (typeof DLG!=='undefined'&&DLG&&DLG[wid])||0;}
+function hasDlg(ln){return !!(typeof DLGSPLIT!=='undefined'&&DLGSPLIT&&DLGSPLIT[ln]);}
+function dlgWords(ln,d){if(!hasDlg(ln))return [];return WORDS.filter(w=>w.l===ln&&(S.settings.includeNames||!isName(w))&&dlgOf(w.id)===d);}
 function dlgTag(wid){const d=dlgOf(wid);return d?`<span class="dtag d${d}">聽寫${d===1?'一':'二'}</span>`:'';}
 var qOpen=false;
 S.sib = S.sib || {};                              /* {dayKey:{wid:cid}} — who owns the word today */
@@ -2262,6 +2264,9 @@ function qPanel(){
   </div>`;
 }
 
+
+/* everything above is defined now — redo the initial paint */
+try{ go((typeof view!=='undefined'&&view)?view:'home'); badge(); }catch(e){}
 </script>
 </body>
 </html>
