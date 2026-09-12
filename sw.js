@@ -1,5 +1,5 @@
 /* 字卡 service worker — cache-first so reviews work offline (MRT-proof) */
-const VERSION = 'zika-v11';
+const VERSION = 'zika-v12';
 const CORE = ['./', './index.html', './manifest.webmanifest', './assets/hanzi-writer.min.js', './assets/strokes.json', './assets/icon-192.png', './assets/icon-512.png'];
 
 self.addEventListener('install', e => {
