@@ -349,6 +349,10 @@ select.vsel{max-width:230px;padding:7px 9px;border:1px solid var(--line);border-
 .lnchip{display:inline-block;margin-left:7px;font-size:10px;color:var(--mut2);letter-spacing:.04em;
   border:1px solid var(--line2);border-radius:99px;padding:1px 7px;vertical-align:1px}
 #libResults .wl{border-top:1px solid var(--line2);margin-top:8px}
+/* v17 — confidence levels (shared scale with Notion) */
+.tag.c1{color:var(--red)} .tag.c2{color:var(--amber)} .tag.c3{color:var(--acc)} .tag.c4{color:var(--blue)}
+.confrow{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:4px 0 6px}
+.confrow .stat .n{font-size:22px}
 </style>
 </head>
 <body>
@@ -2492,6 +2496,88 @@ renderLib=function(){
 
 /* everything above is defined now — redo the initial paint */
 try{ go((typeof view!=='undefined'&&view)?view:'home'); badge(); }catch(e){}
+
+/* ============================================================
+   v17 — Confidence levels, one scale shared with Notion.
+   1 Hard · 2 Learning · 3 Know · 4 Mastered.
+   Derived from the real card state every time it is read, so
+   reviews can promote a word (stable ≥21 d → Know, ≥60 d →
+   Mastered) or demote it (a lapse drops it back to Learning).
+   The hard list always wins. S.conf carries a snapshot keyed
+   "詞|B2 L6" → level, which is what the Notion sync reads.
+   ============================================================ */
+const CONF=[null,
+  {t:'Hard',     c:'c1', d:'on the hard list — drill it'},
+  {t:'Learning', c:'c2', d:'in the deck, not yet stable'},
+  {t:'Know',     c:'c3', d:'stable for 3 weeks or more'},
+  {t:'Mastered', c:'c4', d:'stable for 2 months or more'}];
+function confOf(wid){
+  if(isHard(wid))return 1;
+  const cs=MODES.map(m=>S.cards[cardId(wid,m)]).filter(Boolean);
+  if(!cs.length)return 0;
+  const real=cs.filter(c=>c.st!==undefined);
+  if(!real.length||real.length<cs.length)return 2;
+  const minS=Math.min(...real.map(c=>c.S||0));
+  return minS>=60?4:minS>=21?3:2;
+}
+function confCounts(ln){
+  const n=[0,0,0,0,0];
+  for(const w of WORDS){ if(ln&&w.l!==ln)continue; if(!S.settings.includeNames&&isName(w))continue; n[confOf(w.id)]++; }
+  return n;
+}
+function confSnapshot(){
+  const words={};
+  for(const w of WORDS){ const l=confOf(w.id); if(l) words[w.t+'|'+lnLabel(w.l)]=l; }
+  return {v:1, at:new Date().toISOString(), scale:{1:'Hard',2:'Learning',3:'Know',4:'Mastered'}, words};
+}
+/* every save refreshes the snapshot, so the backup file and Export always carry it */
+const _save17=save;
+save=function(){ try{ S.conf=confSnapshot(); }catch(e){} _save17(); };
+/* saying "I know it" / "mastered" takes a word off the hard list — otherwise Hard would keep winning */
+const _markKnown17=markKnown, _markMastered17=markMastered;
+markKnown=function(wid){ if(isHard(wid))S.hard=S.hard.filter(x=>x!==wid); _markKnown17(wid); };
+markMastered=function(wid){ if(isHard(wid))S.hard=S.hard.filter(x=>x!==wid); _markMastered17(wid); };
+/* Triage: "Learning" on a word already Know/Mastered resets its cards so the level really drops */
+const _triageAct17=triageAct;
+triageAct=function(a){
+  if(tri){ const wid=tri.list[tri.i];
+    if(wid&&a==='learn'){ if(isHard(wid))S.hard=S.hard.filter(x=>x!==wid); if(confOf(wid)>=3)MODES.forEach(m=>{if(S.settings.modes[m])S.cards[cardId(wid,m)]={};}); }
+  }
+  _triageAct17(a);
+};
+/* Library rows show the level instead of the old queued/learning/solid tag */
+const _wrow17=wrowHtml;
+wrowHtml=function(w,showLn){
+  const h=_wrow17(w,showLn), l=confOf(w.id);
+  if(!l)return h;
+  return h.replace(/<span class="tag (?:known|new|due|ok|mat)">[^<]*<\/span>/, `<span class="tag ${CONF[l].c}" title="${CONF[l].d}">${CONF[l].t}</span>`);
+};
+/* Settings card: counts + the sync file */
+function confText(){ return JSON.stringify(confSnapshot()); }
+function confCopy(){
+  const t=confText();
+  const done=()=>alert('Copied — paste it to Claude to update the Notion Confidence column.');
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,()=>prompt('Copy this:',t));}
+  else prompt('Copy this:',t);
+}
+function confDownload(){
+  const blob=new Blob([confText()],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='zika-notion-sync-'+dkey(new Date())+'.json';a.click();
+}
+function confPanel(){
+  const n=confCounts();
+  return `<div class="card"><div class="lab">Confidence · shared with Notion</div>
+    <div class="confrow">${[1,2,3,4].map(l=>`<div class="stat"><div class="n">${n[l]}</div><div class="l"><span class="tag ${CONF[l].c}">${l} · ${CONF[l].t}</span></div></div>`).join('')}</div>
+    <div class="small muted" style="margin-bottom:10px">The same four levels as the <b>Confidence</b> column of the Notion Characters table. They come from your real card state — Triage sets them, and reviews move them: stable 3+ weeks → Know, 2+ months → Mastered, a lapse → back to Learning. Hard always wins while a word is on the hard list. Your automatic backup file carries these levels, so Claude can read it and update Notion.</div>
+    <div class="set-row"><div><b>Sync file</b><div class="d">Just the levels, keyed by word and lesson. Copy or download it and hand it to Claude to update Notion right now.</div></div>
+      <div class="row"><button class="btn ghost sm" onclick="confCopy()">Copy</button><button class="btn ghost sm" onclick="confDownload()">Download</button></div></div>
+  </div>`;
+}
+const _renderSet17=renderSet;
+renderSet=function(){ _renderSet17(); try{ document.getElementById('vSet').insertAdjacentHTML('afterbegin',confPanel()); }catch(e){} };
+if(!S.conf){ try{ save(); }catch(e){} }
+try{ if(typeof view!=='undefined'&&view==='set')renderSet(); if(typeof view!=='undefined'&&view==='lib')renderLib(); }catch(e){}
 </script>
 </body>
 </html>
