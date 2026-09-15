@@ -496,6 +496,66 @@ html[data-theme="dark"] .chip.warn{border-color:#5a2f28}
 .ct-b .ct-n i{font-style:normal;color:var(--mut2);font-weight:600}
 .ctile.none .ct-n{color:var(--mut2)}
 .catnote{font-size:12px;color:var(--acc);background:var(--accT);border-radius:9px;padding:6px 11px;margin:2px 0 10px;display:inline-block}
+/* ---- v22: learning engine ---- */
+.nlink{font-size:11.5px;font-weight:600;color:var(--blue);text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:3px 9px;white-space:nowrap}
+.nlink:hover{background:var(--tint)}
+.mtag.gram{color:var(--plum)}
+.stage .bigzh.cloze{font-size:34px;line-height:1.5;font-weight:500}
+.stage .cloze .blank{display:inline-block;min-width:44px;border-bottom:2px solid var(--ink);margin:0 2px}
+.stage .cloze .hit{color:var(--acc);font-weight:600;border-bottom:2px solid var(--acc)}
+.gcard-pt{border-top:1px dashed var(--line2);margin-top:6px;padding-top:12px;font-size:14px}
+.grasp{font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:99px;padding:2px 8px;white-space:nowrap;margin-left:auto}
+.grasp.s0{background:var(--s0bg);color:var(--s0fg)}.grasp.s1{background:var(--s1bg);color:var(--s1fg)}.grasp.s2{background:var(--s2bg);color:var(--s2fg)}.grasp.s3{background:var(--s3bg);color:var(--s3fg)}.grasp.s4{background:var(--s4bg);color:var(--s4fg)}
+.gpt>.gh .gdots{margin-left:8px}
+/* grasp map */
+.famlist{display:flex;flex-direction:column;gap:6px}
+.fam{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--tint)}
+.fam:last-child{border-bottom:0}
+.fam-h{display:flex;flex-direction:column;gap:1px}
+.fam-h b{font-size:13.5px}
+.fam-dots{display:flex;flex-wrap:wrap;gap:4px;grid-column:1}
+.fam-dots i{width:14px;height:14px;border-radius:4px;cursor:pointer;transition:transform .1s;display:block}
+.fam-dots i:hover{transform:scale(1.3)}
+.fam-acts{grid-column:2;grid-row:1/3;display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:560px){.fam{grid-template-columns:1fr}.fam-acts{grid-column:1;grid-row:auto;justify-content:flex-start}}
+/* which one */
+.cfgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}
+.cftile{border:1px solid var(--line);background:var(--panel);border-radius:13px;padding:10px 12px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;transition:transform .15s,box-shadow .15s;color:var(--ink);border-left-width:4px}
+.cftile:hover{transform:translateY(-1px);box-shadow:0 8px 18px -12px rgba(0,0,0,.35)}
+.cftile b{font-size:17px;font-weight:600}
+.cftile span{font-size:11.5px;color:var(--mut)}
+.cftile i{font-style:normal;font-size:10.5px;color:var(--mut2);font-variant-numeric:tabular-nums}
+.cftile.s0{border-left-color:var(--line2)}.cftile.s1{border-left-color:var(--red)}.cftile.s2{border-left-color:var(--amber)}.cftile.s3{border-left-color:var(--acc)}.cftile.s4{border-left-color:var(--gold)}
+.why{font-size:14px;border-radius:11px;padding:10px 14px;max-width:520px;margin:4px auto 0;text-align:left}
+.why.ok{background:var(--accT);color:var(--acc)} .why.bad{background:#f6e3df;color:var(--red)}
+html[data-theme="dark"] .why.bad{background:#3d2420}
+.rule{font-size:12.5px;color:var(--mut);max-width:520px;margin:6px auto 0;text-align:left;border-top:1px dashed var(--line2);padding-top:8px}
+.rule b{font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-right:6px}
+/* reading sprint */
+.readline{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:560px;margin:0 auto}
+.readline .seg{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:6px 10px;font-size:24px;cursor:pointer;line-height:1.3;transition:background .15s}
+.readline .seg.nw{border-style:dashed;color:var(--mut)}
+.readline .seg:hover{background:var(--tint)}
+.readline .seg.unk{background:#f6e3df;border-color:var(--red);color:var(--red)}
+html[data-theme="dark"] .readline .seg.unk{background:#3d2420}
+.readline .pun{font-size:24px;color:var(--mut2)}
+/* catch-up tiers */
+.tier{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--tint)}
+.tier:last-of-type{border-bottom:0}
+.tier-b{flex:1;min-width:0}
+.tier-b b{font-size:13.5px}
+.tier-acts{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;flex:none}
+@media(max-width:560px){.tier{flex-wrap:wrap}.tier-acts{width:100%;justify-content:flex-start;padding-left:56px}}
+/* weekday plan */
+.pacts{display:flex;flex-wrap:wrap;gap:6px}
+.pact{border:1px solid var(--line2);background:var(--panel);color:var(--ink);border-radius:99px;padding:7px 13px;font-size:12.5px;font-weight:600;cursor:pointer;text-decoration:none;transition:transform .1s,background .15s}
+.pact:hover{background:var(--tint);transform:translateY(-1px)}
+.pact.nl{color:var(--blue)}
+.cu{margin-top:10px;border-top:1px dashed var(--line2);padding-top:10px;font-size:13.5px}
+/* phonetic series */
+.phgrid{display:flex;flex-wrap:wrap;gap:8px}
+.ph{display:inline-flex;align-items:center;gap:4px;background:var(--tint);border-radius:10px;padding:5px 8px}
+.ph-k{font-size:13px;color:var(--mut);margin-right:3px;border-right:1px solid var(--line2);padding-right:6px}
 </style>
 </head>
 <body>
@@ -3375,6 +3435,405 @@ renderBrain=(function(orig){return function(){renderBrain._in=true;try{orig.appl
   }catch(e){}
 };})(renderBrain);
 try{ if(view==='lib')renderLib(); if(view==='brain')renderBrain(); }catch(e){}
+
+/* ============================================================
+   v22 data — Notion links, confusable families, catch-up tiers,
+   weekday plan. Everything here is transcribed from Thorne's
+   Notion (Grammar Index, 學習流程, 追進度, 複習 test prep, B2 L6/L7).
+   ============================================================ */
+const NOTION={
+  hub:'https://app.notion.com/p/3d36bf9d399581a9a777d410d7d1c5c0',
+  index:'https://app.notion.com/p/3d36bf9d399581379b21fd2b3287d808',
+  flow:'https://app.notion.com/p/3d96bf9d39958197bd8ac54df73c2cc5',
+  catchup:'https://app.notion.com/p/3d36bf9d3995810c98e0ce9e15caeb93',
+  prep:'https://app.notion.com/p/3d36bf9d39958107b30dfdca3c9ca0b3',
+  book1:'https://app.notion.com/p/3da6bf9d399581f0acdce827bfe67393',
+  chars:'https://app.notion.com/p/c38613d85f17432fbc42cdbb3a822a3d'
+};
+/* app lesson number → Notion lesson page (B1 L1–L9 have no page; the Grammar Index is their record) */
+const NOTION_LESSON={10:'3d36bf9d399581b6b464cdeb1d51efb7',11:'3d36bf9d399581deb910ffd3acfb8a42',12:'3d36bf9d3995815a8dfdec362e430d6e',13:'3d36bf9d3995817fb37fcbf6235dcca7',14:'3d36bf9d399581159e3dde3fd2fecb56',15:'3d36bf9d399581edbeb5d6fa40271af8',16:'3d36bf9d399581a5a577d28e1299beb8',17:'3d36bf9d3995819ca642df9fcfbb22e9',18:'3d36bf9d39958158a7f0f97fdcfbdbc7',19:'3d36bf9d3995810ba90cd7782264a696',20:'3d36bf9d399581d78edfdca54d0a13de',21:'3d36bf9d399581488639c55d7dcff58c',22:'3d36bf9d39958192862fe0b3ce623643'};
+function notionLesson(ln){return NOTION_LESSON[ln]?('https://app.notion.com/p/'+NOTION_LESSON[ln]):NOTION.index;}
+function notionLink(ln,txt){return `<a class="nlink" href="${notionLesson(ln)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${txt||'Notion ↗'}</a>`;}
+
+/* ---- grammar families, in the order the Grammar Index tells the story ---- */
+const GFAM=[
+  {k:'q',   t:'Asking · 嗎 · 呢 · 是不是 · QW+都', zh:'問句', m:p=>/^(嗎|呢|是不是|都|什麼都|誰都|哪裡都)$/.test(p.tgt[0]||'')||/嗎|呢|是不是|QW/.test(p.t)},
+  {k:'neg', t:'Negation · 不 · 沒', zh:'不／沒', m:p=>p.tgt.some(t=>/^(不|沒|沒有|不是)$/.test(t))||/不 vs 沒|不／沒|不\/沒/.test(p.t)},
+  {k:'modal',t:'Modals · 能 · 會 · 可以', zh:'能／會／可以', m:p=>p.tgt.some(t=>/^(能|會|可以|應該|得)$/.test(t))},
+  {k:'ba',  t:'把 · fronting the object', zh:'把', m:p=>p.tgt.includes('把')||/把/.test(p.t)},
+  {k:'zai', t:'在 · 到 · 著 · 正在', zh:'在／到', m:p=>p.tgt.some(t=>/^(在|到|著|正在|V在|V到)$/.test(t))||/在|到/.test(p.t)&&!/現在/.test(p.t)},
+  {k:'le',  t:'了 · six jobs, one character', zh:'了', m:p=>p.tgt.some(t=>/了/.test(t))||/了/.test(p.t)},
+  {k:'time',t:'Time order · 以後 · 以前 · 的時候 · 先…再', zh:'時間', m:p=>p.tgt.some(t=>/^(以後|以前|的時候|先|再|然後|一邊|有時候)$/.test(t))||/duration|Time-When|時候|以後|以前/.test(p.t)},
+  {k:'jiucai',t:'就 · 才 · 一…就', zh:'就／才', m:p=>p.tgt.some(t=>/^(就|才|一…就)$/.test(t))||/就|才/.test(p.t)},
+  {k:'cmp', t:'Comparison · 比 · 比較 · 跟…一樣 · 更 · 差不多', zh:'比較', m:p=>p.tgt.some(t=>/^(比|比較|一樣|更|沒有|差不多|最)$/.test(t))||/比|一樣|compar/i.test(p.t)},
+  {k:'dian',t:'一點 · 有一點 · 一點也不 · 多／少 V', zh:'一點', m:p=>p.tgt.some(t=>/一點|多|少/.test(t))&&!/多久|多少/.test(p.t)},
+  {k:'redup',t:'Reduplication · VV · VV看 · AABB · ABAB', zh:'重疊', m:p=>/VV|AABB|ABAB|reduplic|V（一）V|一下/i.test(p.t)},
+  {k:'laiqu',t:'來／去 · directions · 過', zh:'來／去', m:p=>p.tgt.some(t=>/^(來|去|過|出來|進去|過來|過去|往)$/.test(t))||/direction|來／去|來\/去|方向/i.test(p.t)},
+  {k:'cause',t:'Cause & purpose · 因為 · 為了 · 要不然 · 如果 · 雖然', zh:'因果', m:p=>p.tgt.some(t=>/^(因為|所以|為了|要不然|如果|要是|雖然|可是|但是|而且)$/.test(t))},
+  {k:'de',  t:'的 · 得 · 地 · clause + 的 + N', zh:'的／得／地', m:p=>p.tgt.some(t=>/^(的|得|地)$/.test(t))||/的|得/.test(p.t)&&!/覺得/.test(p.t)},
+  {k:'m',   t:'Measure words & numbers', zh:'量詞', m:p=>/measure|量|個|張|塊|杯|支|種|輛|件|位/i.test(p.t)}
+];
+function famOf(p){for(const f of GFAM){try{if(f.m(p))return f.k;}catch(e){}}return 'other';}
+
+/* ---- "Which one?" — the confusable pairs from Notion, with the rule of thumb each time ---- */
+const CONFUSE=[
+ {k:'neg',t:'不 or 沒？',zh:'不／沒',rule:'不 = intention, habit, or a state/quality (不熱, 不好寫, 不去 = won’t go). 沒 = something that didn’t happen, or 有 (沒去 = didn’t go, 沒忘, 沒有錢).',opts:['不','沒'],q:[
+  {zh:'我覺得今天⬚熱，不必多穿一點。',a:'不',en:'I don’t think it’s hot today, no need to wear more.',why:'熱 is a state → 不.'},
+  {zh:'去年他來臺灣的時候太忙了，⬚去夜市。',a:'沒',en:'Last year he was too busy in Taiwan and didn’t go to the night market.',why:'It didn’t happen → 沒.'},
+  {zh:'我⬚忘！我等一下要去圖書館念書。',a:'沒',en:'I didn’t forget! I’m going to the library to study in a bit.',why:'沒忘 — the forgetting didn’t happen.'},
+  {zh:'中文很好學，可是中國字⬚好寫。',a:'不',en:'Chinese is easy to learn, but the characters aren’t easy to write.',why:'好寫 is a Vs (a quality) → 不.'},
+  {zh:'昨天我⬚去學校上課。',a:'沒',en:'Yesterday I didn’t go to class.',why:'Past event that didn’t happen → 沒.'},
+  {zh:'他明天⬚來，他要去台中。',a:'不',en:'He isn’t coming tomorrow, he’s going to Taichung.',why:'Intention / future → 不.'},
+  {zh:'我還⬚吃早飯，有一點餓。',a:'沒',en:'I haven’t eaten breakfast yet, I’m a bit hungry.',why:'還沒 + V = not yet.'},
+  {zh:'他⬚喜歡喝咖啡，每天都喝茶。',a:'不',en:'He doesn’t like coffee, he drinks tea every day.',why:'Habit / preference → 不.'}]},
+ {k:'jiucai',t:'就 or 才？',zh:'就／才',rule:'就 = sooner, earlier, easier than expected (五歲就會了). 才 = later than expected, or merely / only (七歲才會, 才兩百塊).',opts:['就','才'],q:[
+  {zh:'如玉五歲⬚會寫字了。',a:'就',en:'Ruyu could already write at five.',why:'Earlier than expected → 就.'},
+  {zh:'安同七歲⬚會寫字。',a:'才',en:'Antong couldn’t write until he was seven.',why:'Later than expected → 才.'},
+  {zh:'你看！我買的這件衣服⬚兩百塊。',a:'才',en:'Look! This shirt I bought was only 200.',why:'才 + amount = merely.'},
+  {zh:'我以為垃圾車六點來，沒想到五點半⬚來了。',a:'就',en:'I thought the truck came at six; it turned out it came at 5:30.',why:'Sooner than expected → 就 … 了.'},
+  {zh:'他每天很晚⬚睡覺，所以上課很累。',a:'才',en:'He doesn’t sleep until very late, so he’s tired in class.',why:'Late → 才.'},
+  {zh:'我一到家⬚打電話給你。',a:'就',en:'I’ll call you as soon as I get home.',why:'一…就… = as soon as.'},
+  {zh:'電影八點開始，他九點⬚到。',a:'才',en:'The film started at eight; he didn’t arrive until nine.',why:'Later than expected → 才.'},
+  {zh:'下個星期⬚得準備考試了。',a:'就',en:'Next week we already have to prepare for the exam.',why:'Sooner than you’d like → 就.'}]},
+ {k:'dian',t:'一點 or 有一點？',zh:'一點／有一點',rule:'有一點 + Vs = slightly, and always a complaint (有一點貴). Vs + 一點 = an instruction or a comparison (說慢一點, 冷一點). V + 一點 + N = a bit more of (多睡一點覺). 一點…也不 = not at all.',opts:['一點','有一點'],q:[
+  {zh:'這個房間⬚小，我不太喜歡。',a:'有一點',en:'This room is a bit small, I don’t really like it.',why:'Complaint before a Vs → 有一點.'},
+  {zh:'請你說慢⬚。',a:'一點',en:'Please speak a little slower.',why:'Instruction: Vs + 一點.'},
+  {zh:'醫生要他多睡⬚覺。',a:'一點',en:'The doctor wants him to sleep a bit more.',why:'多 + V + 一點 + O.'},
+  {zh:'我⬚餓了，我們去吃飯吧。',a:'有一點',en:'I’m a bit hungry, let’s go eat.',why:'Mild complaint → 有一點 餓.'},
+  {zh:'今天比昨天冷⬚。',a:'一點',en:'Today is a little colder than yesterday.',why:'Comparison: Vs + 一點.'},
+  {zh:'這件衣服⬚貴，可是很好看。',a:'有一點',en:'This shirt is a bit pricey, but it looks great.',why:'Complaint → 有一點 貴.'},
+  {zh:'我⬚咖啡也不喝。',a:'一點',en:'I don’t drink coffee at all.',why:'一點 + N + 也不 = not at all.'}]},
+ {k:'modal',t:'能 · 會 · 可以？',zh:'能／會／可以',rule:'會 = a learned skill, or "will / likely" (會說中文, 明天會下雨). 能 = circumstances allow it (感冒了不能來). 可以 = permission (可以抽菸嗎).',opts:['能','會','可以'],q:[
+  {zh:'我⬚說中文，可是說得不好。',a:'會',en:'I can speak Chinese, but not well.',why:'Learned skill → 會.'},
+  {zh:'這裡⬚抽菸嗎？',a:'可以',en:'Is smoking allowed here?',why:'Permission → 可以.'},
+  {zh:'他感冒了，今天不⬚來上課。',a:'能',en:'He has a cold and can’t come to class today.',why:'Circumstances prevent it → 不能.'},
+  {zh:'明天⬚下雨，你帶傘吧。',a:'會',en:'It will rain tomorrow, bring an umbrella.',why:'Likely / will → 會.'},
+  {zh:'老師，我⬚早一點走嗎？',a:'可以',en:'Teacher, may I leave a little early?',why:'Asking permission → 可以.'},
+  {zh:'我沒有錢，不⬚買機車。',a:'能',en:'I have no money, I can’t buy a scooter.',why:'Circumstance (no money) → 不能.'},
+  {zh:'你⬚游泳嗎？',a:'會',en:'Can you swim?',why:'A skill you learned → 會.'},
+  {zh:'圖書館裡不⬚吃東西。',a:'可以',en:'No eating in the library.',why:'A rule about permission → 不可以.'}]},
+ {k:'cause',t:'因為 · 為了 · 要不然 · 如果？',zh:'因果',rule:'因為 looks backwards to a cause and drags 所以 with it. 為了 looks forwards to a goal and never takes 所以. 要不然 = "or else" (only the bad way). 如果…就 = a condition, either direction.',opts:['因為','為了','要不然','如果'],q:[
+  {zh:'我⬚學中文來台灣。',a:'為了',en:'I came to Taiwan in order to study Chinese.',why:'A goal → 為了.'},
+  {zh:'我⬚喜歡台灣，所以來台灣。',a:'因為',en:'I came to Taiwan because I like it.',why:'A cause, with 所以 → 因為.'},
+  {zh:'⬚保護環境，台灣人天天做垃圾分類。',a:'為了',en:'To protect the environment, Taiwanese sort their rubbish every day.',why:'"In order to" fits → 為了.'},
+  {zh:'⬚下雨，所以我們沒去。',a:'因為',en:'Because it rained, we didn’t go.',why:'Cause + 所以 → 因為.'},
+  {zh:'你得把垃圾分類，⬚垃圾車不收。',a:'要不然',en:'You have to sort the rubbish, or else the truck won’t take it.',why:'"Or else" → 要不然.'},
+  {zh:'⬚你搬家了，我就少了一個朋友。',a:'如果',en:'If you move, I’ll have one friend fewer.',why:'A condition with 就 → 如果.'},
+  {zh:'快一點，⬚就追不到垃圾車了。',a:'要不然',en:'Hurry, or else you won’t catch the truck.',why:'Only the bad consequence → 要不然.'}]},
+ {k:'zai',t:'在 or 到？',zh:'在／到',rule:'V + 到 + place: movement, the thing arrives somewhere (踢到, 搬到, 開到). V + 在 + place: placing, the thing stays there (放在, 寫在, 存在). 正在 + V = in progress right now.',opts:['在','到'],q:[
+  {zh:'那張椅子，請你放⬚樓下。',a:'在',en:'That chair, please put it downstairs.',why:'Placing verb, stays there → 在.'},
+  {zh:'我把球踢⬚學校外面了。',a:'到',en:'I kicked the ball outside the school.',why:'Movement, arrives somewhere → 到.'},
+  {zh:'這些字，我要寫⬚本子上。',a:'在',en:'These characters, I’ll write them in my notebook.',why:'寫在 — they stay on the page.'},
+  {zh:'他想把公司搬⬚台南。',a:'到',en:'He wants to move the company to Tainan.',why:'搬到 — moving to a destination.'},
+  {zh:'我正⬚網站上找租房子的資料。',a:'在',en:'I’m looking for rental info online right now.',why:'正在 + V = in progress.'},
+  {zh:'我們從台北開⬚台南。',a:'到',en:'We drove from Taipei to Tainan.',why:'從…V到… — arriving at the end point.'},
+  {zh:'錢存⬚銀行比較安全。',a:'在',en:'Money is safer kept in the bank.',why:'存在 — placed and stays.'}]},
+ {k:'cmp',t:'比 · 比較 · 一樣 · 更 · 沒有？',zh:'比較',rule:'比 names the thing you compare against (A 比 B Vs). 比較 never names it (比較好吃). 跟…一樣 = the same as. 更 = even more. A 沒有 B (這麼) Vs = not as … as.',opts:['比','比較','一樣','更','沒有'],q:[
+  {zh:'台北的房租⬚台中貴。',a:'比',en:'Rent in Taipei is higher than in Taichung.',why:'B (台中) is named → 比.'},
+  {zh:'這家的牛肉麵⬚好吃。',a:'比較',en:'This place’s beef noodles are better.',why:'No B named → 比較.'},
+  {zh:'我的手機跟你的⬚。',a:'一樣',en:'My phone is the same as yours.',why:'跟…一樣.'},
+  {zh:'今天比昨天⬚冷。',a:'更',en:'Today is even colder than yesterday.',why:'比 + 更 = even more.'},
+  {zh:'他的中文⬚我這麼好。',a:'沒有',en:'His Chinese isn’t as good as mine.',why:'A 沒有 B 這麼 Vs = not as … as.'},
+  {zh:'哥哥⬚我高一點。',a:'比',en:'My older brother is a little taller than me.',why:'B named, + 一點 for how much.'}]},
+ {k:'le',t:'Where does 了 go?',zh:'了',pick:true,rule:'V了 + object = completed. Sentence-final 了 = the situation changed. V了 + duration + 了 = still going. 太…了 is a frame. 沒 never takes 了.',q:[
+  {en:'I’ve been waiting for the bus for twenty minutes (and still am).',opts:['我等公車等了二十分鐘了。','我等了二十分鐘公車。','我等公車二十分鐘了。'],a:'我等公車等了二十分鐘了。',why:'V了 + duration + 了 = up to now, still going.'},
+  {en:'He lived in Taipei for three years (and then left).',opts:['他在台北住了三年。','他在台北住了三年了。','他在台北住三年了。'],a:'他在台北住了三年。',why:'No final 了 → the three years are finished.'},
+  {en:'Coffee got expensive.',opts:['咖啡貴了。','咖啡了貴。','咖啡很貴了。'],a:'咖啡貴了。',why:'Sentence-final 了 = change of state.'},
+  {en:'He didn’t eat breakfast.',opts:['他沒吃早飯。','他沒吃了早飯。','他不吃了早飯。'],a:'他沒吃早飯。',why:'沒 cancels the action; 了 never follows it.'},
+  {en:'It’s way too expensive!',opts:['太貴了！','太貴！','很太貴了！'],a:'太貴了！',why:'太…了 is one frame; the 了 belongs to it.'},
+  {en:'I don’t drink coffee anymore.',opts:['我不喝咖啡了。','我不喝了咖啡。','我沒喝咖啡了。'],a:'我不喝咖啡了。',why:'不…了 = not anymore (a change).'},
+  {en:'I bought two books.',opts:['我買了兩本書。','我買兩本書了。','我了買兩本書。'],a:'我買了兩本書。',why:'V了 + quantified object = completed action.'}]},
+ {k:'laiqu',t:'來 or 去？',zh:'來／去',rule:'來 = toward where I am standing, 去 = away from it. Ask "am I inside or outside / upstairs or downstairs?" before you say it. Same test in 搬到樓上來／去 and 走出來／走進去.',opts:['來','去'],q:[
+  {zh:'（我在樓上）你把書搬到樓上⬚吧。',a:'來',en:'(I’m upstairs) Bring the books up here.',why:'Toward me → 來.'},
+  {zh:'（我在樓下）我把書搬到樓上⬚了。',a:'去',en:'(I’m downstairs) I took the books upstairs.',why:'Away from me → 去.'},
+  {zh:'（我在房間裡）你進⬚吧！',a:'來',en:'(I’m in the room) Come in!',why:'I’m inside, you move toward me → 進來.'},
+  {zh:'（我在外面）她拿著垃圾走出⬚了。',a:'來',en:'(I’m outside) She walked out with the rubbish.',why:'She comes toward where I stand → 出來.'},
+  {zh:'把瓶子丟進⬚。',a:'去',en:'Throw the bottle in.',why:'Into the bin, away from you → 進去.'},
+  {zh:'垃圾車開過⬚了，我們快下去。',a:'來',en:'The truck is coming over, let’s hurry down.',why:'Toward us → 過來.'},
+  {zh:'他走過⬚跟他們聊天。',a:'去',en:'He walked over to chat with them.',why:'Away from the speaker → 過去.'}]},
+ {k:'li',t:'離 or 從？',zh:'離／從',rule:'A 離 B 遠／近 = distance between two points (nothing moves). 從 = a starting point: 從…到…, 從…往…, 從早上八點.',opts:['離','從'],q:[
+  {zh:'我家⬚學校很近。',a:'離',en:'My home is close to school.',why:'Distance → 離.'},
+  {zh:'⬚這裡往前走，就有一家超商。',a:'從',en:'Go straight from here and there’s a convenience store.',why:'Starting point + 往 → 從.'},
+  {zh:'師大⬚台北101不遠。',a:'離',en:'Shida isn’t far from Taipei 101.',why:'Distance → 離.'},
+  {zh:'他⬚早上八點工作到晚上六點。',a:'從',en:'He works from 8 am to 6 pm.',why:'從…到… in time.'},
+  {zh:'你家⬚捷運站遠不遠？',a:'離',en:'Is your place far from the MRT?',why:'Distance → 離.'},
+  {zh:'我們⬚台北開到台南。',a:'從',en:'We drove from Taipei to Tainan.',why:'從…V到… in space.'}]},
+ {k:'time',t:'又…又 or 一邊…一邊？',zh:'又／一邊',rule:'又…又… = two qualities or states at once, same subject (又大又亮). 一邊…一邊… = two actions at the same time (一邊看電視一邊吃飯).',opts:['又','一邊'],q:[
+  {zh:'這個房間⬚大又亮。',a:'又',en:'This room is both big and bright.',why:'Two qualities → 又…又.'},
+  {zh:'小美⬚看電視，一邊吃飯。',a:'一邊',en:'Xiaomei eats while watching TV.',why:'Two actions → 一邊…一邊.'},
+  {zh:'他的女朋友⬚漂亮又聰明。',a:'又',en:'His girlfriend is both pretty and smart.',why:'Two Vs → 又…又.'},
+  {zh:'我常常⬚走路一邊聽音樂。',a:'一邊',en:'I often listen to music while walking.',why:'Two verbs happening together → 一邊.'}]},
+ {k:'q',t:'還是 or 或是？',zh:'還是／或是',rule:'還是 = "or" inside a question (茶還是咖啡？) and 還是…吧 = you’d better. 或是 = "or" inside a statement (茶或是咖啡都可以).',opts:['還是','或是'],q:[
+  {zh:'你要喝茶⬚咖啡？',a:'還是',en:'Do you want tea or coffee?',why:'A question → 還是.'},
+  {zh:'我週末喝茶⬚喝咖啡都可以。',a:'或是',en:'On weekends tea or coffee is fine with me.',why:'A statement → 或是.'},
+  {zh:'我們⬚搭捷運去吧，開車太麻煩。',a:'還是',en:'Let’s take the MRT instead, driving is a hassle.',why:'還是…吧 = you’d better.'},
+  {zh:'你可以坐公車⬚坐捷運去學校。',a:'或是',en:'You can take the bus or the MRT to school.',why:'Statement → 或是.'}]}
+];
+
+/* ---- catch-up tiers (追進度 gameplan, 9/7) ---- */
+const TIERS=[
+ {k:1,t:'Tier 1 · on the teacher’s review sheet',d:'he has already flagged these',w:'習慣 計畫 準備 進步 認識 希望 練習 已經 正好 最好 雖然 發現 給 環境 直接 藥局 同意 趕快 不夠 喉嚨 告訴 就 麻煩 班次 離 忘 健康 便利 市區 中心'},
+ {k:2,t:'Tier 2 · grammar-carrying words',d:'if a pattern is tested, these are in the sentence',w:'才 差不多 過 想起來 一邊 著 從 往 起來 還是 除了 當 按照 另外 送 祝 把 以後 以前 先 再 更 沒想到 然後',g:'快…了 · 跟…一樣 · 多／少 V · 什麼都 · 一點也不 · 不太'},
+ {k:3,t:'Tier 3 · everyday nouns and verbs',d:'what a reading passage would use',w:'房東 房租 套房 客廳 廚房 浴室 熱水器 裝 付 收到 問題 需要 花 獎學金 成績 學費 替 生意 試 打工 介紹 經驗 薪水 履歷表 面談 辦公室 適合 考試 容易 漢字 流利 作業 聊天 醫生 頭痛 發燒 感冒 藥 休息 肚子 保險 關心 天氣 風 傘 颱風 濕 討厭 新聞 可怕 幫忙 迷路 路口 紅綠燈 提款機 超商 應該 郵局 地圖 經過 巷子 車站 換 禮拜 機場 交通 複雜 輕鬆 搭 生日 禮物 訂 傳統 年輕 恭喜 結婚 參加 婚禮 客人 熱鬧 慶祝 紅包'}
+];
+/* the ten patterns that keep coming back (catch-up writing list) */
+const RECUR_TGT=['就','才','一…就','都','一點','有一點','一樣','差不多','了','把','著','起來','還是'];
+/* catch-up lesson schedule from the gameplan (app lesson numbers) */
+const CATCHUP_SCHED={'2026-09-14':14,'2026-09-15':15,'2026-09-16':16,'2026-09-17':17,'2026-09-21':18,'2026-09-22':19,'2026-09-23':20};
+
+/* ============================================================
+   v22 — learning engine upgrades
+   1. Grammar cloze cards scheduled by FSRS (i+1 sentence recall)
+   2. "Which one?" confusables drill with per-family grasp
+   3. Grammar grasp map by family, linked to Notion lesson pages
+   4. Catch-up tiers from the 追進度 gameplan
+   5. Weekday plan following the MTC rhythm
+   6. Reading sprint (comprehension input, tap what you don't know)
+   7. Phonetic series in the Brain
+   ============================================================ */
+const GP={}; for(const l in GRAMMAR){GRAMMAR[l].forEach(p=>{GP[p.id]={p,l:+l};});}
+function isGram(cid){return typeof cid==='string'&&cid.slice(0,2)==='g:';}
+function gramClozable(p){return !!(p.tgt&&p.tgt.length&&p.s&&p.s.some(x=>tgtIn(p,x.zh)));}
+function gramCid(id){return 'g:'+id;}
+function gramTrackedCount(ln){return (GRAMMAR[ln]||[]).filter(p=>S.cards[gramCid(p.id)]).length;}
+function gramClozableCount(ln){return (GRAMMAR[ln]||[]).filter(gramClozable).length;}
+function trackGram(ln){let n=0;(GRAMMAR[ln]||[]).forEach(p=>{if(gramClozable(p)&&!S.cards[gramCid(p.id)]){S.cards[gramCid(p.id)]={};n++;}});save();return n;}
+function untrackGram(ln){(GRAMMAR[ln]||[]).forEach(p=>{delete S.cards[gramCid(p.id)];});save();}
+function gramStage(id){const c=S.cards[gramCid(id)];if(!c||c.st===undefined)return 0;if(c.st!=='rev'||c.S<7)return 1;if(c.S<21)return 2;if(c.S<MASTER_S)return 3;return 4;}
+/* grasp: 0 not started · 1 shaky · 2 getting there · 3 solid · 4 mastered — the cloze card's memory, checked against quiz + Which-one history */
+const GRASP_T=['not started','shaky','getting there','solid','mastered'];
+function gramGrasp(id){
+  const st=gramStage(id), q=gStat(id);
+  let lv=st;
+  if(q.n>=3){const r=q.ok/q.n; if(r>=0.8&&q.n>=6)lv=Math.max(lv,3); else if(r>=0.6)lv=Math.max(lv,2); else if(r<0.5)lv=Math.min(lv||1,1); else lv=Math.max(lv,1);}
+  const p=GP[id]&&GP[id].p; if(p){const f=famOf(p), cf=(S.cf||{})[f]; if(cf&&cf.n>=4&&cf.ok/cf.n<0.6)lv=Math.min(lv,1);}
+  return lv;
+}
+/* migration: the current lesson and the one before it get cloze cards on first run */
+if(!S.settings._v22){S.settings._v22=1;if(S.settings.gramCards===undefined)S.settings.gramCards=true;if(!S.settings.newGramPerDay)S.settings.newGramPerDay=4;if(!S.settings.examDay)S.settings.examDay=5;
+  try{const cl=S.settings.curLesson||22;trackGram(cl);if(cl>1)trackGram(cl-1);}catch(e){} try{save();}catch(e){}}
+
+/* ---- queue: grammar cards ride along with word cards ---- */
+buildQueue=(function(orig){return function(){
+  const q=orig.apply(this,arguments);
+  if(S.settings.gramCards===false)return q;
+  const now=Date.now(), today=dkey(new Date());
+  const fresh=[],learn=[],rev=[];
+  for(const cid in S.cards){
+    if(!isGram(cid))continue; const c=S.cards[cid]; if(!c||c.susp||!GP[cid.slice(2)])continue;
+    if(c.st===undefined){fresh.push(cid);continue;}
+    if(c.due<=now)(c.st==='rev'?rev:learn).push(cid);
+  }
+  fresh.sort((a,b)=>GP[a.slice(2)].l-GP[b.slice(2)].l);
+  const allow=Math.max(0,(S.settings.newGramPerDay||4)-((S.gintro||{})[today]||0));
+  q.learn=q.learn.concat(learn).sort((a,b)=>S.cards[a].due-S.cards[b].due);
+  q.rev=q.rev.concat(rev.sort((a,b)=>S.cards[a].due-S.cards[b].due));
+  q.fresh=q.fresh.concat(fresh.slice(0,allow));
+  return q;
+};})(buildQueue);
+/* a new grammar card must not eat the daily word allowance */
+rate=(function(orig){return function(cid,g){
+  if(!isGram(cid))return orig.apply(this,arguments);
+  const today=dkey(new Date()), before=S.intro[today]||0, wasNew=!S.cards[cid]||S.cards[cid].st===undefined;
+  orig.apply(this,arguments);
+  S.intro[today]=before; if(wasNew){S.gintro=S.gintro||{};S.gintro[today]=(S.gintro[today]||0)+1;}
+  save();
+};})(rate);
+function gramSentence(p,c){const sents=p.s.filter(x=>tgtIn(p,x.zh));const i=((c&&c.reps)||0)%Math.max(1,sents.length);return sents[i]||p.s[0];}
+function gramBlank(p,s){const t=tgtIn(p,s.zh)||p.tgt[0];return {t,html:esc(s.zh).split(esc(t)).join('<span class="blank">'+'&nbsp;'.repeat(Math.max(2,t.length*2))+'</span>')};}
+function renderGramCard(){
+  const el=document.getElementById('vRev'), id=cur.slice(2), gp=GP[id]; if(!gp)return nextCard();
+  const p=gp.p, c=S.cards[cur]||{}, isNew=c.st===undefined, s=gramSentence(p,c), b=gramBlank(p,s);
+  const remaining=rq.learn.length+rq.rev.length+rq.fresh.length, tot=SES.n+remaining, frac=tot?SES.n/tot:0;
+  const shown=esc(s.zh).split(esc(b.t)).join('<b class="hit">'+esc(b.t)+'</b>');
+  const front=`<div class="qtype" style="margin-bottom:6px">語法 · ${esc(lnLabel(gp.l))}</div>
+    <div class="bigzh zh cloze">${b.html}</div>
+    <div class="meaning">${esc(s.en)}</div>
+    <div class="hint">what fills the blank? say the whole sentence aloud</div>`;
+  const back=`<div class="qtype" style="margin-bottom:6px">語法 · ${esc(lnLabel(gp.l))}</div>
+    <div class="bigzh zh cloze">${shown}</div>
+    ${s.py?`<div class="pyline" style="font-size:19px">${tonePinyin(esc(s.py))}</div>`:''}
+    <div class="meaning">${esc(s.en)}</div>
+    <div class="gcard-pt"><b>${esc(p.t)}</b>${p.pat?`<div class="patline" style="margin:6px auto 0">${esc(p.pat)}</div>`:''}<div class="small muted" style="margin-top:6px">${esc(p.e)}</div>
+      <div class="row" style="justify-content:center;gap:8px;margin-top:8px">${spkBtnText(s.zh)}${notionLink(gp.l,'Read the 語法 in Notion ↗')}</div></div>`;
+  el.innerHTML=`<div class="sbar"><i style="width:${Math.round(frac*100)}%"></i></div>
+    <div class="srow"><span class="small muted">${SES.n} done · ${remaining} left</span>${SES.run>=3?`<span class="runchip">${SES.run} in a row</span>`:''}</div>
+    <div class="rev-top"><span class="mtag gram">Grammar · 造句</span>
+      <span>${undoStack.length?`<span class="link" onclick="doUndo()">← back</span> · `:''}${isNew?'<b style="color:var(--acc)">new</b> · ':''}${remaining} left · <span class="link" onclick="gramSuspend()" title="take this pattern out of the queue">skip pattern</span></span></div>
+    <div class="stage gstage">${revealed?back:front}</div>
+    ${revealed?`<div class="grades">
+      <button onclick="grade(1)"><span class="g1">Again</span><span class="iv">${previewIv(isNew?null:c,cur,1)}</span></button>
+      <button onclick="grade(2)"><span class="g2">Hard</span><span class="iv">${previewIv(isNew?null:c,cur,2)}</span></button>
+      <button onclick="grade(3)"><span class="g3">Good</span><span class="iv">${previewIv(isNew?null:c,cur,3)}</span></button>
+      <button onclick="grade(4)"><span class="g4">Easy</span><span class="iv">${previewIv(isNew?null:c,cur,4)}</span></button></div>
+    <div class="small muted" style="text-align:center;margin-top:10px"><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd></div>`
+    :`<div style="margin-top:16px"><button class="btn big" onclick="reveal()">Show answer</button></div><div class="small muted" style="text-align:center;margin-top:10px"><kbd>space</kbd></div>`}`;
+  if(animOn()){const st=el.querySelector('.stage');st.classList.add(revealed?'flip-in':'slide-in');if(lastGrade&&!revealed){st.classList.add(lastGrade===1?'from-again':lastGrade===2?'from-hard':'from-good');lastGrade=0;}st.addEventListener('animationend',()=>st.classList.remove('slide-in','flip-in'),{once:true});}
+  if(revealed&&S.settings.autoplayAudio)setTimeout(()=>playAudio(s.zh),150);
+}
+function spkBtnText(t){window.AUDS=window.AUDS||[];const i=AUDS.push(t)-1;return '<button class="spk" title="listen" onclick="playAudio(AUDS['+i+'])">'+SPK_SVG+'</button>';}
+function gramSuspend(){if(!cur||!isGram(cur))return;const c=S.cards[cur];if(c)c.susp=1;save();['learn','rev','fresh'].forEach(k=>{rq[k]=rq[k].filter(x=>x!==cur);});toast('Pattern parked — un-park it in the Grammar tab');nextCard();}
+renderRev=(function(orig){return function(){if(cur&&isGram(cur))return renderGramCard();return orig.apply(this,arguments);};})(renderRev);
+/* Settings: grammar cards */
+function gramSetPanel(){const s=S.settings,n=Object.keys(S.cards).filter(isGram).length;
+  return `<div class="card"><div class="lab">Grammar in the queue</div>
+    <div class="set-row"><div><b>Cloze cards</b><div class="d">Every tracked grammar point becomes a fill-the-blank sentence card, scheduled by FSRS like a word. ${n} in the deck now — add lessons from the Grammar tab.</div></div>
+      <button class="tgl ${s.gramCards!==false?'on':''}" onclick="S.settings.gramCards=S.settings.gramCards===false?true:false;save();renderSet();badge()"><i></i></button></div>
+    <div class="set-row"><div><b>New grammar cards per day</b><div class="d">how many fresh patterns may start each day, on top of new words</div></div>
+      <input type="number" min="0" max="30" value="${s.newGramPerDay||4}" onchange="S.settings.newGramPerDay=Math.max(0,parseInt(this.value)||0);save();badge()"></div></div>`;}
+renderSet=(function(orig){return function(){orig.apply(this,arguments);try{document.getElementById('vSet').insertAdjacentHTML('beforeend',gramSetPanel());}catch(e){}};})(renderSet);
+
+/* ---- 2. Which one? ---- */
+function cfStat(k){return (S.cf||{})[k]||{n:0,ok:0};}
+function cfMark(k,ok){S.cf=S.cf||{};const s=S.cf[k]=S.cf[k]||{n:0,ok:0};s.n++;if(ok)s.ok++;s.last=Date.now();save();}
+function cfLevel(k){const s=cfStat(k);if(!s.n)return 0;const r=s.ok/s.n;return s.n<4?1:r>=0.9?4:r>=0.75?3:r>=0.6?2:1;}
+function buildConfuse(fams,n){
+  const pool=CONFUSE.filter(f=>!fams||fams.includes(f.k));
+  const items=[];
+  pool.forEach(f=>{const lv=cfLevel(f.k), wt=lv===0?3:lv===1?4:lv===2?2:1;f.q.forEach(q=>items.push({mode:'confuse',f,q,wt}));});
+  const out=[]; let bag=items.slice();
+  while(out.length<n&&bag.length){const tot=bag.reduce((a,x)=>a+x.wt,0);let r=Math.random()*tot,i=0;for(;i<bag.length;i++){r-=bag[i].wt;if(r<=0)break;}out.push(bag[i]);bag.splice(i,1);}
+  return out;
+}
+function startConfuse(fams){drillMode='confuse';dq={qs:buildConfuse(fams,fams&&fams.length===1?Math.min(8,CONFUSE.find(f=>f.k===fams[0]).q.length):12),i:0,ok:0,state:'ask',chosen:null,fams};go('drill');}
+function cfPick(i){const q=dq.qs[dq.i];if(dq.state!=='ask')return;dq.chosen=i;const opts=q.q.opts||q.f.opts;const ok=opts[i]===q.q.a;cfMark(q.f.k,ok);if(ok)dq.ok++;dq.state='done';haptic(ok?'good':'again');renderDrill();}
+function renderConfuse(el){
+  const q=dq.qs[dq.i], f=q.f, it=q.q, done=dq.state==='done', opts=it.opts||f.opts, pick=!!f.pick;
+  const zh=pick?'':esc(it.zh).replace('⬚','<span class="blank">'+(done?esc(it.a):'&nbsp;&nbsp;&nbsp;')+'</span>');
+  el.innerHTML=`<div class="rev-top"><span class="qtype">Which one? · ${esc(f.t)}</span><span class="qprog">${dq.i+1} / ${dq.qs.length}</span></div>
+  <div class="qbox">
+    ${pick?`<div class="qen" style="font-size:15.5px;color:var(--ink)">Which one says: “${esc(it.en)}”</div>`:`<div class="qzh zh">${zh}</div><div class="qen">${esc(it.en)}</div>`}
+    <div class="opts ${pick?'sm':''}" ${pick?'style="grid-template-columns:1fr"':''}>${opts.map((o,i)=>`<button class="zh ${done?(o===it.a?'right':(dq.chosen===i?'wrong':'')):''}" onclick="cfPick(${i})">${esc(o)}</button>`).join('')}</div>
+    ${done?`<div class="why ${opts[dq.chosen]===it.a?'ok':'bad'}"><b>${opts[dq.chosen]===it.a?'✓':'✗'}</b> ${esc(it.why)}</div><div class="rule"><b>Rule</b> ${esc(f.rule)}</div>`:''}
+  </div>
+  ${done?`<div class="qfoot" style="margin-top:12px"><button class="btn" onclick="drillNext()">Next →</button></div>`:''}`;
+}
+function confusePanel(){
+  return `<div class="card"><div class="row spread" style="margin-bottom:6px"><div><div class="lab" style="margin:0">Which one? · 辨析</div><div class="small muted">the pairs you keep mixing up, straight from your Notion. Weak families come up more often.</div></div><button class="btn sm" onclick="startConfuse(null)">Mixed set · 12</button></div>
+    <div class="cfgrid">${CONFUSE.map(f=>{const lv=cfLevel(f.k),s=cfStat(f.k);return `<button class="cftile s${lv}" onclick="startConfuse(['${f.k}'])"><b class="zh">${esc(f.zh)}</b><span>${esc(f.t)}</span><i>${s.n?Math.round(s.ok/s.n*100)+'% · '+s.n:'new'}</i></button>`;}).join('')}</div></div>`;
+}
+
+/* ---- 6. Reading sprint ---- */
+const WORD_BY_T=(()=>{const m={};WORDS.forEach(w=>{const k=w.t.split('（')[0];if(!m[k]||w.l<m[k].l)m[k]=w;});return m;})();
+function readPool(){const cl=S.settings.curLesson||22, lo=Math.max(1,cl-4);const out=[];for(let l=lo;l<=cl;l++)(GRAMMAR[l]||[]).forEach(p=>p.s.forEach(s=>{if(s.zh.length>=8)out.push({p,s,l,wt:l===cl?3:l===cl-1?2:1});}));return out;}
+function startRead(){const pool=readPool();const qs=[];let bag=pool.slice();while(qs.length<10&&bag.length){const tot=bag.reduce((a,x)=>a+x.wt,0);let r=Math.random()*tot,i=0;for(;i<bag.length;i++){r-=bag[i].wt;if(r<=0)break;}const it=bag[i];bag.splice(i,1);qs.push({mode:'read',p:it.p,s:it.s,l:it.l,segs:segZh(it.s.zh),unk:new Set()});}
+  drillMode='read';dq={qs,i:0,ok:0,state:'ask',chosen:null};go('drill');}
+function readTap(i){const q=dq.qs[dq.i];if(dq.state!=='ask')return;if(q.unk.has(i))q.unk.delete(i);else q.unk.add(i);renderDrill();}
+function readReveal(){dq.state='reveal';renderDrill();}
+function readMark(ok){const q=dq.qs[dq.i];if(ok)dq.ok++;q.unk.forEach(i=>{const w=WORD_BY_T[q.segs[i]];if(w){addHard(w.id);}});if(q.unk.size)toast(q.unk.size+' word'+(q.unk.size>1?'s':'')+' → hard list');dq.state='done';haptic(ok?'good':'again');drillNext();}
+function renderRead(el){
+  const q=dq.qs[dq.i], ask=dq.state==='ask';
+  el.innerHTML=`<div class="rev-top"><span class="qtype">Reading sprint · ${esc(lnLabel(q.l))}</span><span class="qprog">${dq.i+1} / ${dq.qs.length}</span></div>
+  <div class="qbox">
+    <div class="readline">${q.segs.map((c,i)=>c==='，'?'<span class="pun">，</span>':`<button class="seg zh ${q.unk.has(i)?'unk':''} ${WORD_BY_T[c]?'':'nw'}" onclick="readTap(${i})">${esc(c)}</button>`).join('')}</div>
+    <div class="qen">${ask?'read it aloud · tap any word you don’t know · then reveal':''}</div>
+    ${!ask?`<div class="qen" style="color:var(--ink);font-size:15.5px">${esc(q.s.en)}</div>${q.s.py?`<div class="py2">${tonePinyin(esc(q.s.py))} ${spkBtnText(q.s.zh)}</div>`:''}<div class="small muted" style="margin-top:6px">pattern: <b>${esc(q.p.t)}</b> ${notionLink(q.l)}</div>`:''}
+    <div class="qfoot">${ask?`<button class="btn" onclick="readReveal()">Reveal</button>`:`<button class="btn ghost" onclick="readMark(false)">Didn’t get it</button><button class="btn" onclick="readMark(true)">Understood ✓</button>`}</div>
+  </div>`;
+}
+/* hook the two new drills into the drill tab */
+DMODES.push(['confuse','辨析 Which one?','不／沒 · 就／才 · 在／到 …'],['read','閱讀 Reading sprint','ten sentences, tap what you don’t know']);
+startDrill=(function(orig){return function(mode){if(mode==='confuse')return startConfuse(null);if(mode==='read')return startRead();return orig.apply(this,arguments);};})(startDrill);
+renderDrill=(function(orig){return function(){
+  const el=document.getElementById('vDrill');
+  if(dq&&dq.i<dq.qs.length){const q=dq.qs[dq.i];if(q.mode==='confuse'){renderConfuse(el);return;}if(q.mode==='read'){renderRead(el);return;}}
+  orig.apply(this,arguments);
+  try{ if(!dq){el.insertAdjacentHTML('beforeend',confusePanel());} }catch(e){}
+};})(renderDrill);
+
+/* ---- 3. Grammar grasp map (Grammar tab) ---- */
+function graspMap(){
+  const cl=S.settings.curLesson||22;
+  const rows=GFAM.map(f=>{const pts=[];for(let l=1;l<=cl;l++)(GRAMMAR[l]||[]).forEach(p=>{if(famOf(p)===f.k)pts.push({p,l});});return {f,pts};}).filter(r=>r.pts.length);
+  const cfk=CONFUSE.map(f=>f.k);
+  return `<div class="card"><div class="row spread" style="margin-bottom:8px"><div><div class="lab" style="margin:0">Grasp · by family</div><div class="small muted">the families from your Grammar Index. Each dot is one pattern: its cloze-card memory, checked against quiz and Which-one history.</div></div><a class="nlink" href="${NOTION.index}" target="_blank" rel="noopener">Grammar Index ↗</a></div>
+  <div class="famlist">${rows.map(r=>{
+    const lv=r.pts.map(x=>gramGrasp(x.p.id)); const solid=lv.filter(v=>v>=3).length, shaky=lv.filter(v=>v===1).length, none=lv.filter(v=>v===0).length;
+    const hasCf=cfk.includes(r.f.k);
+    return `<div class="fam"><div class="fam-h"><b>${esc(r.f.t)}</b><span class="small muted">${solid}/${r.pts.length} solid${shaky?` · <span style="color:var(--red)">${shaky} shaky</span>`:''}${none?` · ${none} untouched`:''}</span></div>
+      <div class="fam-dots">${r.pts.map((x,i)=>`<i class="s${lv[i]}" title="${esc(x.p.t)} · ${esc(lnLabel(x.l))} · ${GRASP_T[lv[i]]}" onclick="gramLesson=${x.l};gramOpen={};renderGram();setTimeout(()=>{const g=document.querySelectorAll('#vGram .gpt')[${(GRAMMAR[x.l]||[]).indexOf(x.p)}];if(g)g.scrollIntoView({behavior:'smooth',block:'center'});},30)"></i>`).join('')}</div>
+      <div class="fam-acts"><button class="btn sm ghost" onclick="startGramQuiz(famPoints('${r.f.k}'))">Drill</button>${hasCf?`<button class="btn sm ghost" onclick="startConfuse(['${r.f.k}'])">Which one?</button>`:''}<button class="btn sm ghost" onclick="trackGramIds(famPoints('${r.f.k}').map(p=>p.id))" title="add these patterns as cloze cards">+ cards</button></div></div>`;}).join('')}</div></div>`;
+}
+function famPoints(k){const cl=S.settings.curLesson||22,out=[];for(let l=1;l<=cl;l++)(GRAMMAR[l]||[]).forEach(p=>{if(famOf(p)===k)out.push(p);});return out;}
+function trackGramIds(ids){let n=0;ids.forEach(id=>{const gp=GP[id];if(gp&&gramClozable(gp.p)&&!S.cards[gramCid(id)]){S.cards[gramCid(id)]={};n++;}});save();badge();toast(n?n+' cloze card'+(n>1?'s':'')+' added':'already in the deck');renderGram();}
+renderGram=(function(orig){return function(){orig.apply(this,arguments);if(gq)return;try{
+  const el=document.getElementById('vGram'); const head=el.querySelector('.card');
+  const n=gramTrackedCount(gramLesson), tot=gramClozableCount(gramLesson);
+  if(head){head.querySelector('.row').insertAdjacentHTML('beforeend',`<div class="row" style="gap:6px;flex-basis:100%;margin-top:8px"><span class="small muted">${n}/${tot} patterns in the review queue as cloze cards</span>${n<tot?`<button class="btn sm ghost" onclick="trackGram(${gramLesson});badge();renderGram()">+ Add ${tot-n} cloze card${tot-n>1?'s':''}</button>`:''}${n?`<button class="btn sm ghost" onclick="if(confirm('Remove this lesson\\'s grammar cards and their progress?')){untrackGram(${gramLesson});badge();renderGram();}">Remove</button>`:''}${notionLink(gramLesson,'Notion page ↗')}</div>`);}
+  el.querySelectorAll('.gpt').forEach((g,i)=>{const p=(GRAMMAR[gramLesson]||[])[i];if(!p)return;const lv=gramGrasp(p.id);const c=S.cards[gramCid(p.id)];const dots=g.querySelector('.gdots');if(dots)dots.insertAdjacentHTML('beforebegin',`<span class="grasp s${lv}" title="${GRASP_T[lv]}${c?(c.susp?' · parked':''):' · no cloze card'}">${c?(c.susp?'parked':GRASP_T[lv]):'no card'}</span>`);
+    if(c&&c.susp){const b=g.querySelector('.gh .btn');if(b)b.insertAdjacentHTML('beforebegin',`<button class="btn sm ghost" style="flex:none" onclick="event.stopPropagation();delete S.cards['${gramCid(p.id)}'].susp;save();badge();renderGram()">Un-park</button>`);}});
+  el.insertAdjacentHTML('afterbegin',graspMap());
+}catch(e){}};})(renderGram);
+
+/* ---- 4. Catch-up tiers ---- */
+function tierWords(t){const out=[];t.w.split(/\s+/).forEach(k=>{let w=WORD_BY_T[k];if(!w){const c=WORDS.filter(x=>x.t.split('（')[0].includes(k)&&!isName(x)).sort((a,b)=>a.t.length-b.t.length);w=c.find(x=>x.l>=10&&x.l<=20)||c[0];}if(w&&!out.includes(w))out.push(w);});return out;}
+function tierPanel(){
+  return `<div class="card"><div class="row spread" style="margin-bottom:6px"><div><div class="lab" style="margin:0">追進度 · Catch-up tiers</div><div class="small muted">B1 L10 → B2 L5, in the order your gameplan says to do them if a week goes badly</div></div><a class="nlink" href="${NOTION.catchup}" target="_blank" rel="noopener">Gameplan ↗</a></div>
+  ${TIERS.map(t=>{const ws=tierWords(t);let known=0,inDeck=0,hard=0;ws.forEach(w=>{const l=confOf(w.id);if(l>=3)known++;if(tracked(w.id))inDeck++;if(l===1)hard++;});const m={n:ws.length,frac:ws.length?known/ws.length:0,lfrac:ws.length?inDeck/ws.length:0};
+    return `<div class="tier"><div class="lring">${ring2(m,44,4.5)}<span>${ws.length?Math.round(m.frac*100):0}<i>%</i></span></div>
+      <div class="tier-b"><b>${esc(t.t)}</b><div class="small muted">${esc(t.d)} · <b style="color:var(--acc)">${known}</b>/${ws.length} known · ${inDeck} in deck${hard?` · <span style="color:var(--red)">${hard} hard</span>`:''}</div>${t.g?`<div class="small muted">grammar: ${esc(t.g)}</div>`:''}</div>
+      <div class="tier-acts">${inDeck<ws.length?`<button class="btn sm ghost" onclick="tierWords(TIERS[${t.k-1}]).forEach(w=>{if(!tracked(w.id))trackWord(w.id);});badge();renderHome()">+ deck</button>`:''}<button class="btn sm ghost" onclick="drillTier=${t.k};drillScope='tier';go('drill');startDrill('rec')">Drill</button>${t.g?`<button class="btn sm ghost" onclick="startGramQuiz(recurPoints())">Patterns</button>`:''}</div></div>`;}).join('')}
+  <div class="small muted" style="margin-top:8px">The ten patterns that keep coming back (就/才, 一…就, QW+都, 一點/有一點, 跟…一樣, V了…了, 把, V著, 起來, 還是…吧): <span class="link" onclick="startGramQuiz(recurPoints())">drill them</span> · <span class="link" onclick="trackGramIds(recurPoints().map(p=>p.id))">add as cloze cards</span></div></div>`;
+}
+function recurPoints(){const out=[];const cl=S.settings.curLesson||22;for(let l=1;l<=cl;l++)(GRAMMAR[l]||[]).forEach(p=>{if(p.tgt.some(t=>RECUR_TGT.includes(t)))out.push(p);});return out;}
+let drillTier=1;
+drillWords=(function(orig){return function(){if(drillScope==='tier')return tierWords(TIERS[drillTier-1]||TIERS[0]).filter(w=>S.settings.includeNames||!isName(w));return orig.apply(this,arguments);};})(drillWords);
+
+/* ---- 5. Weekday plan ---- */
+function planAct(k,arg){
+  const cl=S.settings.curLesson||22;
+  const acts={
+    dict:()=>{drillScope='lesson';drillLesson=cl;go('drill');startDrill('dict');},
+    hardrec:()=>{drillScope='hard';go('drill');startDrill('rec');},
+    hardtone:()=>{drillScope='hard';go('drill');startDrill('tone');},
+    gram:()=>{gramLesson=cl;go('gram');startGramQuiz(GRAMMAR[cl]||[]);},
+    sent:()=>{drillScope='lesson';drillLesson=cl;go('drill');startDrill('sent');},
+    speak:()=>{drillScope='lesson';drillLesson=cl;go('drill');startDrill('speak');},
+    exam:()=>{drillLesson=cl;go('drill');makeExam();setTimeout(()=>{const e=document.querySelector('.examcard');if(e)e.scrollIntoView({behavior:'smooth',block:'center'});},50);},
+    triage:()=>{const ln=arg&&arg.ln||cl;libBook=bookOf(ln);go('lib');startTriage(ln,arg&&arg.dlg);},
+    confuse:()=>startConfuse(null), read:()=>startRead(), rev:()=>go('rev'),
+    lib:()=>{const ln=arg&&arg.ln||cl;libBook=bookOf(ln);openLessons[ln]=true;go('lib');setTimeout(()=>{const e=document.querySelector('.lesson[data-ln="'+ln+'"]');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});},60);}
+  };
+  if(acts[k])acts[k]();
+}
+function planPanel(){
+  const d=new Date(), wd=d.getDay(), cl=S.settings.curLesson||22, L=lnLabel(cl), today=dkey(d), E=S.settings.examDay||4;
+  const A=(k,label,arg)=>`<button class="pact" onclick='planAct("${k}",${JSON.stringify(arg||null)})'>${label}</button>`;
+  const N=(url,label)=>`<a class="pact nl" href="${url}" target="_blank" rel="noopener">${label}</a>`;
+  const T={
+    mon:{t:'聽寫一',items:[A('dict','Rehearse 聽寫 · '+L+' 對話一'),A('triage','After class: Triage 對話二',{dlg:2}),A('rev','Clear the queue')]},
+    d2:{t:'對話二 characters',items:[A('dict','聽寫 rehearsal · '+L+' 對話二'),A('hardrec','Hard list → 認字'),A('gram','Grammar drill · '+L),A('read','Reading sprint')]},
+    t2:{t:'口試 T−2 · build the spiel',items:[A('dict','聽寫 rehearsal · '+L),A('gram','Grammar drill · '+L),A('confuse','Which one? · 10 min'),A('exam','口試: generate the prompt, record once'),N(notionLesson(cl),'Write the five sentences in 我的例句 ↗')]},
+    t1:{t:'聽寫二 · say it with the page face down',items:[A('dict','聽寫二 before class'),A('exam','口試 simulator, no page'),A('sent','造句 on the one pattern that broke'),A('confuse','Which one?')]},
+    exam:{t:'課考試',items:[A('hardrec','Hard list → 認字'),A('hardtone','then 聲調'),A('gram','Grammar drill once'),N(notionLesson(cl),'After: log what it asked in 疑問 ↗')]},
+    fri:{t:'new lesson opens',items:[A('triage','Triage 對話一 of the new lesson',{dlg:1}),A('read','Reading sprint on the new sentences'),N(NOTION.flow,'Intake checklist ↗')]},
+    sat:{t:'對話一 characters',items:[A('rev','Clear the queue'),A('dict','聽寫 drill · '+L),A('hardrec','Catch-up hammer: hard words'),A('read','Reading sprint')]},
+    sun:{t:'對話一 grammar',items:[A('gram','Grammar drill · '+L),A('sent','造句 · '+L),A('confuse','Which one? · all families'),N(notionLesson(cl),'Write 我的例句 in Notion ↗')]}
+  };
+  const key=wd===0?'sun':wd===6?'sat':wd===1?'mon':wd===E?'exam':wd===E-1?'t1':wd===E-2?'t2':(wd===5&&E===4)?'fri':'d2';
+  const p=T[key], names=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+  let cu='';
+  const sched=CATCHUP_SCHED[today]; const next=Object.keys(CATCHUP_SCHED).filter(k=>k>today).sort()[0];
+  if(sched)cu=`<div class="cu"><b>Catch-up lesson today · ${esc(lnLabel(sched))}</b> <span class="small muted">75 min: notes → sort → hammer → dialogue</span><div class="row" style="gap:6px;margin-top:6px">${A('lib','Open in Library',{ln:sched})}${A('triage','Triage it',{ln:sched})}${N(notionLesson(sched),'Notion page ↗')}</div></div>`;
+  else if(next)cu=`<div class="cu small muted">Next catch-up lesson: <b>${esc(lnLabel(CATCHUP_SCHED[next]))}</b> on ${next.slice(5).replace('-','/')}</div>`;
+  else cu=`<div class="cu small muted">Slow lane: 5 shaky words a day in 3-day blocks · one old lesson\u2019s 我的例句 per week</div>`;
+  return `<div class="card plan"><div class="row spread" style="margin-bottom:8px"><div><div class="lab" style="margin:0">Today\u2019s plan · ${names[wd]} · ${esc(p.t)}</div><div class="small muted">${L} · 聽寫一 Mon · 聽寫二 ${names[E-1]} · 考試 <select class="vsel" style="padding:1px 4px;font-size:11.5px;max-width:none" onchange="S.settings.examDay=+this.value;save();renderHome()"><option value="4" ${E===4?'selected':''}>星期四</option><option value="5" ${E===5?'selected':''}>星期五</option></select></div></div><a class="nlink" href="${NOTION.flow}" target="_blank" rel="noopener">Workflow ↗</a></div>
+    <div class="pacts">${p.items.join('')}</div>${cu}</div>`;
+}
+renderHome=(function(orig){return function(){orig.apply(this,arguments);try{const hero=document.querySelector('#vHome .card.hero');if(hero){hero.insertAdjacentHTML('afterend',planPanel()+tierPanel());ringArm(document.getElementById('vHome'));}}catch(e){}};})(renderHome);
+
+/* ---- 7. Phonetic series (Brain) ---- */
+function phoneticPanel(){
+  const csm=charStageMap(); const met=new Set(Object.keys(csm));
+  const series={}; BCHARS.forEach(ch=>{const c=COMPONENTS[ch];if(c&&c.ph)(series[c.ph]=series[c.ph]||[]).push(ch);});
+  const rows=Object.entries(series).map(([ph,chs])=>({ph,chs,met:chs.filter(c=>met.has(c)).length})).filter(r=>r.chs.length>=2&&r.met>=1).sort((a,b)=>b.met-a.met||b.chs.length-a.chs.length).slice(0,24);
+  if(!rows.length)return '';
+  return `<div class="card"><div class="lab">Sound families · 聲旁</div><div class="small muted" style="margin-bottom:10px">Characters that share a phonetic component usually share a sound. Know one, and the rest come cheap — the grey ones are the ones you haven’t met yet.</div>
+    <div class="phgrid">${rows.map(r=>`<div class="ph"><span class="ph-k zh">${esc(r.ph)}</span>${r.chs.map(ch=>`<span class="tile s${csm[ch]||0} zh" style="font-size:16px;width:30px;height:30px;border-radius:7px" title="${esc(ch)}${COMPONENTS[ch]&&COMPONENTS[ch].p?' '+esc(COMPONENTS[ch].p):''}" onclick="brainSel={type:'char',id:'${esc(ch)}'};brainView='chars';renderBrain()">${esc(ch)}</span>`).join('')}</div>`).join('')}</div></div>`;
+}
+renderBrain=(function(orig){return function(){orig.apply(this,arguments);try{const el=document.getElementById('vBrain');const cards=el.querySelectorAll(':scope > .card');const anchor=cards[1]||cards[0];if(anchor)anchor.insertAdjacentHTML('afterend',phoneticPanel());}catch(e){}};})(renderBrain);
+
+try{ badge(); if(view==='home')renderHome(); else if(view==='gram')renderGram(); else if(view==='drill')renderDrill(); }catch(e){}
 </script>
 </body>
 </html>
