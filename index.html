@@ -2660,7 +2660,15 @@ try{ if(typeof view!=='undefined'&&view==='set')renderSet(); if(typeof view!=='u
 /* ---- 1. config ---- */
 /* Paste the web-app config from Firebase console → Project settings → Your apps here.
    Leave null to paste it in Settings → Cloud sync instead (stored in this browser). */
-const FIREBASE_CONFIG = null;
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCIf0BwaqeRpraxEafWvQfGD1go06E1UKk",
+  authDomain: "zika-sync.firebaseapp.com",
+  databaseURL: "https://zika-sync-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "zika-sync",
+  storageBucket: "zika-sync.firebasestorage.app",
+  messagingSenderId: "804757392175",
+  appId: "1:804757392175:web:6b37530a09b58e9317efda"
+};
 const FB_CFG_KEY='zika_fb_config', FB_ROOM_KEY='zika_sync_code', FB_DEV_KEY='zika_device', FB_META_KEY='zika_sync_meta';
 const FB_SDK='https://www.gstatic.com/firebasejs/10.12.0/';
 function fbConfig(){
