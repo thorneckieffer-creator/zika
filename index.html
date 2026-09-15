@@ -3654,8 +3654,8 @@ function renderGramCard(){
     <div class="bigzh zh cloze">${shown}</div>
     ${s.py?`<div class="pyline" style="font-size:19px">${tonePinyin(esc(s.py))}</div>`:''}
     <div class="meaning">${esc(s.en)}</div>
-    <div class="gcard-pt"><b>${esc(p.t)}</b>${p.pat?`<div class="patline" style="margin:6px auto 0">${esc(p.pat)}</div>`:''}<div class="small muted" style="margin-top:6px">${esc(p.e)}</div>
-      <div class="row" style="justify-content:center;gap:8px;margin-top:8px">${spkBtnText(s.zh)}${notionLink(gp.l,'Read the 語法 in Notion ↗')}</div></div>`;
+    <div class="gcard-pt"><b>${esc(p.t)}</b>${p.pat?`<div class="patline" style="margin:6px auto 0">${esc(p.pat)}</div>`:''}
+      <div class="row" style="justify-content:center;gap:8px;margin-top:8px">${spkBtnText(s.zh)}${notionLink(gp.l,'Notion ↗')}</div></div>`;
   el.innerHTML=`<div class="sbar"><i style="width:${Math.round(frac*100)}%"></i></div>
     <div class="srow"><span class="small muted">${SES.n} done · ${remaining} left</span>${SES.run>=3?`<span class="runchip">${SES.run} in a row</span>`:''}</div>
     <div class="rev-top"><span class="mtag gram">Grammar · 造句</span>
@@ -3704,12 +3704,12 @@ function renderConfuse(el){
   <div class="qbox">
     ${pick?`<div class="qen" style="font-size:15.5px;color:var(--ink)">Which one says: “${esc(it.en)}”</div>`:`<div class="qzh zh">${zh}</div><div class="qen">${esc(it.en)}</div>`}
     <div class="opts ${pick?'sm':''}" ${pick?'style="grid-template-columns:1fr"':''}>${opts.map((o,i)=>`<button class="zh ${done?(o===it.a?'right':(dq.chosen===i?'wrong':'')):''}" onclick="cfPick(${i})">${esc(o)}</button>`).join('')}</div>
-    ${done?`<div class="why ${opts[dq.chosen]===it.a?'ok':'bad'}"><b>${opts[dq.chosen]===it.a?'✓':'✗'}</b> ${esc(it.why)}</div><div class="rule"><b>Rule</b> ${esc(f.rule)}</div>`:''}
+    ${done?`<div class="why ${opts[dq.chosen]===it.a?'ok':'bad'}"><b>${opts[dq.chosen]===it.a?'✓':'✗'}</b> ${esc(it.why)} <a class="nlink" href="${NOTION.index}#辨析" target="_blank" rel="noopener">rule ↗</a></div>`:''}
   </div>
   ${done?`<div class="qfoot" style="margin-top:12px"><button class="btn" onclick="drillNext()">Next →</button></div>`:''}`;
 }
 function confusePanel(){
-  return `<div class="card"><div class="row spread" style="margin-bottom:6px"><div><div class="lab" style="margin:0">Which one? · 辨析</div><div class="small muted">the pairs you keep mixing up, straight from your Notion. Weak families come up more often.</div></div><button class="btn sm" onclick="startConfuse(null)">Mixed set · 12</button></div>
+  return `<div class="card"><div class="row spread" style="margin-bottom:6px"><div><div class="lab" style="margin:0">Which one? · 辨析</div><div class="small muted">weak families come up more often · rules are in the Grammar Index</div></div><button class="btn sm" onclick="startConfuse(null)">Mixed set · 12</button></div>
     <div class="cfgrid">${CONFUSE.map(f=>{const lv=cfLevel(f.k),s=cfStat(f.k);return `<button class="cftile s${lv}" onclick="startConfuse(['${f.k}'])"><b class="zh">${esc(f.zh)}</b><span>${esc(f.t)}</span><i>${s.n?Math.round(s.ok/s.n*100)+'% · '+s.n:'new'}</i></button>`;}).join('')}</div></div>`;
 }
 
@@ -3746,7 +3746,7 @@ function graspMap(){
   const cl=S.settings.curLesson||22;
   const rows=GFAM.map(f=>{const pts=[];for(let l=1;l<=cl;l++)(GRAMMAR[l]||[]).forEach(p=>{if(famOf(p)===f.k)pts.push({p,l});});return {f,pts};}).filter(r=>r.pts.length);
   const cfk=CONFUSE.map(f=>f.k);
-  return `<div class="card"><div class="row spread" style="margin-bottom:8px"><div><div class="lab" style="margin:0">Grasp · by family</div><div class="small muted">the families from your Grammar Index. Each dot is one pattern: its cloze-card memory, checked against quiz and Which-one history.</div></div><a class="nlink" href="${NOTION.index}" target="_blank" rel="noopener">Grammar Index ↗</a></div>
+  return `<div class="card"><div class="row spread" style="margin-bottom:8px"><div><div class="lab" style="margin:0">Grasp · by family</div><div class="small muted">one dot per pattern · explanations live in Notion</div></div><a class="nlink" href="${NOTION.index}" target="_blank" rel="noopener">Grammar Index ↗</a></div>
   <div class="famlist">${rows.map(r=>{
     const lv=r.pts.map(x=>gramGrasp(x.p.id)); const solid=lv.filter(v=>v>=3).length, shaky=lv.filter(v=>v===1).length, none=lv.filter(v=>v===0).length;
     const hasCf=cfk.includes(r.f.k);
