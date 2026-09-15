@@ -21,9 +21,47 @@ gh api repos/{owner}/zika/pages -X POST -f 'source[branch]=main' -f 'source[path
 
 Or just tell Claude Code: *"deploy this folder to GitHub Pages"*.
 
+
+## Cloud sync between devices (v18)
+
+Progress syncs through a Firebase Realtime Database. Both devices join the same **sync code**; every save writes the whole study state (last write wins) and the other device picks it up within about a second. Offline, the app keeps working from its local copy and pushes when it reconnects.
+
+### One-time Firebase setup (about 5 minutes)
+
+1. https://console.firebase.google.com → **Add project** (name it `zika-sync`, Analytics off).
+2. **Build → Realtime Database → Create database** (any region, start in test mode).
+3. **Build → Authentication → Get started → Sign-in method → Anonymous → Enable**.
+4. **Project settings (gear) → Your apps → Web (`</>`)** → register the app → copy the `firebaseConfig` object.
+5. Either paste that object into `const FIREBASE_CONFIG = …` near the end of `index.html`, or open the app → **Settings → Cloud sync → Firebase config** and paste it there (per browser).
+6. **Realtime Database → Rules**, replace with the rules below and publish.
+
+```json
+{
+  "rules": {
+    "rooms": {
+      "$room": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        "study_state": {
+          ".validate": "!data.exists() || newData.child('synced_at').val() > data.child('synced_at').val()"
+        }
+      }
+    }
+  }
+}
+```
+
+The `.validate` line makes the server reject any write older than what it already holds, so a stale device can never overwrite a newer one.
+
+### Linking devices
+
+On the first device: **Settings → Cloud sync → Generate**. Type the same code on the second device and tap **Link**. If both devices already hold progress, the app asks which copy should win. The `Mac` / `iPad` badge in the header shows this device's name and the sync state: pulsing = sending, ✓ = synced, hollow = offline.
+
+Device-local settings (voice, audio source, appearance, backup file) do not sync; everything else does.
+
 ## On your phone
 
-Open the URL in Safari/Chrome → Share → **Add to Home Screen**. It installs like a native app and works offline after the first visit (reviews on the MRT included). Progress is saved per-device in the browser — use **Settings → Export/Import** to move progress between devices.
+Open the URL in Safari/Chrome → Share → **Add to Home Screen**. It installs like a native app and works offline after the first visit (reviews on the MRT included). Progress lives in the browser and, once Cloud sync is set up (below), on every device that shares your sync code.
 
 ## Best audio
 

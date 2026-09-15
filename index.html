@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>師大 Book 1 · 字卡</title>
+<title>字卡 · 當代中文</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#faf9f7">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
@@ -353,6 +353,75 @@ select.vsel{max-width:230px;padding:7px 9px;border:1px solid var(--line);border-
 .tag.c1{color:var(--red)} .tag.c2{color:var(--amber)} .tag.c3{color:var(--acc)} .tag.c4{color:var(--blue)}
 .confrow{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:4px 0 6px}
 .confrow .stat .n{font-size:22px}
+/* ---- v18: cloud sync + polish ---- */
+.syncpill{position:absolute;top:2px;right:44px;height:36px;border:1px solid var(--line2);background:var(--panel);color:var(--mut);border-radius:99px;padding:0 12px 0 10px;font-size:11.5px;font-weight:600;letter-spacing:.02em;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:opacity .6s,color .3s}
+.syncpill:hover{color:var(--ink);background:var(--tint)}
+.syncpill.quiet{opacity:.55}
+.sdot{width:9px;height:9px;border-radius:50%;background:var(--mut2);position:relative;flex:none;display:inline-block;transition:background .3s}
+.sdot.inline{width:8px;height:8px;vertical-align:-1px;margin-right:2px}
+[data-state="off"] .sdot{background:var(--mut2)}
+[data-state="setup"] .sdot{background:var(--amber);animation:blink 1.6s ease-in-out infinite}
+[data-state="connecting"] .sdot,[data-state="syncing"] .sdot{background:var(--amber);animation:pulse 1.1s ease-in-out infinite}
+[data-state="ok"] .sdot{background:var(--acc);animation:tick .5s cubic-bezier(.2,1.4,.4,1)}
+[data-state="ok"] .sdot::after{content:"";position:absolute;left:2.5px;top:1px;width:2.5px;height:4.5px;border:solid #fff;border-width:0 1.6px 1.6px 0;transform:rotate(45deg);animation:tickIn .35s .1s both}
+[data-state="offline"] .sdot{background:var(--mut);box-shadow:0 0 0 2px var(--panel),0 0 0 3px var(--mut2)}
+[data-state="error"] .sdot{background:var(--red);animation:blink 1s steps(2) infinite}
+.syncpill[data-state="error"]{color:var(--red)}
+.syncpill[data-state="offline"] .stxt::after{content:" · offline";font-weight:500;color:var(--mut)}
+.syncpill[data-state="setup"] .stxt::after{content:" · set up";font-weight:500;color:var(--amber)}
+@keyframes pulse{0%,100%{transform:scale(.8);opacity:.55}50%{transform:scale(1.25);opacity:1}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes tick{0%{transform:scale(.6)}60%{transform:scale(1.35)}100%{transform:scale(1)}}
+@keyframes tickIn{from{opacity:0;transform:rotate(45deg) scale(.4)}to{opacity:1;transform:rotate(45deg) scale(1)}}
+@media(max-width:560px){.syncpill{right:42px;padding:0 9px}.syncpill .stxt{display:none}}
+#toastHost{position:fixed;left:0;right:0;bottom:22px;display:none;justify-content:center;z-index:1200;pointer-events:none;text-align:center}
+.toast{display:inline-flex;align-items:center;gap:12px;background:var(--ink);color:var(--bg);font-size:13px;font-weight:600;padding:10px 16px;border-radius:99px;box-shadow:0 8px 28px rgba(0,0,0,.22);pointer-events:auto;animation:toastIn .3s cubic-bezier(.2,1.2,.4,1);max-width:min(92vw,560px)}
+.toast.out{animation:toastOut .25s ease-in forwards}
+.toast .tact{border:1px solid var(--mut);background:transparent;color:var(--bg);border-radius:99px;padding:3px 11px;font-size:12px;font-weight:700;cursor:pointer}
+.toast .tact:hover{background:var(--mut)}
+@keyframes toastIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateY(8px)}}
+.modal{position:fixed;inset:0;background:rgba(20,16,10,.55);display:none;align-items:center;justify-content:center;z-index:1300;padding:20px;backdrop-filter:blur(3px)}
+.modal-card{background:var(--panel);border:1px solid var(--line2);border-radius:18px;padding:24px 26px;max-width:460px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:toastIn .28s cubic-bezier(.2,1.2,.4,1)}
+/* review card motion */
+.stage{will-change:transform;transition:box-shadow .3s}
+.stage.slide-in{animation:slideIn .32s cubic-bezier(.2,.9,.3,1.1)}
+.stage.flip-in{animation:flipIn .38s cubic-bezier(.2,.9,.3,1);transform-origin:50% 50%}
+.stage.swipe-right{animation:swipeR .18s ease-in forwards}
+.stage.swipe-left{animation:swipeL .18s ease-in forwards}
+.stage.from-good{box-shadow:inset 0 0 0 2px var(--acc);animation:slideIn .32s cubic-bezier(.2,.9,.3,1.1),edgeFade 1.1s .25s ease-out forwards}
+.stage.from-hard{box-shadow:inset 0 0 0 2px var(--amber);animation:slideIn .32s cubic-bezier(.2,.9,.3,1.1),edgeFade 1.1s .25s ease-out forwards}
+.stage.from-again{box-shadow:inset 0 0 0 2px var(--red);animation:slideIn .32s cubic-bezier(.2,.9,.3,1.1),edgeFade 1.1s .25s ease-out forwards}
+@keyframes slideIn{from{opacity:0;transform:translateX(34px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes flipIn{from{opacity:0;transform:perspective(900px) rotateX(-55deg)}to{opacity:1;transform:none}}
+@keyframes swipeR{to{opacity:0;transform:translateX(70px) rotate(2deg)}}
+@keyframes swipeL{to{opacity:0;transform:translateX(-70px) rotate(-2deg)}}
+@keyframes edgeFade{to{box-shadow:inset 0 0 0 0 transparent}}
+.grades button{transition:transform .08s,background .15s}
+.grades button:active{transform:scale(.94)}
+.opts button.pop,.tag.pop{animation:popIn .45s cubic-bezier(.2,1.6,.4,1)}
+.opts button.shake{animation:shake .4s ease}
+@keyframes popIn{0%{transform:scale(.7)}60%{transform:scale(1.14)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+#confettiCv{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1250;display:none}
+/* confidence pills: 1 red · 2 orange · 3 blue · 4 gold */
+.tag.c1,.tag.c2,.tag.c3,.tag.c4{border-radius:99px;padding:2px 8px;font-size:9.5px;display:inline-block;transition:background .3s,color .3s}
+.tag.c1{color:#fff;background:var(--red)} .tag.c2{color:#fff;background:#d9822b} .tag.c3{color:#fff;background:var(--blue)} .tag.c4{color:#3b2a05;background:#e3b64a}
+html[data-theme="dark"] .tag.c4{color:#1d1503;background:#d9a05b}
+.confrow .tag{font-size:10px}
+/* heatmap */
+.heat{margin-top:18px;border-top:1px solid var(--tint);padding-top:14px}
+.hmgrid{display:grid;grid-template-rows:repeat(7,1fr);grid-auto-flow:column;gap:3px;height:calc(7*11px + 6*3px)}
+.hmgrid i{display:block;width:11px;height:11px;border-radius:3px;background:var(--tint);transition:transform .1s}
+.hmgrid i:hover{transform:scale(1.4);outline:1px solid var(--ink)}
+.hmgrid .hm1{background:#bfe0d3}.hmgrid .hm2{background:#7fbfb3}.hmgrid .hm3{background:#2f9184}.hmgrid .hm4{background:#0b5d54}
+html[data-theme="dark"] .hmgrid .hm1{background:#254139}html[data-theme="dark"] .hmgrid .hm2{background:#357c6d}html[data-theme="dark"] .hmgrid .hm3{background:#5cb3a0}html[data-theme="dark"] .hmgrid .hm4{background:#a5e6d6}
+@media(max-width:560px){.hmgrid{gap:2px;height:calc(7*8px + 6*2px)}.hmgrid i{width:8px;height:8px}}
+.flame{color:var(--amber);font-weight:700}
+/* exam clock */
+.examcard .clock{transition:color 1s linear}
+.examcard .clock.urgent{animation:blink .9s steps(2) infinite}
+@media(prefers-reduced-motion:reduce){.stage,.sdot,.toast,.tag.pop,.opts button.pop{animation:none!important}}
 </style>
 </head>
 <body>
@@ -2578,6 +2647,445 @@ const _renderSet17=renderSet;
 renderSet=function(){ _renderSet17(); try{ document.getElementById('vSet').insertAdjacentHTML('afterbegin',confPanel()); }catch(e){} };
 if(!S.conf){ try{ save(); }catch(e){} }
 try{ if(typeof view!=='undefined'&&view==='set')renderSet(); if(typeof view!=='undefined'&&view==='lib')renderLib(); }catch(e){}
+
+/* ============================================================
+   v18 — Cloud sync (Firebase Realtime Database) + polish.
+   Both devices join the same "sync code"; every save() writes the
+   whole study state as one JSON blob (last write wins) and every
+   other device listening on that code adopts it within a second.
+   localStorage stays the offline cache — the app works exactly as
+   before when the network or Firebase is unavailable.
+   ============================================================ */
+
+/* ---- 1. config ---- */
+/* Paste the web-app config from Firebase console → Project settings → Your apps here.
+   Leave null to paste it in Settings → Cloud sync instead (stored in this browser). */
+const FIREBASE_CONFIG = null;
+const FB_CFG_KEY='zika_fb_config', FB_ROOM_KEY='zika_sync_code', FB_DEV_KEY='zika_device', FB_META_KEY='zika_sync_meta';
+const FB_SDK='https://www.gstatic.com/firebasejs/10.12.0/';
+function fbConfig(){
+  if(FIREBASE_CONFIG&&FIREBASE_CONFIG.databaseURL)return FIREBASE_CONFIG;
+  try{const r=store.getItem(FB_CFG_KEY);if(r){const c=JSON.parse(r);if(c&&c.databaseURL)return c;}}catch(e){}
+  return null;
+}
+function fbSaveConfig(txt){
+  txt=String(txt||'').trim();
+  if(!txt){store.removeItem(FB_CFG_KEY);toast('Firebase config cleared');return renderSet();}
+  let c=null;
+  try{c=JSON.parse(txt);}catch(e){
+    /* accept the JS-object form the console shows: keys without quotes, trailing commas, a leading "const firebaseConfig =" */
+    try{c=Function('"use strict";return ('+txt.replace(/^[^{]*/,'').replace(/;\s*$/,'')+')')();}catch(e2){}
+  }
+  if(!c||!c.databaseURL||!c.apiKey){alert('That does not look like a Firebase web config — it needs apiKey and databaseURL.');return;}
+  store.setItem(FB_CFG_KEY,JSON.stringify(c));
+  toast('Firebase config saved — connecting…');
+  fbLoad(); renderSet();
+}
+
+/* ---- 2. device identity ---- */
+function guessDevice(){
+  const ua=navigator.userAgent;
+  const ipad=/iPad/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  if(ipad)return 'iPad'; if(/iPhone/.test(ua))return 'iPhone'; if(/Macintosh/.test(ua))return 'Mac';
+  if(/Android/.test(ua))return 'Android'; if(/Windows/.test(ua))return 'PC'; return 'Web';
+}
+const DEVICE={
+  id:(()=>{let id=store.getItem(FB_DEV_KEY+'_id');if(!id){id=Math.random().toString(36).slice(2,10);store.setItem(FB_DEV_KEY+'_id',id);}return id;})(),
+  get name(){return store.getItem(FB_DEV_KEY)||guessDevice();},
+  set name(v){if(v)store.setItem(FB_DEV_KEY,v);else store.removeItem(FB_DEV_KEY);}
+};
+
+/* ---- 3. sync state ---- */
+const SYNC={status:'off',code:'',at:0,remoteAt:0,remoteDev:'',dirty:false,timer:null,fb:null,unsub:null,uid:null,
+  online:navigator.onLine,lastErr:'',pushing:false,again:false,revert:null,applying:false,first:true,retry:0,log:[],okTimer:null,quietTimer:null};
+(function(){
+  try{const m=JSON.parse(store.getItem(FB_META_KEY)||'{}');SYNC.at=m.at||0;SYNC.dirty=!!m.dirty;SYNC.remoteDev=m.remoteDev||'';}catch(e){}
+  SYNC.code=(store.getItem(FB_ROOM_KEY)||'').trim();
+})();
+function syncMetaSave(){try{store.setItem(FB_META_KEY,JSON.stringify({at:SYNC.at,dirty:SYNC.dirty,remoteDev:SYNC.remoteDev}));}catch(e){}}
+function normCode(c){return String(c||'').toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,40);}
+function fbPath(){return 'rooms/'+SYNC.code+'/study_state';}
+function localEmpty(){return !Object.keys(S.cards||{}).length&&!(S.hard||[]).length;}
+function fmtT(t){if(!t)return '—';const d=new Date(t);const today=dkey(new Date())===dkey(d);return (today?'':dkey(d)+' ')+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function ago(t){if(!t)return 'never';const s=Math.floor((Date.now()-t)/1000);if(s<8)return 'just now';if(s<60)return s+' s ago';if(s<3600)return Math.round(s/60)+' min ago';if(s<86400)return Math.round(s/3600)+' h ago';return Math.round(s/86400)+' d ago';}
+function fbLogLocal(kind,extra){SYNC.log.unshift({at:Date.now(),kind,extra:extra||''});if(SYNC.log.length>40)SYNC.log.pop();}
+
+/* the blob we write: the full state as JSON (Firebase drops empty objects and
+   coerces numeric keys, so the state itself travels as a string) plus readable mirrors */
+function fbPayload(at){
+  const json=JSON.stringify(S);
+  const conf={}; try{const w=(S.conf&&S.conf.words)||{};for(const k in w)conf[k.replace(/[.#$\[\]\/]/g,'_')]=w[k];}catch(e){}
+  let due=0,started=0; try{const q=buildQueue();due=q.learn.length+q.rev.length+q.fresh.length;started=Object.values(S.cards).filter(c=>c.st!==undefined).length;}catch(e){}
+  return {v:18,json,device:DEVICE.name,device_id:DEVICE.id,synced_at:at,bytes:json.length,
+    conf,hard_list:(S.hard||[]).slice(),summary:{cards:Object.keys(S.cards).length,started,due,streak:streakCount()}};
+}
+
+/* ---- 4. SDK loading (module script injected at runtime; retried when we come back online) ---- */
+let fbLoading=false;
+function fbLoad(){
+  if(SYNC.fb||fbLoading)return; if(!fbConfig()){syncUI('off');return;}
+  if(window.__fbSDK){fbBoot();return;}
+  fbLoading=true; syncUI('connecting');
+  const s=document.createElement('script'); s.type='module';
+  s.textContent=`import{initializeApp}from'${FB_SDK}firebase-app.js';
+import{getDatabase,ref,set,get,onValue,push,serverTimestamp}from'${FB_SDK}firebase-database.js';
+import{getAuth,signInAnonymously,onAuthStateChanged}from'${FB_SDK}firebase-auth.js';
+window.__fbSDK={initializeApp,getDatabase,ref,set,get,onValue,push,serverTimestamp,getAuth,signInAnonymously,onAuthStateChanged};
+window.fbBoot();`;
+  s.onerror=()=>{fbLoading=false;SYNC.lastErr='Could not load the Firebase SDK';syncUI(navigator.onLine?'error':'offline');};
+  document.head.appendChild(s);
+  /* a module import failure does not fire onerror on the tag — poll instead */
+  setTimeout(()=>{if(!window.__fbSDK&&fbLoading){fbLoading=false;SYNC.lastErr='Firebase SDK did not load (offline?)';syncUI(navigator.onLine?'error':'offline');}},8000);
+}
+window.addEventListener('online',()=>{SYNC.online=true;if(!SYNC.fb)fbLoad();else if(SYNC.dirty)fbSchedulePush();});
+window.addEventListener('offline',()=>{SYNC.online=false;if(SYNC.status!=='off')syncUI('offline');});
+
+window.fbBoot=async function(){
+  fbLoading=false;
+  const sdk=window.__fbSDK, cfg=fbConfig();
+  if(!sdk||!cfg){syncUI('off');return;}
+  if(SYNC.fb)return;
+  try{
+    const app=sdk.initializeApp(cfg), db=sdk.getDatabase(app), auth=sdk.getAuth(app);
+    SYNC.fb=Object.assign({},sdk,{app,db,auth});
+    syncUI('connecting');
+    sdk.onAuthStateChanged(auth,u=>{if(u&&!SYNC.uid){SYNC.uid=u.uid;fbLogLocal('auth',u.uid.slice(0,6));fbStart();}});
+    sdk.onValue(sdk.ref(db,'.info/connected'),s=>{
+      const on=!!s.val(); SYNC.online=on;
+      if(!on){if(SYNC.status!=='off')syncUI('offline');}
+      else{ if(SYNC.status==='offline')syncUI(SYNC.dirty?'syncing':'ok'); if(SYNC.dirty&&SYNC.code)fbSchedulePush(); }
+    });
+    await sdk.signInAnonymously(auth);
+  }catch(e){SYNC.lastErr=String(e&&e.message||e);fbLogLocal('error',SYNC.lastErr);syncUI('error');}
+};
+function fbStart(){
+  if(!SYNC.fb||!SYNC.uid)return;
+  if(!SYNC.code){syncUI('setup');return;}
+  fbListen();
+}
+function fbListen(){
+  if(SYNC.unsub){try{SYNC.unsub();}catch(e){}SYNC.unsub=null;}
+  const f=SYNC.fb; SYNC.first=true; syncUI('connecting');
+  SYNC.unsub=f.onValue(f.ref(f.db,fbPath()),snap=>{
+    const r=snap.val();
+    if(SYNC.first){SYNC.first=false;fbInitial(r);} else fbOnRemote(r);
+  },err=>{SYNC.lastErr=String(err&&err.message||err);fbLogLocal('error',SYNC.lastErr);syncUI('error');});
+}
+
+/* ---- 5. reconcile ---- */
+function fbInitial(r){
+  fbLogLocal('connect',r?(r.device+' @ '+fmtT(r.synced_at)):'empty');
+  if(!r||!r.json){ if(!localEmpty())fbPush(); else {syncUI('ok');} return; }
+  const ours=r.device_id===DEVICE.id;
+  if(ours){ if(SYNC.dirty)fbPush(); else {SYNC.remoteAt=r.synced_at;SYNC.remoteDev=r.device;syncUI('ok');} return; }
+  /* another device wrote since we last synced */
+  if(localEmpty()||(!SYNC.dirty&&SYNC.at>0)){ fbAdopt(r,'quiet'); return; }
+  /* both sides hold something: this device has unsynced work, or it has never synced */
+  fbConflict(r,SYNC.at?'unsynced':'first');
+}
+function fbOnRemote(r){
+  if(!r||!r.json)return;
+  if(r.device_id===DEVICE.id){SYNC.remoteAt=r.synced_at;SYNC.remoteDev=r.device;if(!SYNC.dirty)syncUI('ok');return;}
+  if(SYNC.dirty){
+    /* real-time clash: the other device saved while this one has unsent changes — this device's push wins (last write), offer the other side */
+    SYNC.clash={r,at:Date.now()};
+    fbLogLocal('clash',r.device+' @ '+fmtT(r.synced_at));
+    toast(`${esc(r.device)} also saved at ${fmtT(r.synced_at)} — ${esc(DEVICE.name)} wins`,{action:'Use '+r.device+"'s",onAction:()=>fbAdopt(r,'manual'),ms:7000});
+    fbSchedulePush();
+    return;
+  }
+  fbAdopt(r,'live');
+}
+const LOCAL_SETTINGS=['voiceName','audioSrc','theme','lastBackup','bkName','autoBackup','haptics','_bkWarned'];
+function fbAdopt(r,how){
+  let p=null; try{p=JSON.parse(r.json);}catch(e){}
+  if(!p||!p.cards){SYNC.lastErr='Cloud state unreadable';syncUI('error');return;}
+  const before=JSON.stringify(S), keep={};
+  LOCAL_SETTINGS.forEach(k=>{if(S.settings&&k in S.settings)keep[k]=S.settings[k];});
+  SYNC.revert={json:before,dev:r.device,at:r.synced_at};
+  SYNC.applying=true;
+  try{
+    S=p; S.settings=Object.assign({},S.settings||{},keep); S.settings.modes=Object.assign({rec:true,prod:true},S.settings.modes||{});
+    S.pick=S.pick||[]; S.hard=S.hard||[]; S.log=S.log||{}; S.intro=S.intro||{}; S.hist=S.hist||{d:[],s:[]};
+    try{store.setItem(KEY,JSON.stringify(S));}catch(e){}
+    try{bkQueue();}catch(e){}
+    SYNC.at=r.synced_at; SYNC.remoteAt=r.synced_at; SYNC.remoteDev=r.device; SYNC.dirty=false; SYNC.clash=null; syncMetaSave();
+  }finally{SYNC.applying=false;}
+  fbLogLocal('pull',r.device+' @ '+fmtT(r.synced_at));
+  syncUI('ok');
+  rerenderAfterSync();
+  if(how!=='quiet')toast(`↓ synced from ${esc(r.device)} · ${fmtT(r.synced_at)}`,{action:'Undo',onAction:fbRevert,ms:6000});
+  else toast(`↓ synced from ${esc(r.device)}`,{ms:2500});
+}
+function fbRevert(){
+  const rv=SYNC.revert; if(!rv)return;
+  let p=null; try{p=JSON.parse(rv.json);}catch(e){return;}
+  const keep={}; LOCAL_SETTINGS.forEach(k=>{if(S.settings&&k in S.settings)keep[k]=S.settings[k];});
+  S=p; S.settings=Object.assign({},S.settings||{},keep); SYNC.revert=null;
+  save(); rerenderAfterSync(); toast('Reverted — this device\'s version is now the cloud version');
+}
+function rerenderAfterSync(){
+  try{
+    badge();
+    if(view==='rev'){ if(rq){rq=buildQueue();['learn','rev','fresh'].forEach(k=>{rq[k]=rq[k].filter(c=>c!==cur);});} if(cur&&!S.cards[cur])nextCard(); else renderRev(); }
+    else if(view==='set')renderSet(); else go(view);
+  }catch(e){}
+}
+function fbConflict(r,why){
+  const host=document.getElementById('syncModal'); if(!host)return;
+  const mine=DEVICE.name, theirs=r.device||'the other device';
+  const msg=why==='first'
+    ?`The cloud already holds <b>${esc(theirs)}</b>'s progress (saved ${fmtT(r.synced_at)}), and this <b>${esc(mine)}</b> has its own. Which one should both devices use from now on?`
+    :`<b>${esc(theirs)}</b> synced a newer version at ${fmtT(r.synced_at)}, but this <b>${esc(mine)}</b> has changes it never sent (last synced ${fmtT(SYNC.at)}).`;
+  host.innerHTML=`<div class="modal-card">
+    <div class="lab">Sync conflict</div>
+    <div style="font-size:14px;margin-bottom:14px">${msg}</div>
+    <div class="row" style="gap:8px;flex-wrap:wrap">
+      <button class="btn" id="cfUse">Use ${esc(theirs)}'s version</button>
+      <button class="btn ghost" id="cfKeep">Keep ${esc(mine)}'s version</button>
+    </div>
+    <div class="small muted" style="margin-top:10px">Whichever you pick becomes the cloud copy. The other is kept for one Undo in Settings → Cloud sync.</div>
+  </div>`;
+  host.style.display='flex';
+  document.getElementById('cfUse').onclick=()=>{host.style.display='none';fbAdopt(r,'manual');};
+  document.getElementById('cfKeep').onclick=()=>{host.style.display='none';SYNC.revert={json:r.json,dev:r.device,at:r.synced_at};SYNC.remoteAt=r.synced_at;fbPush();};
+}
+
+/* ---- 6. push ---- */
+function fbSchedulePush(){
+  if(!SYNC.fb||!SYNC.code||!SYNC.uid)return;
+  clearTimeout(SYNC.timer); SYNC.timer=setTimeout(fbPush,700); syncUI('syncing');
+}
+async function fbPush(){
+  clearTimeout(SYNC.timer);
+  if(!SYNC.fb||!SYNC.code||!SYNC.uid)return;
+  if(SYNC.pushing){SYNC.again=true;return;}
+  SYNC.pushing=true; syncUI('syncing');
+  const at=Math.max(Date.now(),(SYNC.remoteAt||0)+1);
+  const f=SYNC.fb, p=fbPayload(at);
+  try{
+    await f.set(f.ref(f.db,fbPath()),p);
+    SYNC.at=at; SYNC.remoteAt=at; SYNC.remoteDev=DEVICE.name; SYNC.dirty=false; SYNC.retry=0; syncMetaSave();
+    fbLogLocal('push',Math.round(p.bytes/1024)+' KB');
+    try{f.push(f.ref(f.db,'rooms/'+SYNC.code+'/sync_log'),{device:DEVICE.name,device_id:DEVICE.id,at,bytes:p.bytes,due:p.summary.due});}catch(e){}
+    syncUI('ok');
+  }catch(e){
+    SYNC.lastErr=String(e&&e.message||e); fbLogLocal('error',SYNC.lastErr);
+    if(/PERMISSION_DENIED|permission/i.test(SYNC.lastErr)){
+      /* the rules rejected an older write — someone else is ahead; pull and ask */
+      try{const snap=await f.get(f.ref(f.db,fbPath()));const r=snap.val();if(r&&r.json&&r.device_id!==DEVICE.id){fbConflict(r,'unsynced');}else syncUI('error');}catch(e2){syncUI('error');}
+    } else {
+      syncUI(SYNC.online?'error':'offline');
+      SYNC.retry=Math.min(30000,Math.max(1000,SYNC.retry*2||1000));
+      setTimeout(()=>{if(SYNC.dirty)fbSchedulePush();},SYNC.retry);
+    }
+  }finally{
+    SYNC.pushing=false;
+    if(SYNC.again){SYNC.again=false;fbSchedulePush();}
+  }
+}
+/* every save marks the state dirty and schedules a push; adopting cloud state never does */
+save=(function(orig){return function(){orig.apply(this,arguments);if(SYNC.applying)return;SYNC.dirty=true;syncMetaSave();fbSchedulePush();};})(save);
+/* periodic safety net: anything still dirty goes up every 30 s */
+setInterval(()=>{if(SYNC.dirty&&SYNC.fb&&SYNC.code&&!SYNC.pushing)fbSchedulePush();},30000);
+['pagehide','beforeunload'].forEach(ev=>window.addEventListener(ev,()=>{if(SYNC.dirty&&SYNC.fb&&SYNC.code&&SYNC.uid&&!SYNC.pushing){clearTimeout(SYNC.timer);fbPush();}}));
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&SYNC.dirty){clearTimeout(SYNC.timer);fbPush();}});
+
+/* ---- 7. sync code (the "room" both devices share) ---- */
+function fbSetCode(c){
+  c=normCode(c);
+  if(!c){alert('Enter the sync code shown on your other device, or generate one.');return;}
+  if(c.length<6){alert('Make the code at least 6 characters.');return;}
+  SYNC.code=c; store.setItem(FB_ROOM_KEY,c);
+  SYNC.at=0; SYNC.dirty=!localEmpty(); syncMetaSave();
+  fbLogLocal('code',c);
+  if(SYNC.fb&&SYNC.uid)fbListen(); else fbLoad();
+  renderSet();
+}
+function fbNewCode(){
+  const c='zika-'+Math.random().toString(36).slice(2,8);
+  const el=document.getElementById('syncCodeInp'); if(el)el.value=c;
+  fbSetCode(c);
+}
+function fbUnlink(){
+  if(!confirm('Stop syncing this device? Progress stays on the device; the cloud copy is untouched.'))return;
+  if(SYNC.unsub){try{SYNC.unsub();}catch(e){}SYNC.unsub=null;}
+  SYNC.code=''; store.removeItem(FB_ROOM_KEY); SYNC.at=0; SYNC.dirty=false; syncMetaSave(); syncUI('setup'); renderSet();
+}
+async function fbPullNow(){
+  if(!SYNC.fb||!SYNC.code)return;
+  try{const snap=await SYNC.fb.get(SYNC.fb.ref(SYNC.fb.db,fbPath()));const r=snap.val();if(r&&r.json)fbAdopt(r,'manual');else toast('Nothing in the cloud yet');}catch(e){SYNC.lastErr=String(e&&e.message||e);syncUI('error');renderSet();}
+}
+function fbCopyCode(){const t=SYNC.code;if(!t)return;if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(()=>toast('Code copied'),()=>prompt('Copy this:',t));else prompt('Copy this:',t);}
+
+/* ---- 8. sync indicator + toasts + modal ---- */
+const SYNC_LABEL={off:'not syncing',setup:'needs a sync code',connecting:'connecting…',syncing:'syncing…',ok:'synced',offline:'offline — will sync when back',error:'sync error'};
+function syncUI(st){
+  SYNC.status=st;
+  const pill=document.getElementById('syncPill'); if(!pill)return;
+  pill.dataset.state=st; pill.classList.remove('quiet');
+  const txt=pill.querySelector('.stxt'); if(txt)txt.textContent=DEVICE.name;
+  pill.title=DEVICE.name+' · '+SYNC_LABEL[st]+(SYNC.at?' · last sync '+ago(SYNC.at):'')+(SYNC.lastErr&&st==='error'?' · '+SYNC.lastErr:'');
+  clearTimeout(SYNC.okTimer); clearTimeout(SYNC.quietTimer);
+  if(st==='ok'){ SYNC.quietTimer=setTimeout(()=>{pill.classList.add('quiet');},3000); }
+  const el=document.getElementById('syncStatusLine'); if(el)el.innerHTML=syncStatusHtml();
+  if(st==='ok'||st==='error'||st==='offline'){const l=document.getElementById('syncLogBox');if(l)l.innerHTML=syncLogHtml();}
+}
+function syncStatusHtml(){
+  const st=SYNC.status;
+  const dot=`<i class="sdot inline" data-state="${st}"></i>`;
+  let s=`${dot} <b>${esc(SYNC_LABEL[st]||st)}</b>`;
+  if(SYNC.at)s+=` · last sync ${esc(ago(SYNC.at))} (${esc(fmtT(SYNC.at))})`;
+  if(SYNC.remoteDev&&SYNC.remoteDev!==DEVICE.name&&SYNC.remoteAt)s+=` · cloud copy from <b>${esc(SYNC.remoteDev)}</b> ${esc(fmtT(SYNC.remoteAt))}`;
+  if(SYNC.dirty&&st!=='syncing')s+=` · <span style="color:var(--amber)">unsent changes</span>`;
+  if(st==='error'&&SYNC.lastErr)s+=`<div class="small" style="color:var(--red);margin-top:3px">${esc(SYNC.lastErr)}</div>`;
+  return s;
+}
+function syncLogHtml(){return SYNC.log.length?SYNC.log.slice(0,12).map(l=>`<div>${esc(fmtT(l.at))} · ${esc(l.kind)}${l.extra?' · '+esc(l.extra):''}</div>`).join(''):'<div class="muted">nothing yet</div>';}
+let toastTimer=null;
+function toast(msg,o){
+  o=o||{}; const host=document.getElementById('toastHost'); if(!host)return;
+  host.innerHTML=`<div class="toast"><span>${msg}</span>${o.action?`<button class="tact">${esc(o.action)}</button>`:''}</div>`;
+  const b=host.querySelector('.tact'); if(b)b.onclick=()=>{host.innerHTML='';if(o.onAction)o.onAction();};
+  host.style.display='block'; clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{const t=host.querySelector('.toast');if(t){t.classList.add('out');setTimeout(()=>{host.innerHTML='';host.style.display='none';},260);}},o.ms||3500);
+}
+(function mountSyncUI(){
+  const mast=document.querySelector('.mast');
+  if(mast&&!document.getElementById('syncPill')){
+    const b=document.createElement('button'); b.id='syncPill'; b.className='syncpill'; b.dataset.state='off'; b.type='button';
+    b.innerHTML='<i class="sdot"></i><span class="stxt"></span>'; b.title='Cloud sync';
+    b.onclick=()=>{go('set');setTimeout(()=>{const c=document.getElementById('syncCard');if(c)c.scrollIntoView({behavior:'smooth',block:'start'});},30);};
+    mast.appendChild(b);
+  }
+  if(!document.getElementById('toastHost')){const t=document.createElement('div');t.id='toastHost';document.body.appendChild(t);}
+  if(!document.getElementById('syncModal')){const m=document.createElement('div');m.id='syncModal';m.className='modal';document.body.appendChild(m);}
+  syncUI(fbConfig()?'connecting':'off');
+})();
+
+/* ---- 9. settings card ---- */
+function syncPanel(){
+  const cfg=fbConfig(), hard=!!(FIREBASE_CONFIG&&FIREBASE_CONFIG.databaseURL);
+  const dev=DEVICE.name;
+  return `<div class="card" id="syncCard"><div class="lab">Cloud sync</div>
+    <div id="syncStatusLine" class="small" style="margin-bottom:12px">${syncStatusHtml()}</div>
+    ${!cfg?`<div class="set-row"><div><b>Firebase config</b><div class="d">Paste the web-app config from the Firebase console (Project settings → Your apps → the <code>firebaseConfig</code> object). It only names your project — the database rules do the protecting.</div></div></div>
+      <textarea id="fbCfgInp" class="gtxt" style="max-width:none;font-size:12px;min-height:80px;margin-bottom:8px" placeholder='{ apiKey: "…", authDomain: "…", databaseURL: "…", projectId: "…", appId: "…" }'></textarea>
+      <div class="row" style="margin-bottom:10px"><button class="btn sm" onclick="fbSaveConfig(document.getElementById('fbCfgInp').value)">Save config</button></div>`
+    :`<div class="set-row"><div><b>Sync code</b><div class="d">${SYNC.code?`Both devices on <b>${esc(SYNC.code)}</b> share one deck. Type the same code on the other device.`:'Generate a code here, then type it on the other device. Anyone with the code can read the deck, so keep it private.'}</div></div>
+        <div class="row" style="gap:6px">
+          <input id="syncCodeInp" class="search" style="margin:0;width:150px;padding:7px 10px;font-size:13px" value="${esc(SYNC.code)}" placeholder="zika-xxxxxx" autocapitalize="off" autocorrect="off" spellcheck="false">
+          ${SYNC.code?`<button class="btn ghost sm" onclick="fbCopyCode()">Copy</button><button class="btn ghost sm" onclick="fbSetCode(document.getElementById('syncCodeInp').value)">Change</button><button class="btn ghost sm" onclick="fbUnlink()">Unlink</button>`
+          :`<button class="btn sm" onclick="fbSetCode(document.getElementById('syncCodeInp').value)">Link</button><button class="btn ghost sm" onclick="fbNewCode()">Generate</button>`}
+        </div></div>
+      <div class="set-row"><div><b>This device</b><div class="d">the badge other devices see when this one saves</div></div>
+        <select class="vsel" onchange="DEVICE.name=this.value;syncUI(SYNC.status);renderSet()">
+          ${['Mac','iPad','iPhone','PC','Android','Web'].map(n=>`<option ${dev===n?'selected':''}>${n}</option>`).join('')}
+        </select></div>
+      <div class="set-row"><div><b>Now</b><div class="d">Push sends this device's state up; Pull replaces it with the cloud copy${SYNC.revert?`; Undo restores what was here before the last pull (from ${esc(SYNC.revert.dev)}, ${esc(fmtT(SYNC.revert.at))})`:''}.</div></div>
+        <div class="row" style="gap:6px"><button class="btn ghost sm" onclick="SYNC.dirty=true;fbPush()" ${SYNC.code?'':'disabled'}>Push</button><button class="btn ghost sm" onclick="fbPullNow()" ${SYNC.code?'':'disabled'}>Pull</button>${SYNC.revert?`<button class="btn ghost sm" onclick="fbRevert()">Undo pull</button>`:''}</div></div>
+      ${hard?'':`<div class="set-row"><div><b>Firebase config</b><div class="d">stored in this browser · project <b>${esc(cfg.projectId||'?')}</b></div></div><button class="btn ghost sm" onclick="if(confirm('Forget the Firebase config on this device?'))fbSaveConfig('')">Forget</button></div>`}
+      <details class="guide"><summary>Sync log ›</summary><div id="syncLogBox" class="gd small" style="font-variant-numeric:tabular-nums">${syncLogHtml()}</div></details>`}
+  </div>`;
+}
+function polishPanel(){
+  const s=S.settings, th=s.theme||'auto';
+  return `<div class="card"><div class="lab">Look & feel</div>
+    <div class="set-row"><div><b>Appearance</b><div class="d">Auto follows the system's light/dark setting; the ☾ button in the header picks one explicitly.</div></div>
+      <select class="vsel" onchange="S.settings.theme=this.value;save();applyTheme(this.value);if(view==='brain')renderBrain();">
+        <option value="auto" ${th==='auto'?'selected':''}>Auto (system)</option><option value="light" ${th==='light'?'selected':''}>Day</option><option value="dark" ${th==='dark'?'selected':''}>Night</option>
+      </select></div>
+    <div class="set-row"><div><b>Haptics</b><div class="d">a tap on correct, a double tap on Again. Android and desktop browsers with vibration; iPadOS does not expose vibration to web apps.</div></div>
+      <button class="tgl ${s.haptics!==false?'on':''}" onclick="S.settings.haptics=S.settings.haptics===false?true:false;save();renderSet();haptic('good')"><i></i></button></div>
+    <div class="set-row"><div><b>Animations</b><div class="d">card reveals, grade flashes, confetti when a session ends</div></div>
+      <button class="tgl ${s.anim!==false?'on':''}" onclick="S.settings.anim=S.settings.anim===false?true:false;save();renderSet()"><i></i></button></div>
+  </div>`;
+}
+renderSet=(function(orig){return function(){orig.apply(this,arguments);try{const v=document.getElementById('vSet');v.insertAdjacentHTML('afterbegin',syncPanel());v.insertAdjacentHTML('beforeend',polishPanel());}catch(e){}};})(renderSet);
+
+/* ============================================================
+   v18 polish — theme auto, haptics, animations, confetti,
+   confidence badges, heatmap, exam clock fade
+   ============================================================ */
+if(!S.settings._v18){S.settings._v18=1; if(S.settings.haptics===undefined)S.settings.haptics=true; if(!S.settings.theme)S.settings.theme='auto'; try{save();}catch(e){}}
+function sysDark(){return !!(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);}
+applyTheme=(function(orig){return function(t){if(!t||t==='auto')t=sysDark()?'dark':'light';orig(t);const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',cssVar('--bg')||'#faf9f7');};})(applyTheme);
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if((S.settings.theme||'auto')==='auto'){applyTheme('auto');if(view==='brain')renderBrain();}});}catch(e){}
+applyTheme(S.settings.theme||'auto');
+
+function haptic(kind){
+  if(S.settings.haptics===false)return;
+  try{if(navigator.vibrate)navigator.vibrate(kind==='again'?[18,40,18]:kind==='done'?[10,30,10,30,30]:10);}catch(e){}
+}
+function animOn(){return S.settings.anim!==false&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);}
+
+/* review: card slides in; the grade you just gave colours the edge of the next card for a beat */
+let lastGrade=0;
+renderRev=(function(orig){return function(){orig.apply(this,arguments);if(!animOn())return;const st=document.querySelector('#vRev .stage');if(!st)return;
+  st.classList.add(revealed?'flip-in':'slide-in'); if(lastGrade&&!revealed){st.classList.add(lastGrade===1?'from-again':lastGrade===2?'from-hard':'from-good');lastGrade=0;}
+  st.addEventListener('animationend',()=>st.classList.remove('slide-in','flip-in'),{once:true});
+  const done=document.querySelector('#vRev .card.done'); if(done&&sessionN>0&&!done.dataset.party){done.dataset.party=1;confetti();haptic('done');}
+};})(renderRev);
+grade=(function(orig){return function(g){lastGrade=g;haptic(g===1?'again':'good');
+  if(animOn()){const st=document.querySelector('#vRev .stage');if(st){st.classList.add(g===1?'swipe-left':'swipe-right');}}
+  orig.apply(this,arguments);};})(grade);
+/* drills and grammar: confetti on a finished set */
+function partyIfDone(host){const d=document.querySelector(host+' .card.done');if(d&&!d.dataset.party){d.dataset.party=1;if(animOn())confetti();haptic('done');}}
+renderDrill=(function(orig){return function(){orig.apply(this,arguments);partyIfDone('#vDrill');};})(renderDrill);
+renderGram=(function(orig){return function(){orig.apply(this,arguments);partyIfDone('#vGram');};})(renderGram);
+/* drill answers: green/red flash on the chosen option */
+document.addEventListener('click',e=>{const b=e.target.closest('.opts button');if(!b||!animOn())return;setTimeout(()=>{if(b.classList.contains('right')){b.classList.add('pop');haptic('good');}else if(b.classList.contains('wrong')){b.classList.add('shake');haptic('again');}},0);},true);
+
+function confetti(){
+  if(!animOn())return;
+  let cv=document.getElementById('confettiCv');
+  if(!cv){cv=document.createElement('canvas');cv.id='confettiCv';document.body.appendChild(cv);}
+  const dpr=window.devicePixelRatio||1; cv.width=innerWidth*dpr; cv.height=innerHeight*dpr; cv.style.display='block';
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+  const cols=[cssVar('--lant'),cssVar('--acc'),cssVar('--gold'),cssVar('--blue'),cssVar('--plum'),cssVar('--amber')];
+  const P=[]; for(let i=0;i<140;i++)P.push({x:innerWidth/2+(Math.random()-.5)*160,y:innerHeight*0.35,vx:(Math.random()-.5)*14,vy:-Math.random()*13-4,r:Math.random()*Math.PI,vr:(Math.random()-.5)*.3,w:6+Math.random()*6,h:4+Math.random()*4,c:cols[i%cols.length]});
+  const t0=performance.now();
+  (function frame(t){
+    const k=(t-t0)/1000; ctx.clearRect(0,0,innerWidth,innerHeight);
+    P.forEach(p=>{p.vy+=0.35;p.vx*=0.985;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.globalAlpha=Math.max(0,1-Math.max(0,k-1.6)/0.8);ctx.fillStyle=p.c;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});
+    if(k<2.6)requestAnimationFrame(frame); else {cv.style.display='none';ctx.clearRect(0,0,innerWidth,innerHeight);}
+  })(t0);
+}
+
+/* confidence badges: pills that pop when a word's level changes */
+const confSeen={};
+wrowHtml=(function(orig){return function(w,showLn){let h=orig.apply(this,arguments);const l=confOf(w.id);
+  const prev=confSeen[w.id]; confSeen[w.id]=l;
+  if(l&&prev!==undefined&&prev!==l&&animOn())h=h.replace(`class="tag ${CONF[l].c}"`,`class="tag ${CONF[l].c} pop"`);
+  return h;};})(wrowHtml);
+
+/* study heatmap + streak on the Today screen */
+function streakCount(){let n=0;const d=new Date();if(!S.log[dkey(d)])d.setDate(d.getDate()-1);while(S.log[dkey(d)]&&(S.log[dkey(d)].rev+S.log[dkey(d)].new)>0){n++;d.setDate(d.getDate()-1);}return n;}
+function heatmapHtml(){
+  const weeks=16, today=new Date(); today.setHours(0,0,0,0);
+  const start=new Date(today); start.setDate(start.getDate()-(weeks*7-1)-today.getDay());
+  let cells='', total=0, days=0, best=0;
+  const d=new Date(start);
+  while(d<=today){
+    const k=dkey(d), l=S.log[k], n=l?(l.rev||0)+(l.new||0):0;
+    if(n){total+=n;days++;best=Math.max(best,n);}
+    const lv=n===0?0:n<15?1:n<40?2:n<90?3:4;
+    cells+=`<i class="hm${lv}" title="${k} · ${n} card${n===1?'':'s'}"></i>`;
+    d.setDate(d.getDate()+1);
+  }
+  const streak=streakCount();
+  return `<div class="heat"><div class="row spread" style="margin-bottom:8px"><div class="lab" style="margin:0">Last ${weeks} weeks</div><div class="small muted">${days} study days · ${total} cards · ${streak?`<span class="flame">🔥 ${streak}-day streak</span>`:'no streak yet'}</div></div>
+    <div class="hmgrid">${cells}</div></div>`;
+}
+renderHome=(function(orig){return function(){orig.apply(this,arguments);try{const fc=document.querySelector('#vHome .fc');if(fc){const cap=fc.nextElementSibling;(cap||fc).insertAdjacentHTML('afterend',heatmapHtml());}}catch(e){}};})(renderHome);
+
+/* 口試 exam clock fades green → amber → red as the three minutes run out */
+setInterval(()=>{const el=document.getElementById('examClock');if(!el||!examP)return;const f=Math.max(0,Math.min(1,examP.left/180));
+  const hue=Math.round(f*120); el.style.color=`hsl(${hue} 60% ${curTheme()==='dark'?'62%':'36%'})`; el.classList.toggle('urgent',examP.started&&examP.left<=15&&examP.left>0);},250);
+
+/* boot */
+fbLoad();
+try{ if(view==='home')renderHome(); else if(view==='set')renderSet(); }catch(e){}
 </script>
 </body>
 </html>

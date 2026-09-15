@@ -1,5 +1,5 @@
 /* 字卡 service worker — cache-first so reviews work offline (MRT-proof) */
-const VERSION = 'zika-v17';
+const VERSION = 'zika-v18';
 const CORE = ['./', './index.html', './manifest.webmanifest', './assets/hanzi-writer.min.js', './assets/strokes.json', './assets/icon-192.png', './assets/icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -21,7 +21,7 @@ self.addEventListener('fetch', e => {
   }
   e.respondWith(
     caches.match(e.request).then(hit => hit || fetch(e.request).then(r => {
-      if (r.ok && url.origin === location.origin) { const cp = r.clone(); caches.open(VERSION).then(c => c.put(e.request, cp)); }
+      if (r.ok && (url.origin === location.origin || url.hostname === 'www.gstatic.com')) { const cp = r.clone(); caches.open(VERSION).then(c => c.put(e.request, cp)); }
       return r;
     }).catch(() => hit))
   );
