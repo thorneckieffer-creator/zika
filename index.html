@@ -3579,7 +3579,8 @@ const TIERS=[
 /* the ten patterns that keep coming back (catch-up writing list) */
 const RECUR_TGT=['就','才','一…就','都','一點','有一點','一樣','差不多','了','把','著','起來','還是'];
 /* catch-up lesson schedule from the gameplan (app lesson numbers) */
-const CATCHUP_SCHED={'2026-09-14':14,'2026-09-15':15,'2026-09-16':16,'2026-09-17':17,'2026-09-21':18,'2026-09-22':19,'2026-09-23':20};
+/* reset 9/15: back to B1 L11. Weekdays are light (L6/L7 class load), weekends carry two lessons. */
+const CATCHUP_SCHED={'2026-09-15':[11],'2026-09-16':[11],'2026-09-17':[12],'2026-09-19':[13,14],'2026-09-20':[15,16],'2026-09-21':[17],'2026-09-22':[18],'2026-09-23':[19],'2026-09-24':[20],'2026-09-26':[11,12,13],'2026-09-27':[14,15,16]};
 
 /* ============================================================
    v22 — learning engine upgrades
@@ -3814,8 +3815,8 @@ function planPanel(){
   const p=T[key], names=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
   let cu='';
   const sched=CATCHUP_SCHED[today]; const next=Object.keys(CATCHUP_SCHED).filter(k=>k>today).sort()[0];
-  if(sched)cu=`<div class="cu"><b>Catch-up lesson today · ${esc(lnLabel(sched))}</b> <span class="small muted">75 min: notes → sort → hammer → dialogue</span><div class="row" style="gap:6px;margin-top:6px">${A('lib','Open in Library',{ln:sched})}${A('triage','Triage it',{ln:sched})}${N(notionLesson(sched),'Notion page ↗')}</div></div>`;
-  else if(next)cu=`<div class="cu small muted">Next catch-up lesson: <b>${esc(lnLabel(CATCHUP_SCHED[next]))}</b> on ${next.slice(5).replace('-','/')}</div>`;
+  if(sched)cu=`<div class="cu"><b>Catch-up today · ${sched.map(l=>esc(lnLabel(l))).join(' + ')}</b> <span class="small muted">${sched.length>1?'weekend block · ':''}75 min each: notes → sort → hammer → dialogue</span>${sched.map(l=>`<div class="row" style="gap:6px;margin-top:6px"><span class="small" style="min-width:52px"><b>${esc(lnLabel(l))}</b></span>${A('lib','Library',{ln:l})}${A('triage','Triage',{ln:l})}${N(notionLesson(l),'Notion ↗')}</div>`).join('')}</div>`;
+  else if(next)cu=`<div class="cu small muted">No catch-up today · next: <b>${CATCHUP_SCHED[next].map(l=>esc(lnLabel(l))).join(' + ')}</b> on ${next.slice(5).replace('-','/')}</div>`;
   else cu=`<div class="cu small muted">Slow lane: 5 shaky words a day in 3-day blocks · one old lesson\u2019s 我的例句 per week</div>`;
   return `<div class="card plan"><div class="row spread" style="margin-bottom:8px"><div><div class="lab" style="margin:0">Today\u2019s plan · ${names[wd]} · ${esc(p.t)}</div><div class="small muted">${L} · 聽寫一 Mon · 聽寫二 ${names[E-1]} · 考試 <select class="vsel" style="padding:1px 4px;font-size:11.5px;max-width:none" onchange="S.settings.examDay=+this.value;save();renderHome()"><option value="4" ${E===4?'selected':''}>星期四</option><option value="5" ${E===5?'selected':''}>星期五</option></select></div></div><a class="nlink" href="${NOTION.flow}" target="_blank" rel="noopener">Workflow ↗</a></div>
     <div class="pacts">${p.items.join('')}</div>${cu}</div>`;
