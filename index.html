@@ -556,6 +556,10 @@ html[data-theme="dark"] .readline .seg.unk{background:#3d2420}
 .phgrid{display:flex;flex-wrap:wrap;gap:8px}
 .ph{display:inline-flex;align-items:center;gap:4px;background:var(--tint);border-radius:10px;padding:5px 8px}
 .ph-k{font-size:13px;color:var(--mut);margin-right:3px;border-right:1px solid var(--line2);padding-right:6px}
+/* ---- v26: listening ---- */
+.lpline{font-size:30px;line-height:1.55;min-height:52px;cursor:pointer;padding:6px 10px;border-radius:12px}
+.lpline.veil{font-size:14px;color:var(--mut2);border:1px dashed var(--line2);font-family:inherit;display:flex;align-items:center;justify-content:center;min-height:64px}
+.lpline:hover{background:var(--tint)}
 </style>
 </head>
 <body>
@@ -3805,12 +3809,12 @@ function planPanel(){
   const N=(url,label)=>`<a class="pact nl" href="${url}" target="_blank" rel="noopener">${label}</a>`;
   const T={
     mon:{t:'聽寫一',items:[A('dict','Rehearse 聽寫 · '+L+' 對話一'),A('triage','After class: Triage 對話二',{dlg:2}),A('rev','Clear the queue')]},
-    d2:{t:'對話二 characters',items:[A('dict','聽寫 rehearsal · '+L+' 對話二'),A('hardrec','Hard list → 認字'),A('gram','Grammar drill · '+L),A('read','Reading sprint')]},
+    d2:{t:'對話二 characters',items:[A('dict','聽寫 rehearsal · '+L+' 對話二'),A('listen','聽力 · listen to the lesson'),A('hardrec','Hard list → 認字'),A('gram','Grammar drill · '+L),A('read','Reading sprint')]},
     t2:{t:'口試 T−2 · build the spiel',items:[A('dict','聽寫 rehearsal · '+L),A('gram','Grammar drill · '+L),A('confuse','Which one? · 10 min'),A('exam','口試: generate the prompt, record once'),N(notionLesson(cl),'Write the five sentences in 我的例句 ↗')]},
     t1:{t:'聽寫二 · say it with the page face down',items:[A('dict','聽寫二 before class'),A('exam','口試 simulator, no page'),A('sent','造句 on the one pattern that broke'),A('confuse','Which one?')]},
     exam:{t:'課考試',items:[A('hardrec','Hard list → 認字'),A('hardtone','then 聲調'),A('gram','Grammar drill once'),N(notionLesson(cl),'After: log what it asked in 疑問 ↗')]},
     fri:{t:'new lesson opens',items:[A('triage','Triage 對話一 of the new lesson',{dlg:1}),A('read','Reading sprint on the new sentences'),N(NOTION.flow,'Intake checklist ↗')]},
-    sat:{t:'對話一 characters',items:[A('rev','Clear the queue'),A('dict','聽寫 drill · '+L),A('hardrec','Catch-up hammer: hard words'),A('read','Reading sprint')]},
+    sat:{t:'對話一 characters',items:[A('rev','Clear the queue'),A('dict','聽寫 drill · '+L),A('listen','聽力 · shadow the dialogue'),A('hardrec','Catch-up hammer: hard words'),A('read','Reading sprint')]},
     sun:{t:'對話一 grammar',items:[A('gram','Grammar drill · '+L),A('sent','造句 · '+L),A('confuse','Which one? · all families'),N(notionLesson(cl),'Write 我的例句 in Notion ↗')]}
   };
   const key=wd===0?'sun':wd===6?'sat':wd===1?'mon':wd===E?'exam':wd===E-1?'t1':wd===E-2?'t2':(wd===5&&E===4)?'fri':'d2';
@@ -3837,6 +3841,159 @@ function phoneticPanel(){
 renderBrain=(function(orig){return function(){orig.apply(this,arguments);try{const el=document.getElementById('vBrain');const cards=el.querySelectorAll(':scope > .card');const anchor=cards[1]||cards[0];if(anchor)anchor.insertAdjacentHTML('afterend',phoneticPanel());}catch(e){}};})(renderBrain);
 
 try{ badge(); if(view==='home')renderHome(); else if(view==='gram')renderGram(); else if(view==='drill')renderDrill(); }catch(e){}
+
+/* ============================================================
+   v26 — writing practice fixed (character comes LAST), the
+   production card becomes an audio-first 聽寫 card scoped to the
+   live lesson, and a listening player for dialogues/sentences.
+   ============================================================ */
+/* ---- 1. dictation drill: audio → pinyin + meaning → write → character ---- */
+renderDrill=(function(orig){return function(){
+  orig.apply(this,arguments);
+  try{
+    if(!dq||dq.i>=dq.qs.length)return; const q=dq.qs[dq.i]; if(q.mode!=='dict')return;
+    const w=q.w, st=dq.state, box=document.querySelector('#vDrill .qbox'); if(!box)return;
+    const hintOn=S.settings.dictHint!=='late'||st==='hint'||st==='reveal'||st==='done';
+    const meta=`<div class="row" style="justify-content:center;gap:9px"><span class="pyline">${tonePinyin(esc(w.p))}</span></div><div class="meaning">${esc(w.m)}</div>`;
+    const charBlock=`<div class="bigzh zh" style="font-size:56px">${esc(w.t)}</div>${w.s?`<div class="simpnote">简体 ${esc(w.s)}</div>`:''}${compLines(w.t)}`;
+    box.innerHTML=`<div class="hint">聽寫 — listen, write it on paper, then check</div>
+      <div style="text-align:center;margin:6px 0"><button class="spk lg" onclick="speakWord('${w.id}')">${SPK_SVG}</button></div>
+      ${hintOn?meta:`<div class="qfoot"><button class="btn ghost" onclick="dq.state='hint';renderDrill()">Show pinyin · meaning</button></div>`}
+      ${(st==='reveal'||st==='done')?charBlock:(hintOn?`<div class="qfoot"><button class="btn" onclick="dq.state='reveal';renderDrill()">Show the character</button></div>`:'')}
+      ${st==='reveal'?`<div class="qfoot"><button class="btn ghost" onclick="drillAnswer(false)">Missed it ✗</button><button class="btn" onclick="drillAnswer(true)">Wrote it right ✓</button></div>`:''}`;
+    if(st==='ask'&&!q._played){q._played=1;setTimeout(()=>speakWord(w.id),150);}
+  }catch(e){}
+};})(renderDrill);
+/* space: ask → hint → reveal */
+document.addEventListener('keydown',e=>{
+  if(view!=='drill'||!dq||dq.i>=dq.qs.length)return; const q=dq.qs[dq.i]; if(q.mode!=='dict')return;
+  if(e.code==='Space'){e.preventDefault();e.stopImmediatePropagation();
+    if(dq.state==='ask')dq.state=(S.settings.dictHint!=='late')?'reveal':'hint'; else if(dq.state==='hint')dq.state='reveal'; else return;
+    renderDrill();}
+},true);
+
+/* ---- 2. the production card: audio-first 聽寫 card, scoped to the live lesson + hard list ---- */
+function prodInScope(wid){
+  const sc=S.settings.prodScope||'current'; if(sc==='all')return true; if(sc==='off')return false;
+  const w=byId[wid]; if(!w)return false; const cl=S.settings.curLesson||23;
+  return w.l>=cl-1||isHard(wid);
+}
+buildQueue=(function(orig){return function(){
+  const q=orig.apply(this,arguments);
+  if((S.settings.prodScope||'current')==='all')return q;
+  const keep=cid=>!(modeOf(cid)==='prod'&&!prodInScope(cid.split(':')[0]));
+  q.learn=q.learn.filter(keep); q.rev=q.rev.filter(keep); q.fresh=q.fresh.filter(keep);
+  return q;
+};})(buildQueue);
+renderRev=(function(orig){return function(){
+  orig.apply(this,arguments);
+  try{
+    if(!cur||isGram(cur)||modeOf(cur)!=='prod'||revealed||S.settings.prodAudio===false)return;
+    const w=wordOf(cur), st=document.querySelector('#vRev .stage'); if(!w||!st)return;
+    st.innerHTML=`<div class="hint">聽寫 · listen, then write it on paper</div>
+      <div style="text-align:center;margin:4px 0"><button class="spk lg" onclick="speakWord('${w.id}')">${SPK_SVG}</button></div>
+      ${w.pos?`<div class="pos">${esc(w.pos)}</div>`:''}
+      <div class="meaning" style="font-size:21px">${esc(w.m)}</div>
+      ${hintShown?`<div class="pyline" style="font-size:24px">${tonePinyin(esc(w.p))}</div>`:`<div class="hint"><span class="link" onclick="hintShown=true;renderRev()">show pinyin</span></div>`}
+      <div class="hint">which 字? write it, say the tones, then check</div>`;
+    const tag=document.querySelector('#vRev .mtag.prod'); if(tag)tag.textContent='聽寫 · Write';
+    if(!renderRev._spoke||renderRev._spoke!==cur){renderRev._spoke=cur;setTimeout(()=>speakWord(w.id),200);}
+  }catch(e){}
+};})(renderRev);
+/* settings rows */
+function cardStratPanel(){
+  const s=S.settings, sc=s.prodScope||'current';
+  const nProd=Object.keys(S.cards).filter(c=>modeOf(c)==='prod').length, nLive=Object.keys(S.cards).filter(c=>modeOf(c)==='prod'&&prodInScope(c.split(':')[0])).length;
+  return `<div class="card"><div class="lab">Card strategy</div>
+    <div class="set-row"><div><b>Write cards (聽寫)</b><div class="d">The second card of a word is now audio-first: hear it, write it on paper, then check the character. <b>${nLive}</b> of ${nProd} are in play.</div></div>
+      <select class="vsel" onchange="S.settings.prodScope=this.value;save();badge();renderSet()">
+        <option value="current" ${sc==='current'?'selected':''}>Live lesson + previous + hard list</option>
+        <option value="all" ${sc==='all'?'selected':''}>Every tracked word</option>
+        <option value="off" ${sc==='off'?'selected':''}>Off — recognition only</option>
+      </select></div>
+    <div class="set-row"><div><b>Dictation drill order</b><div class="d">what appears after the audio, before the character</div></div>
+      <select class="vsel" onchange="S.settings.dictHint=this.value;save();renderSet()">
+        <option value="early" ${s.dictHint!=='late'?'selected':''}>Pinyin + meaning right away</option>
+        <option value="late" ${s.dictHint==='late'?'selected':''}>Audio only, tap for pinyin + meaning</option>
+      </select></div>
+  </div>`;
+}
+renderSet=(function(orig){return function(){orig.apply(this,arguments);try{const v=document.getElementById('vSet');const conf=v.querySelector('.card:nth-of-type(2)');(conf||v.firstElementChild).insertAdjacentHTML('afterend',cardStratPanel());}catch(e){}};})(renderSet);
+
+/* ---- 3. Listening player ---- */
+const DIALOGUES={
+ 23:{t:'B2 L8 學功夫 · 對話 fragments (full dialogue pending)',lines:[
+  {zh:'對不起，沒聽見你叫我。',en:'Sorry, I didn’t hear you calling me.'},
+  {zh:'音樂那麼吵，你當然聽不見。',en:'The music is so loud, of course you couldn’t hear.'},
+  {zh:'一到學校門口，就看見你推著腳踏車走過來。',en:'As soon as I got to the school gate I saw you pushing your bike over.'},
+  {zh:'我學了三個多月了，才學會了一點。',en:'I’ve studied for over three months and only mastered a little.'},
+  {zh:'腿也痛得走不了路。',en:'My legs hurt so much I can’t walk.'},
+  {zh:'那你怎麼還學得下去？',en:'Then how can you keep going?'},
+  {zh:'安同總是最後一個跑完，有的時候還跑不完。',en:'Antong is always the last to finish running, sometimes he can’t finish at all.'},
+  {zh:'做完了功課，再去練習。',en:'Finish the homework, then go practise.'}]},
+ 22:{t:'B2 L7 垃圾車來了 · 口試 skeleton',lines:[
+  {zh:'我剛來台北的時候，以為垃圾可以放在門口，沒想到這裡沒有垃圾桶，得自己拿下去。',en:'When I first came to Taipei I thought rubbish could be left at the door; turns out there are no bins, you carry it down yourself.'},
+  {zh:'垃圾車有一定的時間和一定的地點，我家這邊是晚上七點半，在便利商店前面。',en:'The truck has a fixed time and place; mine is 7:30 pm in front of the convenience store.'},
+  {zh:'為了保護環境，也為了利用資源，台灣人天天做垃圾分類。',en:'To protect the environment and use resources, Taiwanese sort their rubbish every day.'},
+  {zh:'七點二十五我就拿著袋子走下去，垃圾車開過來的時候，我把一般垃圾丟進去，再把瓶子跟紙拿過去給後面的回收車。',en:'At 7:25 I carry the bag down; when the truck comes over I throw in the general waste, then take bottles and paper over to the recycling truck behind.'},
+  {zh:'分類得做好，要不然他們不收；音樂一停車就開走了，要不然你就得等明天。',en:'Sorting has to be right or they won’t take it; when the music stops the truck leaves, or else you wait till tomorrow.'}]}
+};
+let LP={ln:23,src:'dlg',i:0,playing:false,hide:true,rate:0.85,gap:1.2,log:null,list:[]};
+function lpList(){
+  const d=DIALOGUES[LP.ln];
+  if(LP.src==='dlg'&&d)return d.lines.map(l=>({zh:l.zh,en:l.en||'',py:''}));
+  const out=[];(GRAMMAR[LP.ln]||[]).forEach(p=>p.s.forEach(s=>out.push({zh:s.zh,en:s.en,py:s.py||'',p:p.t})));
+  return out;
+}
+function lpSpeak(text,cb){
+  if(!window.speechSynthesis){if(cb)cb();return;}
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);const v=pickVoice();if(v){u.voice=v;u.lang=v.lang;}else u.lang='zh-TW';u.rate=LP.rate;u.onend=()=>{if(cb)cb();};u.onerror=()=>{if(cb)cb();};speechSynthesis.speak(u);}catch(e){if(cb)cb();}
+}
+function lpPlay(i){
+  if(i!==undefined)LP.i=i; LP.playing=true; lpRender();
+  const it=LP.list[LP.i]; if(!it){LP.playing=false;lpRender();return;}
+  const tok=(LP.tok=(LP.tok||0)+1);
+  lpSpeak(it.zh,()=>{ if(tok!==LP.tok||!LP.playing)return; setTimeout(()=>{ if(tok!==LP.tok||!LP.playing)return; if(LP.i<LP.list.length-1){LP.i++;lpPlay();} else {LP.playing=false;lpRender();} },LP.gap*1000); });
+}
+function lpStop(){LP.playing=false;LP.tok=(LP.tok||0)+1;try{speechSynthesis.cancel();}catch(e){}lpRender();}
+function lpRepeat(){LP.playing=false;LP.tok=(LP.tok||0)+1;lpSpeak(LP.list[LP.i].zh);lpRender();}
+function lpStep(d){lpStop();LP.i=Math.max(0,Math.min(LP.list.length-1,LP.i+d));LP.shown=false;lpRender();}
+function lpMark(ok){S.listen=S.listen||{};const k=String(LP.ln);const L=S.listen[k]=S.listen[k]||{n:0,ok:0};L.n++;if(ok)L.ok++;save();haptic(ok?'good':'again');if(LP.i<LP.list.length-1){LP.i++;LP.shown=false;lpRender();lpSpeak(LP.list[LP.i].zh);}else{toast('Set done · '+L.ok+'/'+L.n+' understood this lesson');lpRender();}}
+function startListen(){drillMode='listen';dq=null;LP.list=lpList();LP.i=0;LP.shown=false;LP.playing=false;go('drill');}
+function lpRender(){
+  const el=document.getElementById('vDrill'); if(drillMode!=='listen')return;
+  const it=LP.list[LP.i]||{zh:'',en:''}, d=DIALOGUES[LP.ln], show=!LP.hide||LP.shown;
+  const stat=(S.listen||{})[String(LP.ln)];
+  el.innerHTML=`<div class="segbar"><span class="cap">Listen</span>
+      <select class="vsel" onchange="LP.ln=+this.value;LP.src=DIALOGUES[LP.ln]?'dlg':'sent';startListen()">${Array.from({length:MAX_LN},(_,i)=>i+1).filter(l=>GRAMMAR[l]&&GRAMMAR[l].length).map(l=>`<option value="${l}" ${LP.ln===l?'selected':''}>${esc(lnLabel(l))}${DIALOGUES[l]?' · 對話':''}</option>`).join('')}</select>
+      <button class="${LP.src==='dlg'?'on':''}" ${d?'':'disabled'} onclick="LP.src='dlg';startListen()">對話</button>
+      <button class="${LP.src==='sent'?'on':''}" onclick="LP.src='sent';startListen()">Sentences</button>
+      <button class="${LP.hide?'on':''}" onclick="LP.hide=!LP.hide;lpRender()">Hide text</button>
+      <span class="cap" style="margin-left:6px">Speed</span><input type="range" min="50" max="110" value="${Math.round(LP.rate*100)}" style="width:90px" oninput="LP.rate=this.value/100">
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="small muted" style="margin-bottom:8px">${d&&LP.src==='dlg'?esc(d.t):esc(lnLabel(LP.ln))+' · sentences from the grammar points'} · ${LP.i+1} / ${LP.list.length}${stat?` · understood ${stat.ok}/${stat.n}`:''}</div>
+      <div class="sbar" style="margin:0 auto 14px;max-width:420px"><i style="width:${Math.round((LP.i+1)/Math.max(1,LP.list.length)*100)}%"></i></div>
+      <div class="lpline zh ${show?'':'veil'}" onclick="LP.shown=true;lpRender()">${show?esc(it.zh):'tap to reveal · or answer first'}</div>
+      ${show?`${it.py?`<div class="py2">${tonePinyin(esc(it.py))}</div>`:''}<div class="qen" style="margin-top:6px">${esc(it.en)}</div>${it.p?`<div class="small muted">pattern: ${esc(it.p)}</div>`:''}`:''}
+      <div class="row" style="justify-content:center;gap:8px;margin-top:16px;flex-wrap:wrap">
+        <button class="btn ghost sm" onclick="lpStep(-1)">‹ prev</button>
+        <button class="btn sm" onclick="${LP.playing?'lpStop()':'lpPlay()'}">${LP.playing?'Pause':'Play all ▶'}</button>
+        <button class="btn ghost sm" onclick="lpRepeat()">Repeat line ↻</button>
+        <button class="btn ghost sm" onclick="lpStep(1)">next ›</button>
+      </div>
+      ${LP.hide?`<div class="row" style="justify-content:center;gap:8px;margin-top:14px"><span class="small muted">Did you get it?</span><button class="btn ghost sm" onclick="lpMark(false)">Missed</button><button class="btn sm" onclick="lpMark(true)">Understood ✓</button></div>`:''}
+      <div class="small muted" style="margin-top:14px">Shadow it: play a line, say it back with the tones before the next one starts. Slow the slider for new material, then work back up to 1.0. Full 對話 texts get added as you send them.</div>
+    </div>`;
+}
+DMODES.push(['listen','聽力 Listening','dialogue lines read aloud · hide text · shadow']);
+startDrill=(function(orig){return function(mode){if(mode==='listen'){LP.ln=drillScope==='lesson'?drillLesson:(S.settings.curLesson||23);LP.src=DIALOGUES[LP.ln]?'dlg':'sent';return startListen();}return orig.apply(this,arguments);};})(startDrill);
+renderDrill=(function(orig){return function(){if(drillMode==='listen'&&!dq){lpRender();return;}orig.apply(this,arguments);};})(renderDrill);
+go=(function(orig){return function(v){if(view==='drill'&&v!=='drill'&&drillMode==='listen')lpStop();return orig.apply(this,arguments);};})(go);
+/* the weekday plan gets a listening action */
+planAct=(function(orig){return function(k,arg){if(k==='listen'){drillScope='lesson';drillLesson=S.settings.curLesson||23;go('drill');startDrill('listen');return;}return orig.apply(this,arguments);};})(planAct);
+if(!S.settings._v26){S.settings._v26=1;if(!S.settings.prodScope)S.settings.prodScope='current';try{save();}catch(e){}}
+try{badge();if(view==='set')renderSet();}catch(e){}
 </script>
 </body>
 </html>
