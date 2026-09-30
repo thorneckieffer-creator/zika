@@ -560,6 +560,8 @@ html[data-theme="dark"] .readline .seg.unk{background:#3d2420}
 .lpline{font-size:30px;line-height:1.55;min-height:52px;cursor:pointer;padding:6px 10px;border-radius:12px}
 .lpline.veil{font-size:14px;color:var(--mut2);border:1px dashed var(--line2);font-family:inherit;display:flex;align-items:center;justify-content:center;min-height:64px}
 .lpline:hover{background:var(--tint)}
+.backlog{border-color:var(--amber)}
+.backlog .lab{color:var(--amber)}
 </style>
 </head>
 <body>
@@ -3994,6 +3996,98 @@ go=(function(orig){return function(v){if(view==='drill'&&v!=='drill'&&drillMode=
 planAct=(function(orig){return function(k,arg){if(k==='listen'){drillScope='lesson';drillLesson=S.settings.curLesson||23;go('drill');startDrill('listen');return;}return orig.apply(this,arguments);};})(planAct);
 if(!S.settings._v26){S.settings._v26=1;if(!S.settings.prodScope)S.settings.prodScope='current';try{save();}catch(e){}}
 try{badge();if(view==='set')renderSet();}catch(e){}
+
+/* ============================================================
+   v27 — around-the-engine optimisation (engine verified numerically)
+   1. Leeches: 4 lapses → hard list + paper; 7 → parked, listed in Settings
+   2. Backlog mode: after days away or a pile-up, live lesson first,
+      then highest-retrievability first (FSRS advice), no new cards
+   3. Sentence dictation drill (audio → write the sentence → check)
+   4. Quick session cap from the Today hero
+   ============================================================ */
+/* ---- 1. leeches ---- */
+const LEECH_TAG=4, LEECH_PARK=7;
+rate=(function(orig){return function(cid,g){
+  orig.apply(this,arguments);
+  try{
+    if(isGram(cid)||g!==1)return; const c=S.cards[cid]; if(!c)return; const wid=cid.split(':')[0];
+    if(c.lapses===LEECH_TAG){addHard(wid);toast('4th miss on '+esc(byId[wid].t)+' — on the hard list and tonight’s paper');}
+    if(c.lapses>=LEECH_PARK&&!c.susp){c.susp=1;c.leech=1;save();addHard(wid);toast('Leech parked: '+esc(byId[wid].t)+' · un-park it in Settings → Card strategy',{ms:6000});
+      if(rq){['learn','rev','fresh'].forEach(k=>{rq[k]=rq[k].filter(x=>x!==cid);});}}
+  }catch(e){}
+};})(rate);
+function leechList(){return Object.keys(S.cards).filter(c=>S.cards[c]&&S.cards[c].leech&&S.cards[c].susp);}
+function leechUnpark(cid){const c=S.cards[cid];if(!c)return;delete c.susp;delete c.leech;c.lapses=Math.min(c.lapses||0,2);save();badge();renderSet();}
+
+/* ---- 2. backlog mode ---- */
+let BACKLOG=null;
+function lastStudyGap(){const ks=Object.keys(S.log||{}).filter(k=>(S.log[k].rev||0)+(S.log[k].new||0)>0).sort();if(!ks.length)return 0;const d=new Date(ks[ks.length-1]);d.setHours(0,0,0,0);return Math.floor((Date.now()-d.getTime())/DAY);}
+buildQueue=(function(orig){return function(){
+  const q=orig.apply(this,arguments);
+  BACKLOG=null;
+  try{
+    const now=Date.now(), maxRev=S.settings.revUnlimited?9999:(S.settings.maxRev||200), cl=S.settings.curLesson||23;
+    const due=[];
+    for(const cid in S.cards){const c=S.cards[cid],w=wordOf(cid);if(!w||!c||c.susp||c.st!=='rev'||c.due>now)continue;if(!S.settings.includeNames&&isName(w))continue;if(!S.settings.modes[modeOf(cid)])continue;if(modeOf(cid)==='prod'&&!prodInScope(w.id))continue;due.push(cid);}
+    const gap=lastStudyGap();
+    if(!(due.length>maxRev*1.25||(gap>=5&&due.length>40)))return q;
+    const live=cid=>{const w=wordOf(cid);return w.l>=cl-1||isHard(w.id);};
+    const R=cid=>{const c=S.cards[cid];return retrievability(Math.max(0.01,(now-c.last)/DAY),c.S);};
+    due.sort((a,b)=>(live(b)-live(a))||(R(b)-R(a)));
+    const today=Math.min(maxRev,Math.max(60,Math.ceil(due.length/4)));
+    const gram=q.rev.filter(isGram);
+    q.rev=due.slice(0,today).concat(gram);
+    q.fresh=q.fresh.filter(isGram);
+    BACKLOG={due:due.length,today,gap,live:due.filter(live).length};
+  }catch(e){}
+  return q;
+};})(buildQueue);
+renderHome=(function(orig){return function(){orig.apply(this,arguments);try{
+  buildQueue(); if(!BACKLOG)return; const hero=document.querySelector('#vHome .card.hero'); if(!hero)return;
+  hero.insertAdjacentHTML('afterend',`<div class="card backlog"><div class="lab">Easing back in</div>
+    <div style="font-size:14px"><b>${BACKLOG.due}</b> reviews piled up${BACKLOG.gap>=2?` over ${BACKLOG.gap} days away`:''}. Today shows <b>${BACKLOG.today}</b>: the live lesson and hard words first, then the cards you most likely still remember. New words pause until the pile is under ${Math.round((S.settings.maxRev||200)*1.25)}.</div>
+    <div class="small muted" style="margin-top:6px">This is the FSRS backlog order — clearing what you still hold before it slips beats grinding the ones already gone. Four days at this pace and the queue is normal again.</div></div>`);
+}catch(e){}};})(renderHome);
+
+/* ---- 3. sentence dictation ---- */
+function startSdict(){
+  const ln=drillScope==='lesson'?drillLesson:(S.settings.curLesson||23);
+  const pool=[];(GRAMMAR[ln]||[]).forEach(p=>p.s.forEach(s=>{if(s.zh.length>=6&&s.zh.length<=22)pool.push({mode:'sdict',zh:s.zh,en:s.en,py:s.py||'',p:p.t});}));
+  if(!pool.length){toast('No sentences for that lesson yet');return;}
+  drillMode='sdict';dq={qs:shuf(pool).slice(0,8),i:0,ok:0,state:'ask',chosen:null};go('drill');
+}
+function sdSpeak(){const q=dq.qs[dq.i];const r=LP.rate;LP.rate=Math.min(LP.rate,0.85);lpSpeak(q.zh);LP.rate=r;}
+function sdMark(ok){if(ok)dq.ok++;haptic(ok?'good':'again');dq.state='done';drillNext();}
+function renderSdict(el){
+  const q=dq.qs[dq.i], st=dq.state;
+  el.innerHTML=`<div class="rev-top"><span class="qtype">句子聽寫 · Sentence dictation</span><span class="qprog">${dq.i+1} / ${dq.qs.length}</span></div>
+  <div class="qbox">
+    <div class="hint">listen twice, write the whole sentence on paper, then check</div>
+    <div style="text-align:center;margin:6px 0"><button class="spk lg" onclick="sdSpeak()">${SPK_SVG}</button></div>
+    ${st==='ask'?`<div class="qen">${esc(q.en)}</div><div class="qfoot"><button class="btn" onclick="dq.state='reveal';renderDrill()">Show the sentence</button></div>`
+    :`<div class="qzh zh">${esc(q.zh)}</div>${q.py?`<div class="py2">${tonePinyin(esc(q.py))}</div>`:''}<div class="qen">${esc(q.en)}</div><div class="small muted">pattern: ${esc(q.p)}</div>
+      <div class="qfoot"><button class="btn ghost" onclick="sdMark(false)">Missed characters ✗</button><button class="btn" onclick="sdMark(true)">All correct ✓</button></div>`}
+  </div>`;
+  if(st==='ask'&&!q._played){q._played=1;setTimeout(sdSpeak,200);}
+}
+DMODES.push(['sdict','句子聽寫 Sentence dictation','hear a sentence · write all of it']);
+startDrill=(function(orig){return function(mode){if(mode==='sdict')return startSdict();return orig.apply(this,arguments);};})(startDrill);
+renderDrill=(function(orig){return function(){const el=document.getElementById('vDrill');if(dq&&dq.i<dq.qs.length&&dq.qs[dq.i].mode==='sdict'){renderSdict(el);return;}orig.apply(this,arguments);};})(renderDrill);
+document.addEventListener('keydown',e=>{if(view!=='drill'||!dq||dq.i>=dq.qs.length)return;const q=dq.qs[dq.i];if(q.mode!=='sdict')return;if(e.code==='Space'&&dq.state==='ask'){e.preventDefault();e.stopImmediatePropagation();dq.state='reveal';renderDrill();}},true);
+
+/* ---- 4. quick session ---- */
+function startQuick(n){go('rev');if(!rq)return;let left=n-rq.learn.length;rq.rev=rq.rev.slice(0,Math.max(0,left));left-=rq.rev.length;rq.fresh=rq.fresh.slice(0,Math.max(0,left));nextCard();}
+renderHome=(function(orig){return function(){orig.apply(this,arguments);try{const b=document.querySelector('#vHome .card.hero .btn.big');if(b&&!b.classList.contains('ghost'))b.insertAdjacentHTML('afterend',`<div class="row" style="justify-content:center;margin-top:8px"><span class="link small" onclick="startQuick(20)">or a quick 20 · about 5 minutes</span></div>`);}catch(e){}};})(renderHome);
+
+/* settings: leeches + retention guidance */
+renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
+  const v=document.getElementById('vSet'); const strat=[...v.querySelectorAll('.card')].find(c=>/Card strategy/.test(c.textContent)); if(!strat)return;
+  const L=leechList();
+  strat.insertAdjacentHTML('beforeend',`<div class="set-row"><div><b>Leeches</b><div class="d">A word missed 4 times goes to the hard list and tonight’s paper; missed 7 times it is parked here until you un-park it. ${L.length?'':'None parked.'}</div></div>
+    <div class="row" style="gap:4px;flex-wrap:wrap;justify-content:flex-end">${L.map(c=>`<button class="btn ghost sm zh" onclick="leechUnpark('${c}')" title="un-park">${esc(byId[c.split(':')[0]].t)} ↩</button>`).join('')}</div></div>`);
+  const ret=[...v.querySelectorAll('.set-row')].find(r=>/Desired retention/.test(r.textContent)); if(ret){const d=ret.querySelector('.d');if(d)d.textContent='85–90% is the sweet spot: going to 95% roughly doubles the daily load for a few points of recall.';}
+}catch(e){}};})(renderSet);
+try{badge();if(view==='home')renderHome();}catch(e){}
 </script>
 </body>
 </html>
