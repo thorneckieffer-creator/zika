@@ -53,7 +53,13 @@ Progress syncs through a Firebase Realtime Database. Both devices join the same 
 
 The `.validate` line makes the server reject any write older than what it already holds, so a stale device can never overwrite a newer one.
 
-### Linking devices
+### Linking devices (v28: one scan)
+
+**Mac:** Settings → Cloud sync → **Generate**. The card then shows a QR code and a *Copy link* button.
+**iPad:** point the Camera at the QR code → tap the link → Safari opens the app already linked and pulls the Mac's deck. Then Share → **Add to Home Screen**. The home-screen app has its own storage on iPadOS, so open it once and type the same code on the *Cloud sync is off* card on Today → **Link**. Done — it stays linked.
+
+A device that has never reviewed anything adopts the cloud copy silently; one that has its own progress asks which copy should win.
+
 
 On the first device: **Settings → Cloud sync → Generate**. Type the same code on the second device and tap **Link**. If both devices already hold progress, the app asks which copy should win. The `Mac` / `iPad` badge in the header shows this device's name and the sync state: pulsing = sending, ✓ = synced, hollow = offline.
 
