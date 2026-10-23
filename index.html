@@ -4545,6 +4545,9 @@ renderHome=(function(orig){return function(){orig.apply(this,arguments);try{cons
 /* ---- F. settings: a keyboard hint ---- */
 renderSet=(function(orig){return function(){orig.apply(this,arguments);try{document.getElementById('vSet').insertAdjacentHTML('beforeend',`<div class="small muted" style="text-align:center;margin:4px 0 10px">Press <kbd>?</kbd> anywhere for keyboard shortcuts · look-up links on every card back: 萌典 · MDBG · Pleco · Skritter</div>`);}catch(e){}};})(renderSet);
 try{badge();if(view==='home')renderHome();}catch(e){}
+
+/* a11y micro-pass: icon-only buttons announce their title; Han text is tagged zh-Hant for screen readers and font selection */
+(function(){const mo=new MutationObserver(()=>{document.querySelectorAll('button[title]:not([aria-label]),a[title]:not([aria-label])').forEach(b=>{if(!b.textContent.trim()||/^[☾☀▶↻‹›←→✓✗★!＋−]+$/.test(b.textContent.trim()))b.setAttribute('aria-label',b.title);});document.querySelectorAll('.zh:not([lang])').forEach(el=>el.setAttribute('lang','zh-Hant'));});mo.observe(document.body,{childList:true,subtree:true});})();
 </script>
 </body>
 </html>
