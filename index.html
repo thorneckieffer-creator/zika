@@ -612,6 +612,14 @@ body.focus .wrap{padding-top:14px}
 .moebox .zh{color:var(--ink)}
 .apart,.ahead{cursor:pointer}
 .apart:hover,.ahead:hover{background:var(--panel)}
+/* ---- v35 ---- */
+.istep{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--tint)}
+.istep:last-of-type{border-bottom:0}
+.istep .in{flex:none;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--bg);font-weight:700;font-size:12.5px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.istep.done .in{background:var(--acc)}
+.istep.done b{color:var(--mut);text-decoration:line-through;text-decoration-color:var(--line2)}
+.istep b{font-size:14px}
+#ipadCard .qrbox svg{width:150px;height:150px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:4px}
 </style>
 </head>
 <body>
@@ -4801,6 +4809,99 @@ planAct=(function(orig){return function(k,arg){
   return orig.apply(this,arguments);
 };})(planAct);
 try{badge();if(view==='home')renderHome();}catch(e){}
+
+/* ============================================================
+   v35 — system tidy + the iPad in one card.
+   1. "Set up the iPad" guided card (Settings top, Today when unlinked)
+   2. "Offline & audio": one button preloads the voice pack + strokes
+   3. One "Daily intake" card; the scattered intake rows removed
+   4. Settings reordered; sentence/grammar drills folded under More
+   ============================================================ */
+/* ---- 2. preload ---- */
+async function preloadOffline(btn){
+  const say=t=>{if(btn)btn.textContent=t;const s=document.getElementById('preStat');if(s)s.textContent=t;};
+  try{
+    say('Loading voice pack…'); const ok=await loadPack(); if(!ok)throw new Error('voice pack');
+    say('Loading stroke data…'); await loadStrokes(); await ensureHW();
+    if('caches' in window){try{const c=await caches.open('zika-preload');await c.addAll(['assets/audio-tw.pack','assets/audio-tw-index.json','assets/strokes.json','assets/hanzi-writer.min.js']);}catch(e){}}
+    S.settings.preloadedAt=Date.now(); save(); say('Ready offline ✓'); toast('Voice pack and strokes are stored on this device');
+  }catch(e){say('Could not preload — try on wifi');}
+}
+function offlinePanel(){
+  const at=S.settings.preloadedAt;
+  return `<div class="card" id="offlineCard"><div class="lab">Offline & audio</div>
+    <div class="set-row"><div><b>Store the voice pack and strokes on this device</b><div class="d">About 22 MB once, on wifi. After that every word and character speaks, and the 寫字 quiz draws, with no connection — including on the MRT. <span id="preStat">${at?'Ready offline ✓ · '+ago(at):'Not stored yet'}</span></div></div>
+      <button class="btn sm ${at?'ghost':''}" onclick="preloadOffline(this)">${at?'Refresh':'Download now'}</button></div></div>`;
+}
+/* ---- 1. iPad card ---- */
+function ipadPanel(){
+  const linked=!!SYNC.code, ios=(typeof isIOS==='function')&&isIOS(), standalone=(typeof isStandalone==='function')&&isStandalone();
+  const step=(n,t,d,done)=>`<div class="istep ${done?'done':''}"><span class="in">${done?'✓':n}</span><div><b>${t}</b><div class="small muted">${d}</div></div></div>`;
+  if(!ios){ /* the Mac side */
+    return `<div class="card" id="ipadCard"><div class="lab">Set up the iPad</div>
+      ${step(1,'Generate a sync code on this Mac','Settings → Cloud sync → Generate. The code is just a room name; the Mac’s deck becomes the shared one.',linked)}
+      ${step(2,'Scan the QR code with the iPad camera','It opens the app in Safari already linked to this deck. If it asks which copy wins, pick <b>Mac</b>.',false)}
+      ${step(3,'Add it to the Home Screen','In Safari: Share ↑ → Add to Home Screen. The Home Screen app keeps its own storage — open it once and tap <b>Paste</b> (the code is copied for you).',false)}
+      ${step(4,'Download the voice pack on the iPad','Settings → Offline & audio → Download now, on wifi. Then it works on the MRT.',false)}
+      ${linked?`<div class="row" style="gap:12px;align-items:flex-start;margin-top:10px;flex-wrap:wrap"><div class="qrbox">${qrSvg(syncLink(),4)}</div><div class="small muted" style="flex:1;min-width:200px">Code <b style="font-size:15px;color:var(--ink)">${esc(SYNC.code)}</b><br>Point the iPad camera here, or <span class="link" onclick="fbCopyLink()">copy the link</span> and AirDrop it.<br><br>Status: ${esc(SYNC_LABEL[SYNC.status]||SYNC.status)}${SYNC.remoteDev&&SYNC.remoteDev!==DEVICE.name?` · last write from <b>${esc(SYNC.remoteDev)}</b> ${esc(ago(SYNC.remoteAt))}`:''}</div></div>`:`<div class="row" style="gap:6px;margin-top:10px"><button class="btn sm" onclick="fbNewCode();renderSet()">Generate the code</button></div>`}
+    </div>`;
+  }
+  /* the iPad side */
+  return `<div class="card" id="ipadCard"><div class="lab">This iPad</div>
+    ${step(1,'Linked to the shared deck',linked?'Code <b>'+esc(SYNC.code)+'</b> · '+esc(SYNC_LABEL[SYNC.status]||SYNC.status):'Scan the QR code on the Mac (Settings → Set up the iPad), or paste the code below.',linked)}
+    ${linked?'':`<div class="row" style="gap:6px;margin:6px 0 10px"><input id="ipadCodeInp" class="search" style="margin:0;width:160px;padding:7px 10px;font-size:13px" placeholder="zika-xxxxxx" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="btn sm" onclick="fbSetCode(document.getElementById('ipadCodeInp').value)">Link</button><button class="btn ghost sm" onclick="fbPasteCode('ipadCodeInp')">Paste</button></div>`}
+    ${step(2,'On the Home Screen',standalone?'You’re in the Home Screen app.':'In Safari: Share ↑ → Add to Home Screen. Open it from there; it keeps its own storage, so paste the code once more if it asks.',standalone)}
+    ${step(3,'Voice pack stored for offline',S.settings.preloadedAt?'Ready ✓':'Settings → Offline & audio → Download now, on wifi.',!!S.settings.preloadedAt)}
+    ${step(4,'Device name',DEVICE.name==='iPad'?'Shows as iPad on the Mac.':'Showing as '+esc(DEVICE.name)+' — set it to iPad in Cloud sync → This device.',DEVICE.name==='iPad')}
+  </div>`;
+}
+/* copying the code before the Home Screen hint makes the second link a paste */
+showInstallHint=(function(orig){return function(){try{if(SYNC.code&&navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(SYNC.code).catch(()=>{});}catch(e){}return orig.apply(this,arguments);};})(showInstallHint);
+/* ---- 3. one intake card ---- */
+function intakePanel(){
+  const s=S.settings;
+  const row=(t,d,ctrl)=>`<div class="set-row"><div><b>${t}</b><div class="d">${d}</div></div>${ctrl}</div>`;
+  const num=(k,min,max,def,extra)=>`<input type="number" min="${min}" max="${max}" value="${s[k]||def}" onchange="S.settings.${k}=Math.max(${min},parseInt(this.value)||${def});save();badge();${extra||''}">`;
+  return `<div class="card" id="intakeCard"><div class="lab">Daily intake</div>
+    ${row('This week’s new words','per day, from the live lesson; both cards of a word may start the same day',num('newPerDay',0,60,8))}
+    ${row('Catch-up words','per day, only words the mastery test marked shaky or ✗',num('newCatchPerDay',0,60,12))}
+    ${row('Grammar cloze cards','per day; the Grammar tab decides which lessons are in',num('newGramPerDay',0,30,4))}
+    ${row('Review cap','most cards shown per day across all lanes',num('maxRev',10,9999,300))}
+    ${row('Desired retention','85–90% is the sweet spot; 95% roughly doubles the load',`<div class="row"><input type="range" min="80" max="97" value="${Math.round((s.retention||0.9)*100)}" onchange="S.settings.retention=this.value/100;save();this.nextElementSibling.textContent=this.value+'%'" oninput="this.nextElementSibling.textContent=this.value+'%'"><b>${Math.round((s.retention||0.9)*100)}%</b></div>`)}
+    <div class="small muted" style="margin-top:6px">Rule of thumb: about ten reviews per new card in its first month. ${(s.newPerDay||8)+(s.newCatchPerDay||12)+(s.newGramPerDay||4)} new a day settles near ${((s.newPerDay||8)+(s.newCatchPerDay||12)+(s.newGramPerDay||4))*10} reviews a day.</div></div>`;
+}
+const SET_ORDER=['Set up the iPad','This iPad','Cloud sync','Daily intake','Card strategy','Offline & audio','Audio & strokes','Backup','Look & feel','Card types','Schedule','Grammar in the queue','Confidence · shared with Notion'];
+renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
+  const v=document.getElementById('vSet');
+  v.insertAdjacentHTML('afterbegin',ipadPanel()+intakePanel()+offlinePanel());
+  /* retire the rows now covered by Daily intake */
+  const kill=['New words per day','Max reviews per day','Desired retention','New grammar cards per day','Catch-up words per day'];
+  [...v.querySelectorAll('.set-row')].forEach(r=>{const b=r.querySelector('b');if(b&&kill.includes(b.textContent.trim())&&!r.closest('#intakeCard'))r.remove();});
+  /* cards with nothing left go too */
+  [...v.querySelectorAll('.card')].forEach(c=>{if(!c.querySelector('.set-row')&&!c.querySelector('.istep')&&!c.querySelector('button')&&!c.querySelector('.confrow'))c.remove();});
+  /* order */
+  const cards=[...v.querySelectorAll(':scope > .card')];
+  const rank=c=>{const l=c.querySelector('.lab');const t=l?l.textContent.trim():'';const i=SET_ORDER.findIndex(k=>t.startsWith(k));return i<0?SET_ORDER.length:i;};
+  cards.sort((a,b)=>rank(a)-rank(b)).forEach(c=>v.appendChild(c));
+  const tail=[...v.children].find(x=>x.className&&/small muted/.test(x.className)&&/keyboard/.test(x.textContent)); if(tail)v.appendChild(tail);
+}catch(e){}};})(renderSet);
+/* Today: the iPad card replaces the generic link card when unlinked on an iPad */
+renderHome=(function(orig){return function(){orig.apply(this,arguments);try{
+  if(!fbConfig()||SYNC.code)return; const host=document.getElementById('vHome'); const old=document.getElementById('linkCard');
+  if((typeof isIOS==='function')&&isIOS()){const html=ipadPanel(); if(old)old.outerHTML=html; else host.insertAdjacentHTML('afterbegin',html);}
+}catch(e){}};})(renderHome);
+/* ---- 4. drills: characters up front, sentences under More ---- */
+const DEMOTED=['listen','sdict','confuse','read','sent','speak'];
+let moreDrills=false;
+renderDrill=(function(orig){return function(){orig.apply(this,arguments);try{
+  if(dq||drillMode==='listen'||drillMode==='mtest')return; const el=document.getElementById('vDrill');
+  const grid=el.querySelector('.dgrid'); if(!grid)return;
+  const dem=[...grid.querySelectorAll('.dcard')].filter(c=>DEMOTED.some(m=>(c.getAttribute('onclick')||'').includes("'"+m+"'")));
+  if(!dem.length)return;
+  const det=document.createElement('details'); det.className='guide'; det.open=moreDrills; det.innerHTML='<summary>More drills · sentences, listening, grammar ›</summary>'; const g2=document.createElement('div'); g2.className='dgrid'; g2.style.marginTop='10px'; dem.forEach(c=>g2.appendChild(c)); det.appendChild(g2); grid.insertAdjacentElement('afterend',det); det.addEventListener('toggle',()=>{moreDrills=det.open;});
+  el.querySelectorAll('.segbar:first-of-type button').forEach(b=>{if(DEMOTED.some(m=>(b.getAttribute('onclick')||'').includes("'"+m+"'"))&&!b.classList.contains('on'))b.style.display=moreDrills?'':'none';});
+}catch(e){}};})(renderDrill);
+try{badge();if(view==='set')renderSet();if(view==='home')renderHome();}catch(e){}
 </script>
 </body>
 </html>

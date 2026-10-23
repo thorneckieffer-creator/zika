@@ -1,5 +1,5 @@
 /* 字卡 service worker — network-first app shell with a 3.5 s fallback to cache, cache-first assets (MRT-proof) */
-const VERSION = 'zika-v34';
+const VERSION = 'zika-v35';
 const CORE = ['./', './index.html', './manifest.webmanifest', './assets/hanzi-writer.min.js', './assets/strokes.json', './assets/icon-192.png', './assets/icon-512.png'];
 
 self.addEventListener('install', e => {
