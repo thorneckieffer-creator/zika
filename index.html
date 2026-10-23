@@ -601,6 +601,17 @@ html[data-theme="dark"] .readline .seg.unk{background:#3d2420}
 body.focus .mast,body.focus .tabs,body.focus .banner,body.focus .foot{display:none}
 body.focus .wrap{padding-top:14px}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+/* ---- v34 ---- */
+.wqbox{width:min(260px,100%);aspect-ratio:1;margin:6px auto 0;border:1px solid var(--line2);border-radius:16px;background:var(--padbg);touch-action:none;position:relative;overflow:hidden;
+  background-image:linear-gradient(to right,transparent 49.7%,var(--line) 49.7%,var(--line) 50.3%,transparent 50.3%),linear-gradient(to bottom,transparent 49.7%,var(--line) 49.7%,var(--line) 50.3%,transparent 50.3%)}
+.wqbox svg{display:block;width:100%;height:100%}
+.moebtn{border:1px solid var(--line);background:var(--panel);color:var(--mut);border-radius:99px;width:22px;height:22px;font-size:12px;cursor:pointer;line-height:1;padding:0}
+.moebtn:hover{color:var(--ink);background:var(--tint)}
+.moebox{flex-basis:100%;font-size:12.5px;color:var(--mut);background:var(--tint);border-radius:9px;padding:6px 10px;text-align:left;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.moebox b{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut2)}
+.moebox .zh{color:var(--ink)}
+.apart,.ahead{cursor:pointer}
+.apart:hover,.ahead:hover{background:var(--panel)}
 </style>
 </head>
 <body>
@@ -4616,6 +4627,179 @@ go=(function(orig){return function(v){if(v!=='drill')recKill();return orig.apply
 renderDrill=(function(orig){return function(){orig.apply(this,arguments);try{if(!dq||dq.state!=='done'||!animOn())return;const r=document.querySelector('#vDrill .opts button.right');const w=document.querySelector('#vDrill .opts button.wrong');if(r)r.classList.add('pop');if(w)w.classList.add('shake');}catch(e){}};})(renderDrill);
 /* audio handle table stays bounded */
 renderGram=(function(orig){return function(){if(window.AUDS&&AUDS.length>1500)window.AUDS=[];return orig.apply(this,arguments);};})(renderGram);
+try{badge();if(view==='home')renderHome();}catch(e){}
+
+/* ============================================================
+   v34 — characters first.
+   1. Taiwan neural voice pack (zh-TW HsiaoChen) for every word AND
+      every character; bundled voice is now the default.
+   2. 寫字 Write quiz: draw each stroke on screen (Hanzi Writer quiz),
+      mistakes tracked per character → "hardest to write".
+   3. 萌典 panel per character: 部首 · 筆畫 · 注音 · 釋義 (MoE dictionary).
+   4. More look-ups (字源 etymology); character-first drill order and
+      weekday plan. Grammar stays in Notion.
+   ============================================================ */
+/* ---- 1. audio ---- */
+let PACK_TW=false;
+loadPack=(function(orig){return function(){
+  if(APACK)return Promise.resolve(true);
+  if(APACKP)return APACKP;
+  APACKP=Promise.all([
+    fetch('assets/audio-tw-index.json').then(r=>{if(!r.ok)throw 0;return r.json()}),
+    fetch('assets/audio-tw.pack').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()})
+  ]).then(([idx,buf])=>{AIDX=idx;APACK=buf;PACK_TW=true;return true;}).catch(()=>{APACKP=null;return orig();});
+  return APACKP;
+};})(loadPack);
+playAudio=(function(orig){return function(text){
+  const mode=S.settings.audioSrc||'auto';
+  if(mode==='auto'){ /* bundled Taiwan neural first; the system voice only if the pack lacks the clip */
+    loadPack().then(ok=>{ if(ok&&PACK_TW)playBundled(text,()=>speakText(text)); else orig(text); });
+    return;
+  }
+  return orig(text);
+};})(playAudio);
+/* warm the pack early so the first card doesn't wait */
+setTimeout(()=>{try{loadPack();}catch(e){}},1500);
+renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
+  const sel=document.querySelector('#vSet select[onchange*="audioSrc"]'); if(!sel)return;
+  sel.options[0].textContent='Auto — bundled Taiwan voice 曉臻 (neural), system voice as fallback';
+  sel.options[2].textContent='Bundled Taiwan voice only (offline)';
+  const d=sel.closest('.set-row').querySelector('.d'); if(d)d.textContent='The bundled voice is Microsoft’s zh-TW 曉臻 neural voice, pre-rendered for every word and every character at a slightly slow pace — full tones, Taiwan reading (垃圾 lèsè). Works offline once loaded.';
+}catch(e){}};})(renderSet);
+
+/* ---- 3. 萌典 ---- */
+const MOE_KEY='zika_moe_v1'; let MOE=null;
+function moeCache(){if(!MOE){try{MOE=JSON.parse(store.getItem(MOE_KEY)||'{}');}catch(e){MOE={};}}return MOE;}
+async function moeInfo(ch){
+  const c=moeCache(); if(c[ch])return c[ch];
+  try{const r=await fetch('https://www.moedict.tw/uni/'+encodeURIComponent(ch)+'.json'); if(!r.ok)throw 0; const d=await r.json();
+    const h=(d.heteronyms||[])[0]||{}; const defs=(h.definitions||[]).slice(0,2).map(x=>(x.def||'').replace(/[⃞￹-￻]/g,''));
+    const info={rad:(d.radical||'').replace(/[￹-￻]/g,''),n:d.stroke_count||0,bpm:h.bopomofo||'',py:h.pinyin||'',defs};
+    c[ch]=info; const ks=Object.keys(c); if(ks.length>500)delete c[ks[0]]; try{store.setItem(MOE_KEY,JSON.stringify(c));}catch(e){} return info;
+  }catch(e){return null;}
+}
+async function moeToggle(ch,btn){
+  const host=btn.closest('.arow')||btn.parentElement; let box=host.querySelector('.moebox');
+  if(box){box.remove();return;}
+  box=document.createElement('div'); box.className='moebox'; box.textContent='萌典 …'; host.appendChild(box);
+  const i=await moeInfo(ch); if(!i){box.textContent='萌典 unreachable right now';return;}
+  box.innerHTML=`<b>部首</b> <span class="zh">${esc(i.rad)}</span> · <b>筆畫</b> ${i.n} · <span class="zh">${esc(i.bpm)}</span> ${esc(i.py)}${i.defs.length?`<div class="zh" style="margin-top:3px">${i.defs.map(esc).join('；')}</div>`:''}<a class="lk" href="https://www.moedict.tw/${encodeURIComponent(ch)}" target="_blank" rel="noopener">萌典 ↗</a>`;
+}
+/* anatomy rows: tap the character to hear it, ⓘ for 萌典 */
+anatomyHtml=(function(orig){return function(word){
+  if(S.settings.showComp===false)return '';
+  const chars=[...String(word).split('（')[0]].filter(c=>/\p{Script=Han}/u.test(c));
+  const rows=chars.map(ch=>{
+    const e=COMPONENTS[ch]||{};
+    const part=c=>{const i=COMPONENTS[c]||{};const role=c===e.s?'meaning':c===e.ph?'sound':'';return `<span class="apart ${role}" onclick="playAudio('${c}')" title="hear ${c}"><b class="zh">${esc(c)}</b><i>${esc(i.p||'')}${i.g?(i.p?' · ':'')+esc(i.g.split(',')[0]):''}</i>${role?`<u>${role}</u>`:''}</span>`;};
+    const fam=e.ph?BCHARS.filter(c2=>c2!==ch&&(COMPONENTS[c2]||{}).ph===e.ph).slice(0,6):[];
+    const wq=(S.wq||{})[ch];
+    return `<div class="arow"><span class="ahead zh" onclick="playAudio('${ch}')" title="hear ${ch}">${esc(ch)}<i>${esc(e.p||'')}</i></span>${(e.d||[]).length?(e.d.map(part).join('<span class="aplus">＋</span>')):'<span class="small muted">single-part character</span>'}
+      ${e.t&&ETYPE[e.t]?`<span class="atype">${esc(ETYPE[e.t])}</span>`:''}<button class="moebtn" onclick="moeToggle('${ch}',this)" title="萌典: 部首 · 筆畫 · 注音 · 釋義">ⓘ</button>
+      ${wq&&wq.n?`<span class="afam">written ${wq.n}× · ${wq.miss} stroke miss${wq.miss===1?'':'es'}</span>`:''}
+      ${fam.length?`<span class="afam">same sound part: ${fam.map(c=>`<b class="zh" onclick="playAudio('${c}')">${esc(c)}</b>`).join(' ')}</span>`:''}</div>`;
+  });
+  return rows.length?`<div class="anatomy">${rows.join('')}</div>`:'';
+};})(anatomyHtml);
+compLines=function(word){return anatomyHtml(word);};
+/* more look-ups: 字源 (character evolution) */
+lookupRow=(function(orig){return function(text){
+  const h=orig(text); const t=String(text).split('（')[0]; const ch=[...t].find(c=>/\p{Script=Han}/u.test(c)); if(!ch)return h;
+  return h.replace('</div>',`<a class="lk" href="https://hanziyuan.net/#${encodeURIComponent(ch)}" target="_blank" rel="noopener" title="Chinese Etymology — oracle bone to modern form" onclick="event.stopPropagation()">字源</a></div>`);
+};})(lookupRow);
+
+/* ---- 2. 寫字 Write quiz ---- */
+let WQ=null, WQ_POOL=null;
+function wqStat(ch){S.wq=S.wq||{};return S.wq[ch]=S.wq[ch]||{n:0,miss:0,last:0};}
+function hardestChars(n){const o=[];for(const ch in (S.wq||{})){const s=S.wq[ch];if(s.n)o.push({ch,rate:s.miss/s.n,miss:s.miss,n:s.n});}return o.filter(x=>x.miss>0).sort((a,b)=>b.rate-a.rate||b.miss-a.miss).slice(0,n||12);}
+function startWriteQuiz(pool){
+  let words=pool||WQ_POOL||drillWords(); WQ_POOL=null;
+  words=words.filter(w=>[...w.t.split('（')[0]].some(c=>/\p{Script=Han}/u.test(c)));
+  if(!words.length){toast('No characters in that scope');return;}
+  const qs=shuf(words).slice(0,10).map(w=>({mode:'write',w,chars:[...w.t.split('（')[0]].filter(c=>/\p{Script=Han}/u.test(c)),ci:0,miss:0,per:{}}));
+  drillMode='write'; dq={qs,i:0,ok:0,state:'ask',chosen:null}; WQ={writer:null}; go('drill');
+}
+function wqMount(){
+  const q=dq.qs[dq.i], ch=q.chars[q.ci], host=document.getElementById('wqBox'); if(!host||!q)return;
+  ensureHW().then(ok=>{
+    if(!ok){host.innerHTML='<div class="small muted">stroke data unavailable</div>';return;}
+    host.innerHTML=''; const size=Math.min(260,host.clientWidth||260);
+    try{
+      const wtr=HanziWriter.create('wqBox',ch,{width:size,height:size,padding:10,showCharacter:false,showOutline:!!S.settings.wqOutline,
+        strokeColor:cssVar('--ink')||'#1d1c1a',outlineColor:cssVar('--line2')||'#ddd',drawingColor:cssVar('--acc')||'#25695a',drawingWidth:7,highlightColor:cssVar('--amber')||'#a8681b',
+        showHintAfterMisses:2,leniency:1.15,charDataLoader:(c,onC)=>strokeDataLoader(c,onC,()=>{host.innerHTML='<div class="small muted">no stroke data for '+c+'</div>';})});
+      WQ.writer=wtr;
+      wtr.quiz({onMistake:()=>{q.miss++;q.per[ch]=(q.per[ch]||0)+1;const m=document.getElementById('wqMiss');if(m)m.textContent=q.miss?q.miss+' miss'+(q.miss>1?'es':''):'';},
+        onComplete:(sum)=>{const st=wqStat(ch);st.n++;st.miss+=(q.per[ch]||0);st.last=Date.now();save();haptic((q.per[ch]||0)?'again':'good');
+          setTimeout(()=>{if(q.ci<q.chars.length-1){q.ci++;renderDrill();}else{dq.state='done';renderDrill();}},550);}});
+    }catch(e){host.innerHTML='<div class="small muted">could not start the writer</div>';}
+  });
+}
+function wqSkipChar(){const q=dq.qs[dq.i];const ch=q.chars[q.ci];const st=wqStat(ch);st.n++;st.miss+=3;q.miss+=3;q.per[ch]=(q.per[ch]||0)+3;save();if(q.ci<q.chars.length-1){q.ci++;renderDrill();}else{dq.state='done';renderDrill();}}
+function wqNext(){const q=dq.qs[dq.i];const bad=q.miss>=3||Object.keys(q.per).length>0&&q.miss>=2;if(bad)drillMiss(q.w.id,'prod');else dq.ok++;drillNext();}
+function wqRevealAll(){try{WQ.writer&&WQ.writer.showOutline();}catch(e){}}
+function renderWrite(el){
+  const q=dq.qs[dq.i], w=q.w, done=dq.state==='done', ch=q.chars[q.ci];
+  el.innerHTML=`<div class="rev-top"><span class="qtype">寫字 · Write it</span><span class="qprog">${dq.i+1} / ${dq.qs.length}${q.chars.length>1?` · 字 ${q.ci+1}/${q.chars.length}`:''}</span></div>
+  <div class="qbox">
+    <div class="meaning" style="font-size:20px">${esc(w.m)}</div>
+    <div class="row" style="justify-content:center;gap:9px"><span class="pyline" style="font-size:22px">${tonePinyin(esc(w.p))}</span>${spkBtn(w.id)}</div>
+    ${done?`<div class="bigzh zh" style="font-size:54px">${esc(w.t)}</div>${anatomyHtml(w.t)}
+      <div class="small ${q.miss?'':'muted'}" style="margin-top:6px;color:${q.miss>=3?'var(--red)':q.miss?'var(--amber)':'var(--acc)'}">${q.miss?q.miss+' stroke miss'+(q.miss>1?'es':'')+(q.miss>=3?' — goes to the hard list and tonight’s paper':''):'clean — every stroke first time'}</div>
+      <div class="qfoot" style="margin-top:12px"><button class="btn" onclick="wqNext()">Next →</button></div>`
+    :`<div class="small muted" style="margin:4px 0">${q.chars.length>1?`write <b class="zh" style="font-size:16px">${q.chars.map((c,i)=>i===q.ci?'▢':i<q.ci?c:'·').join('')}</b> — character ${q.ci+1} of ${q.chars.length}`:'draw every stroke in order · a hint appears after two misses'}</div>
+      <div id="wqBox" class="wqbox"></div>
+      <div class="row" style="justify-content:center;gap:8px;margin-top:8px;flex-wrap:wrap"><span id="wqMiss" class="small" style="color:var(--amber);min-width:60px">${q.miss?q.miss+' misses':''}</span>
+        <button class="btn ghost sm" onclick="S.settings.wqOutline=!S.settings.wqOutline;save();renderDrill()">${S.settings.wqOutline?'Hide outline':'Show outline'}</button>
+        <button class="btn ghost sm" onclick="wqRevealAll()">Peek</button>
+        <button class="btn ghost sm" onclick="wqSkipChar()">Can’t — skip (counts as 3)</button></div>`}
+  </div>`;
+  if(!done)wqMount();
+  if(!done&&S.settings.autoplayAudio&&WQ.spoke!==q.w.id+':'+q.ci){WQ.spoke=q.w.id+':'+q.ci;setTimeout(()=>speakWord(q.w.id),150);}
+}
+DMODES.unshift(['write','寫字 Write it','draw every stroke · hints after misses']);
+/* character-first order for the rest */
+(function(){const order=['write','dict','rec','tone','mtest','listen','sdict','confuse','read','sent','speak'];DMODES.sort((a,b)=>order.indexOf(a[0])-order.indexOf(b[0]));})();
+startDrill=(function(orig){return function(mode){if(mode==='write')return startWriteQuiz();return orig.apply(this,arguments);};})(startDrill);
+renderDrill=(function(orig){return function(){const el=document.getElementById('vDrill');if(dq&&dq.i<dq.qs.length&&dq.qs[dq.i].mode==='write'){renderWrite(el);return;}orig.apply(this,arguments);};})(renderDrill);
+document.addEventListener('keydown',e=>{if(view!=='drill'||!dq||dq.i>=dq.qs.length)return;const q=dq.qs[dq.i];if(q.mode!=='write')return;if(e.code==='Space'&&dq.state==='done'){e.preventDefault();e.stopImmediatePropagation();wqNext();}},true);
+
+/* Catch-up tab: hardest characters + a Write button per lesson */
+renderCatch=(function(orig){return function(){orig.apply(this,arguments);try{
+  const el=document.getElementById('vCatch'); const hard=hardestChars(16);
+  const hero=el.querySelector('.card.hero'); if(!hero)return;
+  const wordsFor=chs=>{const set=new Set();WORDS.forEach(w=>{if(chs.some(c=>w.t.includes(c))&&!isName(w))set.add(w);});return [...set];};
+  hero.insertAdjacentHTML('afterend',`<div class="card"><div class="row spread" style="margin-bottom:8px"><div><div class="lab" style="margin:0">Hardest to write</div><div class="small muted">${hard.length?'stroke misses from the Write quiz, worst first':'the Write quiz fills this in — Drill → 寫字'}</div></div>${hard.length?`<button class="btn sm" onclick="WQ_POOL=(${JSON.stringify(hard.map(h=>h.ch))}).flatMap(c=>WORDS.filter(w=>w.t.includes(c)&&!isName(w)).slice(0,1));startWriteQuiz()">Practise these</button>`:`<button class="btn sm ghost" onclick="drillScope='hard';go('drill');startDrill('write')">Write the hard list</button>`}</div>
+    ${hard.length?`<div class="paper-chips">${hard.map(h=>`<div class="pchip" onclick="playAudio('${h.ch}')" style="cursor:pointer"><span class="tag2">${h.miss}✗ / ${h.n}</span><span class="c zh">${esc(h.ch)}</span><span class="p">${esc((COMPONENTS[h.ch]||{}).p||'')}</span></div>`).join('')}</div>`:''}</div>`);
+  el.querySelectorAll('.crow .tier-acts').forEach((acts,i)=>{const b=[...acts.querySelectorAll('button')].find(x=>/startDrill\('dict'\)/.test(x.getAttribute('onclick')||''));if(!b)return;const m=b.getAttribute('onclick').match(/drillLesson=(\d+)/);if(!m)return;b.insertAdjacentHTML('beforebegin',`<button class="btn sm ghost" onclick="drillScope='lesson';drillLesson=${m[1]};go('drill');startDrill('write')">寫</button>`);});
+}catch(e){}};})(renderCatch);
+
+/* ---- 4. weekday plan, character-first (grammar lives in Notion) ---- */
+planPanel=function(){
+  const d=new Date(), wd=d.getDay(), cl=S.settings.curLesson||26, L=lnLabel(cl), E=S.settings.examDay||4;
+  const A=(k,label,arg)=>`<button class="pact" onclick='planAct("${k}",${JSON.stringify(arg||null)})'>${label}</button>`;
+  const N=(url,label)=>`<a class="pact nl" href="${url}" target="_blank" rel="noopener">${label}</a>`;
+  const T={
+    mon:{t:'聽寫一',items:[A('dict','聽寫 rehearsal · '+L+' 對話一'),A('write','寫字 · '+L),A('hardrec','Hard list → 認字'),A('triage','After class: Triage 對話二',{dlg:2})]},
+    d2:{t:'對話二 characters',items:[A('dict','聽寫 · '+L+' 對話二'),A('write','寫字 · '+L),A('hardtone','Hard list → 聲調'),A('catchtab','Catch-up: shaky words')]},
+    t2:{t:'two days out',items:[A('write','寫字 · hardest characters',{hard:1}),A('dict','聽寫 · '+L),A('hardrec','Hard list → 認字'),N(notionLesson(cl),'Grammar + 口試 prep in Notion ↗')]},
+    t1:{t:'聽寫二',items:[A('dict','聽寫二 before class'),A('write','寫字 · '+L),A('hardtone','Hard list → 聲調'),N(notionLesson(cl),'口試 spiel in Notion ↗')]},
+    exam:{t:'課考試',items:[A('hardrec','Hard list → 認字'),A('hardtone','then 聲調'),A('write','寫字 · hardest characters',{hard:1}),N(notionLesson(cl),'After: log what it asked in 疑問 ↗')]},
+    fri:{t:'new lesson opens',items:[A('triage','Triage 對話一 of the new lesson',{dlg:1}),A('write','寫字 · the new characters'),A('rev','Clear the queue')]},
+    sat:{t:'weekend · catch-up',items:[A('rev','Clear the queue'),A('mtest','Mastery test · two lessons'),A('catchtab','Catch-up: review the shaky ones'),A('write','寫字 · hardest characters',{hard:1})]},
+    sun:{t:'weekend · catch-up',items:[A('rev','Clear the queue'),A('mtest','Mastery test · two lessons'),A('write','寫字 · '+L),A('catchtab','Catch-up: review the shaky ones')]}
+  };
+  const key=wd===0?'sun':wd===6?'sat':wd===1?'mon':wd===E?'exam':wd===E-1?'t1':wd===E-2?'t2':(wd===5&&E===4)?'fri':'d2';
+  const p=T[key], names=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+  return `<div class="card plan"><div class="row spread" style="margin-bottom:8px"><div><div class="lab" style="margin:0">Today’s plan · ${names[wd]} · ${esc(p.t)}</div><div class="small muted">${L} · 聽寫一 Mon · 聽寫二 ${names[E-1]} · 考試 <select class="vsel" style="padding:1px 4px;font-size:11.5px;max-width:none" onchange="S.settings.examDay=+this.value;save();renderHome()"><option value="4" ${E===4?'selected':''}>星期四</option><option value="5" ${E===5?'selected':''}>星期五</option></select> · grammar lives in Notion</div></div><a class="nlink" href="${NOTION.flow}" target="_blank" rel="noopener">Workflow ↗</a></div>
+    <div class="pacts">${p.items.join('')}</div></div>`;
+};
+planAct=(function(orig){return function(k,arg){
+  const cl=S.settings.curLesson||26;
+  if(k==='write'){if(arg&&arg.hard){const h=hardestChars(16);if(h.length){WQ_POOL=h.flatMap(x=>WORDS.filter(w=>w.t.includes(x.ch)&&!isName(w)).slice(0,1));}else{drillScope='hard';}}else{drillScope='lesson';drillLesson=cl;}go('drill');startDrill('write');return;}
+  if(k==='mtest'){mtResume();return;}
+  return orig.apply(this,arguments);
+};})(planAct);
 try{badge();if(view==='home')renderHome();}catch(e){}
 </script>
 </body>
