@@ -620,6 +620,8 @@ body.focus .wrap{padding-top:14px}
 .istep.done b{color:var(--mut);text-decoration:line-through;text-decoration-color:var(--line2)}
 .istep b{font-size:14px}
 #ipadCard .qrbox svg{width:150px;height:150px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:4px}
+.drawres{margin-top:10px;font-size:13px;font-weight:600;color:var(--amber);background:var(--tint);border-radius:9px;padding:7px 12px;display:inline-block}
+.drawres.ok{color:var(--acc);background:var(--accT)}
 </style>
 </head>
 <body>
@@ -4902,6 +4904,73 @@ renderDrill=(function(orig){return function(){orig.apply(this,arguments);try{
   el.querySelectorAll('.segbar:first-of-type button').forEach(b=>{if(DEMOTED.some(m=>(b.getAttribute('onclick')||'').includes("'"+m+"'"))&&!b.classList.contains('on'))b.style.display=moreDrills?'':'none';});
 }catch(e){}};})(renderDrill);
 try{badge();if(view==='set')renderSet();if(view==='home')renderHome();}catch(e){}
+
+/* ============================================================
+   v36 — top-app patterns, character-focused
+   1. Draw it ✍ inside the SRS write card: verify the strokes on
+      screen before you grade (Skritter pattern)
+   2. Swipe grading on touch: left = Again, right = Good, tap = reveal
+   3. Mistakes come back: a missed drill item re-enters the set once
+   4. Write quiz: completed character animates once + speaks
+   5. u = undo in review · lesson page chip on the Today hero
+   ============================================================ */
+/* ---- 1. Draw it on the write card ---- */
+let DRAW={on:false,ci:0,miss:0,chars:[],writer:null};
+function drawStart(){
+  if(!cur||isGram(cur))return; const w=wordOf(cur); DRAW={on:true,ci:0,miss:0,chars:[...w.t.split('（')[0]].filter(c=>/\p{Script=Han}/u.test(c)),writer:null,wid:w.id};
+  if(!revealed){revealed=true;} renderRev();
+}
+function drawMount(){
+  const host=document.getElementById('drawBox'); if(!host||!DRAW.on)return; const ch=DRAW.chars[DRAW.ci]; if(!ch)return;
+  ensureHW().then(ok=>{ if(!ok){host.innerHTML='<div class="small muted">stroke data unavailable</div>';return;}
+    host.innerHTML=''; const size=Math.min(220,host.clientWidth||220);
+    try{ const wtr=HanziWriter.create('drawBox',ch,{width:size,height:size,padding:8,showCharacter:false,showOutline:!!S.settings.wqOutline,strokeColor:cssVar('--ink'),outlineColor:cssVar('--line2'),drawingColor:cssVar('--acc'),drawingWidth:7,highlightColor:cssVar('--amber'),showHintAfterMisses:2,leniency:1.15,charDataLoader:(c,onC)=>strokeDataLoader(c,onC,()=>{host.innerHTML='<div class="small muted">no stroke data for '+c+'</div>';})});
+      DRAW.writer=wtr;
+      wtr.quiz({onMistake:()=>{DRAW.miss++;const m=document.getElementById('drawMiss');if(m)m.textContent=DRAW.miss+' miss'+(DRAW.miss>1?'es':'');},
+        onComplete:()=>{const st=wqStat(ch);st.n++;st.miss+=0;st.last=Date.now();save();playAudio(ch);
+          setTimeout(()=>{if(DRAW.ci<DRAW.chars.length-1){DRAW.ci++;renderRev();}else{DRAW.done=true;renderRev();}},500);}});
+    }catch(e){host.innerHTML='<div class="small muted">could not start the writer</div>';}
+  });
+}
+renderRev=(function(orig){return function(){
+  if(DRAW.on&&DRAW.wid&&(!cur||cur.split(':')[0]!==DRAW.wid))DRAW={on:false,ci:0,miss:0,chars:[],writer:null};
+  orig.apply(this,arguments);
+  try{
+    if(!cur||isGram(cur)||!revealed)return; const st=document.querySelector('#vRev .stage'); if(!st)return;
+    if(!DRAW.on){ st.insertAdjacentHTML('beforeend',`<div class="row" style="justify-content:center;margin-top:8px"><button class="btn ghost sm" onclick="drawStart()">✍ Draw it on screen</button></div>`); return; }
+    const ch=DRAW.chars[DRAW.ci];
+    if(DRAW.done){ st.insertAdjacentHTML('beforeend',`<div class="drawres ${DRAW.miss?'':'ok'}">${DRAW.miss?DRAW.miss+' stroke miss'+(DRAW.miss>1?'es':'')+' — grade it Hard or Again':'every stroke right — grade it Good or Easy'}</div>`); return; }
+    st.insertAdjacentHTML('beforeend',`<div class="small muted" style="margin-top:8px">draw <b class="zh" style="font-size:16px">${DRAW.chars.map((c,i)=>i===DRAW.ci?'▢':i<DRAW.ci?c:'·').join('')}</b></div><div id="drawBox" class="wqbox" style="width:min(220px,100%)"></div><div class="row" style="justify-content:center;gap:8px;margin-top:6px"><span id="drawMiss" class="small" style="color:var(--amber);min-width:50px">${DRAW.miss?DRAW.miss+' misses':''}</span><button class="btn ghost sm" onclick="S.settings.wqOutline=!S.settings.wqOutline;save();renderRev()">${S.settings.wqOutline?'Hide outline':'Outline'}</button><button class="btn ghost sm" onclick="DRAW.on=false;renderRev()">Close</button></div>`);
+    drawMount();
+  }catch(e){}
+};})(renderRev);
+nextCard=(function(orig){return function(){DRAW={on:false,ci:0,miss:0,chars:[],writer:null};return orig.apply(this,arguments);};})(nextCard);
+
+/* ---- 2. swipe grading (touch only) ---- */
+(function(){
+  let sx=0,sy=0,t0=0,active=false;
+  document.addEventListener('touchstart',e=>{if(view!=='rev'||!cur||e.touches.length!==1)return;const st=e.target.closest('#vRev .stage');if(!st||e.target.closest('.wqbox,button,a,input'))return;sx=e.touches[0].clientX;sy=e.touches[0].clientY;t0=Date.now();active=true;},{passive:true});
+  document.addEventListener('touchend',e=>{if(!active)return;active=false;const t=e.changedTouches[0];const dx=t.clientX-sx,dy=t.clientY-sy,dt=Date.now()-t0;
+    if(Math.abs(dx)<12&&Math.abs(dy)<12&&dt<400){if(!revealed){reveal();}return;}
+    if(!revealed||Math.abs(dx)<70||Math.abs(dy)>60||dt>900)return;
+    if(dx<0)grade(1); else grade(3);},{passive:true});
+})();
+/* ---- 3. mistakes come back once ---- */
+drillAnswer=(function(orig){return function(ok){try{const q=dq&&dq.qs[dq.i];if(q&&!ok&&!q._requeued&&q.w){const c=Object.assign({},q,{_requeued:true,_played:0});dq.qs.push(c);}}catch(e){}return orig.apply(this,arguments);};})(drillAnswer);
+wqNext=(function(orig){return function(){try{const q=dq&&dq.qs[dq.i];if(q&&q.miss>=2&&!q._requeued){dq.qs.push({mode:'write',w:q.w,chars:q.chars.slice(),ci:0,miss:0,per:{},_requeued:true});}}catch(e){}return orig.apply(this,arguments);};})(wqNext);
+cfPick=(function(orig){return function(i){try{const q=dq&&dq.qs[dq.i];if(q&&dq.state==='ask'){const opts=q.q.opts||q.f.opts;if(opts[i]!==q.q.a&&!q._requeued)dq.qs.push(Object.assign({},q,{_requeued:true}));}}catch(e){}return orig.apply(this,arguments);};})(cfPick);
+/* ---- 4. write quiz: the finished character replays once, with its voice ---- */
+/* hook: after a character completes in the write quiz, animate it before moving on */
+renderWrite=(function(orig){return function(el){orig.apply(this,arguments);try{
+  const q=dq.qs[dq.i]; if(dq.state!=='done'||!q||q._animated)return; q._animated=true;
+  const big=el.querySelector('.bigzh'); if(!big)return;
+  big.insertAdjacentHTML('afterend','<div id="wqReplay" class="strokerow" style="margin-top:4px"></div>');
+  renderStrokes('wqReplay',q.w.t.split('（')[0],{size:84}); setTimeout(()=>speakWord(q.w.id),200);
+}catch(e){}};})(renderWrite);
+/* ---- 5. small efficiencies ---- */
+document.addEventListener('keydown',e=>{if(view!=='rev'||!cur||e.repeat||e.metaKey||e.ctrlKey||e.altKey)return;const tg=e.target;if(tg&&/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName))return;if(e.key==='u'){e.preventDefault();doUndo();}});
+renderHome=(function(orig){return function(){orig.apply(this,arguments);try{const meta=document.querySelector('#vHome .hero .hero-meta');if(meta&&!meta.querySelector('.nl')){const cl=S.settings.curLesson||26;meta.insertAdjacentHTML('beforeend',`<a class="chip nl" href="${notionLesson(cl)}" target="_blank" rel="noopener" style="color:var(--blue);text-decoration:none">lesson page ↗</a>`);}}catch(e){}};})(renderHome);
+try{badge();if(view==='home')renderHome();}catch(e){}
 </script>
 </body>
 </html>
