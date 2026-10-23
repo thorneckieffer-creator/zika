@@ -563,6 +563,15 @@ html[data-theme="dark"] .readline .seg.unk{background:#3d2420}
 .backlog{border-color:var(--amber)}
 .backlog .lab{color:var(--amber)}
 .grades.mt3{grid-template-columns:repeat(3,1fr)}
+/* ---- v30: lanes ---- */
+.lane{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--tint)}
+.lane:last-of-type{border-bottom:0}
+.lane-b{flex:1;min-width:0}
+.lane-b b{font-size:14px}
+.lane-n{text-align:right;flex:none;line-height:1.1}
+.lane-n b{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;display:block}
+.lane-n span{font-size:10.5px;color:var(--mut);white-space:nowrap}
+@media(max-width:560px){.lane{flex-wrap:wrap}.lane-n{text-align:left}.lane-n span{white-space:normal}}
 </style>
 </head>
 <body>
@@ -3634,7 +3643,7 @@ buildQueue=(function(orig){return function(){
     if(c.st===undefined){fresh.push(cid);continue;}
     if(c.due<=now)(c.st==='rev'?rev:learn).push(cid);
   }
-  fresh.sort((a,b)=>GP[a.slice(2)].l-GP[b.slice(2)].l);
+  const _cl=S.settings.curLesson||26; fresh.sort((a,b)=>((GP[b.slice(2)].l>=_cl-1)-(GP[a.slice(2)].l>=_cl-1))||(GP[b.slice(2)].l-GP[a.slice(2)].l));
   const allow=Math.max(0,(S.settings.newGramPerDay||4)-((S.gintro||{})[today]||0));
   q.learn=q.learn.concat(learn).sort((a,b)=>S.cards[a].due-S.cards[b].due);
   q.rev=q.rev.concat(rev.sort((a,b)=>S.cards[a].due-S.cards[b].due));
@@ -4286,6 +4295,89 @@ function mtPanel(){
     <div class="small muted" style="margin-top:6px">One lesson at a time is fine — progress is saved after every word. Shaky and ✗ words get write cards and paper reps; ★ words go to the shelf.</div></div>`;
 }
 renderHome=(function(orig){return function(){orig.apply(this,arguments);try{const hero=document.querySelector('#vHome .card.hero');const bl=document.querySelector('#vHome .card.backlog');(bl||hero).insertAdjacentHTML('afterend',mtPanel());ringArm(document.getElementById('vHome'));}catch(e){}};})(renderHome);
+try{badge();if(view==='home')renderHome();}catch(e){}
+
+/* ============================================================
+   v30 — three lanes, one queue, visible dates.
+   Live lesson · Catch-up (mastery-test shaky/✗ + hard) · Maintenance.
+   Each lane has its own daily intake; every grade button and every
+   Library row shows the actual date a word comes back.
+   ============================================================ */
+function laneOf(cid){
+  const cl=S.settings.curLesson||26;
+  if(isGram(cid)){const gp=GP[cid.slice(2)];return gp&&gp.l>=cl-1?'live':'maint';}
+  const w=wordOf(cid); if(!w)return 'maint';
+  if(w.l>=cl-1)return 'live';
+  const r=(S.mtest&&S.mtest.res||{})[w.id];
+  if(r==='l'||r==='h'||isHard(w.id))return 'catch';
+  return 'maint';
+}
+if(!S.settings._v30){S.settings._v30=1;if(!S.settings.newCatchPerDay)S.settings.newCatchPerDay=5;if(S.settings.newPerDay===9)S.settings.newPerDay=8;try{save();}catch(e){}}
+/* each lane has its own new-card intake: this week's words never wait behind catch-up words */
+buildQueue=(function(orig){return function(){
+  const q=orig.apply(this,arguments);
+  try{
+    const today=dkey(new Date()), now=Date.now();
+    const allow={live:Math.max(0,(S.settings.newUnlimited?9999:(S.settings.newPerDay||8))-((S.intro||{})[today]||0)),catch:Math.max(0,(S.settings.newCatchPerDay||5)-((S.cintro||{})[today]||0)),maint:0};
+    const all=[];
+    for(const cid in S.cards){const c=S.cards[cid];if(!c||c.susp||c.st!==undefined||isGram(cid))continue;const w=wordOf(cid);if(!w)continue;if(!S.settings.includeNames&&isName(w))continue;if(!S.settings.modes[modeOf(cid)])continue;if(modeOf(cid)==='prod'&&!prodInScope(w.id))continue;all.push(cid);}
+    const mOrd={rec:0,prod:1}, pickIdx=wid=>{const i=(S.pick||[]).indexOf(wid);return i===-1?9999:i;};
+    all.sort((a,b)=>{const wa=wordOf(a),wb=wordOf(b);return pickIdx(wa.id)-pickIdx(wb.id)||wa.l-wb.l||parseInt(wa.id.slice(1))-parseInt(wb.id.slice(1))||mOrd[modeOf(a)]-mOrd[modeOf(b)];});
+    const planned={live:new Set(),catch:new Set(),maint:new Set()}, fresh=[];
+    for(const cid of all){const wid=cid.split(':')[0], k=laneOf(cid);
+      if(wordStartedBefore(wid)||planned[k].has(wid)){fresh.push(cid);continue;}
+      if(planned[k].size<allow[k]){planned[k].add(wid);fresh.push(cid);}}
+    const gf=q.fresh.filter(isGram).sort((a,b)=>((laneOf(b)==='live')-(laneOf(a)==='live'))||(GP[b.slice(2)].l-GP[a.slice(2)].l));
+    q.fresh=BACKLOG?gf:fresh.concat(gf);
+  }catch(e){}
+  return q;
+};})(buildQueue);
+rate=(function(orig){return function(cid,g){
+  const today=dkey(new Date()); const wasNew=!isGram(cid)&&(!S.cards[cid]||S.cards[cid].st===undefined)&&!wordStartedBefore(cid.split(':')[0]);
+  const lane=wasNew?laneOf(cid):null, before=S.intro[today]||0;
+  orig.apply(this,arguments);
+  if(lane==='catch'){S.intro[today]=before;S.cintro=S.cintro||{};S.cintro[today]=(S.cintro[today]||0)+1;save();}
+};})(rate);
+function laneCounts(){
+  const q=buildQueue(), out={live:{due:0,fresh:0},catch:{due:0,fresh:0},maint:{due:0,fresh:0}};
+  q.learn.concat(q.rev).forEach(c=>out[laneOf(c)].due++); q.fresh.forEach(c=>out[laneOf(c)].fresh++);
+  return out;
+}
+function startLane(k){startReview();if(!rq)return;['learn','rev','fresh'].forEach(x=>{rq[x]=rq[x].filter(c=>laneOf(c)===k);});nextCard();}
+function fmtDay(ms){const d=new Date(ms),t=new Date();t.setHours(0,0,0,0);const dd=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-t)/DAY);const wd=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];return dd<=0?'today':dd===1?'tomorrow':dd<7?wd:(wd+' '+(d.getMonth()+1)+'/'+d.getDate());}
+function lanePanel(){
+  const L=laneCounts(), cl=S.settings.curLesson||26, sec=c=>Math.max(1,Math.round(c*8/60));
+  const mt=S.mtest&&S.mtest.res?Object.values(S.mtest.res).filter(r=>r!=='m').length:0;
+  const row=(k,t,sub,c)=>`<div class="lane"><div class="lane-b"><b>${t}</b><div class="small muted">${sub}</div></div>
+    <div class="lane-n"><b>${c.due+c.fresh}</b><span>${c.due} due${c.fresh?` · ${c.fresh} new`:''} · ~${sec(c.due+c.fresh)} min</span></div>
+    <button class="btn sm ${c.due+c.fresh?'':'ghost'}" ${c.due+c.fresh?'':'disabled'} onclick="startLane('${k}')">${c.due+c.fresh?'Start':'Clear'}</button></div>`;
+  return `<div class="card"><div class="row spread" style="margin-bottom:4px"><div><div class="lab" style="margin:0">Three lanes · one queue</div><div class="small muted">same scheduler underneath; this is just where today’s cards come from</div></div></div>
+    ${row('live','This week · '+esc(lnLabel(cl-1))+' – '+esc(lnLabel(cl)),'new words at '+(S.settings.newPerDay||8)+'/day, 聽寫 write cards, this lesson’s grammar',L.live)}
+    ${row('catch','Catch-up · the shaky ones',(mt?mt+' flagged by the mastery test':'flagged by the mastery test')+' + hard list · '+(S.settings.newCatchPerDay||5)+' enter per day',L.catch)}
+    ${row('maint','Maintenance · everything else','long intervals, a few a day, never dropped',L.maint)}
+    <div class="small muted" style="margin-top:8px">A card graded <b>Good</b> comes back on the date under the button. ~10 reviews per new word over its first month is the planning rule, so ${(S.settings.newPerDay||8)+(S.settings.newCatchPerDay||5)} new a day settles near ${((S.settings.newPerDay||8)+(S.settings.newCatchPerDay||5))*10} reviews a day; lower either intake in Settings if that’s too many.</div></div>`;
+}
+renderHome=(function(orig){return function(){orig.apply(this,arguments);try{
+  const v=document.getElementById('vHome'); const hero=v.querySelector('.card.hero'); if(hero)hero.insertAdjacentHTML('afterend',lanePanel());
+  /* the mastery test supersedes the tier card */
+  [...v.querySelectorAll('.card')].forEach(c=>{if(/追進度 · Catch-up tiers/.test(c.textContent))c.remove();});
+}catch(e){}};})(renderHome);
+/* grade buttons: the actual return date */
+renderRev=(function(orig){return function(){orig.apply(this,arguments);try{
+  document.querySelectorAll('#vRev .grades button .iv').forEach(el=>{const m=el.textContent.match(/^(\d+)d$/);if(m){el.textContent=m[1]+'d · '+fmtDay(Date.now()+(+m[1])*DAY);}});
+}catch(e){}};})(renderRev);
+/* Library rows: when it comes back */
+wrowHtml=(function(orig){return function(w,showLn){let h=orig.apply(this,arguments);try{
+  const cs=MODES.map(m=>S.cards[cardId(w.id,m)]).filter(Boolean); if(!cs.length)return h;
+  const started=cs.filter(c=>c.st!==undefined); let txt;
+  if(!started.length)txt='queued · not started'; else {const due=Math.min(...started.map(c=>c.due)); txt=due<=Date.now()?'due now':'back '+fmtDay(due);}
+  h=h.replace(/(<div class="mn">[\s\S]*?<\/div>)/,'$1<div class="small muted" style="font-size:11px">'+txt+'</div>');
+}catch(e){}return h;};})(wrowHtml);
+/* settings: catch-up intake */
+renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
+  const v=document.getElementById('vSet'); const strat=[...v.querySelectorAll('.card')].find(c=>/Card strategy/.test(c.textContent)); if(!strat)return;
+  strat.insertAdjacentHTML('beforeend',`<div class="set-row"><div><b>Catch-up words per day</b><div class="d">how many shaky / ✗ words from old lessons may start each day, separate from this week’s new words</div></div><input type="number" min="0" max="30" value="${S.settings.newCatchPerDay||5}" onchange="S.settings.newCatchPerDay=Math.max(0,parseInt(this.value)||0);save();badge()"></div>`);
+}catch(e){}};})(renderSet);
 try{badge();if(view==='home')renderHome();}catch(e){}
 </script>
 </body>
