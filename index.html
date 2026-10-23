@@ -65,7 +65,7 @@ body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSys
 .muted{color:var(--mut)} .small{font-size:12.5px}
 .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .spread{justify-content:space-between}
-.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--ink);border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;background:var(--ink);color:#fff;letter-spacing:.01em}
+.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--ink);border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;background:var(--ink);color:var(--bg);letter-spacing:.01em}
 .btn:hover{opacity:.85}
 .btn.big{width:100%;padding:14px;font-size:15px;border-radius:12px}
 .btn.ghost{background:transparent;color:var(--ink);border-color:var(--line2)}
@@ -88,13 +88,13 @@ body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSys
 details.guide{border-top:1px solid var(--line);margin-top:18px;padding-top:14px}
 details.guide summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--mut);list-style:none}
 details.guide summary::-webkit-details-marker{display:none}
-details.guide .gd{font-size:13.5px;color:#4c4a44;margin-top:10px}
+details.guide .gd{font-size:13.5px;color:var(--mut);margin-top:10px}
 details.guide .gd p{margin-bottom:9px}
-.search{width:100%;padding:11px 16px;border:1px solid var(--line);border-radius:12px;background:var(--panel);font-size:14px;margin-bottom:10px;outline:none}
+.search{width:100%;padding:11px 16px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);font-size:14px;margin-bottom:10px;outline:none}
 .search:focus{border-color:var(--line2)}
 .filters{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
 .filters button{border:1px solid transparent;background:transparent;border-radius:99px;padding:5px 12px;font-size:12px;cursor:pointer;color:var(--mut);font-weight:600}
-.filters button.on{background:var(--ink);color:#fff}
+.filters button.on{background:var(--ink);color:var(--bg)}
 .lesson{border:1px solid var(--line);border-radius:14px;margin-bottom:10px;background:var(--panel);overflow:hidden}
 .lesson>.head{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;user-select:none}
 .lesson>.head:hover{background:var(--tint)}
@@ -117,7 +117,7 @@ details.guide .gd p{margin-bottom:9px}
 .tag.simp{color:var(--plum);text-transform:none;letter-spacing:0;font-size:11.5px}
 .wbtn{border:1px solid var(--line2);background:transparent;color:var(--mut);border-radius:8px;width:30px;height:30px;font-size:14px;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center}
 .wbtn:hover{background:var(--tint);color:var(--ink)}
-.wbtn.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.wbtn.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .wbtn.kn{font-size:13px}
 .wbtn.kn.on{background:var(--acc);border-color:var(--acc)}
 .rev-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:12px;color:var(--mut)}
@@ -127,7 +127,7 @@ details.guide .gd p{margin-bottom:9px}
 .stage .bigzh{font-size:78px;line-height:1.25;font-weight:500}
 .stage .hint{color:var(--mut);font-size:12.5px}
 .stage .pyline{font-size:25px;font-weight:500}
-.stage .meaning{font-size:16.5px;max-width:480px;margin:0 auto;color:#37352f}
+.stage .meaning{font-size:16.5px;max-width:480px;margin:0 auto;color:var(--ink)}
 .stage .pos{font-size:10px;font-weight:700;letter-spacing:.18em;color:var(--mut);text-transform:uppercase}
 .stage .simpnote{font-size:12.5px;color:var(--plum)}
 .grades{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
@@ -150,10 +150,10 @@ kbd{background:var(--tint);border:1px solid var(--line);border-bottom-width:2px;
 .set-row b{font-size:14px;font-weight:600}
 .set-row .d{font-size:12px;color:var(--mut);margin-top:1px;max-width:420px}
 input[type=range]{accent-color:var(--ink);width:130px}
-input[type=number]{width:64px;padding:7px;border:1px solid var(--line);border-radius:9px;background:var(--panel);font-size:14px;text-align:center;outline:none}
+input[type=number]{width:64px;padding:7px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--ink);font-size:14px;text-align:center;outline:none}
 .tgl{width:38px;height:22px;border-radius:99px;background:var(--line2);position:relative;cursor:pointer;flex:none;border:0}
 .tgl.on{background:var(--ink)}
-.tgl i{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
+.tgl i{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--bg);transition:left .15s}
 .tgl.on i{left:19px}
 .foot{text-align:center;color:var(--mut2);font-size:11px;margin-top:26px;letter-spacing:.04em}
 /* ---- grammar ---- */
@@ -194,7 +194,7 @@ html[data-theme="dark"] .banner{background:#3a2f1b;border-color:#57431f;color:#d
 .chunks button:disabled{opacity:.25}
 .answer-line{min-height:46px;background:var(--tint);border-radius:12px;padding:8px;align-items:center}
 .answer-line span{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:6px 11px;font-size:18px;cursor:pointer}
-.gtxt{width:100%;max-width:480px;margin:0 auto;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:17px;font-family:inherit;resize:vertical;min-height:64px;outline:none;background:var(--panel)}
+.gtxt{width:100%;max-width:480px;margin:0 auto;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:17px;font-family:inherit;resize:vertical;min-height:64px;outline:none;background:var(--panel);color:var(--ink)}
 .qfoot{display:flex;gap:8px;justify-content:center;margin-top:6px}
 .qprog{font-size:11.5px;color:var(--mut);font-variant-numeric:tabular-nums}
 .gres{font-size:14px;font-weight:600}
@@ -236,7 +236,7 @@ html[data-theme="dark"] .banner{background:#3a2f1b;border-color:#57431f;color:#d
 .segbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:4px}
 .segbar .cap{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mut2);margin-right:2px}
 .segbar button{border:1px solid transparent;background:transparent;border-radius:99px;padding:4px 11px;font-size:12px;cursor:pointer;color:var(--mut);font-weight:600}
-.segbar button.on{background:var(--ink);color:#fff}
+.segbar button.on{background:var(--ink);color:var(--bg)}
 .wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:4px}
 .wall.words{grid-template-columns:repeat(auto-fill,minmax(86px,1fr))}
 .tile{aspect-ratio:1;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;position:relative;transition:transform .08s}
@@ -600,6 +600,7 @@ html[data-theme="dark"] .readline .seg.unk{background:#3d2420}
 .kgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:13.5px}
 body.focus .mast,body.focus .tabs,body.focus .banner,body.focus .foot{display:none}
 body.focus .wrap{padding-top:14px}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 </style>
 </head>
 <body>
@@ -940,7 +941,7 @@ function renderHome(){
     <details class="guide"><summary>How this app works ›</summary><div class="gd">
       <p><b>Adding words.</b> In the Library, tap ＋ next to a word (or "Study lesson") to put it in your deck. Each word becomes two recognition cards: <b>Recognize</b> — see the 字, recall its meaning, pinyin and tones — and <b>Recall</b> — see the English, recall which 字 it is and say it with the right tones. Neither asks you to write on screen; handwriting lives on paper and in Skritter. Already know a word from your simplified days? Tap ✓ instead: it skips the learning phase entirely and quietly resurfaces in ~3 weeks just to verify.</p>
       <p><b>Timing (FSRS).</b> Every grade feeds a memory model that estimates how long until you'd forget that exact card, and the next review lands just before that moment. Intervals stretch as a card gets stronger (10m → 1d → 3d → 8d → 20d…) and shrink when you miss. "Again" restarts a card through short steps, "Good" is the normal path, "Easy" jumps ahead. The small number under each button is the exact wait it will apply.</p>
-      <p><b>Early reps &amp; paper.</b> New characters follow a taper on real paper: day 1 you write them ×20, day 2 they return for ×5, day 3 one last re-exposure — then FSRS takes over. The "Tonight's paper list" card collects exactly which characters are at which day and prints a 田字格 sheet with the right number of boxes. Words you mark ✓ or ★ skip paper entirely.</p>
+      <p><b>Early reps &amp; paper.</b> New characters follow a taper on real paper: day 1 you write them ×${S.settings.writeTarget||20}, day 2 they return for ×5, day 3 one last re-exposure — then FSRS takes over. The "Tonight's paper list" card collects exactly which characters are at which day and prints a 田字格 sheet with the right number of boxes. Words you mark ✓ or ★ skip paper entirely.</p>
       <p><b>Grammar.</b> The Grammar tab holds every pattern from the Zhong Chinese lessons, each drilled five ways: fill-in-the-blank, multiple choice, build-the-sentence, finish-the-sentence, and create-your-own. Mastery dots fill as you drill.</p>
       <p><b>Daily flow.</b> ~9 new words per day by default (Settings), plus whatever is due. Miss a day? Nothing is lost — cards simply wait.</p>
     </div></details>
@@ -1165,7 +1166,7 @@ function gramPick(idx){ // fib / mc click
   gramAnswer(ok);
 }
 function gramChunk(i){
-  const q=gq.qs[gq.i];
+  const q=gq.qs[gq.i]; if(gq.state!=='ask')return;
   if(q.picked.includes(i))return;
   q.picked.push(i);
   if(q.picked.length===q.shuffled.length){
@@ -1173,7 +1174,7 @@ function gramChunk(i){
     gramAnswer(built===q.chunks.join(''));
   } else renderGram();
 }
-function gramUnchunk(k){const q=gq.qs[gq.i];q.picked.splice(k,1);renderGram();}
+function gramUnchunk(k){const q=gq.qs[gq.i];if(gq.state!=='ask')return;q.picked.splice(k,1);renderGram();}
 function gramNext(){gq.i++;gq.state='ask';gq.chosen=null;renderGram();}
 function renderGram(){
   const el=document.getElementById('vGram');
@@ -1337,7 +1338,7 @@ function takeSnapshot(){
     const n=S.hist.d.length;
     if(n&&S.hist.d[n-1]===today){if(S.hist.s[n-1]!==s){S.hist.s[n-1]=s;save();}return;}
     S.hist.d.push(today);S.hist.s.push(s);
-    if(S.hist.d.length>400){S.hist.d.shift();S.hist.s.shift();}
+    if(S.hist.d.length>180){S.hist.d.shift();S.hist.s.shift();}
     save();
   }catch(e){}
 }
@@ -1381,7 +1382,7 @@ function charModel(){
       if(st>e.stage){e.stage=st;}
       if(wordDueNow(w.id))e.due=true;
       const m=wordMem(w.id); if(m!==null)e.mem=e.mem===null?m:Math.max(e.mem,m);
-      const ma=wordMastAt(w.id); if(ma&&(!e.mastAt||ma<e.mastAt||e.mastAt===null))e.mastAt=e.mastAt?Math.max(e.mastAt,ma):ma;
+      const ma=wordMastAt(w.id); if(ma)e.mastAt=e.mastAt?Math.min(e.mastAt,ma):ma;
     }
   });
   return [...map.values()];
@@ -1838,12 +1839,12 @@ function exportData(){
 function importData(inp){
   const f=inp.files[0];if(!f)return;
   const r=new FileReader();
-  r.onload=()=>{try{const p=JSON.parse(r.result);if(!p.cards)throw 0;S=p;save();alert('Imported ✓');renderSet();badge();}catch(e){alert('That file does not look like a progress export.')}};
+  r.onload=()=>{try{const p=JSON.parse(r.result);if(!p.cards)throw 0;S=p;normalizeState();save();alert('Imported ✓');renderSet();badge();}catch(e){alert('That file does not look like a progress export.')}};
   r.readAsText(f);
 }
 
 document.addEventListener('keydown',e=>{
-  if(view!=='rev'||!cur)return;
+  if(view!=='rev'||!cur)return; if(e.repeat||e.metaKey||e.ctrlKey||e.altKey)return;
   if(e.code==='Space'&&!revealed){e.preventDefault();reveal();}
   else if(revealed&&['1','2','3','4'].includes(e.key)){grade(parseInt(e.key));}
 });
@@ -2225,7 +2226,7 @@ function snapRestore(k){
     const s=JSON.parse(store.getItem(SNAPKEY)||'{}');
     if(!s[k])return;
     if(!confirm('Restore your progress as it was on '+k+'? This replaces what is in this browser now.'))return;
-    S=JSON.parse(s[k]); save(); alert('Restored '+k); renderSet(); badge();
+    S=JSON.parse(s[k]);normalizeState(); save(); alert('Restored '+k); renderSet(); badge();
   }catch(e){alert('Could not restore that snapshot.');}
 }
 
@@ -2298,7 +2299,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 /* first real click of the session re-arms the file permission if Chrome dropped it */
 document.addEventListener('click',function armOnce(){
   if(bkHandle&&bkNeedPerm&&S.settings.autoBackup)bkGrant();
-},{capture:true});
+},{capture:true,once:true});
 
 /* restore the handle on load */
 (async()=>{
@@ -2974,7 +2975,7 @@ function fbOnRemote(r){
   if(r.device_id===DEVICE.id){SYNC.remoteAt=r.synced_at;SYNC.remoteDev=r.device;if(!SYNC.dirty)syncUI('ok');return;}
   if(SYNC.dirty){
     /* real-time clash: the other device saved while this one has unsent changes — this device's push wins (last write), offer the other side */
-    SYNC.clash={r,at:Date.now()};
+    SYNC.clash={r,at:Date.now()}; SYNC.remoteAt=Math.max(SYNC.remoteAt||0,r.synced_at||0);
     fbLogLocal('clash',r.device+' @ '+fmtT(r.synced_at));
     toast(`${esc(r.device)} also saved at ${fmtT(r.synced_at)} — ${esc(DEVICE.name)} wins`,{action:'Use '+r.device+"'s",onAction:()=>fbAdopt(r,'manual'),ms:7000});
     fbSchedulePush();
@@ -2986,12 +2987,12 @@ const LOCAL_SETTINGS=['voiceName','audioSrc','theme','lastBackup','bkName','auto
 function fbAdopt(r,how){
   let p=null; try{p=JSON.parse(r.json);}catch(e){}
   if(!p||!p.cards){SYNC.lastErr='Cloud state unreadable';syncUI('error');return;}
-  const before=JSON.stringify(S), keep={};
+  const before=JSON.stringify(S), keep={}, prevFlags={}; for(const k in (S.settings||{}))if(/^_/.test(k))prevFlags[k]=S.settings[k];
   LOCAL_SETTINGS.forEach(k=>{if(S.settings&&k in S.settings)keep[k]=S.settings[k];});
   SYNC.revert={json:before,dev:r.device,at:r.synced_at};
   SYNC.applying=true;
   try{
-    S=p; S.settings=Object.assign({},S.settings||{},keep); S.settings.modes=Object.assign({rec:true,prod:true},S.settings.modes||{});
+    S=p; S.settings=Object.assign({},S.settings||{},keep,prevFlags); S.settings.modes=Object.assign({rec:true,prod:true},S.settings.modes||{});
     S.pick=S.pick||[]; S.hard=S.hard||[]; S.log=S.log||{}; S.intro=S.intro||{}; S.hist=S.hist||{d:[],s:[]};
     try{store.setItem(KEY,JSON.stringify(S));}catch(e){}
     try{bkQueue();}catch(e){}
@@ -3023,6 +3024,7 @@ function fbConflict(r,why){
   const msg=why==='first'
     ?`The cloud already holds <b>${esc(theirs)}</b>'s progress (saved ${fmtT(r.synced_at)}), and this <b>${esc(mine)}</b> has its own. Which one should both devices use from now on?`
     :`<b>${esc(theirs)}</b> synced a newer version at ${fmtT(r.synced_at)}, but this <b>${esc(mine)}</b> has changes it never sent (last synced ${fmtT(SYNC.at)}).`;
+  SYNC.blocked=true;
   host.innerHTML=`<div class="modal-card">
     <div class="lab">Sync conflict</div>
     <div style="font-size:14px;margin-bottom:14px">${msg}</div>
@@ -3033,8 +3035,8 @@ function fbConflict(r,why){
     <div class="small muted" style="margin-top:10px">Whichever you pick becomes the cloud copy. The other is kept for one Undo in Settings → Cloud sync.</div>
   </div>`;
   host.style.display='flex';
-  document.getElementById('cfUse').onclick=()=>{host.style.display='none';fbAdopt(r,'manual');};
-  document.getElementById('cfKeep').onclick=()=>{host.style.display='none';SYNC.revert={json:r.json,dev:r.device,at:r.synced_at};SYNC.remoteAt=r.synced_at;fbPush();};
+  document.getElementById('cfUse').onclick=()=>{SYNC.blocked=false;host.style.display='none';fbAdopt(r,'manual');};
+  document.getElementById('cfKeep').onclick=()=>{SYNC.blocked=false;host.style.display='none';SYNC.revert={json:r.json,dev:r.device,at:r.synced_at};SYNC.remoteAt=r.synced_at;fbPush();};
 }
 
 /* ---- 6. push ---- */
@@ -3048,10 +3050,10 @@ async function fbPush(){
   if(SYNC.pushing){SYNC.again=true;return;}
   SYNC.pushing=true; syncUI('syncing');
   const at=Math.max(Date.now(),(SYNC.remoteAt||0)+1);
-  const f=SYNC.fb, p=fbPayload(at);
+  const f=SYNC.fb, p=fbPayload(at), gen0=SYNC.gen||0;
   try{
     await f.set(f.ref(f.db,fbPath()),p);
-    SYNC.at=at; SYNC.remoteAt=at; SYNC.remoteDev=DEVICE.name; SYNC.dirty=false; SYNC.retry=0; syncMetaSave();
+    SYNC.at=at; SYNC.remoteAt=at; SYNC.remoteDev=DEVICE.name; SYNC.dirty=(SYNC.gen||0)!==gen0; SYNC.retry=0; syncMetaSave(); if(SYNC.dirty)SYNC.again=true;
     fbLogLocal('push',Math.round(p.bytes/1024)+' KB');
     try{f.push(f.ref(f.db,'rooms/'+SYNC.code+'/sync_log'),{device:DEVICE.name,device_id:DEVICE.id,at,bytes:p.bytes,due:p.summary.due});}catch(e){}
     syncUI('ok');
@@ -3318,7 +3320,7 @@ function ringArm(root){requestAnimationFrame(()=>requestAnimationFrame(()=>{(roo
 /* ---- Today hero ---- */
 renderHome=(function(orig){return function(){orig.apply(this,arguments);try{
   const first=document.querySelector('#vHome .card'); if(!first)return;
-  const q=buildQueue(), left=q.learn.length+q.rev.length+q.fresh.length, done=todayDone(), total=done+left;
+  const q=buildQueue(), left=[...q.learn,...q.rev,...q.fresh].filter(c=>typeof laneOf!=='function'||laneOf(c)==='live').length, done=todayDone(), total=done+left;
   const frac=total?done/total:0, streak=streakCount(), hard=(S.hard||[]).length;
   const h=new Date().getHours();
   const line=left===0
@@ -3339,7 +3341,7 @@ renderHome=(function(orig){return function(){orig.apply(this,arguments);try{
         ${hard?`<span class="chip warn">${hard} hard</span>`:''}
         ${q.fresh.length?`<span class="chip">${q.fresh.length} new</span>`:''}
       </div>
-      <div style="margin-top:14px"><button class="btn big ${left?'':'ghost'}" onclick="go('${left?'rev':'lib'}')">${left?(done?'Keep going':'Start today’s cards'):'Browse the Library'}</button></div>
+      <div style="margin-top:14px"><button class="btn big ${left?'':'ghost'}" onclick="${left?'startLane(\'live\')':'go(\'lib\')'}">${left?(done?'Keep going':'Start today’s cards'):'Browse the Library'}</button></div>
     </div>`;
   countUp(first); ringArm(first);
 }catch(e){}};})(renderHome);
@@ -3657,7 +3659,7 @@ function gramGrasp(id){
   return lv;
 }
 /* migration: the current lesson and the one before it get cloze cards on first run */
-if(!S.settings._v22){S.settings._v22=1;if(S.settings.gramCards===undefined)S.settings.gramCards=true;if(!S.settings.newGramPerDay)S.settings.newGramPerDay=4;if(!S.settings.examDay)S.settings.examDay=5;
+if(!S.settings._v22){S.settings._v22=1;if(S.settings.gramCards===undefined)S.settings.gramCards=true;if(!S.settings.newGramPerDay)S.settings.newGramPerDay=4;if(!S.settings.examDay)S.settings.examDay=4;
   try{const cl=S.settings.curLesson||22;trackGram(cl);if(cl>1)trackGram(cl-1);}catch(e){} try{save();}catch(e){}}
 
 /* ---- queue: grammar cards ride along with word cards ---- */
@@ -3806,7 +3808,7 @@ function trackGramIds(ids){let n=0;ids.forEach(id=>{const gp=GP[id];if(gp&&gramC
 renderGram=(function(orig){return function(){orig.apply(this,arguments);if(gq)return;try{
   const el=document.getElementById('vGram'); const head=el.querySelector('.card');
   const n=gramTrackedCount(gramLesson), tot=gramClozableCount(gramLesson);
-  if(head){head.querySelector('.row').insertAdjacentHTML('beforeend',`<div class="row" style="gap:6px;flex-basis:100%;margin-top:8px"><span class="small muted">${n}/${tot} patterns in the review queue as cloze cards</span>${n<tot?`<button class="btn sm ghost" onclick="trackGram(${gramLesson});badge();renderGram()">+ Add ${tot-n} cloze card${tot-n>1?'s':''}</button>`:''}${n?`<button class="btn sm ghost" onclick="if(confirm('Remove this lesson\\'s grammar cards and their progress?')){untrackGram(${gramLesson});badge();renderGram();}">Remove</button>`:''}${notionLink(gramLesson,'Notion page ↗')}</div>`);}
+  const hrow=head&&head.querySelector('.row'); if(hrow){hrow.insertAdjacentHTML('beforeend',`<div class="row" style="gap:6px;flex-basis:100%;margin-top:8px"><span class="small muted">${n}/${tot} patterns in the review queue as cloze cards</span>${n<tot?`<button class="btn sm ghost" onclick="trackGram(${gramLesson});badge();renderGram()">+ Add ${tot-n} cloze card${tot-n>1?'s':''}</button>`:''}${n?`<button class="btn sm ghost" onclick="if(confirm('Remove this lesson\\'s grammar cards and their progress?')){untrackGram(${gramLesson});badge();renderGram();}">Remove</button>`:''}${notionLink(gramLesson,'Notion page ↗')}</div>`);}
   el.querySelectorAll('.gpt').forEach((g,i)=>{const p=(GRAMMAR[gramLesson]||[])[i];if(!p)return;const lv=gramGrasp(p.id);const c=S.cards[gramCid(p.id)];const dots=g.querySelector('.gdots');if(dots)dots.insertAdjacentHTML('beforebegin',`<span class="grasp s${lv}" title="${GRASP_T[lv]}${c?(c.susp?' · parked':''):' · no cloze card'}">${c?(c.susp?'parked':GRASP_T[lv]):'no card'}</span>`);
     if(c&&c.susp){const b=g.querySelector('.gh .btn');if(b)b.insertAdjacentHTML('beforebegin',`<button class="btn sm ghost" style="flex:none" onclick="event.stopPropagation();delete S.cards['${gramCid(p.id)}'].susp;save();badge();renderGram()">Un-park</button>`);}});
   el.insertAdjacentHTML('afterbegin',graspMap());
@@ -3861,7 +3863,7 @@ function planPanel(){
   const p=T[key], names=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
   let cu='';
   const sched=CATCHUP_SCHED[today]; const next=Object.keys(CATCHUP_SCHED).filter(k=>k>today).sort()[0];
-  if(sched)cu=`<div class="cu"><b>Catch-up today · ${sched.map(l=>esc(lnLabel(l))).join(' + ')}</b> <span class="small muted">${sched.length>1?'weekend block · ':''}75 min each: notes → sort → hammer → dialogue</span>${sched.map(l=>`<div class="row" style="gap:6px;margin-top:6px"><span class="small" style="min-width:52px"><b>${esc(lnLabel(l))}</b></span>${A('lib','Library',{ln:l})}${A('triage','Triage',{ln:l})}${N(notionLesson(l),'Notion ↗')}</div>`).join('')}</div>`;
+  if(sched)cu=`<div class="cu"><b>Catch-up today · ${sched.map(l=>esc(lnLabel(l))).join(' + ')}</b> <span class="small muted">${sched.length>1?'weekend block · ':''}75 min each: notes → sort → hammer → dialogue</span>${sched.map(l=>`<div class="row" style="gap:6px;margin-top:6px"><span class="small" style="min-width:52px"><b>${esc(lnLabel(l))}</b></span>${A('test','Test it',{ln:l})}${A('catchtab','Catch-up tab')}${N(notionLesson(l),'Notion ↗')}</div>`).join('')}</div>`;
   else if(next)cu=`<div class="cu small muted">No catch-up today · next: <b>${CATCHUP_SCHED[next].map(l=>esc(lnLabel(l))).join(' + ')}</b> on ${next.slice(5).replace('-','/')}</div>`;
   else cu=`<div class="cu small muted">Slow lane: 5 shaky words a day in 3-day blocks · one old lesson\u2019s 我的例句 per week</div>`;
   return `<div class="card plan"><div class="row spread" style="margin-bottom:8px"><div><div class="lab" style="margin:0">Today\u2019s plan · ${names[wd]} · ${esc(p.t)}</div><div class="small muted">${L} · 聽寫一 Mon · 聽寫二 ${names[E-1]} · 考試 <select class="vsel" style="padding:1px 4px;font-size:11.5px;max-width:none" onchange="S.settings.examDay=+this.value;save();renderHome()"><option value="4" ${E===4?'selected':''}>星期四</option><option value="5" ${E===5?'selected':''}>星期五</option></select></div></div><a class="nlink" href="${NOTION.flow}" target="_blank" rel="noopener">Workflow ↗</a></div>
@@ -4083,8 +4085,8 @@ buildQueue=(function(orig){return function(){
 renderHome=(function(orig){return function(){orig.apply(this,arguments);try{
   buildQueue(); if(!BACKLOG)return; const hero=document.querySelector('#vHome .card.hero'); if(!hero)return;
   hero.insertAdjacentHTML('afterend',`<div class="card backlog"><div class="lab">Easing back in</div>
-    <div style="font-size:14px"><b>${BACKLOG.due}</b> reviews piled up${BACKLOG.gap>=2?` over ${BACKLOG.gap} days away`:''}. Today shows <b>${BACKLOG.today}</b>: the live lesson and hard words first, then the cards you most likely still remember. New words pause until the pile is under ${Math.round((S.settings.maxRev||200)*1.25)}.</div>
-    <div class="small muted" style="margin-top:6px">This is the FSRS backlog order — clearing what you still hold before it slips beats grinding the ones already gone. Four days at this pace and the queue is normal again.</div></div>`);
+    <div style="font-size:14px"><b>${BACKLOG.due}</b> reviews piled up${BACKLOG.gap>=2?` over ${BACKLOG.gap} days away`:''}. Today shows <b>${BACKLOG.today}</b>: the live lesson and hard words first, then the cards you most likely still remember. New words pause until the pile is cleared.</div>
+    <div class="small muted" style="margin-top:6px">This is the FSRS backlog order — clearing what you still hold before it slips beats grinding the ones already gone. Keep the pace and the queue is normal again in a few days.</div></div>`);
 }catch(e){}};})(renderHome);
 
 /* ---- 3. sentence dictation ---- */
@@ -4094,7 +4096,7 @@ function startSdict(){
   if(!pool.length){toast('No sentences for that lesson yet');return;}
   drillMode='sdict';dq={qs:shuf(pool).slice(0,8),i:0,ok:0,state:'ask',chosen:null};go('drill');
 }
-function sdSpeak(){const q=dq.qs[dq.i];const r=LP.rate;LP.rate=Math.min(LP.rate,0.85);lpSpeak(q.zh);LP.rate=r;}
+function sdSpeak(){if(!dq||!dq.qs||!dq.qs[dq.i]||dq.qs[dq.i].mode!=='sdict')return;const q=dq.qs[dq.i];const r=LP.rate;LP.rate=Math.min(LP.rate,0.85);lpSpeak(q.zh);LP.rate=r;}
 function sdMark(ok){if(ok)dq.ok++;haptic(ok?'good':'again');dq.state='done';drillNext();}
 function renderSdict(el){
   const q=dq.qs[dq.i], st=dq.state;
@@ -4313,7 +4315,7 @@ function mtPanel(){
   const T=mtGet(),tot=mtStats(),m={n:tot.n,frac:tot.n?tot.m/tot.n:0,lfrac:tot.n?tot.done/tot.n:0};
   const early=WORDS.filter(w=>w.l<=8&&!isName(w)),earlyDone=early.filter(w=>MODES.some(mm=>(S.cards[cardId(w.id,mm)]||{}).mastAt)).length;
   const nextLn=T.order.length&&T.order[T.i]?lnLabel(byId[T.order[T.i]].l):lnLabel(T.lo);
-  return `<div class="card"><div class="row spread" style="margin-bottom:6px"><div><div class="lab" style="margin:0">寫字測驗 · Writing mastery test</div><div class="small muted">B1 L9 → B2 L6 · ${tot.n} words · can you write it from the English and pinyin?</div></div></div>
+  return `<div class="card"><div class="row spread" style="margin-bottom:6px"><div><div class="lab" style="margin:0">寫字測驗 · Writing mastery test</div><div class="small muted">${esc(lnLabel(T.lo))} → ${esc(lnLabel(T.hi))} · ${tot.n} words · can you write it from the English and pinyin?</div></div></div>
     <div class="tier" style="border:0;padding:6px 0"><div class="lring">${ring2(m,44,4.5)}<span>${tot.n?Math.round(tot.done/tot.n*100):0}<i>%</i></span></div>
       <div class="tier-b"><b>${tot.done?`${tot.done} tested · ★ ${tot.m} · ~ ${tot.l} · ✗ ${tot.h}`:'Not started'}</b><div class="small muted">${tot.todo?`next up: ${esc(nextLn)} · about ${Math.round(tot.todo/40)} sessions of 40 left`:'all done'}</div></div>
       <div class="tier-acts"><button class="btn sm" onclick="mtResume()">${tot.done?'Continue':'Start'}</button></div></div>
@@ -4443,7 +4445,7 @@ function renderCatch(){
   el.innerHTML=`
   <div class="card hero" style="padding:22px 24px">
     <div class="hero-ring">${ringSvg(tot.n?tot.m/tot.n:0,112,9,'')}<div class="hero-n"><b data-count="${tot.m}">0</b><span>★ of ${tot.n}</span></div></div>
-    <div class="hero-body"><div class="lab" style="margin-bottom:4px">追進度 · Catch-up · B1 L9 → B2 L6</div>
+    <div class="hero-body"><div class="lab" style="margin-bottom:4px">追進度 · Catch-up · ${esc(lnLabel(T.lo))} → ${esc(lnLabel(T.hi))}</div>
       <div class="hero-line">${L.catch.due+L.catch.fresh?`${L.catch.due} due · ${L.catch.fresh} entering today`:(tot.todo?'Nothing due · keep testing':'All clear today')}</div>
       <div class="hero-meta"><span class="chip">${tot.done} tested</span><span class="chip">~ ${tot.l} shaky</span><span class="chip warn">✗ ${tot.h}</span><span class="chip">${tot.todo} untested</span></div>
       <div class="row" style="gap:8px;margin-top:14px;flex-wrap:wrap">
@@ -4548,6 +4550,73 @@ try{badge();if(view==='home')renderHome();}catch(e){}
 
 /* a11y micro-pass: icon-only buttons announce their title; Han text is tagged zh-Hant for screen readers and font selection */
 (function(){const mo=new MutationObserver(()=>{document.querySelectorAll('button[title]:not([aria-label]),a[title]:not([aria-label])').forEach(b=>{if(!b.textContent.trim()||/^[☾☀▶↻‹›←→✓✗★!＋−]+$/.test(b.textContent.trim()))b.setAttribute('aria-label',b.title);});document.querySelectorAll('.zh:not([lang])').forEach(el=>el.setAttribute('lang','zh-Hant'));});mo.observe(document.body,{childList:true,subtree:true});})();
+
+/* ============================================================
+   v33 — audit fixes that are cleaner as a layer
+   ============================================================ */
+/* one state shape, whatever path loaded it (import, snapshot restore, cloud adopt) */
+function normalizeState(){
+  S.settings=S.settings||{}; S.settings.modes=Object.assign({rec:true,prod:true},S.settings.modes||{});
+  if(!S.settings.retention)S.settings.retention=0.9; if(!S.settings.newPerDay)S.settings.newPerDay=8; if(!S.settings.maxRev)S.settings.maxRev=300; if(!S.settings.writeTarget)S.settings.writeTarget=20;
+  S.cards=S.cards||{}; S.pick=S.pick||[]; S.hard=S.hard||[]; S.log=S.log||{}; S.intro=S.intro||{}; S.hist=S.hist||{d:[],s:[]}; S.sib=S.sib||{}; S.cf=S.cf||{}; S.gram=S.gram||{};
+}
+normalizeState();
+/* saves coalesce: many mutations in one tick → one stringify, one backup, one sync push */
+save=(function(orig){let pending=false;return function(){if(pending)return;pending=true;queueMicrotask(()=>{pending=false;try{orig();}catch(e){}});};})(save);
+SYNC.gen=0; save=(function(orig){return function(){SYNC.gen=(SYNC.gen||0)+1;return orig.apply(this,arguments);};})(save);
+/* in-browser snapshots at most every 10 minutes instead of every save */
+snapshot=(function(orig){let last=0;return function(){const n=Date.now();if(n-last<600000)return;last=n;return orig.apply(this,arguments);};})(snapshot);
+/* no cloud writes while the conflict dialog is open */
+fbSchedulePush=(function(orig){return function(){if(SYNC.blocked)return;return orig.apply(this,arguments);};})(fbSchedulePush);
+fbPush=(function(orig){return function(){if(SYNC.blocked)return;return orig.apply(this,arguments);};})(fbPush);
+/* adopting a cloud copy invalidates the queue cache */
+rerenderAfterSync=(function(orig){return function(){QV++;return orig.apply(this,arguments);};})(rerenderAfterSync);
+/* review sessions can start filtered and capped without a stray first card */
+let REV_FILTER=null, REV_CAP=0;
+startReview=function(){
+  sesReset(); rq=buildQueue(); sessionN=0;
+  if(REV_FILTER){['learn','rev','fresh'].forEach(k=>{rq[k]=rq[k].filter(REV_FILTER);});}
+  if(REV_CAP){let left=REV_CAP-rq.learn.length;rq.learn=rq.learn.slice(0,REV_CAP);rq.rev=rq.rev.slice(0,Math.max(0,left));left-=rq.rev.length;rq.fresh=rq.fresh.slice(0,Math.max(0,left));}
+  REV_FILTER=null; REV_CAP=0; nextCard();
+};
+startLane=function(k){REV_FILTER=c=>laneOf(c)===k;go('rev');};
+startCatchLesson=function(ln){REV_FILTER=c=>laneOf(c)==='catch'&&wordOf(c)&&wordOf(c).l===ln;go('rev');if(!cur){toast('Nothing due in '+lnLabel(ln)+' right now');go('catch');}};
+startQuick=function(n){REV_CAP=n;go('rev');};
+/* mastery test: a real undo stack */
+MT.stack=[];
+mtMark=(function(orig){return function(r){const T=mtGet(),wid=T.order[T.i];if(wid){MT.stack.push({wid,i:T.i,cards:JSON.parse(JSON.stringify(MODES.map(m=>S.cards[cardId(wid,m)]||null))),hard:isHard(wid),pick:(S.pick||[]).includes(wid),prev:T.res[wid]||null});if(MT.stack.length>50)MT.stack.shift();}return orig.apply(this,arguments);};})(mtMark);
+mtUndo=function(){const u=MT.stack.pop();if(!u)return;const T=mtGet();
+  MODES.forEach((m,i)=>{const c=u.cards[i];if(c)S.cards[cardId(u.wid,m)]=c;else delete S.cards[cardId(u.wid,m)];});
+  S.hard=(S.hard||[]).filter(x=>x!==u.wid);if(u.hard)S.hard.push(u.wid);
+  S.pick=(S.pick||[]).filter(x=>x!==u.wid);if(u.pick)S.pick.push(u.wid);
+  if(u.prev)T.res[u.wid]=u.prev;else delete T.res[u.wid];
+  T.i=u.i;MT.revealed=false;save();badge();mtRender();};
+/* the B1 L1–L8 row lives in the Catch-up tab now */
+renderCatch=(function(orig){return function(){orig.apply(this,arguments);try{
+  const el=document.getElementById('vCatch'),early=WORDS.filter(w=>w.l<=8&&!isName(w)),done=early.filter(w=>MODES.some(m=>(S.cards[cardId(w.id,m)]||{}).mastAt)).length;
+  const first=el.querySelector('.card.hero'); if(!first)return;
+  first.insertAdjacentHTML('afterend',`<div class="card"><div class="tier" style="border:0;padding:4px 0"><div class="lring">${ring2({n:early.length,frac:done/early.length,lfrac:done/early.length},44,4.5)}<span>${Math.round(done/early.length*100)}<i>%</i></span></div>
+    <div class="tier-b"><b>B1 L1–L8 · already owned</b><div class="small muted">${done} of ${early.length} parked as mastered · they resurface in about three months as a check</div></div>
+    <div class="tier-acts">${done<early.length?`<button class="btn sm ghost" onclick="mtOwnEarly()">Mark all mastered</button>`:''}</div></div></div>`);
+  ringArm(el);
+}catch(e){}};})(renderCatch);
+mtOwnEarly=(function(orig){return function(){orig.apply(this,arguments);try{if(view==='catch')renderCatch();}catch(e){}};})(mtOwnEarly);
+/* Today: the tier and test cards are no longer built just to be removed */
+tierPanel=function(){return '';}; mtPanel=function(){return '';};
+/* plan actions: test a lesson, open the tab */
+planAct=(function(orig){return function(k,arg){if(k==='test'){mtResume();if(arg&&arg.ln)mtJump(arg.ln);return;}if(k==='catchtab'){go('catch');return;}return orig.apply(this,arguments);};})(planAct);
+/* keyboard map: never while a drill is running, never a no-op restart of the same view */
+document.addEventListener('keydown',e=>{ if(e.defaultPrevented)return; if(KEYMAP[e.key]&&!e.metaKey&&!e.ctrlKey&&!e.altKey){const tg=e.target;if(tg&&(/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)||tg.isContentEditable))return; if((view==='drill'&&dq)||(KEYMAP[e.key]===view)||(view==='drill'&&drillMode==='mtest'))e.stopImmediatePropagation();} },true);
+/* speech + microphone never outlive the screen that started them */
+startDrill=(function(orig){return function(mode){if(mode!=='listen')try{lpStop();}catch(e){}return orig.apply(this,arguments);};})(startDrill);
+function recKill(){try{if(recState&&recState.rec&&recState.rec.state!=='inactive')recState.rec.stop();}catch(e){}}
+drillNext=(function(orig){return function(){recKill();return orig.apply(this,arguments);};})(drillNext);
+go=(function(orig){return function(v){if(v!=='drill')recKill();return orig.apply(this,arguments);};})(go);
+/* answer flash now applied after the re-render, where the buttons actually are */
+renderDrill=(function(orig){return function(){orig.apply(this,arguments);try{if(!dq||dq.state!=='done'||!animOn())return;const r=document.querySelector('#vDrill .opts button.right');const w=document.querySelector('#vDrill .opts button.wrong');if(r)r.classList.add('pop');if(w)w.classList.add('shake');}catch(e){}};})(renderDrill);
+/* audio handle table stays bounded */
+renderGram=(function(orig){return function(){if(window.AUDS&&AUDS.length>1500)window.AUDS=[];return orig.apply(this,arguments);};})(renderGram);
+try{badge();if(view==='home')renderHome();}catch(e){}
 </script>
 </body>
 </html>

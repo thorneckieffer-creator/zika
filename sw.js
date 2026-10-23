@@ -1,5 +1,5 @@
-/* 字卡 service worker — cache-first so reviews work offline (MRT-proof) */
-const VERSION = 'zika-v32';
+/* 字卡 service worker — network-first app shell with a 3.5 s fallback to cache, cache-first assets (MRT-proof) */
+const VERSION = 'zika-v33';
 const CORE = ['./', './index.html', './manifest.webmanifest', './assets/hanzi-writer.min.js', './assets/strokes.json', './assets/icon-192.png', './assets/icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -14,8 +14,10 @@ self.addEventListener('fetch', e => {
   // network-first for the app shell so updates arrive; cache-first for immutable assets (stroke data)
   if (url.pathname.endsWith('/index.html') || url.pathname.endsWith('/')) {
     e.respondWith(
-      fetch(e.request).then(r => { const cp = r.clone(); caches.open(VERSION).then(c => c.put(e.request, cp)); return r; })
-        .catch(() => caches.match(e.request))
+      Promise.race([
+        fetch(e.request).then(r => { if (r.ok) { const cp = r.clone(); caches.open(VERSION).then(c => c.put(e.request, cp)); } return r; }),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 3500))
+      ]).catch(() => caches.match(e.request).then(hit => hit || fetch(e.request)))
     );
     return;
   }
