@@ -578,6 +578,28 @@ html[data-theme="dark"] .readline .seg.unk{background:#3d2420}
 .crow.done{opacity:.55}
 @media(max-width:560px){.crow{flex-wrap:wrap}.crow .tier-acts{width:100%;justify-content:flex-start;padding-left:56px}}
 .tabs{overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+/* ---- v32 ---- */
+.lookup{display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:10px}
+.lk-cap{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut2);margin-right:2px}
+.lk{font-size:11.5px;font-weight:600;color:var(--blue);text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:3px 9px}
+.lk:hover{background:var(--tint)}
+.anatomy{margin-top:8px;display:flex;flex-direction:column;gap:6px;align-items:center}
+.arow{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;font-size:13px}
+.ahead{font-size:22px;line-height:1;margin-right:4px;display:inline-flex;flex-direction:column;align-items:center}
+.ahead i{font-style:normal;font-size:10px;color:var(--mut)}
+.apart{display:inline-flex;flex-direction:column;align-items:center;background:var(--tint);border:1px solid var(--line);border-radius:9px;padding:4px 9px;min-width:48px;line-height:1.2}
+.apart b{font-size:18px;font-weight:500}
+.apart i{font-style:normal;font-size:9.5px;color:var(--mut);white-space:nowrap;max-width:110px;overflow:hidden;text-overflow:ellipsis}
+.apart u{text-decoration:none;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin-top:2px}
+.apart.meaning{border-color:var(--acc)} .apart.meaning u{color:var(--acc)}
+.apart.sound{border-color:var(--amber)} .apart.sound u{color:var(--amber)}
+.aplus{color:var(--mut2)}
+.atype{font-size:10px;color:var(--gold);letter-spacing:.04em}
+.afam{font-size:11px;color:var(--mut);flex-basis:100%;text-align:center}
+.afam b{font-weight:500;font-size:14px}
+.kgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:13.5px}
+body.focus .mast,body.focus .tabs,body.focus .banner,body.focus .foot{display:none}
+body.focus .wrap{padding-top:14px}
 </style>
 </head>
 <body>
@@ -3179,7 +3201,7 @@ applyTheme(S.settings.theme||'auto');
 
 function haptic(kind){
   if(S.settings.haptics===false)return;
-  try{if(navigator.vibrate)navigator.vibrate(kind==='again'?[18,40,18]:kind==='done'?[10,30,10,30,30]:10);}catch(e){}
+  try{if(navigator.vibrate&&(!navigator.userActivation||navigator.userActivation.hasBeenActive))navigator.vibrate(kind==='again'?[18,40,18]:kind==='done'?[10,30,10,30,30]:10);}catch(e){}
 }
 function animOn(){return S.settings.anim!==false&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);}
 
@@ -4349,7 +4371,7 @@ function laneCounts(){
   q.learn.concat(q.rev).forEach(c=>out[laneOf(c)].due++); q.fresh.forEach(c=>out[laneOf(c)].fresh++);
   return out;
 }
-function startLane(k){startReview();if(!rq)return;['learn','rev','fresh'].forEach(x=>{rq[x]=rq[x].filter(c=>laneOf(c)===k);});nextCard();}
+function startLane(k){go('rev');if(!rq)return;['learn','rev','fresh'].forEach(x=>{rq[x]=rq[x].filter(c=>laneOf(c)===k);});nextCard();}
 function fmtDay(ms){const d=new Date(ms),t=new Date();t.setHours(0,0,0,0);const dd=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-t)/DAY);const wd=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];return dd<=0?'today':dd===1?'tomorrow':dd<7?wd:(wd+' '+(d.getMonth()+1)+'/'+d.getDate());}
 function lanePanel(){
   const L=laneCounts(), cl=S.settings.curLesson||26, sec=c=>Math.max(1,Math.round(c*8/60));
@@ -4445,6 +4467,83 @@ renderHome=(function(orig){return function(){orig.apply(this,arguments);try{[...
   const lane=[...document.querySelectorAll('#vHome .lane')].find(x=>/Catch-up/.test(x.textContent)); if(lane){const b=lane.querySelector('.btn');if(b){b.textContent='Open';b.disabled=false;b.className='btn sm ghost';b.onclick=()=>go('catch');}}
 }catch(e){}};})(renderHome);
 /* lane start from the Today card keeps working for live + maintenance; refresh badges */
+try{badge();if(view==='home')renderHome();}catch(e){}
+
+/* ============================================================
+   v32 — deep pass: queue cache, character anatomy, external
+   lookups (萌典 · MDBG · Pleco · Skritter), keyboard navigation,
+   focus mode, week-over-week stat.
+   ============================================================ */
+/* ---- A. one queue build per paint ---- */
+let QV=0, QCACHE=null;
+save=(function(orig){return function(){QV++;return orig.apply(this,arguments);};})(save);
+buildQueue=(function(orig){return function(){
+  const now=Date.now();
+  if(QCACHE&&QCACHE.v===QV&&now-QCACHE.t<400){const q=QCACHE.q;return {learn:q.learn.slice(),rev:q.rev.slice(),fresh:q.fresh.slice()};}
+  const q=orig.apply(this,arguments); QCACHE={v:QV,t:now,q:{learn:q.learn.slice(),rev:q.rev.slice(),fresh:q.fresh.slice()}};
+  return q;
+};})(buildQueue);
+/* ---- B. lookups ---- */
+function isAndroidUA(){return /Android/.test(navigator.userAgent);}
+function lookupRow(text){
+  const t=String(text).split('（')[0].trim(); if(!t)return '';
+  const enc=encodeURIComponent(t), mobile=(typeof isIOS==='function'&&isIOS())||isAndroidUA();
+  const a=(href,label,title)=>`<a class="lk" href="${href}" target="_blank" rel="noopener" title="${title||''}" onclick="event.stopPropagation()">${label}</a>`;
+  return `<div class="lookup"><span class="lk-cap">look up</span>
+    ${a('https://www.moedict.tw/'+enc,'萌典','教育部國語辭典 — Taiwan, traditional, stroke order')}
+    ${a('https://www.mdbg.net/chinese/dictionary?page=worddict&wdrst=1&wdqb='+enc,'MDBG','CC-CEDICT with character decomposition')}
+    ${mobile?a('plecoapi://x-callback-url/s?q='+enc,'Pleco','opens the Pleco app'):''}
+    <a class="lk" href="https://skritter.com/" target="_blank" rel="noopener" title="copies the word, then opens Skritter — paste it into Add Words" onclick="event.stopPropagation();try{navigator.clipboard&&navigator.clipboard.writeText('${t.replace(/'/g,'')}');toast('${t.replace(/'/g,'')} copied — paste it into Skritter');}catch(e){}">Skritter</a>
+  </div>`;
+}
+/* ---- C. anatomy: meaning part + sound part, with the sound part's own reading ---- */
+function anatomyHtml(word){
+  if(S.settings.showComp===false)return '';
+  const chars=[...String(word).split('（')[0]].filter(c=>/\p{Script=Han}/u.test(c));
+  const rows=chars.map(ch=>{
+    const e=COMPONENTS[ch]; if(!e||!(e.d||[]).length)return '';
+    const part=c=>{const i=COMPONENTS[c]||{};const role=c===e.s?'meaning':c===e.ph?'sound':'';return `<span class="apart ${role}"><b class="zh">${esc(c)}</b><i>${esc(i.p||'')}${i.g?(i.p?' · ':'')+esc(i.g.split(',')[0]):''}</i>${role?`<u>${role}</u>`:''}</span>`;};
+    const fam=e.ph?BCHARS.filter(c2=>c2!==ch&&(COMPONENTS[c2]||{}).ph===e.ph).slice(0,6):[];
+    return `<div class="arow"><span class="ahead zh">${esc(ch)}<i>${esc(e.p||'')}</i></span>${e.d.map(part).join('<span class="aplus">＋</span>')}
+      ${e.t&&ETYPE[e.t]?`<span class="atype">${esc(ETYPE[e.t])}</span>`:''}
+      ${fam.length?`<span class="afam">same sound part: ${fam.map(c=>`<b class="zh">${esc(c)}</b>`).join(' ')}</span>`:''}</div>`;
+  }).filter(Boolean);
+  return rows.length?`<div class="anatomy">${rows.join('')}</div>`:'';
+}
+compLines=(function(orig){return function(word){return anatomyHtml(word);};})(compLines);
+/* card backs and the mastery-test reveal get the lookup row */
+renderRev=(function(orig){return function(){orig.apply(this,arguments);try{if(!cur||isGram(cur)||!revealed)return;const st=document.querySelector('#vRev .stage');if(st&&!st.querySelector('.lookup'))st.insertAdjacentHTML('beforeend',lookupRow(wordOf(cur).t));}catch(e){}};})(renderRev);
+mtRender=(function(orig){return function(){orig.apply(this,arguments);try{if(!MT.revealed)return;const T=mtGet(),wid=T.order[T.i];const st=document.querySelector('#vDrill .stage');if(wid&&st&&!st.querySelector('.lookup'))st.insertAdjacentHTML('beforeend',lookupRow(byId[wid].t));}catch(e){}};})(mtRender);
+renderBrain=(function(orig){return function(){orig.apply(this,arguments);try{const d=document.querySelector('#vBrain .detail .body');if(d&&brainSel&&!d.querySelector('.lookup')){const t=brainSel.type==='word'?(byId[brainSel.id]||{}).t:brainSel.id;if(t)d.insertAdjacentHTML('beforeend',lookupRow(t));}}catch(e){}};})(renderBrain);
+/* ---- D. keyboard: letters jump tabs, ? shows the map ---- */
+const KEYMAP={t:'home',r:'rev',d:'drill',c:'catch',g:'gram',b:'brain',l:'lib',s:'set'};
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey)return; const tg=e.target; if(tg&&(/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)||tg.isContentEditable))return;
+  if(e.key==='?'){e.preventDefault();toggleKeyHelp();return;}
+  if(e.key==='Escape'){const h=document.getElementById('keyHelp');if(h&&h.style.display!=='none'){h.style.display='none';return;}if(document.body.classList.contains('focus')){document.body.classList.remove('focus');return;}}
+  if(e.key==='f'&&view==='rev'){e.preventDefault();document.body.classList.toggle('focus');return;}
+  const v=KEYMAP[e.key]; if(v&&!e.shiftKey){e.preventDefault();go(v);}
+});
+function toggleKeyHelp(){
+  let h=document.getElementById('keyHelp');
+  if(!h){h=document.createElement('div');h.id='keyHelp';h.className='modal';h.onclick=ev=>{if(ev.target===h)h.style.display='none';};document.body.appendChild(h);}
+  if(h.style.display==='flex'){h.style.display='none';return;}
+  h.innerHTML=`<div class="modal-card"><div class="lab">Keyboard</div>
+    <div class="kgrid">
+      <div><kbd>t</kbd> Today</div><div><kbd>r</kbd> Review</div><div><kbd>d</kbd> Drill</div><div><kbd>c</kbd> Catch-up</div>
+      <div><kbd>g</kbd> Grammar</div><div><kbd>b</kbd> Brain</div><div><kbd>l</kbd> Library</div><div><kbd>s</kbd> Settings</div>
+      <div><kbd>space</kbd> reveal</div><div><kbd>1</kbd>–<kbd>4</kbd> grade</div><div><kbd>f</kbd> focus mode in review</div><div><kbd>esc</kbd> close</div>
+      <div><kbd>1</kbd>–<kbd>3</kbd> test: couldn’t · shaky · wrote it</div><div><kbd>?</kbd> this card</div>
+    </div></div>`;
+  h.style.display='flex';
+}
+go=(function(orig){return function(v){if(v!=='rev')document.body.classList.remove('focus');return orig.apply(this,arguments);};})(go);
+renderRev=(function(orig){return function(){orig.apply(this,arguments);try{const row=document.querySelector('#vRev .srow');if(row&&!row.querySelector('.focuslink'))row.insertAdjacentHTML('beforeend',`<span class="link small focuslink" onclick="document.body.classList.toggle('focus')" title="hide the header and tabs (f)">${document.body.classList.contains('focus')?'exit focus':'focus'}</span>`);}catch(e){}};})(renderRev);
+/* ---- E. this week vs last week ---- */
+function weekCards(offset){const d=new Date();d.setHours(0,0,0,0);const dow=(d.getDay()+6)%7;const start=new Date(d);start.setDate(d.getDate()-dow-7*offset);let n=0;for(let i=0;i<7;i++){const k=dkey(new Date(start.getTime()+i*DAY));const l=S.log[k];if(l)n+=(l.rev||0)+(l.new||0);}return n;}
+renderHome=(function(orig){return function(){orig.apply(this,arguments);try{const st=document.querySelector('#vHome .stats');if(st&&!st.querySelector('.wk')){const a=weekCards(0),b=weekCards(1);st.insertAdjacentHTML('beforeend',`<div class="stat wk"><div class="n">${a}<span class="d"> / ${b}</span></div><div class="l">this week / last</div></div>`);}}catch(e){}};})(renderHome);
+/* ---- F. settings: a keyboard hint ---- */
+renderSet=(function(orig){return function(){orig.apply(this,arguments);try{document.getElementById('vSet').insertAdjacentHTML('beforeend',`<div class="small muted" style="text-align:center;margin:4px 0 10px">Press <kbd>?</kbd> anywhere for keyboard shortcuts · look-up links on every card back: 萌典 · MDBG · Pleco · Skritter</div>`);}catch(e){}};})(renderSet);
 try{badge();if(view==='home')renderHome();}catch(e){}
 </script>
 </body>
