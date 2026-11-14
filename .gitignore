@@ -9,3 +9,7 @@ zika-v17/
 
 # Voice samples for listening (not shipped)
 voice-samples/
+
+# Python bytecode
+__pycache__/
+*.pyc
