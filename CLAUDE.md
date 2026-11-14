@@ -20,7 +20,7 @@ The work divides into four areas. Each has its own notes; read the one you are a
 
 | Area | Notes | Covers |
 |---|---|---|
-| **App** | [docs/architecture.md](docs/architecture.md) | The shell, scheduler, drills, sync and state in `index.html`; `sw.js`; `manifest.webmanifest`. |
+| **App** | [docs/architecture.md](docs/architecture.md), [docs/design.md](docs/design.md), [docs/multi-user.md](docs/multi-user.md) | The shell, scheduler, drills, My words, sync and state in `index.html`; `sw.js`; `manifest.webmanifest`. How it should look; what opening it to other users takes. |
 | **Content** | [docs/content.md](docs/content.md) | Books, words, grammar and characters: the data lines in `index.html`, `assets/strokes.json`, the importers, `tools/content/`. |
 | **Voice** | [docs/voice.md](docs/voice.md) | Voice packs and how they are built: `assets/audio-*`, `voice.html`, the pack builders, the audio functions in `index.html`. |
 | **Release and repo** | [docs/releasing.md](docs/releasing.md) | The release check, GitHub and Pages, these notes, the README. |
@@ -63,6 +63,7 @@ Open work for every area is in one list: [docs/roadmap.md](docs/roadmap.md).
   ```
 
   The rest is in [docs/architecture.md](docs/architecture.md).
+- New features do not add another wrapper layer. They go in the second script block (or a block of their own) as prefixed functions, and their styles use the colour variables ([docs/design.md](docs/design.md)).
 - Everything on screen is book by book ("Book 2 · Lesson 7"). The internal lesson index (`w.l`) is a private key: never print it.
 
 ## Releasing

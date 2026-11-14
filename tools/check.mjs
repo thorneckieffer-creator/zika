@@ -15,15 +15,15 @@ const fail = m => problems.push(m), note = m => notes.push(m);
 const html = read('index.html');
 const lines = html.split('\n');
 
-/* 1. the inline script parses */
-const m = html.match(/<script>\n([\s\S]*)<\/script>\s*<\/body>/);
-if (!m) fail('index.html: could not find the inline <script>');
-else {
-  const tmp = join(mkdtempSync(join(tmpdir(), 'zika-')), 'app.js');
-  writeFileSync(tmp, m[1]);
+/* 1. every inline script block parses (the app is several blocks that share one global scope) */
+const blocks = [...html.matchAll(/<script>\n([\s\S]*?)<\/script>/g)].map(x => x[1]);
+if (!blocks.length) fail('index.html: could not find the inline <script>');
+blocks.forEach((src, i) => {
+  const tmp = join(mkdtempSync(join(tmpdir(), 'zika-')), `app${i}.js`);
+  writeFileSync(tmp, src);
   try { execFileSync(process.execPath, ['--check', tmp], { stdio: 'pipe' }); }
-  catch (e) { fail('index.html: script does not parse\n' + String(e.stderr || e.message).split('\n').slice(0, 6).join('\n')); }
-}
+  catch (e) { fail(`index.html: script block ${i + 1} does not parse\n` + String(e.stderr || e.message).split('\n').slice(0, 6).join('\n')); }
+});
 
 /* 2. versions agree */
 const appV = (html.match(/const APP_VERSION\s*=\s*(\d+)/) || [])[1];

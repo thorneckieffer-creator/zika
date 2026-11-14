@@ -19,6 +19,13 @@ One list of what is not done, by area. Take an item off when it ships; add one w
 
 ## App
 
+Next for the product:
+
+- **Other users.** The plan, in order, is in [multi-user.md](multi-user.md): a clean first run, accounts, storage per person, sync by card.
+- **Split `index.html` into files.** Data (`WORDS`, `GRAMMAR`, `COMPONENTS`, `READINGS`) into JSON under `assets/`, styles and each feature into their own file, all fetched with a `?v=` that matches the version and pre-cached by the service worker. Do it after an exam, never before one, and move one piece per release.
+- **My words:** share a deck with someone else; count its reviews toward the streak; a dictionary lookup to fill the meaning.
+- **A new app icon.** The Home Screen icon is still the red seal; the app itself now uses the plain mark.
+
 Behaviour gaps, not yet fixed:
 
 - Heteronyms still share one clip in the 曉臻 pack (得 de/děi, 了 le/liǎo). The app has looked for a per-reading clip (`字@pinyin`) since v42, but only packs from the BreezyVoice builder contain them.

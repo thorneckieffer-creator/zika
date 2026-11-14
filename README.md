@@ -11,6 +11,7 @@ It is a single-page progressive web app with no build step and no server of its 
 | Area | What you get |
 |---|---|
 | **Scheduling** | FSRS-5. Two cards per word (recognise, and recall/write) plus grammar cloze cards, with a daily intake per lane. |
+| **My words** | A personal deck for vocabulary met outside class: add one word or paste a list, pinyin is filled in, and it is scheduled like the course but kept apart from it. |
 | **Three lanes** | *This week* (the live lesson), *Catch-up* (words the writing test flagged, plus the hard list) and *Maintenance* (everything else). |
 | **Writing** | Paper-first. The writing test shows English and pinyin, you write the character on paper, then grade yourself. Missed words go to a printable 田字格 sheet that tapers ×20 → ×5 → ×1. |
 | **Exam prep (大考試)** | A lesson range and a date. Every word is sorted into ✓ / ~ / ✗ piles that can be re-tested, dictated, reviewed or printed. |
@@ -18,6 +19,7 @@ It is a single-page progressive web app with no build step and no server of its 
 | **Characters** | Stroke-order animation, component breakdown (meaning part and sound part), phonetic series, and a 萌典 panel with radical, stroke count, 注音 and definition. |
 | **Audio** | Bundled Taiwan neural voices for every word and every character (曉臻, female; 雲哲, male, when its pack is installed), with the system voice as fallback. |
 | **Brain** | A map of every character you know, by lesson and by word type, with a time-lapse. |
+| **Yours** | Set your name, book and lesson in one place; light, dark or automatic; six accent colours; study characters in sans, 明體 or 楷體. |
 | **Notion** | Deep links to the lesson pages, and a confidence export (Hard / Learning / Know / Mastered) for the Characters table. |
 
 ## Install
@@ -107,6 +109,8 @@ A release is a commit on `main`; GitHub Pages deploys it within a couple of minu
 | Notes | What is in them |
 |---|---|
 | [docs/architecture.md](docs/architecture.md) | How `index.html` is layered, the data schemas, scheduler, sync, audio playback. |
+| [docs/design.md](docs/design.md) | How the app should look and feel, and what those choices rest on. |
+| [docs/multi-user.md](docs/multi-user.md) | What it takes to open the app to other learners. |
 | [docs/content.md](docs/content.md) | Adding a book: where the word lists come from and what may be copied. |
 | [docs/voice.md](docs/voice.md) | Voice packs and the two builders. |
 | [docs/releasing.md](docs/releasing.md) | The release steps, GitHub Pages, and working in two sessions at once. |

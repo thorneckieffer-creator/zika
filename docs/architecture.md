@@ -6,6 +6,10 @@ The app area: `index.html`, `sw.js`, `manifest.webmanifest`. Read this before ch
 
 Three lines of `index.html` are enormous single-line JSON blobs (`const WORDS`, `const GRAMMAR`, `const COMPONENTS`) and one is the minified QR library. Never read them whole; grep with `cut -c1-300` and parse them with a script.
 
+## Script blocks
+
+`index.html` holds two inline scripts that share one global scope. The first is everything up to v43, layer on layer. The second, added in v44, holds the shell (`sh*`: top bar, tab icons, the look, *Where you are*, the Today layout) and My words (`my*`). New features go in the second block, or in a new block of their own, as plain functions with a prefix. `tools/check.mjs` syntax-checks every block.
+
 ## Layers
 
 `index.html` grew version by version. Each version appended a block that wraps or replaces earlier functions:
@@ -30,14 +34,30 @@ New work should edit a function where it is defined when that is practical, and 
 - `WORDS` — `{id, l, t, p, pos, m, s?}`: lesson, traditional, pinyin, part of speech, meaning, simplified if different.
 - `GRAMMAR` — `{ "<lesson>": [{id, t, e, pat, tgt, alt, s:[{zh, en, py}], …}] }`.
 - `COMPONENTS` — per character `{p, g, d:[parts], t:type, s:semantic, ph:phonetic}`.
-- `S` (state) — `cards`, `settings`, `log` (per-day counts), `intro`/`cintro`/`gintro` (per-day intake by lane), `hard`, `pick`, `sib`, `hist`, `mtest` (writing-test results `m`/`l`/`h`), `exam`, `gram`, `cf`, `conf`, `listen`.
+- `S` (state) — `my` (the personal deck, see My words), `cards`, `settings`, `log` (per-day counts), `intro`/`cintro`/`gintro` (per-day intake by lane), `hard`, `pick`, `sib`, `hist`, `mtest` (writing-test results `m`/`l`/`h`), `exam`, `gram`, `cf`, `conf`, `listen`.
 - A card: `{st:'learn'|'rev'|'relearn', S, D, due, last, reps, lapses, days, known?, susp?, leech?, mastAt?}`. A card object with no `st` is queued but not started.
 
 ## App shell
 
+How it should look and why is in [design.md](design.md). The pieces:
+
+- `.mast` is the sticky top bar; `shLook()` applies the accent (`html[data-accent]`) and the character face (`html[data-zh]`) from `S.settings.accent` and `S.settings.zhFont`, and writes `zika_look` to localStorage so a one-line script in `<head>` can paint the right theme before the deck is parsed.
+- `shHome()` runs after every `renderHome` layer: it adds the greeting, the course chip and the two deck tiles, and moves every card below the lanes into one `<details class="fold">` (open or closed is remembered per device in `zika_home_more`).
+- `shCourse()` is the *Where you are* sheet: `shSetLesson()` sets `S.settings.curLesson`; the name is `S.settings.userName`.
+- Tabs created after start-up get their icon from `TAB_ICON` through `shTabIcons()`.
+
 - Phones (≤700 px): the tab bar is fixed to the bottom — Today, Review, Drill, 大考試, More. The other tabs carry class `t2` and sit behind More. Tablets and desktop keep the top bar.
 - The page never zooms (`maximum-scale=1`, `touch-action: pan-x pan-y`): it is an app, not a document.
 - Refresh: the ↻ button, pull-down inside the Home Screen app, and `checkForUpdate()` when the app returns to the foreground (it compares `sw.js` on the server with `APP_VERSION`).
+
+## My words
+
+A personal deck for words outside class, deliberately separate from the course: it never appears in `S.cards`, the lanes, the Library or the Brain, and it does not count toward the course's daily numbers.
+
+- State: `S.my = {n, w:{u1:{t,p,m,at}}, c:{'u1:rec':card,'u1:prod':card}, intro:{day:n}, log:{day:n}, perDay, both}`. It is part of `S`, so it syncs and backs up with the deck. Always reach it through `myDeck()`, which creates what is missing (a deck adopted from an older device has no `S.my`).
+- Ids are `u` + a counter that only goes up; a deleted word's id is never reused.
+- `myQueue()` → `{learn, rev, fresh, ahead, waiting}`; `myRate(cid, grade)` is the same FSRS-5 arithmetic as `rate()` without the early-drill cap and without touching `S.log` or `S.intro`.
+- `myGuessPy()` fills pinyin from the course word if there is one, otherwise character by character from `COMPONENTS`. `myParse()` reads a pasted list.
 
 ## Scheduler
 

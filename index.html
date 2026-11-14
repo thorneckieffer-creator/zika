@@ -5,41 +5,55 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>字卡 · 當代中文</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#faf9f7">
+<meta name="theme-color" content="#f6f7f9">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="字卡">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
-:root{--cjk:"Songti TC","Noto Serif TC","Songti SC","STSong","PMingLiU","MingLiU",serif;
-  /* day — rice paper, tea, a little lantern red */
-  --bg:#f3edde; --panel:#fbf7eb; --tint:#ece4d0; --ink:#2a241c; --mut:#94886e; --mut2:#c6bba0;
-  --line:#e3d9c1; --line2:#d3c7aa;
-  --acc:#25695a; --accT:#e2ece4;
-  --lant:#b23a2a; --red:#b23a2a; --amber:#a8681b; --blue:#33628f; --plum:#7c5296; --gold:#96712c;
-  --t1:#b23a2a; --t2:#2e7d54; --t3:#33628f; --t4:#7c5296; --t0:#94886e;
-  --sealFg:#f8efdf;
-  --s0bg:#eae2cd; --s0fg:#a99d80; --s1bg:#dcebe7; --s1fg:#2a241c; --s2bg:#7fbfb3; --s2fg:#123f38;
-  --s3bg:#2f9184; --s3fg:#fff; --s4bg:#0b5d54; --s4fg:#fff;
-  --padbg:#fffdf6; --ghost:rgba(42,36,28,.08);
+:root{
+  /* study characters: the face is a setting (html[data-zh]) — sans by default, 明體 or 楷體 on request */
+  --cjk:"PingFang TC","Noto Sans TC","Heiti TC","Microsoft JhengHei",sans-serif;
+  --ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI","Inter",Roboto,"Helvetica Neue",Arial,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  /* light — neutral surfaces, one brand colour for actions, green kept for "learned / correct" */
+  --bg:#f6f7f9; --panel:#ffffff; --tint:#f0f2f5; --ink:#0d1117; --mut:#667085; --mut2:#b0b7c3;
+  --line:#e7e9ee; --line2:#d5d9e0;
+  --brand:#2563eb; --brandInk:#2563eb; --brandFg:#ffffff; --brandT:#e8effd;
+  --acc:#0f8a5f; --accT:#e3f4ec;
+  --lant:#d92d20; --red:#d92d20; --amber:#b54708; --blue:#1d6fd6; --plum:#7a4fd6; --gold:#a16207;
+  --t1:#d92d20; --t2:#0f8a5f; --t3:#1d6fd6; --t4:#7a4fd6; --t0:#8a93a3;
+  --sealFg:#ffffff;
+  --s0bg:#eceff3; --s0fg:#98a2b3; --s1bg:#d7f0e4; --s1fg:#0d1117; --s2bg:#8fd3b6; --s2fg:#0b3d2c;
+  --s3bg:#2e9e77; --s3fg:#fff; --s4bg:#0b6b4b; --s4fg:#fff;
+  --padbg:#ffffff; --ghost:rgba(13,17,23,.07);
 }
 html[data-theme="dark"]{
-  /* night — night-market ink, lantern neon, warm paper text */
-  --bg:#131519; --panel:#1d2026; --tint:#262a31; --ink:#e9e2d1; --mut:#8f897a; --mut2:#555b64;
-  --line:#2a2e36; --line2:#3b414c;
-  --acc:#5cb3a0; --accT:#20322c;
-  --lant:#e8604a; --red:#e8604a; --amber:#d9a05b; --blue:#7aa9dc; --plum:#b993dd; --gold:#d9a05b;
-  --t1:#e57862; --t2:#66bd8b; --t3:#7aa9dc; --t4:#b993dd; --t0:#8f8a7d;
-  --sealFg:#f8efdf;
-  --s0bg:#272a30; --s0fg:#6c7078; --s1bg:#254139; --s1fg:#bcd9d0; --s2bg:#357c6d; --s2fg:#d9f0e9;
-  --s3bg:#5cb3a0; --s3fg:#0f2b25; --s4bg:#a5e6d6; --s4fg:#113129;
-  --padbg:#23262c; --ghost:rgba(233,226,209,.09);
+  --bg:#0b0d10; --panel:#15181d; --tint:#1e2229; --ink:#eceef2; --mut:#8b93a1; --mut2:#525a67;
+  --line:#23272f; --line2:#343a45;
+  --brand:#2f6bff; --brandInk:#7ea6ff; --brandFg:#ffffff; --brandT:#16233f;
+  --acc:#3ecf9a; --accT:#10291f;
+  --lant:#ff6b5e; --red:#ff6b5e; --amber:#f0a94b; --blue:#6aa9ff; --plum:#b08cff; --gold:#e3b341;
+  --t1:#ff7a6e; --t2:#4fd1a1; --t3:#6aa9ff; --t4:#b08cff; --t0:#8b93a1;
+  --sealFg:#ffffff;
+  --s0bg:#1c2027; --s0fg:#5d6573; --s1bg:#143526; --s1fg:#bfe8d6; --s2bg:#1f6b4f; --s2fg:#dff5ec;
+  --s3bg:#3ecf9a; --s3fg:#06241a; --s4bg:#a6f0d3; --s4fg:#06241a;
+  --padbg:#1a1d23; --ghost:rgba(236,238,242,.09);
 }
-html{transition:background .25s}
-body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.045;mix-blend-mode:multiply;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
-html[data-theme="dark"] body::after{mix-blend-mode:screen;opacity:.05}
+/* accent colour (Settings → Look & feel) */
+html[data-accent="green"]{--brand:#0b8457;--brandInk:#0b8457;--brandT:#e1f3ea}
+html[data-accent="violet"]{--brand:#6d4aff;--brandInk:#6d4aff;--brandT:#eeeaff}
+html[data-accent="rose"]{--brand:#d6336c;--brandInk:#d6336c;--brandT:#fbe7ee}
+html[data-accent="orange"]{--brand:#d9480f;--brandInk:#d9480f;--brandT:#fdebe1}
+html[data-accent="graphite"]{--brand:#0d1117;--brandInk:#0d1117;--brandT:#e9ebef}
+html[data-theme="dark"][data-accent="green"]{--brand:#0e9f6e;--brandInk:#4fd1a1;--brandT:#10291f}
+html[data-theme="dark"][data-accent="violet"]{--brand:#7c5cff;--brandInk:#b3a1ff;--brandT:#221b45}
+html[data-theme="dark"][data-accent="rose"]{--brand:#e8477a;--brandInk:#ff8fb1;--brandT:#3a1624}
+html[data-theme="dark"][data-accent="orange"]{--brand:#f06a1d;--brandInk:#ffa268;--brandT:#3a2010}
+html[data-theme="dark"][data-accent="graphite"]{--brand:#eceef2;--brandInk:#eceef2;--brandFg:#0b0d10;--brandT:#262a31}
+html[data-zh="song"]{--cjk:"Songti TC","Noto Serif TC","Songti SC","STSong","PMingLiU","MingLiU",serif}
+html[data-zh="kai"]{--cjk:"Kaiti TC","BiauKai","DFKai-SB","Kaiti SC","STKaiti","Noto Serif TC",serif}
+html{transition:none}
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
 body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Inter",Roboto,"Helvetica Neue",Arial,var(--cjk);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
@@ -664,16 +678,189 @@ html{-webkit-tap-highlight-color:transparent;touch-action:pan-x pan-y}   /* an a
   #toastHost{bottom:calc(78px + env(safe-area-inset-bottom))}
   body.focus .wrap{padding-bottom:40px}
 }
+/* ============================================================
+   v44 — clean shell. Neutral surfaces, one brand colour, system
+   type, a slim app bar and an icon tab bar. Everything above
+   keeps working through the same variables; this block restates
+   the pieces that carried the old paper-and-seal look.
+   ============================================================ */
+body{font-family:var(--ui);font-size:15px;line-height:1.5;letter-spacing:-.003em}
+.wrap{padding-top:0}
+@supports(padding:max(0px)){.wrap{padding-top:0}}
+/* ---- app bar ---- */
+.mast{position:sticky;top:0;z-index:850;display:flex;align-items:center;gap:8px;text-align:left;margin:0 -18px 6px;
+  padding:calc(env(safe-area-inset-top) + 10px) 18px 10px;background:var(--bg)}
+.brand{display:inline-flex;align-items:center;gap:9px;border:0;background:none;color:var(--ink);cursor:pointer;padding:2px 4px 2px 0;font:inherit}
+.brand .logo{width:30px;height:30px;border-radius:9px;background:var(--brand);color:var(--brandFg);display:flex;align-items:center;justify-content:center;
+  font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;font-size:17px;font-weight:600;line-height:1}
+.brand .bname{font-size:17px;font-weight:700;letter-spacing:-.01em}
+.mast .grow{flex:1;order:1}
+.mast .eng,.mast .greet,.seal{display:none}
+.tbtn,.tbtn.rf{position:static;order:3;width:36px;height:36px;border:0;background:transparent;color:var(--mut);border-radius:10px;font-size:0;flex:none}
+.tbtn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tbtn:hover{background:var(--tint);color:var(--ink)}
+.syncpill{position:static;order:2;height:32px;border:0;background:var(--tint);border-radius:99px;flex:none}
+.syncpill.quiet{opacity:1;background:transparent}
+@media(max-width:560px){.syncpill{padding:0 10px}}
+/* ---- tabs: a quiet text row on tablet and desktop ---- */
+.tabs button{font-size:14px;font-weight:600;letter-spacing:0;color:var(--mut)}
+.tabs button .ti{display:none}
+.tabs button.on{color:var(--ink)}
+.tabs button.on::after{background:var(--brand);height:2px;animation:none}
+.tabs .b{background:var(--brand);color:var(--brandFg);font-size:10.5px}
+.tabs .b.zero{display:none}
+#setBtn{display:none}
+@media(min-width:701px){
+  .tabs{position:sticky;top:calc(env(safe-area-inset-top) + 56px);z-index:840;background:var(--bg);border-bottom:1px solid var(--line);gap:24px;margin-bottom:22px}
+  .tabs button{padding:10px 1px 12px}
+  /* Settings is the gear in the top bar on wide screens, so the row holds only places you study in */
+  .tabs #tabSet{display:none}
+  #setBtn{display:flex}
+  #setBtn.on{background:var(--tint);color:var(--ink)}
+}
+/* ---- phones: icon bar ---- */
+@media(max-width:700px){
+  .tabs{background:var(--panel);border-top:1px solid var(--line);box-shadow:none;padding:4px 4px calc(4px + env(safe-area-inset-bottom));gap:0}
+  .tabs button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px 5px;font-size:10.5px;font-weight:600;border-radius:10px;position:relative;color:var(--mut)}
+  .tabs button .ti{display:block;width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .tabs button.on{background:transparent;color:var(--brandInk)}
+  .tabs #tabMore{display:flex}
+  .tabs .b{position:absolute;top:2px;left:calc(50% + 6px);margin:0;padding:0 5px;min-width:16px;line-height:16px;font-size:10px;text-align:center}
+  .tabs button.t2{display:none;flex-direction:row;justify-content:flex-start;gap:10px;flex:1 1 44%;padding:13px 14px;margin:0 3px 6px!important;font-size:14px;
+    background:var(--tint);border:0;color:var(--ink);border-radius:12px}
+  .tabs.more button.t2{display:flex}
+  .tabs.more button.t2.on{background:var(--brandT);color:var(--brandInk)}
+  .tabs button.t2 .b{position:static;margin-left:auto}
+  .tabs.more{padding-top:12px;border-radius:18px 18px 0 0;box-shadow:0 -18px 40px rgba(0,0,0,.14)}
+}
+/* ---- surfaces ---- */
+.card{border-radius:16px;padding:20px;border:1px solid var(--line);box-shadow:none;margin-bottom:12px}
+.lab{font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--mut);margin-bottom:10px}
+.lab::first-letter{text-transform:uppercase}
+.btn{background:var(--brand);border-color:var(--brand);color:var(--brandFg);border-radius:12px;font-weight:600}
+.btn.ghost{background:var(--tint);border-color:var(--tint);color:var(--ink)}
+.btn.ghost:hover{background:var(--line)}
+.btn.sm{border-radius:9px}
+.btn.big{border-radius:14px;padding:15px;font-size:16px}
+.btn.big:not(.ghost):not(:disabled),.btn.big:not(.ghost):not(:disabled):hover{box-shadow:none;transform:none}
+.btn.big:not(.ghost):not(:disabled):hover{opacity:.92}
+.link{color:var(--brandInk)}
+.lesson:hover,.dcard:hover,.gpt:hover,.ctile:hover,.cftile:hover,.lmini:hover,.pact:hover,.grades button:hover{transform:none;box-shadow:none}
+.stage{box-shadow:none;border-radius:20px}
+.card.hero{background:var(--panel);padding:22px}
+.card.hero::before{display:none}
+.ring .fg{stroke:var(--brand)}
+.ring .fg.soft{stroke:var(--brand);opacity:.3}
+.ring.full .fg,.ring.r2.full .fg:not(.soft){stroke:var(--acc);filter:none}
+.hero-line{font-size:19px;font-weight:700;letter-spacing:-.015em}
+.chip{background:var(--tint);border-color:transparent;color:var(--mut)}
+.chip.hot{background:#fff1dc;color:var(--amber);animation:none}
+html[data-theme="dark"] .chip.hot{background:#33260f}
+.sbar i{background:var(--brand)}
+.banner{background:#fff6e5;border-color:#f6e2b8;color:#8a5a00}
+.modal{background:rgba(9,11,15,.5)}
+.modal-card{border:0;border-radius:20px;box-shadow:0 24px 70px rgba(0,0,0,.28)}
+.tgl.on,.filters button.on,.segbar button.on,.wbtn.on{background:var(--brand);border-color:var(--brand);color:var(--brandFg)}
+.tgl i{background:#fff}
+input[type=range],.tl-scrub{accent-color:var(--brand)}
+.search,select.vsel,input[type=number],.qsel{border-color:var(--line2);border-radius:10px}
+.search:focus,select.vsel:focus,input[type=number]:focus,.myin:focus{border-color:var(--brand);outline:0;box-shadow:0 0 0 3px var(--brandT)}
+:focus-visible{outline-color:var(--brand)}
+.foot{font-size:11.5px;letter-spacing:0}
+.view-in{animation-duration:.16s}
+.hmgrid .hm1{background:var(--s1bg)}.hmgrid .hm2{background:var(--s2bg)}.hmgrid .hm3{background:var(--s3bg)}.hmgrid .hm4{background:var(--s4bg)}
+html[data-theme="dark"] .hmgrid .hm1{background:var(--s1bg)}html[data-theme="dark"] .hmgrid .hm2{background:var(--s2bg)}html[data-theme="dark"] .hmgrid .hm3{background:var(--s3bg)}html[data-theme="dark"] .hmgrid .hm4{background:var(--s4bg)}
+.why.bad,.readline .seg.unk{background:#fdecea}
+html[data-theme="dark"] .why.bad,html[data-theme="dark"] .readline .seg.unk{background:#3a1b18}
+.toast{box-shadow:0 10px 30px rgba(0,0,0,.22)}
+/* ---- Today: greeting, decks, the fold ---- */
+.hello{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:4px 0 16px}
+.hello h1{font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.hello .sub{font-size:13px;color:var(--mut);margin-top:3px}
+.coursechip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line2);background:var(--panel);color:var(--ink);border-radius:99px;
+  padding:8px 13px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;max-width:100%}
+.coursechip:hover{background:var(--tint)}
+.coursechip i{font-style:normal;color:var(--mut);font-weight:500;overflow:hidden;text-overflow:ellipsis}
+.coursechip svg{width:14px;height:14px;stroke:var(--mut);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.decks{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.deck{display:flex;flex-direction:column;gap:3px;text-align:left;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:16px;
+  padding:16px;cursor:pointer;font:inherit;min-width:0}
+.deck:hover{border-color:var(--line2)}
+.deck .dk-t{font-size:12.5px;font-weight:600;color:var(--mut)}
+.deck .dk-n{font-size:26px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.15}
+.deck .dk-n small{font-size:13px;font-weight:600;color:var(--mut);letter-spacing:0;margin-left:4px}
+.deck .dk-s{font-size:12.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.deck .dk-go{margin-top:8px;font-size:13px;font-weight:600;color:var(--brandInk)}
+details.fold{margin-bottom:12px}
+details.fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:12px;
+  font-size:13.5px;font-weight:600;color:var(--mut);user-select:none}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary:hover{background:var(--tint);color:var(--ink)}
+details.fold>summary svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .15s}
+details.fold[open]>summary svg{transform:rotate(180deg)}
+details.fold[open]>summary{margin-bottom:8px}
+/* ---- sheets (course, add words) ---- */
+.sheet-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.sheet-h b{font-size:18px;font-weight:700;letter-spacing:-.01em}
+.xbtn{border:0;background:var(--tint);color:var(--mut);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:15px;line-height:1;flex:none}
+.xbtn:hover{color:var(--ink)}
+.frow{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.frow label{font-size:12.5px;font-weight:600;color:var(--mut)}
+.myin{width:100%;padding:11px 13px;border:1px solid var(--line2);border-radius:11px;background:var(--panel);color:var(--ink);font:inherit;font-size:16px;outline:none}
+textarea.myin{min-height:120px;resize:vertical;line-height:1.5}
+.swatches{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.swatch{width:28px;height:28px;border-radius:50%;border:2px solid var(--panel);box-shadow:0 0 0 1px var(--line2);cursor:pointer;padding:0}
+.swatch.on{box-shadow:0 0 0 2px var(--ink)}
+.seg{display:inline-flex;background:var(--tint);border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;color:var(--mut);font:inherit;font-size:13px;font-weight:600;padding:6px 12px;border-radius:8px;cursor:pointer}
+.seg button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.set-row .seg,.set-row .swatches{flex:none;flex-wrap:nowrap}
+.meaning,.pos{font-family:var(--ui)}
+.swatch[title="graphite"]{background:var(--ink)!important}
+/* ---- my words ---- */
+.my-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:4px 0 14px}
+.my-head h1{font-size:24px;font-weight:700;letter-spacing:-.02em}
+.my-head .sub{font-size:13px;color:var(--mut);margin-top:2px}
+.my-empty{text-align:center;padding:34px 16px}
+.my-empty .big{font-size:40px;font-family:var(--cjk);margin-bottom:8px}
+.my-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--tint)}
+.my-row:last-child{border-bottom:0}
+.my-row .tr{font-family:var(--cjk);font-size:22px;min-width:76px;line-height:1.3}
+.my-row .info{flex:1;min-width:0}
+.my-row .py{font-size:13px;font-weight:500}
+.my-row .mn{font-size:12.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.my-hint{font-size:12.5px;color:var(--mut);background:var(--tint);border-radius:10px;padding:8px 11px;margin:-4px 0 12px}
+.my-top{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--mut);margin-bottom:10px}
+@media(max-width:560px){.decks{gap:10px}.deck{padding:14px}.hello h1,.my-head h1{font-size:22px}.card{padding:18px 16px}
+  .my-row .tr{min-width:60px;font-size:20px}.my-row{gap:9px}}
+/* ---- nothing may scroll the page sideways ---- */
+.wrap{overflow-x:clip}
+.mtag{letter-spacing:.04em}
+@media(max-width:900px){
+  .lesson>.head{flex-wrap:wrap}
+  .lesson>.head>div:not(.acts):not(.lring){flex:1;min-width:0}
+  .lesson .acts{flex:1 1 100%;margin-left:0;flex-wrap:wrap}
+}
+@media(max-width:560px){
+  .set-row{flex-wrap:wrap}
+  .set-row>div:first-child{flex:1 1 170px;min-width:0}
+  .set-row .lpick,.set-row select.vsel{max-width:100%}
+  .confrow{grid-template-columns:repeat(2,1fr);row-gap:10px}
+  .confrow .stat:nth-child(odd){border-left:0;padding-left:0}
+  .stat{min-width:0}
+}
 </style>
+<script>try{var L=JSON.parse(localStorage.getItem('zika_look')||'{}'),R=document.documentElement;if(L.t==='dark'||(L.t==='auto'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))R.setAttribute('data-theme','dark');if(L.a)R.setAttribute('data-accent',L.a);if(L.z)R.setAttribute('data-zh',L.z);}catch(e){}</script>
 </head>
 <body>
 <div class="wrap">
-  <header class="mast">
-    <span class="seal">字卡</span>
+  <header class="mast" id="appBar">
+    <button class="brand" type="button" onclick="go('home')" aria-label="字卡 — Today"><span class="logo">字</span><span class="bname">字卡</span></button>
+    <span class="grow"></span>
     <button class="tbtn rf" id="refreshBtn" title="refresh — sync and load the latest version" aria-label="refresh" onclick="appRefresh()">↻</button>
-    <button class="tbtn" id="themeBtn" title="day / night" onclick="toggleTheme()">☾</button>
-    <div class="eng">臺北 · 師大 · Contemporary Chinese</div>
-    <div class="greet" id="greet"></div>
+    <button class="tbtn" id="themeBtn" title="day / night" aria-label="day / night" onclick="toggleTheme()">☾</button>
+    <button class="tbtn" id="setBtn" title="Settings" aria-label="Settings" onclick="go('set')">⚙</button>
+    <div class="greet" id="greet" hidden></div>
   </header>
   <div id="bkBanner" class="banner" style="display:none">No backup in over a week — <b>Settings → Backup</b> → choose a file once and it saves itself from then on.</div>
   <div id="storageBanner" class="banner">Browser storage is unavailable here — progress lives in memory only. Export from Settings before closing.</div>
@@ -693,12 +880,12 @@ html{-webkit-tap-highlight-color:transparent;touch-action:pan-x pan-y}   /* an a
   <div id="vLib" style="display:none"></div>
   <div id="vRev" style="display:none"></div>
   <div id="vSet" style="display:none"></div>
-  <div class="foot">FSRS-5 · vocabulary via Zhong Chinese · 加油 · <span id="appVer"></span></div>
+  <div class="foot">FSRS-5 · <span id="appVer"></span></div>
 </div>
 <div id="printSheet"></div>
 <script>
 /* ============ VERSION ============ */
-const APP_VERSION=43;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
+const APP_VERSION=44;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
 
 /* ============ THEME ============ */
 function curTheme(){return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';}
@@ -5645,6 +5832,422 @@ renderDrill=(function(orig){return function(){if(drillMode==='story'&&!dq){rdRen
 .rd-en{margin-top:12px;font-size:14.5px;line-height:1.65;color:var(--mut)}
 @media(max-width:560px){.rd-text{font-size:21px;line-height:1.95}}
 `;document.head.appendChild(st);})();
+</script>
+<script>
+/* ============================================================
+   v44 — clean shell, "where I am", and My words.
+   This block is self-contained: it runs after everything above,
+   wraps renderHome / renderSet / go once each, and owns the
+   functions prefixed sh* (shell) and my* (personal deck).
+   Styles are the "v44 — clean shell" block at the end of <style>.
+   ============================================================ */
+const SVG=(d,c)=>'<svg'+(c?' class="'+c+'"':'')+' viewBox="0 0 24 24" aria-hidden="true">'+d+'</svg>';
+const ICON={
+  home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  rev:'<rect x="3" y="7" width="14" height="13" rx="2.5"/><path d="M7 4h11a3 3 0 0 1 3 3v10"/>',
+  drill:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  catch:'<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/>',
+  exam:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+  gram:'<path d="M8 3H7a2 2 0 0 0-2 2v4a2 2 0 0 1-2 2 2 2 0 0 1 2 2v4a2 2 0 0 0 2 2h1"/><path d="M16 3h1a2 2 0 0 1 2 2v4a2 2 0 0 0 2 2 2 2 0 0 0-2 2v4a2 2 0 0 1-2 2h-1"/>',
+  brain:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  lib:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>',
+  set:'<path d="M4 6h8M16 6h4M4 12h2M10 12h10M4 18h10M18 18h2"/><circle cx="14" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="18" r="2"/>',
+  my:'<path d="m12 3 2.7 5.6 6.1.8-4.5 4.3 1.1 6.1L12 16.9 6.6 19.8l1.1-6.1L3.2 9.4l6.1-.8z"/>',
+  more:'<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>',
+  refresh:'<path d="M20 11a8 8 0 1 0-2.3 6.3"/><path d="M20 4v7h-7"/>',
+  moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  down:'<path d="m6 9 6 6 6-6"/>'
+};
+const TAB_ICON={tabHome:'home',tabRev:'rev',tabDrill:'drill',tabCatch:'catch',tabExam:'exam',tabGram:'gram',tabBrain:'brain',tabLib:'lib',tabSet:'set',tabMy:'my',tabMore:'more'};
+
+/* ---------- look: accent colour and the face study characters are set in ---------- */
+const ACCENTS={blue:'#2563eb',green:'#0b8457',violet:'#6d4aff',rose:'#d6336c',orange:'#d9480f',graphite:'#0d1117'};
+const ZH_FONTS={sans:'Sans 黑體',song:'Song 明體',kai:'Kai 楷體'};
+function shLook(){
+  const r=document.documentElement, a=S.settings.accent, z=S.settings.zhFont;
+  if(a&&a!=='blue'&&ACCENTS[a])r.dataset.accent=a; else delete r.dataset.accent;
+  if(z&&z!=='sans'&&ZH_FONTS[z])r.dataset.zh=z; else delete r.dataset.zh;
+  /* remembered outside the deck so the next start can paint the right look before the deck is parsed */
+  try{store.setItem('zika_look',JSON.stringify({t:S.settings.theme||'auto',a:r.dataset.accent||'',z:r.dataset.zh||''}));}catch(e){}
+  const tb=document.getElementById('themeBtn'); if(tb)tb.innerHTML=SVG(curTheme()==='dark'?ICON.sun:ICON.moon);
+  const mc=document.querySelector('meta[name="theme-color"]'); if(mc)mc.setAttribute('content',cssVar('--bg')||'#f6f7f9');
+}
+applyTheme=(function(orig){return function(){const r=orig.apply(this,arguments);try{shLook();}catch(e){}return r;};})(applyTheme);
+fbAdopt=(function(orig){return function(){const r=orig.apply(this,arguments);try{shLook();}catch(e){}return r;};})(fbAdopt);
+function shSetLook(k,v){S.settings[k]=v;save();shLook();if(view==='set')renderSet();if(view==='brain')renderBrain();}
+
+/* ---------- who and where: name, book and lesson ---------- */
+/* Decks that existed before names were a setting belong to Thorne. Runs on every start (not behind a flag),
+   so a deck adopted from a device that has not updated yet is named too. */
+if(S.settings.userName===undefined&&Object.keys(S.cards||{}).length){S.settings.userName='Thorne';}
+function shName(){return (S.settings.userName||'').trim();}
+function shGreeting(){
+  const h=new Date().getHours(), g=h<5?'夜深了':h<11?'早安':h<14?'午安':h<18?'下午好':'晚上好', n=shName();
+  return g+(n?'，'+esc(n):'');
+}
+function shLesson(){return Math.min(MAX_LN,Math.max(1,S.settings.curLesson||MAX_LN));}
+function shLessonProgress(ln){
+  const ws=WORDS.filter(w=>w.l===ln&&!isName(w)); let started=0;
+  ws.forEach(w=>{if(MODES.some(m=>{const c=S.cards[cardId(w.id,m)];return c&&c.st!==undefined;}))started++;});
+  return {started,total:ws.length};
+}
+function shSetLesson(v){
+  v=Math.min(MAX_LN,Math.max(1,v|0)); S.settings.curLesson=v; try{drillLesson=v;}catch(e){}
+  save(); badge(); shCourse(); if(view==='home')renderHome(); if(view==='set')renderSet();
+}
+function shHost(){let m=document.getElementById('shSheet');if(!m){m=document.createElement('div');m.id='shSheet';m.className='modal';
+  m.addEventListener('click',e=>{if(e.target===m)shClose();});document.body.appendChild(m);}return m;}
+function shClose(){const m=document.getElementById('shSheet');if(m){m.style.display='none';m.innerHTML='';}}
+function shCourse(){
+  const ln=shLesson(), b=bookAt(ln), p=shLessonProgress(ln), m=shHost();
+  const pct=p.total?Math.round(100*p.started/p.total):0;
+  m.innerHTML=`<div class="modal-card">
+    <div class="sheet-h"><b>Where you are</b><button class="xbtn" onclick="shClose()" aria-label="close">✕</button></div>
+    <div class="frow"><label>Your class is on</label>${lessonPick(ln,'shSetLesson(v)')}</div>
+    <div style="font-size:15px;font-weight:600">${esc(LESSON_TITLES[ln]||'')}</div>
+    <div class="small muted" style="margin:2px 0 8px">Book ${b.n} · Lesson ${lnInBook(ln)} · ${p.started} of ${p.total} words started</div>
+    <div class="sbar" style="margin-bottom:14px"><i style="width:${pct}%"></i></div>
+    <div class="row" style="gap:8px;margin-bottom:16px">
+      <button class="btn sm ghost" ${ln<=1?'disabled':''} onclick="shSetLesson(${ln-1})">← Previous lesson</button>
+      <button class="btn sm" ${ln>=MAX_LN?'disabled':''} onclick="shSetLesson(${ln+1})">Class moved on →</button>
+    </div>
+    <div class="small muted" style="margin-bottom:14px">This decides what counts as “this week”, which new words come first, and where drills open.${ln>=MAX_LN?' Book '+b.n+' · Lesson '+lnInBook(ln)+' is the last lesson in the app so far.':''}</div>
+    <div class="frow"><label for="shNameIn">Your name</label><input id="shNameIn" class="myin" value="${esc(shName()).replace(/"/g,'&quot;')}" placeholder="Shown in the greeting" autocomplete="off"
+      onchange="S.settings.userName=this.value.trim();save();if(view==='home')renderHome();"></div>
+    <button class="btn big" onclick="shClose()">Done</button>
+  </div>`;
+  m.style.display='flex';
+}
+
+/* ---------- top bar and tab icons ---------- */
+function shTabIcons(){
+  document.querySelectorAll('.tabs button').forEach(b=>{
+    if(b.querySelector('.ti'))return;
+    b.insertAdjacentHTML('afterbegin',SVG(ICON[TAB_ICON[b.id]]||ICON.more,'ti'));
+  });
+}
+(function(){
+  const rb=document.getElementById('refreshBtn'); if(rb)rb.innerHTML=SVG(ICON.refresh);
+  const sb=document.getElementById('setBtn'); if(sb)sb.innerHTML=SVG(ICON.set);
+  /* My words: its own tab (behind More on phones) and its own view */
+  const tabs=document.querySelector('.tabs');
+  if(tabs&&!document.getElementById('tabMy')){
+    const b=document.createElement('button'); b.id='tabMy'; b.type='button'; b.className='t2';
+    b.innerHTML='My words<span id="bMy" class="b zero">0</span>'; b.onclick=()=>go('my');
+    (document.getElementById('tabLib')||tabs.lastElementChild).insertAdjacentElement('afterend',b);
+    const v=document.createElement('div'); v.id='vMy'; v.style.display='none';
+    document.getElementById('vSet').insertAdjacentElement('afterend',v);
+  }
+  shTabIcons();
+  KEYMAP.m='my';
+})();
+go=(function(orig){return function(v){
+  if(v!=='my'&&typeof MY!=='undefined'){MY.mode='list';}
+  const from=view, r=orig.apply(this,arguments);
+  const t=document.getElementById('tabMy'), c=document.getElementById('vMy');
+  if(t)t.classList.toggle('on',v==='my'); if(c)c.style.display=v==='my'?'':'none';
+  const sb=document.getElementById('setBtn'); if(sb)sb.classList.toggle('on',v==='set');
+  if(v==='my'){renderMy(); try{if(animOn()){c.classList.remove('view-in');void c.offsetWidth;c.classList.add('view-in');}}catch(e){}}
+  try{tabsSync();if(from!==v)window.scrollTo(0,0);}catch(e){}   /* a new place starts at its top; re-rendering the same one keeps your position */
+  return r;
+};})(go);
+
+/* ---------- Today: greeting, two decks, and the rest behind one fold ---------- */
+function shOpenLesson(ln){try{libBook=bookOf(ln);openLessons[ln]=true;}catch(e){}go('lib');}
+function shDecks(){
+  const ln=shLesson(), p=shLessonProgress(ln), q=myQueue(), n=myIds().length, ready=q.learn.length+q.rev.length+q.fresh.length;
+  return `<div class="decks">
+    <button class="deck" onclick="shOpenLesson(${ln})"><span class="dk-t">Course · Book ${bookOf(ln)} Lesson ${lnInBook(ln)}</span>
+      <span class="dk-n">${p.started}<small>of ${p.total} words</small></span><span class="dk-s">${esc(LESSON_TITLES[ln]||'')}</span><span class="dk-go">Open lesson →</span></button>
+    <button class="deck" onclick="go('my')"><span class="dk-t">My words</span>
+      <span class="dk-n">${n?ready:'+'}<small>${n?'ready':'start a deck'}</small></span><span class="dk-s">${n?n+' word'+(n===1?'':'s')+' outside class':'Words you meet outside class'}</span><span class="dk-go">${n?(ready?'Study →':'Add words →'):'Add words →'}</span></button>
+  </div>`;
+}
+function shHome(){
+  const host=document.getElementById('vHome'); if(!host||host.querySelector('.hello'))return;
+  const ln=shLesson(), d=new Date();
+  const date=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+  host.insertAdjacentHTML('afterbegin',`<div class="hello"><div><h1>${shGreeting()}</h1><div class="sub">${date}</div></div>
+    <button class="coursechip" onclick="shCourse()" title="change your book and lesson">Book ${bookOf(ln)} · Lesson ${lnInBook(ln)}<i>${esc(LESSON_TITLES[ln]||'')}</i>${SVG(ICON.down)}</button></div>`);
+  const anchor=host.querySelector('.card.examline')||host.querySelector('.card.hero');
+  if(anchor)anchor.insertAdjacentHTML('afterend',shDecks());
+  /* everything below the lanes (plan, queue, statistics) folds away; the choice is remembered on this device */
+  const lanes=[...host.children].find(el=>el.classList.contains('card')&&/^Three lanes/.test(((el.querySelector('.lab')||{}).textContent||'').trim()));
+  if(lanes){
+    const rest=[]; for(let el=lanes.nextElementSibling;el;el=el.nextElementSibling)rest.push(el);
+    if(rest.length){
+      let open=false; try{open=store.getItem('zika_home_more')==='1';}catch(e){}
+      const f=document.createElement('details'); f.className='fold'; f.open=open;
+      f.innerHTML='<summary>Plan, queue and progress'+SVG(ICON.down)+'</summary>';
+      f.addEventListener('toggle',()=>{try{store.setItem('zika_home_more',f.open?'1':'0');}catch(e){}});
+      lanes.insertAdjacentElement('afterend',f); rest.forEach(el=>f.appendChild(el));
+    }
+  }
+}
+renderHome=(function(orig){return function(){orig.apply(this,arguments);try{shHome();}catch(e){console.error(e);}};})(renderHome);
+
+/* ---------- Settings: a "You" card first, accent and character face under Look & feel ---------- */
+renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
+  const v=document.getElementById('vSet'), ln=shLesson();
+  const cards=[...v.querySelectorAll('.card')], look=cards.find(c=>/^Look & feel/.test(((c.querySelector('.lab')||{}).textContent||'').trim()));
+  const a=S.settings.accent||'blue', z=S.settings.zhFont||'sans';
+  const rows=`<div class="set-row"><div><b>Accent colour</b><div class="d">buttons, links and the active tab; follows you to your other devices</div></div>
+      <div class="swatches">${Object.keys(ACCENTS).map(k=>`<button class="swatch${a===k?' on':''}" style="background:${ACCENTS[k]}" title="${k}" aria-label="${k}" onclick="shSetLook('accent','${k}')"></button>`).join('')}</div></div>
+    <div class="set-row"><div><b>Character style</b><div class="d">the face study characters are shown in: a clean sans, the textbook’s 明體, or 楷體, which is closest to handwriting</div></div>
+      <div class="seg">${Object.keys(ZH_FONTS).map(k=>`<button class="${z===k?'on':''}" onclick="shSetLook('zhFont','${k}')">${ZH_FONTS[k]}</button>`).join('')}</div></div>`;
+  if(look)look.insertAdjacentHTML('beforeend',rows);
+  v.insertAdjacentHTML('afterbegin',`<div class="card" id="youCard"><div class="lab">You</div>
+    <div class="set-row"><div><b>${shName()?esc(shName()):'Your name'}</b><div class="d">Book ${bookOf(ln)} · Lesson ${lnInBook(ln)} · ${esc(LESSON_TITLES[ln]||'')}</div></div>
+      <button class="btn sm ghost" onclick="shCourse()">Change</button></div>
+    ${look?'':rows}</div>`);
+}catch(e){console.error(e);}};})(renderSet);
+
+/* ============================================================
+   My words — a personal deck for vocabulary met outside class.
+   Kept apart from the course on purpose: its own words (ids u1,
+   u2 … never reused), its own cards and daily intake, the same
+   FSRS-5 maths. Lives in S.my, so it syncs and backs up with
+   everything else.  S.my = {n, w:{id:{t,p,m,at}}, c:{'id:rec':card}, intro:{day:n}, log:{day:n}, perDay, both}
+   ============================================================ */
+const MY={mode:'list',cur:null,shown:false,done:0,q:'',edit:null,tab:'one'};
+function myDeck(){
+  if(!S.my||typeof S.my!=='object')S.my={n:1,w:{},c:{},intro:{},log:{}};
+  const d=S.my; d.w=d.w||{}; d.c=d.c||{}; d.intro=d.intro||{}; d.log=d.log||{}; d.n=d.n||1; return d;
+}
+const myIds=()=>Object.keys(myDeck().w);
+const myModes=()=>myDeck().both?['rec','prod']:['rec'];
+const myWord=cid=>myDeck().w[cid.split(':')[0]];
+function myAdd(t,p,m){
+  t=String(t||'').trim(); if(!t)return null;
+  const d=myDeck(); for(const id in d.w)if(d.w[id].t===t)return {id,dup:true};
+  const id='u'+(d.n++); d.w[id]={t,p:String(p||'').trim(),m:String(m||'').trim(),at:Date.now()};
+  return {id};
+}
+/* a first guess at the pinyin: the course's own reading if the word is in a lesson, otherwise character by character */
+function myCourseWord(t){return WORDS.find(w=>w.t===t||String(w.t).split('（')[0]===t)||null;}
+function myGuessPy(t){
+  const w=myCourseWord(t); if(w)return w.p;
+  const out=[]; for(const ch of String(t)){ if(!/\p{Script=Han}/u.test(ch))continue; const c=COMPONENTS[ch]; if(!c||!c.p)return ''; out.push(String(c.p).split(/[,;/ ]/)[0]); }
+  return out.join('');
+}
+function myQueue(){
+  const d=myDeck(), now=Date.now(), learn=[], rev=[], fresh=[], ahead=[];
+  for(const id in d.w)for(const m of myModes()){
+    const cid=id+':'+m, c=d.c[cid];
+    if(!c||c.st===undefined){fresh.push(cid);continue;}
+    if(c.due<=now)(c.st==='rev'?rev:learn).push(cid); else if(c.st!=='rev')ahead.push(cid);
+  }
+  const by=(a,b)=>d.c[a].due-d.c[b].due; learn.sort(by); rev.sort(by); ahead.sort(by);
+  const left=Math.max(0,(d.perDay??10)-(d.intro[dkey(new Date())]||0));
+  return {learn,rev,fresh:fresh.slice(0,left),waiting:fresh.length,ahead};
+}
+function myRate(cid,g){
+  const d=myDeck(), now=Date.now(), today=dkey(new Date()); let c=d.c[cid];
+  const sched=days=>{c.due=now+fuzz(days)*DAY;c.days=(c.days||0)+1;};
+  if(!c||c.st===undefined){
+    d.intro[today]=(d.intro[today]||0)+1;
+    c=d.c[cid]={st:'learn',S:initS(g),D:initD(g),due:0,last:now,reps:1,lapses:0,days:0};
+    if(g===1)c.due=now+MIN; else if(g===2)c.due=now+5*MIN; else if(g===3)c.due=now+10*MIN; else{c.st='rev';sched(nextIntervalDays(c.S));}
+  }else if(c.st==='learn'||c.st==='relearn'){
+    c.reps++;c.last=now;c.S=stabShort(c.S,g);c.D=updD(c.D,g);
+    if(g===1)c.due=now+MIN; else if(g===2)c.due=now+5*MIN; else{c.st='rev';sched(Math.max(1,nextIntervalDays(c.S)));}
+  }else{
+    const t=Math.max(0.01,(now-c.last)/DAY), r=retrievability(t,c.S), d0=c.D;
+    c.D=updD(d0,g);c.reps++;c.last=now;
+    if(g===1){c.lapses++;c.S=stabForget(c.S,d0,r);c.st='relearn';c.due=now+5*MIN;}
+    else{c.S=stabRecall(c.S,d0,r,g);sched(nextIntervalDays(c.S));}
+  }
+  d.log[today]=(d.log[today]||0)+1;
+  for(const k of ['intro','log']){const ks=Object.keys(d[k]).sort(); while(ks.length>120)delete d[k][ks.shift()];}
+  save();
+}
+function myBadge(){const q=myQueue(), n=q.learn.length+q.rev.length+q.fresh.length, b=document.getElementById('bMy');if(b){b.textContent=n;b.classList.toggle('zero',n===0);}}
+function myState(id){
+  const d=myDeck(), c=d.c[id+':rec'], now=Date.now();
+  if(!c||c.st===undefined)return '<span class="tag">new</span>';
+  if(c.due<=now)return '<span class="tag due">due</span>';
+  if(c.st!=='rev')return '<span class="tag">learning</span>';
+  const days=Math.max(1,Math.round((c.due-now)/DAY));
+  return '<span class="tag ok">in '+days+'d</span>';
+}
+function mySpk(id){return '<button class="spk" title="pronounce" onclick="event.stopPropagation();mySay(\''+id+'\')">'+SPK_SVG+'</button>';}
+function mySay(id){const w=myDeck().w[id];if(w)playAudio(w.t,w.p||undefined);}
+
+/* ---- list ---- */
+function renderMy(){
+  const host=document.getElementById('vMy'); if(!host)return;
+  if(MY.mode==='study'){myStudyRender();return;}
+  const d=myDeck(), ids=myIds().sort((a,b)=>d.w[b].at-d.w[a].at), q=myQueue();
+  const ready=q.learn.length+q.rev.length+q.fresh.length;
+  myBadge();
+  const head=`<div class="my-head"><div><h1>My words</h1><div class="sub">Your own deck for words outside class. It is scheduled like the course, and kept separate from it.</div></div>
+    <button class="btn" onclick="myOpenAdd()">Add words</button></div>`;
+  if(!ids.length){
+    host.innerHTML=head+`<div class="card my-empty"><div class="big">生詞</div><div style="font-weight:600;font-size:16px">Nothing here yet</div>
+      <div class="small muted" style="max-width:380px;margin:6px auto 16px">A word from a menu, a sign, a show or a friend: add it here and it comes back on the same schedule as your class words, without touching the course deck.</div>
+      <button class="btn" onclick="myOpenAdd()">Add your first word</button></div>`;
+    return;
+  }
+  const f=MY.q.trim().toLowerCase();
+  const shown=f?ids.filter(id=>{const w=d.w[id];return (w.t+' '+w.p+' '+w.m).toLowerCase().includes(f)||(w.p||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().includes(f);}):ids;
+  host.innerHTML=head+`<div class="card">
+      <div class="row spread" style="margin-bottom:12px"><div><div class="lab" style="margin-bottom:2px">Ready now</div>
+        <div class="small muted">${q.rev.length} due · ${q.learn.length} learning · ${q.fresh.length} new${q.waiting>q.fresh.length?' ('+(q.waiting-q.fresh.length)+' more waiting)':''}</div></div>
+        <div style="font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em">${ready}</div></div>
+      <button class="btn big" ${ready||q.ahead.length?'':'disabled'} onclick="myStart()">${ready?'Study my words':q.ahead.length?'Keep going · '+q.ahead.length+' still learning':'All caught up'}</button>
+      <div class="set-row" style="margin-top:8px"><div><b>New cards a day</b><div class="d">how many new cards this deck starts each day</div></div>
+        <input type="number" min="0" max="100" value="${d.perDay??10}" onchange="const v=parseInt(this.value);myDeck().perDay=Math.max(0,isNaN(v)?10:v);save();renderMy()"></div>
+      <div class="set-row"><div><b>Both directions</b><div class="d">also ask from the meaning back to the characters, to write on paper</div></div>
+        <button class="tgl${d.both?' on':''}" aria-label="both directions" onclick="myDeck().both=!myDeck().both;save();renderMy()"><i></i></button></div>
+    </div>
+    <div class="card"><div class="lab">${ids.length} word${ids.length===1?'':'s'}</div>
+      ${ids.length>6?`<input class="search" id="myQ" placeholder="Search characters, pinyin or meaning" value="${esc(MY.q).replace(/"/g,'&quot;')}" oninput="MY.q=this.value;myListOnly()">`:''}
+      <div id="myList">${myRows(shown)}</div></div>`;
+}
+function myRows(ids){
+  const d=myDeck();
+  if(!ids.length)return '<div class="small muted" style="padding:10px 0">No match.</div>';
+  return ids.map(id=>{const w=d.w[id];return `<div class="my-row"><div class="tr">${esc(w.t)}</div>
+    <div class="info"><div class="py">${w.p?tonePinyin(esc(w.p)):'<span class="muted">no pinyin</span>'}</div><div class="mn">${esc(w.m)||'<span class="muted">no meaning yet</span>'}</div></div>
+    ${myState(id)}${mySpk(id)}<button class="wbtn" title="edit" aria-label="edit" onclick="myOpenAdd('${id}')">✎</button></div>`;}).join('');
+}
+function myListOnly(){
+  const d=myDeck(), f=MY.q.trim().toLowerCase(), ids=myIds().sort((a,b)=>d.w[b].at-d.w[a].at);
+  const el=document.getElementById('myList'); if(!el)return;
+  el.innerHTML=myRows(f?ids.filter(id=>{const w=d.w[id];return (w.t+' '+w.p+' '+w.m).toLowerCase().includes(f)||(w.p||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().includes(f);}):ids);
+}
+
+/* ---- add / edit ---- */
+function myOpenAdd(id){MY.edit=id||null;if(id)MY.tab='one';myAddRender();}
+function myAddRender(){
+  const m=shHost(), d=myDeck(), w=MY.edit?d.w[MY.edit]:null, q=s=>esc(s||'').replace(/"/g,'&quot;');
+  const one=`<div class="frow"><label for="myT">Characters</label><input id="myT" class="myin zh" lang="zh-Hant" autocomplete="off" autocapitalize="off" value="${w?q(w.t):''}" placeholder="珍珠奶茶" oninput="myHint()" onblur="myAutoPy()"></div>
+    <div id="myHintBox"></div>
+    <div class="frow"><label for="myP">Pinyin</label><input id="myP" class="myin" autocomplete="off" autocapitalize="off" spellcheck="false" value="${w?q(w.p):''}" placeholder="zhēnzhū nǎichá"></div>
+    <div class="frow"><label for="myM">Meaning</label><input id="myM" class="myin" autocomplete="off" value="${w?q(w.m):''}" placeholder="bubble tea" onkeydown="if(event.key==='Enter'){event.preventDefault();mySaveOne();}"></div>
+    <div class="row" style="gap:8px"><button class="btn" style="flex:1" onclick="mySaveOne()">${w?'Save':'Add'}</button>
+      ${w?`<button class="btn ghost" style="color:var(--red)" onclick="myDelete('${MY.edit}')">Delete</button>`:''}</div>`;
+  const many=`<div class="frow"><label for="myBulk">One word per line: characters, pinyin, meaning</label>
+      <textarea id="myBulk" class="myin" lang="zh-Hant" spellcheck="false" placeholder="珍珠奶茶, zhēnzhū nǎichá, bubble tea&#10;悠遊卡, EasyCard&#10;夜市"></textarea></div>
+    <div class="small muted" style="margin:-4px 0 12px">Commas, tabs or semicolons all work. Pinyin and meaning are optional: pinyin is filled in when the characters are known.</div>
+    <button class="btn" style="width:100%" onclick="mySaveMany()">Add all</button>`;
+  m.innerHTML=`<div class="modal-card">
+    <div class="sheet-h"><b>${w?'Edit word':'Add to My words'}</b><button class="xbtn" onclick="shClose();renderMy()" aria-label="close">✕</button></div>
+    ${w?'':`<div class="seg" style="margin-bottom:14px"><button class="${MY.tab==='one'?'on':''}" onclick="MY.tab='one';myAddRender()">One word</button><button class="${MY.tab==='many'?'on':''}" onclick="MY.tab='many';myAddRender()">Paste a list</button></div>`}
+    ${w||MY.tab==='one'?one:many}</div>`;
+  m.style.display='flex';
+  const first=document.getElementById(w||MY.tab==='one'?'myT':'myBulk'); if(first&&!w)try{first.focus();}catch(e){}
+}
+function myHint(){
+  const t=(document.getElementById('myT')||{}).value||'', box=document.getElementById('myHintBox'); if(!box)return;
+  const cw=myCourseWord(t.trim()), d=myDeck();
+  const dup=Object.keys(d.w).find(id=>d.w[id].t===t.trim()&&id!==MY.edit);
+  box.innerHTML=dup?'<div class="my-hint">Already in My words.</div>'
+    :cw?'<div class="my-hint">This is a course word (Book '+bookOf(cw.l)+' · Lesson '+lnInBook(cw.l)+'): '+esc(cw.m)+'. You can still add it here.</div>':'';
+}
+function myAutoPy(){
+  const t=((document.getElementById('myT')||{}).value||'').trim(), p=document.getElementById('myP'), m=document.getElementById('myM'); if(!t||!p)return;
+  if(!p.value.trim())p.value=myGuessPy(t);
+  const cw=myCourseWord(t); if(cw&&m&&!m.value.trim())m.value=cw.m;
+}
+function mySaveOne(){
+  const g=id=>((document.getElementById(id)||{}).value||'').trim(), t=g('myT'); let p=g('myP'); const m=g('myM');
+  if(!t){toast('Type the characters first');return;}
+  if(!p)p=myGuessPy(t);
+  const d=myDeck();
+  if(MY.edit&&d.w[MY.edit]){
+    Object.assign(d.w[MY.edit],{t,p,m}); save(); shClose(); renderMy(); toast('Saved'); return;
+  }
+  const r=myAdd(t,p,m);
+  if(r&&r.dup){toast('“'+esc(t)+'” is already in My words');return;}
+  save(); myBadge(); toast('Added '+esc(t));
+  ['myT','myP','myM'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); myHint();
+  const el=document.getElementById('myT'); if(el)el.focus();
+  if(view==='my')renderMyKeepSheet();
+}
+function renderMyKeepSheet(){const host=document.getElementById('vMy');if(host&&MY.mode!=='study'){const keep=document.activeElement;renderMy();try{if(keep&&keep.focus)keep.focus();}catch(e){}}}
+const MY_PY=/^[a-zāáǎàēéěèīíǐìōóǒòūúǔùüǖǘǚǜ\s'’·\-0-5]+$/i;
+function myParse(text){
+  const out=[];
+  String(text||'').split(/\n/).forEach(line=>{
+    line=line.trim(); if(!line)return;
+    let parts=line.split(/\t|[;；|｜]|[,，]/).map(s=>s.trim()).filter(Boolean);
+    if(parts.length===1){const mm=line.match(/^([^\sA-Za-z]+)\s+(.+)$/); if(mm)parts=[mm[1],mm[2]];}
+    const t=parts[0]; if(!t||!/\p{Script=Han}/u.test(t))return;
+    let p='', m='';
+    if(parts.length>=3){p=parts[1];m=parts.slice(2).join(', ');if(!MY_PY.test(p)){m=parts.slice(1).join(', ');p='';}}
+    else if(parts.length===2){if(MY_PY.test(parts[1])&&/[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ1-5]/i.test(parts[1]))p=parts[1];else m=parts[1];}
+    out.push({t,p:p||myGuessPy(t),m:m||((myCourseWord(t)||{}).m||'')});
+  });
+  return out;
+}
+function mySaveMany(){
+  const rows=myParse((document.getElementById('myBulk')||{}).value); if(!rows.length){toast('Nothing to add yet: one word per line, characters first');return;}
+  let added=0, dup=0; rows.forEach(r=>{const x=myAdd(r.t,r.p,r.m);if(x&&x.dup)dup++;else if(x)added++;});
+  save(); shClose(); if(view==='my')renderMy(); else myBadge();
+  toast('Added '+added+' word'+(added===1?'':'s')+(dup?' · '+dup+' already there':''));
+}
+function myDelete(id){
+  const d=myDeck(), w=d.w[id]; if(!w)return;
+  const cards={}; for(const k in d.c)if(k.split(':')[0]===id){cards[k]=d.c[k];delete d.c[k];}
+  delete d.w[id]; save(); shClose(); renderMy();
+  toast('Deleted '+esc(w.t),{action:'Undo',ms:7000,onAction:()=>{const dd=myDeck();dd.w[id]=w;Object.assign(dd.c,cards);save();renderMy();}});
+}
+
+/* ---- study ---- */
+function myNext(){
+  const q=myQueue();
+  MY.cur=q.learn[0]||q.rev[0]||q.fresh[0]||q.ahead[0]||null; MY.shown=false;
+}
+function myStart(){MY.mode='study';MY.done=0;myNext();renderMy();}
+function myStop(){MY.mode='list';MY.cur=null;renderMy();if(view==='home')renderHome();}
+function myReveal(){
+  if(!MY.cur||MY.shown)return; MY.shown=true; myStudyRender();
+  const w=myWord(MY.cur); if(w&&S.settings.autoplayAudio!==false&&MY.cur.endsWith(':rec'))playAudio(w.t,w.p||undefined);
+}
+function myGrade(g){
+  if(!MY.cur||!MY.shown)return; try{haptic(g===1?'bad':'ok');}catch(e){}
+  myRate(MY.cur,g); MY.done++; myNext(); myStudyRender(); myBadge();
+}
+function myStudyRender(){
+  const host=document.getElementById('vMy'); if(!host)return;
+  const q=myQueue(), left=q.learn.length+q.rev.length+q.fresh.length;
+  const top=`<div class="my-top"><span class="link" onclick="myStop()">← My words</span><span>${MY.done} done · ${left} left</span></div>`;
+  if(!MY.cur||!myWord(MY.cur)){
+    host.innerHTML=top+`<div class="stage"><div class="done"><div class="zhd zh">做完了</div><div style="font-weight:600;font-size:17px">My words are done for now</div>
+      <div class="small muted" style="margin-top:6px">${MY.done} card${MY.done===1?'':'s'} this session${q.waiting?' · '+q.waiting+' new card'+(q.waiting===1?'':'s')+' waiting for tomorrow':''}</div></div></div>
+      <div class="row" style="gap:8px;margin-top:14px"><button class="btn" style="flex:1" onclick="myStop()">Back to My words</button><button class="btn ghost" onclick="go('home')">Today</button></div>`;
+    return;
+  }
+  const w=myWord(MY.cur), id=MY.cur.split(':')[0], prod=MY.cur.endsWith(':prod'), c=myDeck().c[MY.cur];
+  const len=[...w.t].length, size=len<=2?78:len<=4?60:len<=6?44:32;
+  const zh=`<div class="bigzh" style="font-size:${size}px">${esc(w.t)}</div>`;
+  const py=w.p?`<div class="pyline">${tonePinyin(esc(w.p))}</div>`:'';
+  const mean=`<div class="meaning" style="font-family:inherit">${esc(w.m)||'<span class="muted">no meaning yet</span>'}</div>`;
+  const front=prod?`${mean}${py}<div class="hint">write it on paper, then check</div>`:`${zh}<div class="hint">say it and recall the meaning</div>`;
+  const back=prod?`${zh}${py}${mean}`:`${zh}${py}${mean}`;
+  const tag=`<div class="mtag ${prod?'prod':'rec'}" style="margin-bottom:6px">${prod?'Write':'Recognise'} · My words${!c||c.st===undefined?' · new':''}</div>`;
+  host.innerHTML=top+`<div class="stage" ${MY.shown?'':'onclick="myReveal()" style="cursor:pointer"'}>${tag}${MY.shown?back:front}
+      ${MY.shown?`<div class="row" style="justify-content:center;gap:8px">${mySpk(id)}<button class="btn sm ghost" onclick="event.stopPropagation();myStrokes('${id}')">Strokes</button><button class="btn sm ghost" onclick="event.stopPropagation();MY.mode='list';myOpenAdd('${id}')">Edit</button></div><div id="myStrokeHost" class="strokerow"></div>`:''}</div>
+    ${MY.shown?`<div class="grades">${[[1,'Again'],[2,'Hard'],[3,'Good'],[4,'Easy']].map(([g,l])=>`<button class="g${g}" onclick="myGrade(${g})">${l}<span class="iv">${previewIv(c,'x:rec',g)}</span></button>`).join('')}</div>`
+      :`<button class="btn big" style="margin-top:14px" onclick="myReveal()">Show answer</button>`}
+    <div class="small muted" style="text-align:center;margin-top:10px"><kbd>space</kbd> show · <kbd>1</kbd>–<kbd>4</kbd> grade · <kbd>esc</kbd> stop</div>`;
+}
+function myStrokes(id){const w=myDeck().w[id];if(!w)return;try{renderStrokes('myStrokeHost',w.t,{});}catch(e){}}
+document.addEventListener('keydown',e=>{
+  if(view!=='my'||MY.mode!=='study'||e.metaKey||e.ctrlKey||e.altKey||e.repeat)return;
+  const tg=e.target; if(tg&&/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName))return;
+  const sheet=document.getElementById('shSheet'); if(sheet&&sheet.style.display==='flex')return;
+  if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();myStop();return;}
+  if(!MY.cur)return;
+  if(e.code==='Space'||e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();if(MY.shown)myGrade(3);else myReveal();return;}
+  if(MY.shown&&/^[1-4]$/.test(e.key)){e.preventDefault();e.stopImmediatePropagation();myGrade(+e.key);}
+},true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){const s=document.getElementById('shSheet');if(s&&s.style.display==='flex'){shClose();if(view==='my')renderMy();}}});
+
+/* ---------- start ---------- */
+try{shLook();myBadge();if(view==='home')renderHome();else if(view==='set')renderSet();}catch(e){console.error(e);}
 </script>
 </body>
 </html>
