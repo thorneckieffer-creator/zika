@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>字卡 · Record your voice</title>
+<meta name="theme-color" content="#faf9f7">
+<link rel="icon" href="assets/icon-192.png">
+<style>
+:root{--bg:#f3ecdc;--panel:#faf6ea;--ink:#2a251d;--mut:#8a7f6d;--line:#e4dac4;--acc:#2f6f62;--red:#b5402f}
+@media(prefers-color-scheme:dark){:root{--bg:#1b1915;--panel:#24211b;--ink:#ece5d6;--mut:#9a907d;--line:#3a352b;--acc:#6bbfae;--red:#e0705e}}
+*{box-sizing:border-box}
+html{touch-action:pan-x pan-y;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans TC",sans-serif;font-size:15px;line-height:1.55}
+.wrap{max-width:640px;margin:0 auto;padding:max(26px,calc(env(safe-area-inset-top) + 14px)) 18px 60px}
+h1{font-size:20px;margin:0 0 4px;letter-spacing:.01em}
+.sub{color:var(--mut);margin:0 0 22px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin-bottom:16px}
+.lab{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);font-weight:700;margin-bottom:10px}
+.zh{font-family:"Noto Serif TC","Songti TC","PingFang TC",serif;font-size:24px;line-height:1.7;letter-spacing:.02em}
+.py{color:var(--mut);font-size:14px;margin-top:8px}
+ol{margin:0;padding-left:20px}li{margin-bottom:6px}
+button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:13px 20px;cursor:pointer;background:var(--ink);color:var(--bg)}
+button.ghost{background:none;color:var(--ink);border:1px solid var(--line)}
+button.rec{background:var(--red);color:#fff}
+button:disabled{opacity:.45;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.meter{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:14px 0 6px}
+.meter i{display:block;height:100%;width:0;background:var(--acc);transition:width .08s linear}
+.time{font-variant-numeric:tabular-nums;font-weight:700;font-size:22px}
+.note{color:var(--mut);font-size:13px;margin-top:10px}
+.ok{color:var(--acc);font-weight:700}.bad{color:var(--red);font-weight:700}
+audio{width:100%;margin-top:12px}
+a{color:var(--acc)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Record your voice</h1>
+  <p class="sub">One short recording is all the voice model needs to speak every word in 字卡 in your voice.</p>
+
+  <div class="card">
+    <div class="lab">Read this aloud</div>
+    <div class="zh" lang="zh-Hant" id="line"></div>
+    <div class="py" id="pinyin"></div>
+  </div>
+
+  <div class="card">
+    <div class="lab">How</div>
+    <ol>
+      <li>A quiet room, the microphone about a hand's width from your mouth.</li>
+      <li>Press <b>Record</b>, wait one beat, then read the two sentences at your normal speaking pace.</li>
+      <li>Press <b>Stop</b>, listen back, and <b>Save</b> when one take sounds clean. Ten to fifteen seconds is ideal.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <button class="rec" id="recBtn">● Record</button>
+      <button class="ghost" id="stopBtn" disabled>■ Stop</button>
+      <span class="time" id="time">0.0 s</span>
+    </div>
+    <div class="meter"><i id="level"></i></div>
+    <div class="note" id="status">Not recorded yet.</div>
+    <audio id="player" controls style="display:none"></audio>
+    <div class="row" style="margin-top:14px">
+      <button id="saveBtn" disabled>Save recording</button>
+      <span class="note" id="saved" style="margin:0"></span>
+    </div>
+  </div>
+
+  <p class="note">The file is saved to your Downloads folder as <b>zika-voice-reference.wav</b> and never leaves this device. <a href="./">Back to 字卡</a></p>
+</div>
+<script>
+/* The reference line. tools/build_voice_pack_breezy.py is given this same text as the transcript,
+   so keep the two in step if it ever changes. */
+const LINE='大家好，我現在在臺灣學中文。我每天都練習聽、說、讀、寫，希望我的中文越來越好。';
+const PINYIN='Dàjiā hǎo, wǒ xiànzài zài Táiwān xué Zhōngwén. Wǒ měitiān dōu liànxí tīng, shuō, dú, xiě, xīwàng wǒ de Zhōngwén yuè lái yuè hǎo.';
+document.getElementById('line').textContent=LINE;
+document.getElementById('pinyin').textContent=PINYIN;
+
+const $=id=>document.getElementById(id);
+let stream=null, rec=null, chunks=[], ctx=null, analyser=null, raf=0, t0=0, wav=null, peak=0;
+
+function meter(){
+  const buf=new Float32Array(analyser.fftSize); analyser.getFloatTimeDomainData(buf);
+  let m=0; for(const v of buf){const a=Math.abs(v); if(a>m)m=a;} peak=Math.max(peak,m);
+  $('level').style.width=Math.min(100,Math.round(m*140))+'%';
+  $('time').textContent=((performance.now()-t0)/1000).toFixed(1)+' s';
+  raf=requestAnimationFrame(meter);
+}
+async function start(){
+  try{ stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:false,noiseSuppression:false,autoGainControl:false}}); }
+  catch(e){ $('status').innerHTML='<span class="bad">The microphone is blocked.</span> Allow it for this page in the browser and try again.'; return; }
+  ctx=new (window.AudioContext||window.webkitAudioContext)(); analyser=ctx.createAnalyser(); analyser.fftSize=2048;
+  ctx.createMediaStreamSource(stream).connect(analyser);
+  chunks=[]; peak=0; wav=null; rec=new MediaRecorder(stream);
+  rec.ondataavailable=e=>{ if(e.data.size)chunks.push(e.data); };
+  rec.onstop=finish;
+  rec.start(); t0=performance.now(); meter();
+  $('recBtn').disabled=true; $('stopBtn').disabled=false; $('saveBtn').disabled=true; $('player').style.display='none';
+  $('status').textContent='Recording… read the two sentences, then press Stop.'; $('saved').textContent='';
+}
+function stop(){ if(rec&&rec.state!=='inactive')rec.stop(); }
+async function finish(){
+  cancelAnimationFrame(raf); $('level').style.width='0';
+  stream.getTracks().forEach(t=>t.stop());
+  $('recBtn').disabled=false; $('recBtn').textContent='● Record again'; $('stopBtn').disabled=true;
+  try{
+    const data=await new Blob(chunks,{type:rec.mimeType}).arrayBuffer();
+    const audio=await ctx.decodeAudioData(data);
+    wav=toWav(audio);
+    const secs=audio.duration;
+    $('player').src=URL.createObjectURL(wav); $('player').style.display='block';
+    let msg, good=true;
+    if(secs<7){msg='That is only '+secs.toFixed(1)+' s — read both sentences and aim for 10–15 s.';good=false;}
+    else if(secs>22){msg='That is '+secs.toFixed(1)+' s — a little long; aim for 10–15 s.';good=false;}
+    else if(peak<0.08){msg='Very quiet — move closer to the microphone and record again.';good=false;}
+    else if(peak>0.98){msg='Too loud (clipping) — move back a little and record again.';good=false;}
+    else msg=secs.toFixed(1)+' s, good level. Listen back, then save.';
+    $('status').innerHTML='<span class="'+(good?'ok':'bad')+'">'+(good?'✓ ':'')+'</span>'+msg;
+    $('saveBtn').disabled=false;
+  }catch(e){ $('status').innerHTML='<span class="bad">Could not read that recording.</span> Try again.'; }
+  try{ctx.close();}catch(e){}
+}
+/* mono 16-bit PCM WAV at the recording's own sample rate */
+function toWav(audio){
+  const n=audio.length, sr=audio.sampleRate, mono=new Float32Array(n);
+  for(let c=0;c<audio.numberOfChannels;c++){const d=audio.getChannelData(c);for(let i=0;i<n;i++)mono[i]+=d[i]/audio.numberOfChannels;}
+  const buf=new ArrayBuffer(44+n*2), v=new DataView(buf), w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i));};
+  w(0,'RIFF'); v.setUint32(4,36+n*2,true); w(8,'WAVE'); w(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,'data'); v.setUint32(40,n*2,true);
+  for(let i=0;i<n;i++){const s=Math.max(-1,Math.min(1,mono[i])); v.setInt16(44+i*2,s<0?s*0x8000:s*0x7FFF,true);}
+  return new Blob([buf],{type:'audio/wav'});
+}
+function saveIt(){
+  if(!wav)return; const a=document.createElement('a'); a.href=URL.createObjectURL(wav); a.download='zika-voice-reference.wav'; a.click();
+  $('saved').innerHTML='<span class="ok">Saved to Downloads.</span> Tell Claude it is there.';
+}
+$('recBtn').onclick=start; $('stopBtn').onclick=stop; $('saveBtn').onclick=saveIt;
+</script>
+</body>
+</html>

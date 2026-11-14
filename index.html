@@ -698,7 +698,7 @@ html{-webkit-tap-highlight-color:transparent;touch-action:pan-x pan-y}   /* an a
 <div id="printSheet"></div>
 <script>
 /* ============ VERSION ============ */
-const APP_VERSION=41;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
+const APP_VERSION=42;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
 
 /* ============ THEME ============ */
 function curTheme(){return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';}
@@ -1112,7 +1112,7 @@ function rankVoice(v){
   if(/國語|臺灣|Taiwan/i.test(nm))s+=50;
   if(/zh[-_]TW/i.test(v.lang))s+=25;
   if(/Google/i.test(v.name))s+=30;
-  const male=voiceId()==='m';
+  const male=voiceId()!=='f';
   if(/Mei-?Jia|美佳|Yating|雅婷|Hsiao|曉|Ting-?Ting|婷|Xiaoxiao|Female|女/i.test(nm))s+=male?-30:40;
   if(/Liang|Aaron|YunJhe|雲哲|Kangkang|\bMale|男/i.test(nm))s+=male?40:-30;
   if(/zh[-_]CN|cmn/i.test(v.lang))s+=8;
@@ -1122,7 +1122,7 @@ function rankVoice(v){
 }
 /* Bundled neural audio: one pack per voice (a single file of MP3 clips plus an index of offsets),
    with the system speech voice as the fallback for anything the pack does not hold. */
-const VOICE_PACKS={f:{file:'audio-tw',name:'曉臻',who:'female'},m:{file:'audio-tw-m',name:'雲哲',who:'male'}};
+const VOICE_PACKS={f:{file:'audio-tw',name:'曉臻',who:'female'},m:{file:'audio-tw-m',name:'雲哲',who:'male'},me:{file:'audio-me',name:'我的聲音',who:'your own voice'}};
 function voiceId(){return VOICE_PACKS[S.settings.voicePack]?S.settings.voicePack:'f';}
 /* which packs this deployment actually carries — Settings only offers voices that exist */
 const VOICE_OK={f:true};
@@ -1133,6 +1133,9 @@ Object.keys(VOICE_PACKS).filter(v=>v!=='f').forEach(v=>{
 const AUDIO_MISS={};
 let curAudio=null;
 function audioKey(t){t=String(t).split('（')[0];const h=t.replace(/[^㐀-鿿]/g,'');return h||t.replace(/[^A-Za-z0-9]/g,'');}
+/* Words that share characters but not sound (了 le / liǎo, 得 de / děi) have one clip per reading, keyed 字@pinyin.
+   tools/build_voice_pack_breezy.py builds the same string in py_id(). */
+function pyKey(p){return String(p||'').split('/')[0].toLowerCase().normalize('NFC').replace(/[\s'’\-·,，!！]/g,'');}
 let APACK=null,APACKP=null,AIDX=null,AURL={},APACK_ID=null;
 function loadPack(){
   const want=voiceId();
@@ -1150,11 +1153,12 @@ function loadPack(){
     .catch(()=>{if(APACKP===pr)APACKP=null;return false;});               /* a failed load is retried on the next play, not remembered */
   pr.want=want; APACKP=pr; return pr;
 }
-function playBundled(text,onFail){
-  const k=audioKey(text);
-  if(!k||AUDIO_MISS[k]){onFail();return;}
+function playBundled(text,onFail,py){
+  const base=audioKey(text);
+  if(!base||AUDIO_MISS[base]){onFail();return;}
   loadPack().then(ok=>{
     if(!ok||!AIDX){onFail();return;}
+    const exact=py?base+'@'+pyKey(py):'', k=exact&&AIDX[exact]?exact:base;
     if(!AIDX[k]){AUDIO_MISS[k]=1;onFail();return;}
     try{
       if(!AURL[k]){
@@ -1171,9 +1175,9 @@ function playBundled(text,onFail){
   });
 }
 /* 'auto' and 'bundled' both play the bundled Taiwan voice first; 'system' always uses the device's speech voice */
-function playAudio(text){
+function playAudio(text,py){
   if((S.settings.audioSrc||'auto')==='system'){speakText(text);return;}
-  playBundled(text,()=>speakText(text));
+  playBundled(text,()=>speakText(text),py);
 }
 function setVoice(v){
   if(!VOICE_PACKS[v])return;
@@ -1198,7 +1202,7 @@ function speakText(text){
 }
 function speakWord(wid){
   const w=byId[wid]; if(!w)return;
-  playAudio(w.t);
+  playAudio(w.t,w.p);
 }
 const SPK_SVG='<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a3.5 3.5 0 0 0-2-3.15v6.3a3.5 3.5 0 0 0 2-3.15zm-2-6.7v2.06A5 5 0 0 1 18 12a5 5 0 0 1-3.5 4.64v2.06A7 7 0 0 0 20 12a7 7 0 0 0-5.5-6.7z"/></svg>';
 function spkBtn(wid,lg){return '<button class="spk'+(lg?' lg':'')+'" title="pronounce" onclick="event.stopPropagation();speakWord(\''+wid+'\')">'+SPK_SVG+'</button>';}
@@ -4840,8 +4844,9 @@ renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
   sel.options[2].textContent='Bundled Taiwan voice only (offline)';
   const row=sel.closest('.set-row'), d=row.querySelector('.d');
   if(d)d.textContent='The bundled voices are Microsoft’s zh-TW neural voices, pre-rendered for every word and every character at a slightly slow pace — full tones, Taiwan readings (垃圾 lèsè). They work offline once stored on the device.';
+  if(d)d.insertAdjacentHTML('beforeend',' <a href="voice.html" style="color:var(--blue);white-space:nowrap">Record your own voice ↗</a>');
   const voices=Object.keys(VOICE_PACKS).filter(v=>VOICE_OK[v]);
-  if(voices.length>1)row.insertAdjacentHTML('beforebegin',`<div class="set-row"><div><b>Bundled voice</b><div class="d">曉臻 is the female voice, 雲哲 the male one. Tap one to switch and hear a sample; the choice follows you to your other devices.</div></div>
+  if(voices.length>1)row.insertAdjacentHTML('beforebegin',`<div class="set-row"><div><b>Bundled voice</b><div class="d">Tap a voice to switch and hear a sample; the choice follows you to your other devices.</div></div>
     <div class="row" style="gap:6px;flex-wrap:wrap;justify-content:flex-end">${voices.map(v=>`<button class="btn sm ${voiceId()===v?'':'ghost'}" onclick="setVoice('${v}')">${VOICE_PACKS[v].name} · ${VOICE_PACKS[v].who}</button>`).join('')}</div></div>`);
 }catch(e){}};})(renderSet);
 

@@ -101,6 +101,25 @@ Known behaviour gaps, not yet fixed:
 - Turning a card type on in Settings does not create that card for words already in the deck.
 - The exam clock in the 口試 drill is not tied to the recording.
 
+## Voice packs
+
+Three slots in `VOICE_PACKS`: `f` (`audio-tw`, 曉臻, the default), `m` (`audio-tw-m`, 雲哲) and `me` (`audio-me`, Thorne's own cloned voice). Settings offers only the packs whose index file exists. A clip key is the word's Han characters; words that share characters but not sound also have `字@pinyin` keys (`pyKey()` in the app, `py_id()` in the builder), and `speakWord` passes the word's pinyin so the right one plays.
+
+Two builders:
+
+- `tools/build_voice_pack.py` — Microsoft's read-aloud voices through edge-tts. Simple, but the service throttles hard (it stopped after 66 clips in November 2026).
+- `tools/build_voice_pack_breezy.py` — BreezyVoice (open source, MediaTek Research): clones the voice on a short reference recording. `voice.html` records that reference in the browser. `tools/build_readings.py` writes `tools/content/readings.json` (the publisher's 注音), which the builder uses to pin pronunciations.
+
+BreezyVoice setup on this Mac lives in `~/.cache/zika-voice/bv/` (Miniforge, a Python 3.10 env with pynini from conda-forge, the BreezyVoice checkout, reference recordings in `prompts/`). Lessons learned the hard way:
+
+- **Run it staged, never as one long job.** An uncapped run on the GPU filled the Mac's memory and pushed it deep into swap. `tools/build_voice_staged.sh` renders 120 clips per process at low priority with a pause between stages, caps the GPU allocator, and stops a stage that grows past 7 GB.
+- A script that loads the model needs `if __name__ == '__main__':` (g2pw spawns processes on macOS).
+- Pin `ruamel.yaml==0.18.6`; install `openai-whisper` unpinned; `setuptools<81`.
+- Do not use the repo's text normaliser on macOS — it converts Traditional to Simplified.
+- g2pw costs about 8 s per call regardless of size: batch every text into one call.
+- The clone copies the reference's speaking pace as well as its sound.
+- Claude cannot hear audio. Whisper listen-back catches gross failures on words of two or more syllables but is unreliable on single syllables; Thorne has to approve the sound by ear before a pack ships.
+
 ## Releasing
 
 1. Make the change. Bump `APP_VERSION` in `index.html` and `VERSION` in `sw.js` to the same number. Bump `ASSETS` in `sw.js` only if a file under `assets/` changed.
