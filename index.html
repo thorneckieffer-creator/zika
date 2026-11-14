@@ -13,8 +13,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
 :root{
-  /* study characters: the face is a setting (html[data-zh]) — the textbook's 明體 by default, sans or 楷體 on request */
-  --cjk:"Songti TC","Noto Serif TC","Songti SC","STSong","PMingLiU","MingLiU",serif;
+  /* study characters: the face is a setting (html[data-zh]) — sans by default, 明體 or 楷體 on request */
+  --cjk:"PingFang TC","Noto Sans TC","Heiti TC","Microsoft JhengHei",sans-serif;
   --ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI","Inter",Roboto,"Helvetica Neue",Arial,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
   /* Paper, the default palette — rice paper, tea, a little lantern red (the app's original colours) */
   --bg:#f3edde; --panel:#fbf7eb; --tint:#ece4d0; --ink:#2a241c; --mut:#94886e; --mut2:#c6bba0;
@@ -77,14 +77,9 @@ html[data-theme="dark"][data-accent="green"]{--brand:#0e9f6e;--brandInk:#4fd1a1;
 html[data-theme="dark"][data-accent="violet"]{--brand:#7c5cff;--brandInk:#b3a1ff;--brandT:#221b45}
 html[data-theme="dark"][data-accent="rose"]{--brand:#e8477a;--brandInk:#ff8fb1;--brandT:#3a1624}
 html[data-theme="dark"][data-accent="orange"]{--brand:#f06a1d;--brandInk:#ffa268;--brandT:#3a2010}
-html[data-zh="sans"]{--cjk:"PingFang TC","Noto Sans TC","Heiti TC","Microsoft JhengHei",sans-serif}
+html[data-zh="song"]{--cjk:"Songti TC","Noto Serif TC","Songti SC","STSong","PMingLiU","MingLiU",serif}
 html[data-zh="kai"]{--cjk:"Kaiti TC","BiauKai","DFKai-SB","Kaiti SC","STKaiti","Noto Serif TC",serif}
 html{transition:none}
-/* paper grain (Paper palette only) */
-body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.045;mix-blend-mode:multiply;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
-html[data-theme="dark"] body::after{mix-blend-mode:screen;opacity:.05}
-html[data-pal="clean"] body::after{display:none}
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
 body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Inter",Roboto,"Helvetica Neue",Arial,var(--cjk);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
@@ -723,8 +718,7 @@ body{font-family:var(--ui);font-size:15px;line-height:1.5;letter-spacing:-.003em
   padding:calc(env(safe-area-inset-top) + 10px) 18px 10px;background:var(--bg)}
 .brand{display:inline-flex;align-items:center;gap:9px;border:0;background:none;color:var(--ink);cursor:pointer;padding:2px 4px 2px 0;font:inherit}
 .brand .logo{width:30px;height:30px;border-radius:9px;background:var(--logo);color:var(--logoFg);display:flex;align-items:center;justify-content:center;
-  font-family:"Kaiti TC","BiauKai","DFKai-SB","Noto Serif TC",serif;font-size:19px;font-weight:600;line-height:1}
-html[data-pal="clean"] .brand .logo,html[data-accent] .brand .logo{font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;font-size:17px}
+  font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;font-size:17px;font-weight:600;line-height:1}
 .brand .bname{font-size:17px;font-weight:700;letter-spacing:-.01em}
 .mast .grow{flex:1;order:1}
 .mast .eng,.mast .greet,.seal{display:none}
@@ -774,26 +768,21 @@ html[data-pal="clean"] .brand .logo,html[data-accent] .brand .logo{font-family:"
 .btn.ghost:hover{background:var(--line)}
 .btn.sm{border-radius:9px}
 .btn.big{border-radius:14px;padding:15px;font-size:16px}
-html[data-pal="clean"] .btn.big:not(.ghost):not(:disabled),html[data-pal="clean"] .btn.big:not(.ghost):not(:disabled):hover{box-shadow:none;transform:none}
-html[data-pal="clean"] .btn.big:not(.ghost):not(:disabled):hover{opacity:.92}
+.btn.big:not(.ghost):not(:disabled),.btn.big:not(.ghost):not(:disabled):hover{box-shadow:none;transform:none}
+.btn.big:not(.ghost):not(:disabled):hover{opacity:.92}
 .link{color:var(--brandInk)}
 .lesson:hover,.dcard:hover,.gpt:hover,.ctile:hover,.cftile:hover,.lmini:hover,.pact:hover,.grades button:hover{transform:none;box-shadow:none}
-.stage{border-radius:20px}
-.card.hero{padding:22px}
-html[data-pal="clean"] .stage{box-shadow:none}
-html[data-pal="clean"] .card.hero{background:var(--panel)}
-html[data-pal="clean"] .card.hero::before{display:none}
-html[data-pal="clean"] .ring.full .fg{filter:none}
-/* with an accent colour chosen, progress follows it; Classic keeps the original tea-green ring and gold when full */
-html[data-accent] .ring .fg{stroke:var(--brandInk)}
-html[data-accent] .ring .fg.soft{stroke:var(--brandInk);opacity:.3}
-html[data-accent] .ring.full .fg,html[data-accent] .ring.r2.full .fg:not(.soft){stroke:var(--gold)}
-html[data-accent] .sbar i{background:var(--brandInk)}
+.stage{box-shadow:none;border-radius:20px}
+.card.hero{background:var(--panel);padding:22px}
+.card.hero::before{display:none}
+.ring .fg{stroke:var(--brandInk)}
+.ring .fg.soft{stroke:var(--brandInk);opacity:.3}
+.ring.full .fg,.ring.r2.full .fg:not(.soft){stroke:var(--gold);filter:none}
 .hero-line{font-size:19px;font-weight:700;letter-spacing:-.015em}
-html[data-pal="clean"] .chip{background:var(--tint);border-color:transparent;color:var(--mut)}
-html[data-pal="clean"] .chip.hot{background:#fff1dc;animation:none}
-html[data-pal="clean"][data-theme="dark"] .chip.hot{background:#33260f}
-html[data-pal="clean"] .modal{background:rgba(9,11,15,.5)}
+.chip{background:var(--tint);border-color:transparent;color:var(--mut)}
+.chip.hot{animation:none}
+.sbar i{background:var(--brandInk)}
+.modal{background:rgba(9,11,15,.5)}
 .modal-card{border:0;border-radius:20px;box-shadow:0 24px 70px rgba(0,0,0,.28)}
 .tgl.on,.filters button.on,.segbar button.on,.wbtn.on{background:var(--brand);border-color:var(--brand);color:var(--brandFg)}
 input[type=range],.tl-scrub{accent-color:var(--brand)}
@@ -804,6 +793,8 @@ input[type=range],.tl-scrub{accent-color:var(--brand)}
 .view-in{animation-duration:.16s}
 .hmgrid .hm1{background:var(--s1bg)}.hmgrid .hm2{background:var(--s2bg)}.hmgrid .hm3{background:var(--s3bg)}.hmgrid .hm4{background:var(--s4bg)}
 html[data-theme="dark"] .hmgrid .hm1{background:var(--s1bg)}html[data-theme="dark"] .hmgrid .hm2{background:var(--s2bg)}html[data-theme="dark"] .hmgrid .hm3{background:var(--s3bg)}html[data-theme="dark"] .hmgrid .hm4{background:var(--s4bg)}
+.why.bad,.readline .seg.unk{background:#fdecea}
+html[data-theme="dark"] .why.bad,html[data-theme="dark"] .readline .seg.unk{background:#3a1b18}
 .toast{box-shadow:0 10px 30px rgba(0,0,0,.22)}
 /* ---- Today: greeting, decks, the fold ---- */
 .hello{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:4px 0 16px}
@@ -847,6 +838,7 @@ textarea.myin{min-height:120px;resize:vertical;line-height:1.5}
 .seg button{border:0;background:transparent;color:var(--mut);font:inherit;font-size:13px;font-weight:600;padding:6px 12px;border-radius:8px;cursor:pointer}
 .seg button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
 .set-row .seg,.set-row .swatches{flex:none;flex-wrap:nowrap}
+.meaning,.pos{font-family:var(--ui)}
 .swatch[title="classic"]{background:var(--ink)!important}
 /* ---- my words ---- */
 .my-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:4px 0 14px}
@@ -911,12 +903,12 @@ textarea.myin{min-height:120px;resize:vertical;line-height:1.5}
   <div id="vLib" style="display:none"></div>
   <div id="vRev" style="display:none"></div>
   <div id="vSet" style="display:none"></div>
-  <div class="foot">FSRS-5 · 加油 · <span id="appVer"></span></div>
+  <div class="foot">FSRS-5 · <span id="appVer"></span></div>
 </div>
 <div id="printSheet"></div>
 <script>
 /* ============ VERSION ============ */
-const APP_VERSION=48;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
+const APP_VERSION=49;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
 
 /* ============ THEME ============ */
 function curTheme(){return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';}
@@ -5895,12 +5887,12 @@ const TAB_ICON={tabHome:'home',tabRev:'rev',tabDrill:'drill',tabCatch:'catch',ta
 /* ---------- look: accent colour and the face study characters are set in ---------- */
 const ACCENTS={classic:'#2a241c',blue:'#2563eb',green:'#0b8457',violet:'#6d4aff',rose:'#d6336c',orange:'#d9480f'};   /* classic = ink buttons, tea-green links */
 const PALETTES={paper:'Paper',clean:'Clean'};
-const ZH_FONTS={song:'Song 明體',sans:'Sans 黑體',kai:'Kai 楷體'};   /* 明體, the textbook's face, is the default */
+const ZH_FONTS={sans:'Sans 黑體',song:'Song 明體',kai:'Kai 楷體'};
 function shLook(){
   const r=document.documentElement, a=S.settings.accent, z=S.settings.zhFont, pal=S.settings.palette;
   if(pal==='clean')r.dataset.pal='clean'; else delete r.dataset.pal;
   if(a&&a!=='classic'&&ACCENTS[a])r.dataset.accent=a; else delete r.dataset.accent;
-  if(z&&z!=='song'&&ZH_FONTS[z])r.dataset.zh=z; else delete r.dataset.zh;
+  if(z&&z!=='sans'&&ZH_FONTS[z])r.dataset.zh=z; else delete r.dataset.zh;
   /* remembered outside the deck so the next start can paint the right look before the deck is parsed */
   try{store.setItem('zika_look',JSON.stringify({t:S.settings.theme||'auto',p:r.dataset.pal||'',a:r.dataset.accent||'',z:r.dataset.zh||''}));}catch(e){}
   const tb=document.getElementById('themeBtn'); if(tb)tb.innerHTML=SVG(curTheme()==='dark'?ICON.sun:ICON.moon);
@@ -6024,12 +6016,12 @@ renderHome=(function(orig){return function(){orig.apply(this,arguments);try{shHo
 renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
   const v=document.getElementById('vSet'), ln=shLesson();
   const cards=[...v.querySelectorAll('.card')], look=cards.find(c=>/^Look & feel/.test(((c.querySelector('.lab')||{}).textContent||'').trim()));
-  const a=ACCENTS[S.settings.accent]?S.settings.accent:'classic', z=ZH_FONTS[S.settings.zhFont]?S.settings.zhFont:'song', pal=S.settings.palette==='clean'?'clean':'paper';
+  const a=ACCENTS[S.settings.accent]?S.settings.accent:'classic', z=S.settings.zhFont||'sans', pal=S.settings.palette==='clean'?'clean':'paper';
   const rows=`<div class="set-row"><div><b>Palette</b><div class="d">Paper is the warm original; Clean is neutral white and grey. Both have a day and a night side</div></div>
       <div class="seg">${Object.keys(PALETTES).map(k=>`<button class="${pal===k?'on':''}" onclick="shSetLook('palette','${k}')">${PALETTES[k]}</button>`).join('')}</div></div>
     <div class="set-row"><div><b>Accent colour</b><div class="d">buttons, links and the active tab. Classic is ink and tea green; follows you to your other devices</div></div>
       <div class="swatches">${Object.keys(ACCENTS).map(k=>`<button class="swatch${a===k?' on':''}" style="background:${ACCENTS[k]}" title="${k}" aria-label="${k}" onclick="shSetLook('accent','${k}')"></button>`).join('')}</div></div>
-    <div class="set-row"><div><b>Character style</b><div class="d">the face study characters are shown in: the textbook’s 明體, a clean sans, or 楷體, which is closest to handwriting</div></div>
+    <div class="set-row"><div><b>Character style</b><div class="d">the face study characters are shown in: a clean sans, the textbook’s 明體, or 楷體, which is closest to handwriting</div></div>
       <div class="seg">${Object.keys(ZH_FONTS).map(k=>`<button class="${z===k?'on':''}" onclick="shSetLook('zhFont','${k}')">${ZH_FONTS[k]}</button>`).join('')}</div></div>`;
   if(look)look.insertAdjacentHTML('beforeend',rows);
   v.insertAdjacentHTML('afterbegin',`<div class="card" id="youCard"><div class="lab">You</div>

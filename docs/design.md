@@ -2,17 +2,19 @@
 
 Thorne's brief (November 2026): sleek, simple, efficient and fast, in the manner of the big consumer apps; a blend of the best of Skritter and Quizlet; less decoration around the name; personal to where the learner is in the course. v44 rebuilt the shell to this. Keep new screens inside it.
 
-He then asked for the app's original colours back ("the dark, grayer background and the original color flow"), so since v46 the default palette is **Paper** — the warm rice-paper day side and the night-market night side the app always had, with ink buttons, tea-green links and the red mark — inside the new layout. The neutral white-and-grey palette from v44 is still there as **Clean** in Settings → Look & feel. v48 went further at his request ("I like the paper texture … anything else that you think from before was good", and no big changes to the look for now): Paper again has the paper grain, the textbook's 明體 for study characters, the soft gradient on the Today card, the tea-green ring that turns gold when full, and the depth under the review card and the main button. The rotated seal, the tagline under it and the letter-spaced capitals stay gone, because the brief asked for less decoration around the name.
+He then asked for the app's original colours back ("the dark, grayer background and the original color flow"), so since v46 the default palette is **Paper** — the warm rice-paper day side and the night-market night side the app always had, with ink buttons, tea-green links and the red mark — inside the new layout. The neutral white-and-grey palette from v44 is still there as **Clean** in Settings → Look & feel. The paper texture, the rotated seal and the letter-spaced capitals did not come back.
 
-**Standing instruction: do not restyle the app again unless Thorne asks.** New screens match Paper as it is.
+v48 tried putting the rest of the old look back as well (the paper grain, 明體 for study characters, the gradient on the Today card, shadows under the review card and main button). He saw it and preferred it without: "It was way cleaner before." v49 reverted it. So the settled look is **the original colours on flat surfaces, sans characters, no texture**.
+
+**Standing instruction: do not restyle the app unless Thorne asks, and when he asks, change one thing at a time so he can judge it.**
 
 ## Principles
 
 1. **One thing to do next.** Today opens on the greeting, where you are in the book, and one filled button. Everything else on that screen is secondary and most of it is folded away.
-2. **Content first, chrome quiet.** Surfaces a shade lighter than the page, hairline borders, no hover lift. Paper carries its grain and a little depth under the review card and the main button; Clean is completely flat. Colour is reserved for meaning.
+2. **Content first, chrome quiet.** Flat surfaces a shade lighter than the page, hairline borders, no shadows, no textures, no hover lift. Colour is reserved for meaning.
 3. **Colours with jobs.** `--brand` fills things you tap (the primary button, toggles, the active tab line) and `--brandInk` is brand-coloured text and strokes on the page (links, the progress ring). With the default *Classic* accent those are ink and tea green; the other accents make both one colour. `--acc` (green) means learned or correct. Never write a result in `--brand`, or fill a button with `--acc`.
 4. **Plain words.** Sentence case. No letter-spaced capitals. Labels say what the thing is.
-5. **Fast.** Short transitions (160 ms), nothing that re-renders more than its own view, and no new full-screen effects (the paper grain is the one that exists).
+5. **Fast.** No full-screen effects, short transitions (160 ms), nothing that re-renders more than its own view.
 6. **Book by book.** Always "Book 2 · Lesson 7", never a running lesson number.
 
 ## The shell
@@ -24,7 +26,7 @@ He then asked for the app's original colours back ("the dark, grayer background 
 
 ## Tokens
 
-All colour comes from variables at the top of the stylesheet. The palette (`:root` is Paper, `html[data-pal="clean"]` is Clean) and its night side (`html[data-theme="dark"]`) define the same names; an accent choice (`html[data-accent]`) redefines `--brand`, `--brandInk`, `--brandFg` and `--brandT` (the tint), and the mark's `--logo`. The face study characters are set in is `--cjk`, switched by `html[data-zh]` (明體 by default, sans, 楷體); interface text uses `--ui` and is always sans.
+All colour comes from variables at the top of the stylesheet. The palette (`:root` is Paper, `html[data-pal="clean"]` is Clean) and its night side (`html[data-theme="dark"]`) define the same names; an accent choice (`html[data-accent]`) redefines `--brand`, `--brandInk`, `--brandFg` and `--brandT` (the tint), and the mark's `--logo`. The face study characters are set in is `--cjk`, switched by `html[data-zh]` (sans, 明體, 楷體); interface text uses `--ui` and is always sans.
 
 New styles use the variables and never a literal colour, so they work in dark mode and with every accent.
 
