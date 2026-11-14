@@ -1,0 +1,470 @@
+# Usage phrases for 字卡 — original, written for this app (never copied from the textbook).
+#
+# For each word: a few short collocations first, then one or two short sentences, so the word is
+# learned with the company it keeps. tools/check_usage.py checks them and installs them into index.html.
+#
+# Format
+#   == 2.6                         a section: Book 2, Lesson 6
+#   詞: 中文 = English | 中文 = English | …
+#
+#   * The word must be written as it is in WORDS. A word listed twice in one lesson (又, 又) takes
+#     two lines, in the lesson's order.
+#   * A phrase may use only characters met by the end of that lesson. The checker lists any others.
+#   * Pinyin is generated. To force a reading, put it after the character: 你得(děi)去.
+#   * People's names need no phrases.
+
+== 2.6
+搬: 搬東西 = to move things | 搬到台北 = to move to Taipei | 搬出去 = to move out | 我下個月要搬到學校附近。 = Next month I'm moving near the school.
+河邊: 在河邊走走 = to take a walk by the river | 河邊的公園 = the park by the river | 我家就在河邊。 = My home is right by the river.
+公園: 去公園玩 = to go and play in the park | 公園裡 = in the park | 我常在公園裡運動。 = I often exercise in the park.
+腳踏車: 騎腳踏車 = to ride a bicycle | 一台腳踏車 = a bicycle | 我每天騎腳踏車去學校。 = I ride my bicycle to school every day.
+正在: 正在上課 = in class right now | 正在找房子 = currently looking for a place to live | 他正在打電話。 = He is on the phone right now.
+網站: 學校的網站 = the school's website | 在網站上找房子 = to look for housing on a website | 你可以上這個網站看看。 = You can go on this website and have a look.
+資料: 找資料 = to look up information | 上網找資料 = to look up information online | 很多資料 = a lot of information | 這些資料很重要。 = This information is important.
+搬家: 幫朋友搬家 = to help a friend move | 搬了兩次家 = moved house twice | 我下個星期要搬家。 = I'm moving house next week.
+近: 很近 = very close | 離學校很近 = very close to the school | 近一點 = a bit closer | 我家離公司很近，走路五分鐘就到了。 = My home is close to the office; it's a five-minute walk.
+合約: 一年的合約 = a one-year contract | 看合約 = to read the contract | 合約上寫著 = the contract says | 我們的合約是一年的。 = Our contract is for one year.
+到期: 合約到期 = the contract expires | 快到期了 = about to expire | 我的合約下個月到期。 = My contract expires next month.
+還好: 還好沒下雨。 = Luckily it didn't rain. | 還好我帶了傘。 = Luckily I brought an umbrella. | 還好房租不貴。 = Fortunately the rent isn't high.
+光線: 光線很好 = good natural light | 光線不夠 = not enough light | 這個房間的光線不錯。 = This room gets good light.
+重要: 很重要 = very important | 重要的事 = an important matter | 最重要的是 = the most important thing is | 對我來說，光線很重要。 = For me, natural light matters a lot.
+如果: 如果有時間 = if there is time | 如果下雨 = if it rains | 如果你有問題，可以問我。 = If you have a question, you can ask me. | 如果太貴，我就不買了。 = If it's too expensive, I won't buy it.
+別的: 別的地方 = other places | 別的人 = other people | 有沒有別的？ = Is there anything else? | 我還想看看別的房子。 = I'd like to look at some other houses too.
+合適: 很合適 = very suitable | 不太合適 = not really suitable | 合適的房子 = a suitable house | 我還沒找到合適的工作。 = I haven't found a suitable job yet.
+少: 少了一張椅子 = one chair short | 少一個人 = one person missing | 還少什麼？ = What else is missing? | 房間裡少了一張床。 = The room is missing a bed.
+可惜: 太可惜了！ = What a pity! | 真可惜 = such a shame | 可惜我沒時間。 = It's a pity I don't have time. | 這個房間很好，可惜太貴了。 = This room is great; a shame it costs too much.
+放: 放在桌子上 = to put on the table | 放在這裡 = to put it here | 放東西 = to store things | 你的書可以放在我這裡。 = You can leave your books with me.
+兩邊: 路的兩邊 = both sides of the road | 兩邊都有商店 = there are shops on both sides | 河的兩邊都是公園。 = There are parks on both sides of the river. | 我兩邊都要付房租。 = I have to pay rent at both places.
+願意: 不願意 = unwilling | 很願意幫忙 = glad to help | 你願意跟我一起去嗎？ = Would you be willing to go with me? | 他不願意搬家。 = He doesn't want to move house.
+開: 開車 = to drive a car | 開車去 = to go by car | 會開車 = to know how to drive | 我開車送你去機場。 = I'll drive you to the airport.
+存: 存錢 = to save money | 存資料 = to save data | 存在電腦裡 = to save on the computer | 我想存錢買車。 = I want to save up to buy a car.
+隨身碟: 一個隨身碟 = a flash drive | 存在隨身碟裡 = to save on a flash drive | 資料都在隨身碟裡。 = The data is all on the flash drive. | 我的隨身碟不見了。 = My flash drive has gone missing.
+什麼樣: 什麼樣的房子 = what kind of house | 什麼樣的人 = what kind of person | 你想找什麼樣的工作？ = What kind of job do you want to find?
+慢慢來: 你慢慢來。 = Take your time. | 慢慢來，不急。 = Take your time, there's no rush. | 學中文要慢慢來。 = Learning Chinese has to be taken slowly.
+不急: 這件事不急。 = This isn't urgent. | 不急，明天再說。 = No hurry, we can talk about it tomorrow. | 我不急，你先用。 = I'm in no hurry, you use it first.
+相當: 相當好 = fairly good | 相當貴 = rather expensive | 相當方便 = quite convenient | 這裡的房租相當高。 = Rents here are quite high.
+自行車: 騎自行車 = to ride a bicycle | 自行車道 = bike lane | 我的自行車是新的。 = My bicycle is new.
+床: 一張床 = a bed | 在床上看書 = to read in bed | 這張床很舒服。 = This bed is comfortable.
+桌子: 一張桌子 = a table | 桌子上 = on the table | 書在桌子上。 = The book is on the table. | 我需要一張大一點的桌子。 = I need a slightly bigger desk.
+椅子: 一張椅子 = a chair | 坐在椅子上 = to sit on a chair | 這張椅子坐起來很舒服。 = This chair is comfortable to sit in.
+家具: 買家具 = to buy furniture | 新家具 = new furniture | 有家具的房間 = a furnished room | 房間裡的家具都是房東的。 = All the furniture in the room belongs to the landlord.
+而且: 便宜而且好吃 = cheap and tasty too | 這裡很方便，而且房租不貴。 = It's convenient here, and the rent isn't high either. | 他會說中文，而且說得很好。 = He can speak Chinese, and speaks it well.
+吵: 很吵 = noisy | 太吵了 = too noisy | 外面很吵 = it's noisy outside | 這裡晚上有一點吵。 = It's a bit noisy here at night.
+生活費: 一個月的生活費 = a month's living expenses | 生活費很高 = living costs are high | 台北的生活費比較高。 = Living costs in Taipei are relatively high.
+低: 很低 = very low | 比較低 = lower | 生活費低 = low living costs | 這裡的房租比台北低。 = Rent here is lower than in Taipei.
+留: 留在台灣 = to stay in Taiwan | 留在家裡 = to stay at home | 留電話 = to leave a phone number | 我想留在這裡工作。 = I'd like to stay here and work.
+長: 很長 = very long | 長一點 = a bit longer | 時間很長 = a long time | 合約的時間太長了。 = The contract runs for too long.
+討論: 討論功課 = to discuss homework | 跟同學討論 = to discuss with classmates | 討論一下 = to talk it over | 我們明天再討論這個問題。 = Let's discuss this question again tomorrow.
+社團: 參加社團 = to join a club | 學校的社團 = school clubs | 你參加了什麼社團？ = Which club did you join?
+活動: 參加活動 = to take part in an activity | 社團活動 = club activities | 週末的活動 = the weekend's activities | 這個活動很有意思。 = This activity is a lot of fun.
+失望: 很失望 = very disappointed | 有一點失望 = a little disappointed | 對他很失望 = very disappointed in him | 別失望，還有別的房子。 = Don't be disappointed, there are other houses.
+放心: 你放心 = don't worry | 不放心 = to feel uneasy | 放心，沒問題。 = Relax, it's no problem. | 媽媽對他不放心。 = His mother worries about him.
+用: 用電腦 = to use a computer | 用中文說 = to say it in Chinese | 不用 = no need | 這個怎麼用？ = How do you use this? | 我可以用你的筆嗎？ = May I use your pen?
+首爾: 去首爾旅行 = to travel to Seoul | 從首爾來 = to come from Seoul | 他家在首爾。 = His home is in Seoul.
+
+== 2.7
+垃圾: 倒垃圾 = to take out the trash | 丟垃圾 = to throw away trash | 垃圾車 = garbage truck | 地上有很多垃圾。 = There's a lot of litter on the ground.
+倒: 倒垃圾 = to take out the trash | 倒水 = to pour water | 我每天晚上倒垃圾。 = I take the trash out every evening. | 請幫我倒一杯水。 = Please pour me a glass of water.
+丟: 丟垃圾 = to throw away trash | 丟在這裡 = to throw it here | 別丟 = don't throw it away | 垃圾不可以丟在路上。 = You can't drop litter on the street.
+收: 收垃圾 = to collect the trash | 收錢 = to collect money | 收到 = to receive | 垃圾車每天晚上來收垃圾。 = The garbage truck comes to collect the trash every evening.
+以為: 我以為你不來了。 = I thought you weren't coming. | 我以為今天是星期五。 = I thought today was Friday. | 他以為我是日本人。 = He assumed I was Japanese.
+回收: 資源回收 = recycling | 可以回收 = recyclable | 回收瓶子 = to recycle bottles | 這些紙都可以回收。 = All this paper can be recycled.
+規定: 學校的規定 = school rules | 有規定 = there is a rule | 規定很多 = lots of rules | 這是公司的規定。 = This is company policy.
+要不然: 快走吧，要不然就太晚了。 = Let's go, otherwise it will be too late. | 多穿一點，要不然會感冒。 = Wear more, or you'll catch a cold. | 你得(děi)早一點來，要不然沒位子。 = You have to come early, otherwise there are no seats.
+皮包: 一個皮包 = a purse | 買皮包 = to buy a purse | 我的皮包不見了。 = My purse is gone. | 皮包裡有錢和手機。 = There's money and a phone in the purse.
+跑: 跑步 = to go running | 跑得很快 = to run fast | 跑過來 = to run over here | 他每天早上去公園跑步。 = He goes running in the park every morning.
+追: 追垃圾車 = to run after the garbage truck | 追公車 = to chase the bus | 追不上 = can't catch up | 我跑得很快，可是還是追不上他。 = I run fast, but I still can't catch him.
+有趣: 很有趣 = very interesting | 有趣的人 = an interesting person | 有趣的事 = something interesting | 這個故事很有趣。 = This story is interesting.
+不壞: 還不壞 = not bad at all | 這個主意不壞。 = That's not a bad idea. | 他的中文不壞。 = His Chinese isn't bad. | 這家餐廳的菜不壞。 = The food at this restaurant is not bad.
+天天: 天天運動 = to exercise every day | 天天都來 = to come every single day | 天天下雨 = it rains day after day | 我天天喝咖啡。 = I drink coffee every day.
+汽水罐: 一個汽水罐 = a soda can | 空的汽水罐 = an empty soda can | 汽水罐可以回收。 = Soda cans can be recycled.
+紙杯: 一個紙杯 = a paper cup | 用紙杯喝水 = to drink water from a paper cup | 紙杯用了就丟。 = Paper cups get thrown away after one use.
+放下: 放下東西 = to put things down | 把書放下 = to put the book down | 放下手機 = to put down your phone | 你先把袋子放下吧。 = Put your bag down first.
+走出來: 走出來看看 = to step outside and look | 從房間走出來 = to walk out of the room | 他從店裡走出來。 = He walked out of the shop.
+怎麼辦: 那怎麼辦？ = Then what do we do? | 不知道該怎麼辦 = don't know what to do | 我的皮包不見了，怎麼辦？ = My purse is gone. What do I do?
+聊: 聊天 = to chat | 聊一聊 = to have a chat | 跟朋友聊天 = to chat with friends | 我們聊了一個晚上。 = We chatted all evening.
+忽然: 忽然下雨了 = it suddenly started raining | 忽然想起來 = to suddenly remember | 他忽然不說話了。 = He suddenly went quiet.
+聲音: 很大的聲音 = a loud noise | 聲音很好聽 = a lovely voice | 什麼聲音？ = What's that sound? | 我聽到垃圾車的聲音了。 = I can hear the garbage truck.
+奇怪: 很奇怪 = very strange | 真奇怪 = how odd | 奇怪的聲音 = a strange sound | 奇怪，我的手機呢？ = That's odd, where's my phone?
+袋子: 一個袋子 = a bag | 放在袋子裡 = to put in the bag | 自己帶袋子 = to bring your own bag | 你要袋子嗎？ = Do you want a bag?
+輛: 一輛車 = a car | 兩輛公車 = two buses | 這輛腳踏車 = this bicycle | 那輛車是誰的？ = Whose car is that?
+一定: 一定的時間 = a set time | 一定的地點 = a fixed place | 垃圾車每天在一定的時間來。 = The garbage truck comes at a set time every day.
+地點: 時間和地點 = time and place | 上課的地點 = where the class is held | 見面的地點 = the meeting place | 活動的地點在哪裡？ = Where is the activity being held?
+為了: 為了你 = for you | 為了學中文 = in order to learn Chinese | 為了保護環境 = to protect the environment | 他為了找工作搬到台北。 = He moved to Taipei to look for work.
+保護: 保護環境 = to protect the environment | 保護自己 = to protect yourself | 保護孩子 = to protect children | 我們都應該保護環境。 = We should all protect the environment.
+分類: 垃圾分類 = sorting trash | 做分類 = to do the sorting | 垃圾要先分類再丟。 = Trash has to be sorted before you throw it out.
+利用: 利用時間 = to make use of time | 利用週末 = to make use of the weekend | 利用這個機會 = to take this opportunity | 我利用暑假去旅行。 = I used the summer break to travel.
+紙: 一張紙 = a sheet of paper | 紙和筆 = paper and pen | 寫在紙上 = to write on paper | 紙可以回收。 = Paper can be recycled.
+瓶子: 一個瓶子 = a bottle | 空瓶子 = an empty bottle | 塑膠瓶子 = a plastic bottle | 瓶子裡還有水。 = There's still water in the bottle.
+塑膠: 塑膠袋 = plastic bag | 塑膠瓶 = plastic bottle | 塑膠做的 = made of plastic | 請少用塑膠袋。 = Please use fewer plastic bags.
+資源: 資源回收 = recycling | 水資源 = water resources | 資源不多 = resources are limited | 這個網站有很多學中文的資源。 = This website has lots of resources for learning Chinese.
+回收桶: 丟進回收桶 = to throw into the recycling bin | 回收桶在哪裡？ = Where's the recycling bin? | 紙要丟在這個回收桶裡。 = Paper goes in this recycling bin.
+城市: 大城市 = a big city | 住在城市裡 = to live in the city | 這個城市很乾淨。 = This city is clean. | 你最喜歡哪個城市？ = Which city do you like best?
+聽見: 聽見聲音 = to hear a sound | 沒聽見 = didn't hear | 你聽見了嗎？ = Did you hear that? | 我聽見有人叫我。 = I heard someone call me.
+開過來: 把車開過來 = to drive the car over here | 公車開過來了。 = The bus is pulling up. | 垃圾車開過來了，快去倒垃圾！ = The garbage truck is coming, go and take out the trash!
+走過去: 走過去看看 = to walk over and have a look | 從這裡走過去 = to walk over from here | 走過去只要五分鐘。 = It's only five minutes on foot.
+丟進去: 把垃圾丟進去 = to throw the trash in | 丟進去就好了 = just throw it in | 紙杯不可以丟進去。 = Paper cups can't go in there.
+路上: 在路上 = on the way | 回家的路上 = on the way home | 路上車很多 = lots of traffic on the road | 路上小心！ = Take care on the way!
+
+== 2.8
+功夫: 學功夫 = to learn kungfu | 中國功夫 = Chinese kungfu | 功夫電影 = kungfu films | 下功夫 = to put in hard work | 他的功夫很好。 = His kungfu is very good.
+叫: 叫他 = to call him | 有人叫你 = someone is calling you | 叫計程車 = to call a taxi | 我叫你，你沒聽見嗎？ = I called you. Didn't you hear?
+見: 看見 = to see | 聽見 = to hear | 看不見 = can't see | 我沒看見他。 = I didn't see him. | 你聽得見嗎？ = Can you hear?
+推: 推門 = to push the door | 推開 = to push open | 推車 = to push a cart | 別推我！ = Don't push me! | 請幫我推一下。 = Please give me a push.
+體育館: 去體育館運動 = to go to the gym to exercise | 學校的體育館 = the school gym | 在體育館打籃球 = to play basketball in the gym | 體育館幾點開？ = What time does the gym open?
+太極拳: 打太極拳 = to do tai chi | 學太極拳 = to learn tai chi | 教太極拳 = to teach tai chi | 很多人早上在公園打太極拳。 = Lots of people do tai chi in the park in the morning.
+師父: 功夫師父 = a kungfu master | 跟師父學 = to learn from a master | 我的師父很有名。 = My master is famous. | 師父教得很好。 = The master teaches well.
+天分: 語言天分 = a gift for languages | 沒有天分 = to have no talent | 他很有音樂天分。 = He has a real gift for music. | 學語言需要天分嗎？ = Do you need talent to learn a language?
+懂: 聽不懂 = can't understand (by listening) | 看得懂 = can understand (by reading) | 懂中文 = to understand Chinese | 我不懂你的意思。 = I don't understand what you mean. | 你懂了嗎？ = Do you get it now?
+起來: 快起來！ = Get up, quick! | 早上六點起來 = to get up at six in the morning | 我今天起來得很晚。 = I got up late today.
+動作: 動作很快 = quick movements | 做動作 = to do a movement | 這個動作很難。 = This movement is hard. | 太極拳的動作很慢。 = Tai chi movements are slow.
+輕: 很輕 = very light | 輕一點 = more gently | 輕輕地(de)推 = to push gently | 這個袋子很輕。 = This bag is light. | 動作要輕。 = The movement should be gentle.
+腿: 腿很長 = long legs | 腿很痛 = one's legs hurt | 右腿 = right leg | 打完太極拳，我的腿很痛。 = After tai chi my legs hurt.
+了: 吃不了 = can't finish eating | 去不了 = unable to go | 來得了 = able to come | 我明天有事，去不了。 = I have something on tomorrow, so I can't go. | 這麼多菜，我們吃不了。 = We can't eat this much food.
+下去: 學下去 = to keep studying | 說下去 = to go on talking | 做下去 = to keep doing it | 我想在台灣住下去。 = I want to go on living in Taiwan. | 請你說下去。 = Please go on.
+興趣: 有興趣 = to be interested | 沒興趣 = not interested | 對功夫有興趣 = interested in kungfu | 你的興趣是什麼？ = What are your interests? | 我對台灣的文化很有興趣。 = I'm very interested in Taiwanese culture.
+借: 借書 = to borrow a book | 借錢 = to borrow money | 借給我 = to lend to me | 我可以跟你借一枝筆嗎？ = May I borrow a pen from you? | 這本書是在圖書館借的。 = I borrowed this book from the library.
+有天分: 很有天分 = very gifted | 對音樂有天分 = to have a gift for music | 他學語言很有天分。 = He has a real talent for languages. | 師父說我有天分。 = My master says I have talent.
+學會: 學會開車 = to learn to drive | 學會游泳 = to learn to swim | 還沒學會 = haven't mastered it yet | 我學會騎腳踏車了。 = I've learned to ride a bicycle. | 一個月就學會了。 = Mastered it in just a month.
+起不來: 早上起不來 = can't get up in the morning | 我太累了，起不來。 = I'm too tired to get up. | 昨天睡得太晚，今天起不來。 = I went to bed too late last night and couldn't get up today.
+走不了路: 腿痛得走不了路 = legs hurting too much to walk | 我累得走不了路。 = I'm too tired to walk. | 他病了，走不了路。 = He's ill and can't walk.
+好處: 有好處 = to be beneficial | 沒有好處 = to do no good | 對身體有好處 = good for your health | 運動的好處很多。 = Exercise has many benefits. | 學功夫有什麼好處？ = What's the benefit of learning kungfu?
+抱怨: 常常抱怨 = to complain a lot | 別抱怨了 = stop complaining | 跟朋友抱怨 = to complain to a friend | 他總是抱怨工作太多。 = He's always complaining that he has too much work.
+公尺: 一百公尺 = a hundred metres | 兩公尺高 = two metres tall | 離這裡五百公尺 = five hundred metres from here | 往前走兩百公尺就到了。 = Walk two hundred metres ahead and you're there.
+總是: 總是很忙 = always busy | 總是這樣 = it's always like this | 他總是很晚睡。 = He always goes to bed late. | 我總是忘了帶傘。 = I always forget to bring an umbrella.
+完: 吃完 = to finish eating | 看完 = to finish reading or watching | 做完功課 = to finish one's homework | 我看完這本書了。 = I've finished this book. | 你吃完了沒有？ = Have you finished eating?
+體力: 體力很好 = good stamina | 沒有體力 = to have no energy | 爬山需要很好的體力。 = Hiking takes good stamina. | 我的體力不夠。 = I don't have enough stamina.
+整天: 一整天 = a whole day | 整天在家 = at home all day | 整天都很忙 = busy all day long | 我昨天睡了一整天。 = I slept all day yesterday. | 他整天玩手機。 = He's on his phone all day.
+精神: 精神很好 = full of energy | 沒有精神 = listless | 你今天精神不錯。 = You look lively today. | 睡得好，精神就好。 = Sleep well and you'll have energy.
+本來: 本來想去 = had meant to go | 我本來不喜歡運動。 = I didn't use to like exercise. | 我本來打算今天去，可是下雨了。 = I'd planned to go today, but it rained.
+可能: 不可能 = impossible | 有可能 = it's possible | 可能會下雨 = it may rain | 他可能已經回家了。 = He has probably gone home already. | 明天我可能不能來。 = I may not be able to come tomorrow.
+回: 回家 = to go home | 回國 = to go back to one's country | 回宿舍 = to go back to the dorm | 你什麼時候回台灣？ = When are you coming back to Taiwan? | 我想回家休息。 = I want to go home and rest.
+影響: 影響身體 = to affect one's health | 影響別人 = to affect other people | 影響很大 = a big impact | 太晚睡會影響身體。 = Going to bed too late affects your health.
+身體: 身體很好 = in good health | 身體不舒服 = to feel unwell | 對身體好 = good for the body | 你身體怎麼樣？ = How's your health? | 多運動，身體才會好。 = Exercise more and you'll be healthy.
+練: 練功夫 = to practise kungfu | 練太極拳 = to practise tai chi | 練中文 = to practise Chinese | 多練 = to practise more | 我每天練一個小時。 = I practise for an hour every day.
+想起: 想起一件事 = to recall something | 想起來了 = now I remember | 想不起來 = can't recall | 我忽然想起今天有考試。 = I suddenly remembered there's a test today. | 我想不起來他的名字。 = I can't recall his name.
+
+== 2.9
+春假: 放春假 = to have spring break | 春假的時候 = during spring break | 春假你打算去哪裡？ = Where do you plan to go for spring break? | 我春假要回國。 = I'm going back to my country for spring break.
+好: 做好 = to finish doing properly | 準備好了 = ready | 寫好了 = finished writing | 功課做好了沒有？ = Is your homework done? | 我已經訂好房間了。 = I've already booked the room.
+到: 找到 = to find | 買到 = to manage to buy | 看到 = to see | 聽到 = to hear | 我找到工作了。 = I've found a job. | 我沒買到票。 = I didn't manage to get a ticket.
+特色: 有特色 = distinctive | 台灣的特色 = something special about Taiwan | 很有特色的建築 = buildings with real character | 這家店的特色是什麼？ = What is this shop known for? | 每個城市都有自己的特色。 = Every city has its own character.
+夠: 不夠 = not enough | 夠了 = that's enough | 錢不夠 = not enough money | 夠大 = big enough | 時間夠嗎？ = Is there enough time? | 這些菜夠五個人吃。 = This is enough food for five people.
+顏色: 什麼顏色 = what colour | 很多顏色 = many colours | 顏色很漂亮 = a pretty colour | 你最喜歡什麼顏色？ = What's your favourite colour? | 這件衣服有別的顏色嗎？ = Does this come in other colours?
+廟: 一座廟 = a temple | 老廟 = an old temple | 去廟裡拜拜 = to go to the temple to pray | 台灣有很多廟。 = Taiwan has many temples. | 這座廟很有名。 = This temple is famous.
+像: 很像 = to look very alike | 不像 = not alike | 像媽媽 = to take after one's mother | 他長(zhǎng)得像爸爸。 = He looks like his father. | 這裡的建築像歐洲的。 = The buildings here look European.
+教堂: 一座教堂 = a church | 老教堂 = an old church | 去教堂 = to go to church | 歐洲有很多有名的教堂。 = Europe has many famous churches. | 這座教堂的顏色很特別。 = This church has unusual colours.
+南部: 台灣南部 = southern Taiwan | 去南部玩 = to take a trip south | 南部的天氣 = the weather in the south | 南部比北部熱。 = The south is hotter than the north. | 我家在南部。 = My home is in the south.
+潛水: 去潛水 = to go diving | 學潛水 = to learn to dive | 我想去南部潛水。 = I want to go diving in the south. | 你潛過水嗎？ = Have you ever been diving?
+各: 各國 = every country | 各種 = all kinds of | 各位 = everyone (said to a group) | 各地 = everywhere | 各國的學生 = students from many countries | 這裡有各種顏色的魚。 = There are fish of every colour here.
+魚: 吃魚 = to eat fish | 很多魚 = lots of fish | 魚湯 = fish soup | 海裡有各種顏色的魚。 = There are fish of all colours in the sea. | 我不太喜歡吃魚。 = I'm not very fond of fish.
+酸: 很酸 = very sour | 有一點酸 = a little sour | 酸酸甜甜 = sweet and sour | 這個檸檬太酸了。 = This lemon is too sour. | 我的腿很酸。 = My legs are sore.
+檸檬: 一個檸檬 = a lemon | 檸檬水 = lemon water | 檸檬茶 = lemon tea | 檸檬很酸。 = Lemons are sour. | 我要一杯熱檸檬茶。 = I'd like a hot lemon tea.
+味道: 味道很好 = it tastes good | 什麼味道 = what flavour | 有檸檬的味道 = to taste of lemon | 味道怎麼樣？ = How does it taste? | 這個湯的味道很特別。 = This soup has an unusual taste.
+泰國: 去泰國旅行 = to travel to Thailand | 泰國菜 = Thai food | 泰國菜又酸又辣。 = Thai food is sour and spicy.
+比起來: 跟台北比起來 = compared with Taipei | 跟去年比起來 = compared with last year | 跟台北比起來，這裡的房租便宜多了。 = Compared with Taipei, rent here is much cheaper. | 兩個比起來，我比較喜歡這個。 = Comparing the two, I prefer this one.
+極了: 好極了 = excellent | 好吃極了 = absolutely delicious | 累極了 = exhausted | 這裡的風景漂亮極了。 = The scenery here is absolutely beautiful. | 今天熱極了。 = It's extremely hot today.
+忘不了: 忘不了他 = can't forget him | 我忘不了那個地方。 = I can't forget that place. | 這個味道我忘不了。 = I can't forget this taste. | 那次旅行我一直忘不了。 = I've never been able to forget that trip.
+鄉下: 住在鄉下 = to live in the countryside | 鄉下的生活 = country life | 去鄉下玩 = to take a trip to the countryside | 鄉下的空氣很好。 = The air in the countryside is good. | 我是在鄉下長(zhǎng)大的。 = I grew up in the countryside.
+氣氛: 氣氛很好 = a great atmosphere | 熱鬧的氣氛 = a lively atmosphere | 過年的氣氛 = the New Year mood | 這家咖啡店的氣氛不錯。 = This café has a nice atmosphere. | 我喜歡夜市的氣氛。 = I like the atmosphere of night markets.
+鎮: 小鎮 = a small town | 鎮上 = in town | 一個鄉下的小鎮 = a small country town | 這個小鎮很有特色。 = This little town has real character. | 鎮上只有一家餐廳。 = There's only one restaurant in town.
+不同: 很不同 = very different | 不同的顏色 = different colours | 不同的地方 = different places; the differences | 每個人的習慣都不同。 = Everyone's habits are different. | 南部和北部的天氣很不同。 = The weather in the south and the north is very different.
+現代: 很現代 = very modern | 現代的建築 = modern buildings | 現代生活 = modern life | 這個城市又現代又乾淨。 = This city is both modern and clean.
+公寓: 一間公寓 = an apartment | 住公寓 = to live in an apartment | 租公寓 = to rent an apartment | 我在學校附近租了一間公寓。 = I rented an apartment near the school. | 這棟公寓有五層。 = This apartment building has five floors.
+馬路: 過馬路 = to cross the road | 大馬路 = a main road | 馬路對面 = across the road | 過馬路要小心。 = Be careful crossing the road. | 馬路上車很多。 = There's a lot of traffic on the road.
+寬: 很寬 = very wide | 不夠寬 = not wide enough | 寬一點 = a bit wider | 這裡的馬路又寬又直。 = The roads here are wide and straight. | 這張床很寬。 = This bed is wide.
+汽車: 一輛汽車 = a car | 開汽車 = to drive a car | 買汽車 = to buy a car | 馬路上有很多汽車。 = There are a lot of cars on the road. | 汽車比腳踏車快多了。 = A car is much faster than a bicycle.
+建築: 老建築 = old buildings | 現代建築 = modern architecture | 有名的建築 = a famous building | 這棟建築很有特色。 = This building has real character. | 我喜歡看歐洲的老建築。 = I like looking at old European buildings.
+老: 很老 = very old | 老房子 = an old house | 老朋友 = an old friend | 老人 = old people | 這座廟很老。 = This temple is very old. | 他是我的老朋友。 = He's an old friend of mine.
+層: 一層 = one floor | 五層樓 = five storeys | 兩層的房子 = a two-storey house | 這棟樓有幾層？ = How many floors does this building have? | 我住在最高的那一層。 = I live on the top floor.
+北部: 台灣北部 = northern Taiwan | 住在北部 = to live in the north | 北部的冬天 = winter in the north | 北部冬天常常下雨。 = It often rains in the north in winter. | 我在北部工作。 = I work in the north.
+熱情: 很熱情 = very warm and welcoming | 熱情的人 = a warm-hearted person | 對客人很熱情 = very welcoming to guests | 南部人很熱情。 = People in the south are very welcoming. | 老闆熱情地(de)請我們喝茶。 = The owner warmly invited us to have tea.
+擠: 很擠 = very crowded | 太擠了 = too crowded | 擠公車 = to squeeze onto the bus | 捷運上很擠。 = The MRT is packed. | 週末百貨公司人很多，很擠。 = The department store is crowded at weekends.
+飲料: 買飲料 = to buy a drink | 喝飲料 = to have a drink | 一杯飲料 = a drink | 冰飲料 = a cold drink | 你想喝什麼飲料？ = What would you like to drink? | 這家店的飲料很有名。 = This shop is famous for its drinks.
+巴黎: 去巴黎旅行 = to travel to Paris | 巴黎的建築 = the architecture of Paris | 巴黎有很多老教堂。 = Paris has many old churches.
+高雄市: 住在高雄市 = to live in Kaohsiung City | 從台北到高雄市 = from Taipei to Kaohsiung City | 高雄市在台灣南部。 = Kaohsiung City is in southern Taiwan.
+中南部: 台灣中南部 = central and southern Taiwan | 中南部的天氣 = the weather in the centre and south | 中南部的人很熱情。 = People in the centre and south are very welcoming. | 我想去中南部玩幾天。 = I'd like to spend a few days in the centre and south.
+買得起: 買得起房子 = able to afford a house | 我買得起。 = I can afford it. | 這麼貴的車，誰買得起？ = Who can afford such an expensive car? | 你買得起，我買不起。 = You can afford it; I can't.
+百貨公司: 逛百貨公司 = to browse a department store | 去百貨公司買東西 = to go shopping at a department store | 這家百貨公司很大。 = This department store is big. | 百貨公司週末人很多。 = Department stores are busy at weekends.
+越來越: 越來越好 = better and better | 越來越貴 = more and more expensive | 越來越多 = more and more | 天氣越來越熱了。 = The weather is getting hotter and hotter. | 我的中文越來越好了。 = My Chinese is getting better and better.
+
+== 2.10
+包: 包餃子 = to make dumplings | 包禮物 = to wrap a present | 包起來 = to wrap up | 我們一起包餃子吧！ = Let's make dumplings together! | 請幫我把這個包起來。 = Please wrap this up for me.
+餃子: 吃餃子 = to eat dumplings | 煮餃子 = to boil dumplings | 二十個餃子 = twenty dumplings | 過年的時候我們都吃餃子。 = We all eat dumplings at New Year. | 你包的餃子很好吃。 = The dumplings you made are delicious.
+脫: 脫鞋 = to take off one's shoes | 脫衣服 = to take off clothes | 脫下來 = to take off | 進門要先脫鞋。 = Take your shoes off before you come in. | 太熱了，把外套脫了吧。 = It's too hot, take your coat off.
+鞋: 鞋子 = shoes | 穿鞋 = to put on shoes | 新鞋 = new shoes | 買鞋 = to buy shoes | 請在門口脫鞋。 = Please take off your shoes at the door. | 我的鞋太小了。 = My shoes are too small.
+關: 關門 = to close the door | 關燈 = to turn off the light | 關窗戶 = to close the window | 關電視 = to turn off the TV | 請把門關上。 = Please close the door. | 出門以前別忘了關燈。 = Don't forget to turn off the lights before you go out.
+門: 開門 = to open the door | 關門 = to close the door | 門口 = doorway, entrance | 大門 = the main door | 請開門。 = Please open the door. | 我在門口等你。 = I'll wait for you at the entrance.
+春捲: 包春捲 = to make spring rolls | 吃春捲 = to eat spring rolls | 一個春捲 = a spring roll | 媽媽做的春捲最好吃。 = Mum's spring rolls are the best. | 春捲裡有很多菜。 = There are lots of vegetables in a spring roll.
+泡菜: 韓國泡菜 = Korean kimchi | 做泡菜 = to make kimchi | 吃泡菜 = to eat kimchi | 泡菜很辣。 = Kimchi is spicy. | 我媽媽每年冬天都做泡菜。 = My mother makes kimchi every winter.
+飯廳: 在飯廳吃飯 = to eat in the dining room | 飯廳的桌子 = the dining-room table | 飯廳在廚房旁邊。 = The dining room is next to the kitchen. | 我家的飯廳坐得下十個人。 = Our dining room can seat ten.
+下: 坐得下 = there's room to sit | 放不下 = no room to put it | 吃不下 = can't eat any more | 這個房間住得下四個人。 = This room can sleep four. | 我太飽了，吃不下了。 = I'm too full to eat any more. | 東西太多，袋子放不下。 = There's too much to fit in the bag.
+洗: 洗手 = to wash one's hands | 洗衣服 = to do the laundry | 洗碗 = to wash the dishes | 洗菜 = to wash vegetables | 吃飯以前要先洗手。 = Wash your hands before eating. | 今天誰洗碗？ = Who's washing up today?
+做菜: 會做菜 = to know how to cook | 學做菜 = to learn to cook | 做了三個菜 = made three dishes | 我不太會做菜。 = I'm not much of a cook. | 他做的菜很好吃。 = The food he cooks is delicious.
+水餃: 煮水餃 = to boil dumplings | 吃水餃 = to eat dumplings | 二十個水餃 = twenty dumplings | 我要二十個水餃。 = I'd like twenty dumplings. | 水餃煮好了。 = The dumplings are ready.
+煮: 煮飯 = to cook a meal | 煮湯 = to make soup | 煮咖啡 = to make coffee | 煮好了 = cooked, ready | 水餃要煮多久？ = How long do dumplings need to boil? | 今天晚上我煮飯。 = I'm cooking tonight.
+壞: 壞了 = broken; gone bad | 手機壞了 = the phone is broken | 吃壞了肚子 = to get an upset stomach from food | 這個菜壞了，別吃。 = This dish has gone off, don't eat it. | 我的電腦壞了。 = My computer has broken.
+破: 破了 = torn, broken | 打破 = to smash | 衣服破了 = the clothes are torn | 餃子皮破了。 = The dumpling wrapper has split. | 我打破了一個碗。 = I broke a bowl.
+餡兒: 餃子餡兒 = dumpling filling | 肉餡兒 = meat filling | 包餡兒 = to put the filling in | 你喜歡什麼餡兒？ = What filling do you like? | 餡兒太多，皮會破。 = Too much filling and the wrapper will split.
+扁: 很扁 = very flat | 扁扁的 = flat | 這個餃子包得太扁了。 = This dumpling has been made too flat. | 袋子裡的蛋糕都扁了。 = The cake in the bag got squashed flat.
+材料: 準備材料 = to prepare the ingredients | 買材料 = to buy ingredients | 做菜的材料 = cooking ingredients | 包餃子需要什麼材料？ = What ingredients do you need for dumplings? | 材料都準備好了。 = The ingredients are all ready.
+道: 一道菜 = one dish | 這道菜 = this dish | 三道菜 = three dishes | 這道菜叫什麼？ = What is this dish called? | 每個人做一道菜。 = Everyone makes one dish.
+飽: 吃飽了 = full | 很飽 = very full | 吃得很飽 = to have eaten one's fill | 你吃飽了嗎？ = Have you had enough to eat? | 我吃飽了，謝謝。 = I'm full, thank you.
+光: 吃光 = to eat it all up | 喝光 = to drink it all | 賣光了 = sold out | 用光了 = all used up | 餃子都吃光了。 = The dumplings have all been eaten. | 票已經賣光了。 = The tickets are already sold out.
+鍋子: 一個鍋子 = a pot | 大鍋子 = a big pot | 洗鍋子 = to wash the pot | 把水餃放進鍋子裡煮。 = Put the dumplings in the pot to boil. | 這個鍋子太小了。 = This pot is too small.
+筷子: 用筷子 = to use chopsticks | 拿筷子 = to hold chopsticks | 你會用筷子嗎？ = Can you use chopsticks? | 他筷子用得很好。 = He's good with chopsticks.
+碗: 一碗飯 = a bowl of rice | 一碗湯 = a bowl of soup | 洗碗 = to wash the dishes | 大碗 = a large bowl | 我要一碗牛肉麵。 = I'd like a bowl of beef noodles. | 再來一碗！ = Another bowl, please!
+韓國: 去韓國玩 = to visit Korea | 韓國菜 = Korean food | 韓國人 = a Korean | 他是從韓國來的。 = He comes from Korea.
+看不出來: 真看不出來 = you really can't tell | 看不出來他是外國人。 = You can't tell he's a foreigner. | 看不出來你這麼會做菜！ = I'd never have guessed you could cook so well! | 我看不出來有什麼不同。 = I can't see any difference.
+酸辣湯: 一碗酸辣湯 = a bowl of hot and sour soup | 喝酸辣湯 = to have hot and sour soup | 做酸辣湯 = to make hot and sour soup | 這家店的酸辣湯很有名。 = This place is famous for its hot and sour soup.
+學期: 這個學期 = this semester | 上個學期 = last semester | 下個學期 = next semester | 這個學期我有五門課。 = I have five courses this semester. | 學期快結束了。 = The semester is nearly over.
+趁: 趁熱吃 = to eat it while it's hot | 趁這個機會 = to take this opportunity | 趁年輕 = while you're young | 餃子要趁熱吃。 = Dumplings should be eaten hot. | 我想趁春假去南部玩。 = I want to use spring break to visit the south.
+皮: 餃子皮 = dumpling wrappers | 春捲皮 = spring-roll wrappers | 皮破了 = the wrapper split | 包餃子要先做皮。 = To make dumplings you make the wrappers first. | 這個水果的皮可以吃嗎？ = Can you eat the skin of this fruit?
+嚐: 嚐一嚐 = to have a taste | 嚐嚐看 = to try a taste | 嚐味道 = to taste the flavour | 你嚐嚐這個。 = Try this. | 我想嚐嚐台灣的小吃。 = I want to try Taiwanese street food.
+大白菜: 買大白菜 = to buy Chinese cabbage | 用大白菜做泡菜 = to make kimchi with Chinese cabbage | 大白菜很便宜。 = Chinese cabbage is cheap. | 冬天的大白菜特別甜。 = Winter cabbage is especially sweet.
+加: 加鹽 = to add salt | 加糖 = to add sugar | 加水 = to add water | 加油！ = Come on, you can do it! | 咖啡要加糖嗎？ = Sugar in your coffee? | 湯裡再加一點鹽。 = Add a little more salt to the soup.
+鹽: 加鹽 = to add salt | 放鹽 = to put in salt | 一點鹽 = a little salt | 鹽放太多了。 = There's too much salt in it. | 請把鹽拿給我。 = Please pass me the salt.
+拌: 拌一拌 = to give it a stir | 拌麵 = tossed noodles | 拌在一起 = to mix together | 把材料拌在一起。 = Mix the ingredients together. | 加了調味料以後要拌一下。 = After adding the seasoning, give it a stir.
+辣椒: 加辣椒 = to add chili | 紅辣椒 = red chili | 放辣椒 = to put in chili | 你要不要加辣椒？ = Do you want chili with that? | 我吃不了太多辣椒。 = I can't handle too much chili.
+調味料: 加調味料 = to add seasoning | 各種調味料 = all kinds of seasonings | 這道菜用了什麼調味料？ = What seasonings went into this dish? | 調味料別放太多。 = Don't put in too much seasoning.
+裝: 裝水 = to fill with water | 裝在瓶子裡 = to put in a bottle | 裝不下 = it won't fit | 把泡菜裝進玻璃瓶裡。 = Pack the kimchi into a glass jar. | 這個袋子裝得下這些書嗎？ = Will this bag hold these books?
+玻璃: 玻璃杯 = a glass | 玻璃瓶 = a glass bottle | 玻璃窗 = a glass window | 玻璃做的 = made of glass | 小心，玻璃破了。 = Careful, the glass is broken. | 請給我一個玻璃杯。 = Please give me a glass.
+壽司: 吃壽司 = to eat sushi | 做壽司 = to make sushi | 壽司店 = a sushi restaurant | 我最喜歡吃壽司。 = Sushi is my favourite. | 這家壽司店很有名。 = This sushi restaurant is famous.
+像: 像這樣 = like this | 像他這樣的人 = people like him | 像餃子、春捲 = such as dumplings and spring rolls | 我喜歡各國的食物，像壽司、泡菜。 = I like food from many countries, such as sushi and kimchi.
+食物: 各國的食物 = food from different countries | 台灣食物 = Taiwanese food | 健康的食物 = healthy food | 你最喜歡什麼食物？ = What's your favourite food? | 這裡的食物又便宜又好吃。 = The food here is cheap and tasty.
+做起來: 做起來很容易 = easy to do | 做起來很麻煩 = a hassle to do | 這道菜看起來難，做起來很容易。 = This dish looks hard, but it's easy to make. | 說起來容易，做起來難。 = Easier said than done.
+
+== 2.11
+其他: 其他的人 = the other people | 其他地方 = other places | 其他的問題 = other questions | 還有其他的嗎？ = Are there any others? | 你還想去其他地方嗎？ = Do you want to go anywhere else?
+假期: 假期很長 = the holiday is long | 假期的計畫 = holiday plans | 夏天的假期 = the summer holiday | 這個假期你打算做什麼？ = What are you planning to do this holiday? | 假期快結束了。 = The holiday is nearly over.
+溫泉: 泡溫泉 = to soak in a hot spring | 溫泉旅館 = a hot-spring hotel | 冬天泡溫泉最舒服。 = Nothing beats a hot spring in winter. | 台灣有很多有名的溫泉。 = Taiwan has many famous hot springs.
+建議: 我的建議 = my suggestion | 給我一個建議 = to give me a suggestion | 我建議你坐高鐵。 = I suggest you take the high-speed rail. | 你有什麼建議？ = What do you suggest? | 醫生建議我多運動。 = The doctor advised me to exercise more.
+票: 買票 = to buy a ticket | 訂票 = to book tickets | 火車票 = a train ticket | 電影票 = a cinema ticket | 我要兩張到台中的票。 = Two tickets to Taichung, please. | 票賣光了。 = The tickets are sold out.
+考慮: 考慮一下 = to think it over | 考慮很久 = to consider for a long time | 我會考慮。 = I'll think about it. | 我考慮搬到南部去。 = I'm considering moving south. | 我再考慮考慮。 = Let me think it over some more.
+順便: 順便買 = to buy while one is at it | 順便問一下 = to ask while one is at it | 我去超市，順便幫你買飲料。 = I'm going to the supermarket; I'll pick up a drink for you while I'm there. | 去台中的時候，順便去日月潭玩。 = When you go to Taichung, visit Sun Moon Lake while you're there.
+湖: 湖邊 = the lakeside | 一個大湖 = a big lake | 在湖邊走走 = to stroll by the lake | 這個湖很漂亮。 = This lake is beautiful. | 我們在湖邊騎腳踏車。 = We cycled by the lake.
+原住民: 台灣的原住民 = Taiwan's indigenous peoples | 原住民文化 = indigenous culture | 原住民的歌很好聽。 = Indigenous songs are lovely. | 我對原住民文化很有興趣。 = I'm very interested in indigenous culture.
+趟: 去一趟 = to make a trip there | 跑一趟 = to make a trip | 回了一趟家 = made a trip home | 我想去一趟墾丁。 = I'd like to make a trip to Kenting. | 我下午得(děi)去一趟銀行。 = I have to go to the bank this afternoon.
+後來: 後來呢？ = And then? | 後來我才知道 = only later did I find out | 我們本來要去海邊，後來下雨了。 = We were going to the beach, but then it rained. | 他後來搬到台中去了。 = He later moved to Taichung.
+注意: 請注意 = please note | 注意安全 = to be careful, stay safe | 沒注意 = didn't notice | 過馬路要注意車子。 = Watch out for cars when you cross the road. | 我沒注意到他走了。 = I didn't notice that he'd left.
+沙灘: 在沙灘上 = on the beach | 白色的沙灘 = a white beach | 去沙灘玩 = to go and play on the beach | 沙灘上有很多人。 = There are lots of people on the beach. | 我們在沙灘上躺了一個下午。 = We lay on the beach all afternoon.
+錢包: 帶錢包 = to bring one's wallet | 錢包裡 = in the wallet | 我的錢包被偷了。 = My wallet was stolen. | 錢包裡沒有錢了。 = There's no money left in my wallet. | 我忘了帶錢包。 = I forgot to bring my wallet.
+不見: 不見了 = gone, disappeared | 手機不見了 = the phone is gone | 我的錢包不見了。 = My wallet is gone. | 他忽然不見了。 = He suddenly disappeared. | 好久不見！ = Long time no see!
+被: 被偷了 = got stolen | 被老師看到 = to be seen by the teacher | 我的腳踏車被偷了。 = My bicycle was stolen. | 蛋糕被弟弟吃光了。 = The cake got eaten up by my little brother. | 我的雨傘被人拿走了。 = Someone took my umbrella.
+偷: 偷東西 = to steal things | 偷錢 = to steal money | 偷看 = to peek | 有人偷了我的手機。 = Someone stole my phone. | 小心，別被偷了。 = Careful you don't get robbed.
+安全: 很安全 = very safe | 不安全 = not safe | 安全的地方 = a safe place | 這個地方晚上安全嗎？ = Is this place safe at night? | 騎摩托車要注意安全。 = Be careful when you ride a motorcycle.
+值得: 值得去 = worth going to | 值得看 = worth seeing | 不值得 = not worth it | 這個地方很值得去。 = This place is well worth a visit. | 這本書值得看兩遍。 = This book is worth reading twice.
+墾丁: 去墾丁玩 = to take a trip to Kenting | 墾丁的沙灘 = the beaches of Kenting | 墾丁在台灣的南部。 = Kenting is in the south of Taiwan. | 我在墾丁住了三天。 = I stayed in Kenting for three days.
+台中: 住在台中 = to live in Taichung | 從台北到台中 = from Taipei to Taichung | 台中的天氣很好。 = The weather in Taichung is good.
+日月潭: 去日月潭玩 = to visit Sun Moon Lake | 日月潭的風景 = the scenery at Sun Moon Lake | 日月潭是台灣最有名的湖。 = Sun Moon Lake is Taiwan's most famous lake.
+水上活動: 參加水上活動 = to take part in water activities | 各種水上活動 = all kinds of water activities | 墾丁有很多水上活動。 = Kenting has lots of water activities.
+風景區: 有名的風景區 = a famous scenic area | 去風景區玩 = to visit a scenic area | 這個風景區很值得去。 = This scenic area is well worth visiting. | 假日的時候，風景區人很多。 = Scenic areas are crowded on holidays.
+又: 又來了 = here we go again | 又下雨了 = it's raining again | 他昨天來了，今天又來了。 = He came yesterday and came again today. | 你又忘了帶錢包？ = You forgot your wallet again?
+遍: 一遍 = once through | 再說一遍 = to say it once more | 看了三遍 = watched it three times | 請再說一遍。 = Please say that again. | 這個電影我看了兩遍。 = I've seen this film twice.
+民宿: 住民宿 = to stay at a B&B | 訂民宿 = to book a B&B | 海邊的民宿 = a B&B by the sea | 這家民宿又乾淨又便宜。 = This B&B is clean and cheap. | 我們在墾丁住民宿。 = We stayed at a B&B in Kenting.
+運氣: 運氣好 = lucky | 運氣不好 = unlucky | 看運氣 = it depends on luck | 我今天運氣真好。 = I'm really lucky today. | 他的運氣一直很好。 = He's always been lucky.
+摩托車: 騎摩托車 = to ride a motorcycle | 租摩托車 = to rent a scooter | 一輛摩托車 = a motorcycle | 台灣的摩托車很多。 = There are a lot of scooters in Taiwan. | 我們租了摩托車去海邊。 = We rented scooters and went to the coast.
+熱帶: 熱帶水果 = tropical fruit | 熱帶植物 = tropical plants | 熱帶魚 = tropical fish | 台灣南部是熱帶。 = Southern Taiwan is tropical. | 芒果是熱帶水果。 = Mango is a tropical fruit.
+植物: 各種植物 = all kinds of plants | 植物園 = a botanical garden | 這裡有很多特別的植物。 = There are many unusual plants here. | 我喜歡在家裡種(zhòng)植物。 = I like growing plants at home.
+所有: 所有的人 = everyone | 所有的東西 = everything | 所有的錢 = all the money | 所有的學生都來了。 = All the students came. | 我把所有的錢都用光了。 = I've used up all my money.
+白天: 白天上班 = to work during the day | 白天很熱 = hot in the daytime | 白天和晚上 = day and night | 白天我在公司工作。 = During the day I work at the office.
+躺: 躺在床上 = to lie in bed | 躺在沙灘上 = to lie on the beach | 躺下來 = to lie down | 我想躺一下。 = I'd like to lie down for a bit. | 他躺在床上看書。 = He's lying in bed reading.
+黃昏: 黃昏的時候 = at dusk | 黃昏的風景 = the view at dusk | 黃昏的時候，海邊特別漂亮。 = The coast is especially beautiful at dusk. | 我們黃昏的時候在沙灘上走走。 = We took a walk on the beach at dusk.
+條: 一條街 = a street | 一條路 = a road | 一條魚 = a fish | 這條河 = this river | 這條街上有很多小吃店。 = There are lots of snack shops on this street. | 這條路很寬。 = This road is wide.
+街: 逛街 = to go window-shopping | 街上 = on the street | 大街 = the main street | 街上很熱鬧。 = The streets are lively. | 週末我常跟朋友去逛街。 = At weekends I often go shopping with friends.
+啤酒: 喝啤酒 = to drink beer | 一瓶啤酒 = a bottle of beer | 冰啤酒 = cold beer | 台灣啤酒 = Taiwan Beer | 夏天喝冰啤酒最舒服。 = Nothing beats a cold beer in summer. | 我們點了兩瓶啤酒。 = We ordered two bottles of beer.
+上: 關上 = to close | 穿上 = to put on | 考上大學 = to get into university | 請把門關上。 = Please close the door. | 外面很冷，快穿上外套。 = It's cold out, put your coat on.
+又: 又便宜又好吃 = cheap and tasty | 又高又帥 = tall and handsome | 又累又餓 = tired and hungry | 這家民宿又乾淨又舒服。 = This B&B is clean and comfortable. | 他又會唱歌又會畫畫。 = He can both sing and paint.
+浪漫: 很浪漫 = very romantic | 浪漫的晚餐 = a romantic dinner | 浪漫的電影 = a romantic film | 黃昏的海邊很浪漫。 = The seaside at dusk is romantic. | 他一點也不浪漫。 = He isn't romantic at all.
+家鄉: 我的家鄉 = my hometown | 回家鄉 = to go back to one's hometown | 家鄉菜 = food from home | 我的家鄉是一個小鎮。 = My hometown is a small town. | 這個味道很像我家鄉的菜。 = This tastes a lot like the food back home.
+觀光客: 很多觀光客 = lots of tourists | 外國觀光客 = foreign tourists | 這裡的觀光客越來越多。 = There are more and more tourists here. | 夜市裡有很多觀光客。 = There are lots of tourists in the night market.
+曬太陽: 喜歡曬太陽 = to like sunbathing | 在沙灘上曬太陽 = to sunbathe on the beach | 冬天曬太陽很舒服。 = Sitting in the sun in winter feels good. | 我們躺在沙灘上曬太陽。 = We lay on the beach in the sun.
+水上摩托車: 騎水上摩托車 = to ride a jet ski | 玩水上摩托車 = to go jet-skiing | 我想試試水上摩托車。 = I'd like to try a jet ski. | 騎水上摩托車好玩極了。 = Riding a jet ski is tremendous fun.
+愛上: 愛上她 = to fall in love with her | 愛上台灣 = to fall in love with Taiwan | 我愛上了台灣的小吃。 = I've fallen in love with Taiwanese street food. | 我一來就愛上這裡了。 = I fell in love with this place the moment I arrived.
+
+== 2.12
+新: 新開的店 = a newly opened shop | 新買的手機 = a newly bought phone | 新來的同學 = a new classmate | 這是我新買的外套。 = This is the coat I just bought. | 附近新開了一家餐廳。 = A new restaurant has just opened nearby.
+開: 開店 = to open a shop | 開餐廳 = to open a restaurant | 開公司 = to start a company | 他在學校附近開了一家咖啡店。 = He opened a café near the school. | 這家店開到晚上十點。 = This shop stays open until ten at night.
+素食: 吃素食 = to eat vegetarian food | 素食餐廳 = a vegetarian restaurant | 這附近有素食餐廳嗎？ = Is there a vegetarian restaurant near here? | 素食對身體很好。 = Vegetarian food is good for you.
+速食: 吃速食 = to eat fast food | 速食餐廳 = a fast-food restaurant | 速食又快又方便。 = Fast food is quick and convenient. | 常吃速食對身體不好。 = Eating fast food often is bad for you.
+錯: 說錯 = to say it wrong | 寫錯 = to write it wrong | 走錯路 = to take the wrong road | 聽錯了 = misheard | 對不起，我說錯了。 = Sorry, I said that wrong. | 你打錯電話了。 = You've dialled the wrong number.
+肉: 吃肉 = to eat meat | 牛肉 = beef | 一塊肉 = a piece of meat | 我不吃肉，只吃菜。 = I don't eat meat, only vegetables. | 多吃菜，少吃肉。 = Eat more vegetables and less meat.
+欸: 欸，你看！ = Hey, look! | 欸，等一下！ = Hey, wait a moment! | 欸，你要去哪裡？ = Hey, where are you going? | 欸，那不是王老師嗎？ = Hey, isn't that Teacher Wang?
+讓: 讓我看看 = let me have a look | 讓一下 = to make way | 讓他去 = to let him go | 請讓我想一想。 = Please let me think about it. | 媽媽不讓我去。 = Mum won't let me go. | 讓你久等了。 = Sorry to have kept you waiting.
+吃素: 開始吃素 = to start eating vegetarian | 吃了三年素 = has been vegetarian for three years | 我吃素。 = I'm vegetarian. | 你為什麼吃素？ = Why are you vegetarian? | 吃素的人越來越多。 = More and more people are vegetarian.
+漢堡: 吃漢堡 = to eat a hamburger | 一個漢堡 = a hamburger | 牛肉漢堡 = a beef burger | 我要一個漢堡和一杯可樂。 = I'd like a hamburger and a cola. | 天天吃漢堡會變胖。 = Eating hamburgers every day will make you fat.
+變: 變胖 = to get fat | 變冷 = to turn cold | 變好 = to get better | 天氣變冷了。 = The weather has turned cold. | 他變了很多。 = He has changed a lot. | 這個城市變得越來越現代。 = This city is becoming more and more modern.
+胖: 很胖 = very fat | 變胖 = to get fat | 胖了一點 = put on a little weight | 我最近胖了。 = I've put on weight lately. | 吃太多會胖。 = Eating too much makes you fat.
+素菜: 吃素菜 = to eat vegetarian dishes | 點素菜 = to order vegetarian dishes | 一道素菜 = a vegetarian dish | 這家餐廳的素菜很好吃。 = The vegetarian dishes at this restaurant are delicious. | 我們點兩道素菜吧。 = Let's order two vegetarian dishes.
+油膩: 很油膩 = very greasy | 不油膩 = not greasy | 油膩的食物 = greasy food | 這道菜太油膩了。 = This dish is too greasy. | 我不喜歡吃油膩的東西。 = I don't like greasy food.
+樣: 一樣菜 = one dish | 兩樣東西 = two things | 幾樣小菜 = a few side dishes | 我們點了四樣菜。 = We ordered four dishes. | 每樣都很好吃。 = Every one of them is delicious.
+好奇: 很好奇 = very curious | 好奇的孩子 = a curious child | 對什麼都好奇 = curious about everything | 我很好奇他為什麼吃素。 = I wonder why he's vegetarian. | 我只是好奇。 = I'm just curious.
+女孩: 一個女孩 = a girl | 小女孩 = a little girl | 漂亮的女孩 = a pretty girl | 那個女孩是誰？ = Who is that girl? | 這個女孩很會唱歌。 = This girl sings very well.
+青菜: 吃青菜 = to eat vegetables | 買青菜 = to buy vegetables | 一道青菜 = a vegetable dish | 多吃青菜對身體好。 = Eating more vegetables is good for you. | 我們再點一個青菜吧。 = Let's order one more vegetable dish.
+瘦: 很瘦 = very thin | 變瘦 = to get thinner | 瘦了很多 = has lost a lot of weight | 你太瘦了，多吃一點。 = You're too thin, eat a bit more. | 他最近瘦了。 = He's lost weight lately.
+室友: 我的室友 = my roommate | 新室友 = a new roommate | 找室友 = to look for a roommate | 我的室友是日本人。 = My roommate is Japanese. | 我跟室友一起做晚飯。 = I make dinner with my roommate.
+豬肉: 吃豬肉 = to eat pork | 豬肉水餃 = pork dumplings | 一塊豬肉 = a piece of pork | 我要二十個豬肉水餃。 = I'd like twenty pork dumplings. | 他因為宗教的關係不吃豬肉。 = He doesn't eat pork for religious reasons.
+西方: 西方人 = Westerners | 西方國家 = Western countries | 西方文化 = Western culture | 很多西方人喜歡吃漢堡。 = Many Westerners like hamburgers. | 西方文化和東方文化很不同。 = Western and Eastern cultures are very different.
+完全: 完全不同 = completely different | 完全不懂 = don't understand at all | 完全一樣 = exactly the same | 我完全忘了。 = I completely forgot. | 他說的話我完全聽不懂。 = I couldn't understand a word he said.
+鹹: 很鹹 = very salty | 太鹹了 = too salty | 鹹的 = savoury | 這個湯太鹹了。 = This soup is too salty. | 我喜歡吃鹹的，不喜歡吃甜的。 = I like savoury food, not sweet.
+炸: 炸薯條 = French fries | 炸魚 = fried fish | 炸春捲 = fried spring rolls | 炸的東西很油膩。 = Deep-fried food is greasy. | 春捲要炸多久？ = How long do spring rolls need to fry?
+烤: 烤肉 = to barbecue | 烤魚 = grilled fish | 烤麵包 = to toast bread | 週末我們去河邊烤肉。 = At the weekend we're having a barbecue by the river. | 麵包烤好了。 = The toast is ready.
+沙拉: 吃沙拉 = to eat salad | 水果沙拉 = fruit salad | 一份沙拉 = a serving of salad | 我中午只吃了一份沙拉。 = I only had a salad for lunch. | 沙拉裡有什麼菜？ = What vegetables are in the salad?
+麥當勞: 去麥當勞 = to go to McDonald's | 吃麥當勞 = to eat McDonald's | 我們在麥當勞門口見面。 = Let's meet outside McDonald's.
+速食店: 去速食店 = to go to a fast-food restaurant | 一家速食店 = a fast-food restaurant | 學校對面有一家速食店。 = There's a fast-food restaurant across from the school. | 我以前在速食店打工。 = I used to work part-time at a fast-food restaurant.
+只要: 只要十分鐘 = it only takes ten minutes | 只要一百塊 = it only costs a hundred dollars | 只要你喜歡就好。 = As long as you like it, that's fine. | 只要多練習，就會進步。 = As long as you practise more, you'll improve. | 只要不下雨，我們就去。 = As long as it doesn't rain, we'll go.
+討厭: 很討厭 = really annoying | 真討厭 = how annoying | 討厭下雨 = to hate the rain | 我最討厭油膩的食物。 = I hate greasy food most of all. | 他討厭吃青菜。 = He hates eating vegetables.
+餐: 一餐 = one meal | 三餐 = three meals a day | 早餐 = breakfast | 晚餐 = dinner | 這一餐我請客。 = This meal is on me. | 我每天只吃兩餐。 = I only eat two meals a day.
+宗教: 宗教的關係 = for religious reasons | 不同的宗教 = different religions | 宗教活動 = religious activities | 因為宗教的關係，他不吃肉。 = For religious reasons he doesn't eat meat. | 每個國家都有不同的宗教。 = Every country has different religions.
+關係: 沒關係 = it doesn't matter | 有關係 = to be related; to matter | 關係很好 = on good terms | 我跟室友的關係很好。 = I get on well with my roommate. | 這件事跟我沒關係。 = This has nothing to do with me.
+薯條: 吃薯條 = to eat fries | 炸薯條 = French fries | 一份薯條 = a portion of fries | 我要一份薯條。 = A portion of fries, please. | 薯條要趁熱吃。 = Fries should be eaten hot.
+作法: 不同的作法 = a different way of doing it | 這道菜的作法 = how this dish is made | 作法很簡單 = the method is simple | 你知道酸辣湯的作法嗎？ = Do you know how to make hot and sour soup? | 每家的作法都不一樣。 = Every family makes it differently.
+越: 越多越好 = the more the better | 越快越好 = the sooner the better | 越吃越胖 = the more you eat the fatter you get | 中文越學越有趣。 = Chinese gets more interesting the more you study it. | 我越想越生氣。 = The more I think about it, the angrier I get.
+簡單: 很簡單 = very simple | 太簡單了 = too easy | 簡單的菜 = a simple dish | 這個問題很簡單。 = This question is simple. | 這道菜做起來很簡單。 = This dish is simple to make.
+蒸: 蒸魚 = steamed fish | 蒸蛋 = steamed egg | 蒸餃 = steamed dumplings | 蒸十分鐘 = to steam for ten minutes | 蒸的比炸的健康。 = Steamed is healthier than fried. | 魚要蒸多久？ = How long should the fish steam?
+有機: 有機食品 = organic food | 有機青菜 = organic vegetables | 有機商店 = an organic shop | 有機的比較貴。 = Organic costs more. | 我媽媽只買有機青菜。 = My mother only buys organic vegetables.
+食品: 健康食品 = health food | 食品店 = a food shop | 食品安全 = food safety | 大家都很注意食品安全。 = Everyone pays close attention to food safety. | 這家店賣很多進口食品。 = This shop sells a lot of imported food.
+地球: 保護地球 = to protect the earth | 地球上 = on earth | 地球只有一個。 = There is only one earth. | 我們都住在地球上。 = We all live on the earth. | 少用塑膠袋就是保護地球。 = Using fewer plastic bags is protecting the earth.
+汙染: 空氣汙染 = air pollution | 水汙染 = water pollution | 環境汙染 = environmental pollution | 這個城市的空氣汙染很嚴重。 = Air pollution in this city is serious. | 開車會汙染空氣。 = Driving pollutes the air.
+嚴重: 很嚴重 = very serious | 不嚴重 = not serious | 嚴重的問題 = a serious problem | 他的感冒很嚴重。 = His cold is bad. | 汙染的問題越來越嚴重。 = The pollution problem is getting worse and worse.
+衛生: 很衛生 = very hygienic | 不衛生 = unhygienic | 注意衛生 = to mind one's hygiene | 衛生紙 = tissue, toilet paper | 這家小吃店很衛生。 = This snack shop is very clean. | 吃東西要注意衛生。 = Mind your hygiene when you eat.
+營養: 有營養 = nutritious | 沒有營養 = not nutritious | 營養不夠 = not enough nutrition | 青菜很有營養。 = Vegetables are very nutritious. | 速食沒什麼營養。 = Fast food has little nutritional value.
+什麼的: 漢堡、薯條什麼的 = burgers, fries and that sort of thing | 茶、咖啡什麼的 = tea, coffee and so on | 買一點水果、飲料什麼的。 = Buy some fruit, drinks and so on. | 我喜歡運動，打球、游泳什麼的。 = I like sport: ball games, swimming, that kind of thing.
+
+== 2.13
+掉: 掉了 = dropped; lost | 掉在地上 = fell on the ground | 丟掉 = to throw away | 忘掉 = to forget | 我的錢包掉了。 = I've lost my wallet. | 你的東西掉了！ = You dropped something!
+低頭: 低頭看手機 = to look down at one's phone | 低著頭 = with one's head down | 低頭走路 = to walk with one's head down | 他一直低頭玩手機。 = He keeps his head down playing on his phone. | 走路的時候別低頭看手機。 = Don't look down at your phone while walking.
+傳: 傳簡訊 = to send a text | 傳照片 = to send a photo | 傳給我 = send it to me | 我傳了一張照片給你。 = I sent you a photo. | 請把資料傳給我。 = Please send me the information.
+過: 吃過了 = have already eaten | 看過了 = have already seen it | 問過了 = have already asked | 我吃過飯了。 = I've already eaten. | 這本書我看過了。 = I've already read this book. | 你問過老師了嗎？ = Have you asked the teacher?
+簡訊: 傳簡訊 = to send a text | 收到簡訊 = to get a text | 看簡訊 = to read a text | 你收到我的簡訊了嗎？ = Did you get my text? | 我等一下傳簡訊給你。 = I'll text you in a bit.
+功能: 很多功能 = lots of functions | 新功能 = a new feature | 照相的功能 = the camera function | 這個手機有什麼功能？ = What can this phone do? | 這個功能我從來沒用過。 = I've never used this feature.
+生氣: 很生氣 = very angry | 別生氣 = don't be angry | 生我的氣 = to be angry with me | 你為什麼生氣？ = Why are you angry? | 他還在生我的氣。 = He's still angry with me.
+叫: 叫他來 = to tell him to come | 叫我等一下 = told me to wait a moment | 媽媽叫我回家。 = Mum told me to come home. | 老師叫我們多練習。 = The teacher told us to practise more. | 醫生叫他多休息。 = The doctor told him to rest more.
+罵: 罵人 = to scold someone; to swear at people | 被罵 = to get told off | 罵孩子 = to scold a child | 我被老闆罵了。 = I got told off by the boss. | 別罵他，他不是故意的。 = Don't scold him, he didn't mean it.
+健身房: 去健身房 = to go to the gym | 在健身房運動 = to work out at the gym | 我一個星期去三次健身房。 = I go to the gym three times a week. | 公司附近有一家健身房。 = There's a gym near the office.
+啦: 好啦！ = All right, all right! | 走啦！ = Come on, let's go! | 知道啦！ = I know, I know! | 別生氣啦！ = Oh, don't be angry! | 你怎麼啦？ = What's the matter with you?
+查: 查資料 = to look up information | 查一下 = to check | 上網查 = to look it up online | 查地圖 = to check the map | 我上網查一下。 = I'll look it up online. | 你可以幫我查班機的時間嗎？ = Could you check the flight time for me?
+班機: 訂班機 = to book a flight | 查班機 = to check a flight | 班機的時間 = the flight time | 我的班機是明天早上八點的。 = My flight is at eight tomorrow morning. | 因為颱風，班機都停飛了。 = Because of the typhoon, all flights are grounded.
+訂位: 打電話訂位 = to phone for a reservation | 上網訂位 = to reserve online | 訂兩個位子 = to book two seats | 這家餐廳要先訂位。 = You need a reservation at this restaurant. | 我已經訂好位了。 = I've already made the reservation.
+電: 沒電了 = out of power | 停電 = a power cut | 用電 = to use electricity | 省電 = to save electricity | 我的手機沒電了。 = My phone is dead. | 昨天晚上停電了。 = There was a power cut last night.
+充電: 幫手機充電 = to charge a phone | 充一下電 = to charge for a bit | 充電器 = a charger | 我的手機需要充電。 = My phone needs charging. | 我忘了帶充電器。 = I forgot to bring my charger.
+糊塗: 很糊塗 = very muddle-headed | 真糊塗 = how scatterbrained | 老糊塗 = a muddled old fool | 我真糊塗，又忘了帶錢包。 = I'm so scatterbrained, I forgot my wallet again. | 你怎麼這麼糊塗？ = How can you be so muddled?
+喔: 好喔！ = OK! | 小心喔！ = Be careful, now! | 別忘了喔！ = Don't forget, OK? | 要早一點來喔！ = Come a bit early, OK? | 明天要考試喔！ = There's a test tomorrow, remember!
+義大利: 義大利麵 = pasta | 義大利菜 = Italian food | 去義大利旅行 = to travel to Italy | 我最喜歡吃義大利麵。 = Pasta is my favourite.
+拿走: 把東西拿走 = to take the things away | 被人拿走了 = taken by someone | 誰拿走了？ = Who took it? | 我的傘被人拿走了。 = Someone took my umbrella. | 這些書你可以拿走。 = You can take these books.
+撿到: 撿到錢包 = to find a wallet | 在路上撿到 = to pick up on the street | 我在路上撿到一個錢包。 = I found a wallet on the street. | 有人撿到我的手機了。 = Someone found my phone.
+留下: 留下電話 = to leave a phone number | 留下來 = to stay behind | 請留下你的電話。 = Please leave your phone number. | 下課以後請留下來。 = Please stay behind after class. | 他把撿到的錢留下了。 = He kept the money he found.
+網路: 網路上 = on the internet | 用網路 = to use the internet | 沒有網路 = no internet | 網路商店 = an online shop | 這裡的網路很快。 = The internet here is fast. | 我在網路上買了一件外套。 = I bought a coat online.
+發生: 發生問題 = a problem arises | 常常發生 = to happen often | 發生了什麼事？ = What happened? | 昨天發生了一件有趣的事。 = Something funny happened yesterday. | 這種事常常發生。 = This kind of thing happens a lot.
+事情: 一件事情 = a matter | 很多事情 = many things | 重要的事情 = something important | 我今天有很多事情要做。 = I have a lot to do today. | 這件事情很重要。 = This matter is important.
+消息: 好消息 = good news | 壞消息 = bad news | 聽到消息 = to hear the news | 我有一個好消息。 = I have some good news. | 你有他的消息嗎？ = Have you heard from him?
+透過: 透過網路 = through the internet | 透過朋友 = through a friend | 透過手機 = through one's phone | 我透過朋友找到這個工作。 = I found this job through a friend. | 透過網路可以認識很多人。 = You can meet a lot of people through the internet.
+世界: 全世界 = the whole world | 世界上 = in the world | 世界各地 = all over the world | 世界第一 = number one in the world | 我想去世界各地旅行。 = I want to travel all over the world.
+節省: 節省時間 = to save time | 節省錢 = to save money | 節省資源 = to save resources | 坐高鐵可以節省很多時間。 = Taking the high-speed rail saves a lot of time. | 他很節省，不常買東西。 = He's thrifty and doesn't buy much.
+起床: 早上起床 = to get up in the morning | 六點起床 = to get up at six | 起床以後 = after getting up | 你每天幾點起床？ = What time do you get up every day? | 我今天起床起得很晚。 = I got up late today.
+檢查: 檢查身體 = to have a check-up | 檢查功課 = to check homework | 檢查一下 = to check | 出門以前要檢查一下門窗。 = Check the doors and windows before you go out. | 醫生幫我檢查了身體。 = The doctor gave me a check-up.
+郵件: 電子郵件 = email | 收郵件 = to receive mail | 看郵件 = to read one's mail | 回郵件 = to reply to an email | 我每天早上先看郵件。 = I read my email first thing every morning. | 你收到我的郵件了嗎？ = Did you get my email?
+立刻: 立刻來 = to come at once | 立刻回家 = to go home immediately | 立刻開始 = to start right away | 我立刻就來。 = I'll be right there. | 請你立刻打電話給他。 = Please phone him right away.
+上傳: 上傳照片 = to upload photos | 上傳影片 = to upload a video | 上傳資料 = to upload data | 我把照片上傳到網路上了。 = I've uploaded the photos to the internet. | 上傳要多久？ = How long does the upload take?
+正常: 很正常 = perfectly normal | 不正常 = not normal | 正常的生活 = a normal life | 這是很正常的事。 = This is perfectly normal. | 我的手機不太正常。 = My phone isn't working quite right.
+談: 談一談 = to have a talk | 談工作 = to talk about work | 談事情 = to talk things over | 談生意 = to talk business | 我想跟你談一談。 = I'd like to have a talk with you. | 我們談了很久。 = We talked for a long time.
+現代人: 現代人的生活 = modern people's lives | 現代人都很忙。 = People today are all busy. | 現代人常常低頭看手機。 = People today are always looking down at their phones. | 現代人不能沒有手機。 = People today can't do without a phone.
+比方說: 我喜歡運動，比方說游泳、打球。 = I like sport, for example swimming and ball games. | 手機有很多功能，比方說照相、上網。 = A phone can do many things, for example take photos and go online. | 台灣有很多好吃的東西，比方說牛肉麵。 = Taiwan has lots of good food, beef noodles for example.
+做到: 做得到 = able to do it | 做不到 = unable to do it | 說到做到 = to do what one says | 我一定做得到。 = I can definitely do it. | 你說的我都做到了。 = I've done everything you said.
+第一手: 第一手資料 = first-hand information | 第一手消息 = first-hand news | 這是第一手的消息。 = This is first-hand news. | 我有第一手資料。 = I have first-hand information.
+急著: 急著回家 = in a hurry to get home | 急著走 = in a hurry to leave | 急著找工作 = anxious to find a job | 別急著走。 = Don't rush off. | 你急著去哪裡？ = Where are you rushing off to?
+打招呼: 跟他打招呼 = to say hello to him | 打個招呼 = to say a quick hello | 用中文打招呼 = to greet someone in Chinese | 他看到我，就跟我打招呼。 = He saw me and said hello. | 我去跟老師打個招呼。 = I'll go and say hello to the teacher.
+面對面: 面對面談 = to talk face to face | 面對面坐著 = sitting face to face | 這件事最好面對面談。 = This is best discussed face to face. | 我們面對面坐著，可是都在看手機。 = We sat face to face, but we were both looking at our phones.
+
+== 2.14
+將來: 將來的工作 = one's future job | 將來的計畫 = plans for the future | 為了將來 = for the sake of the future | 你將來想做什麼？ = What do you want to do in the future? | 我將來想當老師。 = I want to be a teacher one day.
+徵求: 徵求意見 = to ask for opinions | 徵求室友 = roommate wanted | 我想徵求大家的意見。 = I'd like to ask for everyone's opinion. | 這家公司正在徵求翻譯人員。 = This company is looking for translators.
+教師: 中文教師 = a Chinese teacher | 當教師 = to work as a teacher | 教師節 = Teachers' Day | 她是一位很好的教師。 = She is a very good teacher. | 這個學校需要英文教師。 = This school needs English teachers.
+認為: 你認為呢？ = What do you think? | 大家都認為 = everyone thinks that | 我認為這個方法不錯。 = I think this method is good. | 你認為誰對？ = Who do you think is right? | 他認為學語言需要時間。 = He believes learning a language takes time.
+畢業: 大學畢業 = to graduate from university | 畢業以後 = after graduating | 快畢業了 = about to graduate | 你什麼時候畢業？ = When do you graduate? | 畢業以後我想留在台灣工作。 = After graduating I want to stay and work in Taiwan.
+發展: 發展經濟 = to develop the economy | 發展得很快 = developing fast | 到國外發展 = to build a career abroad | 這個城市發展得很快。 = This city is developing fast. | 他想去上海發展。 = He wants to build his career in Shanghai.
+連: 連他都知道 = even he knows | 連週末也要上班 = having to work even at weekends | 我忙得連飯都沒時間吃。 = I'm so busy I don't even have time to eat. | 這個字連老師也不會寫。 = Even the teacher can't write this character. | 他連一句中文都不會說。 = He can't say even one sentence in Chinese.
+想法: 好想法 = a good idea | 不同的想法 = a different view | 我的想法 = my thinking | 這個想法不錯。 = That's a good idea. | 每個人的想法都不一樣。 = Everyone thinks differently. | 你有什麼想法？ = What are your thoughts?
+不但: 不但便宜，而且好吃 = not only cheap but tasty too | 他不但會說中文，而且會寫。 = He can not only speak Chinese but write it too. | 這裡不但風景好，而且人也很熱情。 = Not only is the scenery good here, the people are welcoming too. | 我不但沒生氣，還很高興。 = Not only was I not angry, I was pleased.
+繼續: 繼續學 = to keep studying | 繼續工作 = to carry on working | 繼續說 = to go on talking | 請繼續。 = Please continue. | 畢業以後我想繼續念研究所。 = After graduating I want to go on to graduate school. | 休息一下再繼續。 = Take a break, then carry on.
+使用: 使用手機 = to use a mobile phone | 使用電腦 = to use a computer | 使用方法 = how to use it | 這裡不可以使用手機。 = Mobile phones may not be used here. | 你會使用這個功能嗎？ = Do you know how to use this feature?
+實現: 實現理想 = to realize one's ideal | 實現計畫 = to carry out a plan | 他的理想實現了。 = His dream came true. | 我希望有一天能實現這個計畫。 = I hope to make this plan a reality one day.
+招待: 招待客人 = to entertain guests | 招待朋友 = to host friends | 謝謝你的招待。 = Thank you for your hospitality. | 他們用最好的菜招待我們。 = They treated us to their best dishes. | 朋友來台灣，我得(děi)好好招待他。 = My friend is coming to Taiwan, so I must look after him well.
+研究所: 念研究所 = to attend graduate school | 考研究所 = to sit the graduate-school entrance exam | 研究所的學生 = a graduate student | 我打算明年考研究所。 = I plan to take the graduate-school exam next year. | 她在美國念研究所。 = She's at graduate school in the US.
+聚: 聚在一起 = to get together | 聚會 = a get-together | 聚餐 = to have a meal together | 過年的時候全家人聚在一起。 = At New Year the whole family gets together. | 週末我們要聚餐。 = We're having a meal together at the weekend.
+香港: 去香港玩 = to visit Hong Kong | 香港人 = a Hongkonger | 他在香港工作了兩年。 = He worked in Hong Kong for two years.
+上海: 去上海發展 = to build a career in Shanghai | 上海的分公司 = the Shanghai branch | 我有一個朋友住在上海。 = I have a friend who lives in Shanghai.
+說到: 說到台灣 = speaking of Taiwan | 說到吃 = when it comes to food | 說到台灣，我就想起夜市。 = Speaking of Taiwan, I think of the night markets. | 說到做菜，沒有人比他好。 = When it comes to cooking, nobody beats him.
+念完: 念完大學 = to finish university | 念完研究所 = to finish graduate school | 還沒念完 = haven't finished one's studies yet | 我明年就念完大學了。 = I finish university next year. | 念完書以後，你打算做什麼？ = What do you plan to do after you finish your studies?
+分公司: 台北分公司 = the Taipei branch | 開分公司 = to open a branch | 到分公司工作 = to go and work at a branch | 公司在上海開了一家分公司。 = The company opened a branch in Shanghai. | 他要去香港的分公司工作。 = He's going to work at the Hong Kong branch.
+捨不得: 捨不得走 = can't bear to leave | 捨不得用 = can't bring oneself to use it | 捨不得花錢 = reluctant to spend money | 我捨不得離開台灣。 = I can't bear to leave Taiwan. | 這個蛋糕太漂亮了，我捨不得吃。 = This cake is too pretty; I can't bring myself to eat it.
+聚一聚: 找時間聚一聚 = to find a time to get together | 跟老朋友聚一聚 = to catch up with old friends | 我們週末聚一聚吧！ = Let's get together at the weekend! | 畢業以前，我們應該聚一聚。 = We should get together before we graduate.
+當時: 當時的想法 = what one thought at the time | 當時我還是學生。 = I was still a student then. | 當時我不懂他的意思。 = At the time I didn't understand what he meant. | 當時我不知道他是誰。 = At the time I didn't know who he was.
+聲調: 四個聲調 = the four tones | 練習聲調 = to practise tones | 注意聲調 = to mind one's tones | 聲調不準 = tones that are off | 中文的聲調很難。 = Chinese tones are hard. | 你的聲調很準。 = Your tones are accurate.
+發音: 發音很好 = good pronunciation | 發音不準 = inaccurate pronunciation | 練習發音 = to practise pronunciation | 他的發音很準。 = His pronunciation is accurate. | 這個字的發音很難。 = This character is hard to pronounce. | 我想把發音練好。 = I want to get my pronunciation right.
+準: 很準 = very accurate | 不準 = inaccurate | 發音很準 = accurate pronunciation | 你的聲調說得很準。 = You say your tones accurately. | 這個鐘不太準。 = This clock isn't very accurate.
+企業: 大企業 = a big corporation | 小企業 = a small business | 國際企業 = an international corporation | 他在一家大企業上班。 = He works at a big corporation. | 這是一家有名的企業。 = This is a well-known corporation.
+管理: 企業管理 = business management | 管理公司 = to run a company | 管理時間 = to manage one's time | 他念的是企業管理。 = He's studying business management. | 這家公司管理得很好。 = This company is well managed.
+系: 中文系 = the Chinese department | 經濟系 = the economics department | 你念什麼系？ = What's your major? | 我是中文系的學生。 = I'm a student in the Chinese department.
+經濟: 念經濟 = to study economics | 經濟發展 = economic development | 世界經濟 = the world economy | 最近經濟不太好。 = The economy hasn't been good lately. | 這個國家的經濟發展得很快。 = This country's economy is growing fast.
+幫助: 很有幫助 = very helpful | 沒有幫助 = no help | 需要幫助 = to need help | 謝謝你的幫助。 = Thank you for your help. | 多聽對學中文很有幫助。 = Listening a lot is a great help in learning Chinese.
+有關: 跟工作有關 = related to work | 有關的資料 = the relevant information | 跟經濟有關的書 = books to do with economics | 這件事跟我有關。 = This matter concerns me. | 我想找跟台灣文化有關的書。 = I'm looking for books about Taiwanese culture.
+語法: 中文語法 = Chinese grammar | 學語法 = to study grammar | 語法問題 = a grammar question | 這個語法我不懂。 = I don't understand this grammar point. | 中文的語法跟英文很不同。 = Chinese grammar is very different from English.
+研究: 做研究 = to do research | 研究語言 = to research language | 研究一下 = to look into it | 他研究台灣的原住民文化。 = He researches Taiwan's indigenous cultures. | 我想研究一下這個問題。 = I'd like to look into this question.
+教書: 在大學教書 = to teach at a university | 喜歡教書 = to enjoy teaching | 教過書 = has taught before | 我媽媽在小學教書。 = My mother teaches at a primary school. | 他教了二十年書。 = He has taught for twenty years.
+方法: 好方法 = a good method | 學習方法 = study methods | 用這個方法 = to use this method | 這個方法很有用。 = This method is very useful. | 你有什麼好方法？ = Do you have any good methods?
+目的: 我的目的 = my aim | 學中文的目的 = the purpose of learning Chinese | 你來台灣的目的是什麼？ = What is the purpose of your coming to Taiwan? | 我的目的是把中文學好。 = My aim is to learn Chinese well.
+國際: 國際學生 = international students | 國際新聞 = international news | 國際機場 = an international airport | 我們學校有很多國際學生。 = Our school has a lot of international students. | 他每天都看國際新聞。 = He follows the international news every day.
+翻譯: 當翻譯 = to work as a translator | 中文翻譯 = a Chinese translation; a Chinese translator | 翻譯成英文 = to translate into English | 我將來想當翻譯。 = I'd like to be a translator one day. | 請幫我翻譯一下這句話。 = Please translate this sentence for me.
+外交: 外交人員 = diplomats | 外交工作 = diplomatic work | 外交關係 = diplomatic relations | 他對外交很有興趣。 = He's very interested in diplomacy. | 兩國有外交關係。 = The two countries have diplomatic relations.
+人員: 工作人員 = staff | 專業人員 = professionals | 公司的人員 = the company's staff | 有問題可以問工作人員。 = If you have a question, you can ask the staff. | 這家公司需要更多人員。 = This company needs more staff.
+充實: 很充實 = very fulfilling | 充實自己 = to improve oneself | 充實生活 = to enrich one's life | 我想多看書，充實自己。 = I want to read more and improve myself. | 這個學期我過得很充實。 = This semester has been a full one for me.
+專業: 很專業 = very professional | 專業能力 = professional skills | 我的專業 = my specialism | 他的翻譯很專業。 = His translation is very professional. | 你的專業是什麼？ = What's your field?
+能力: 語言能力 = language ability | 工作能力 = ability at work | 有能力 = capable | 他的中文能力很好。 = His Chinese ability is very good. | 我想充實自己的專業能力。 = I want to strengthen my professional skills.
+加拿大: 從加拿大來 = to come from Canada | 加拿大人 = a Canadian | 加拿大的冬天很冷。 = Winters in Canada are cold.
+企業管理系（企管系）: 念企業管理系 = to study business management | 企管系的學生 = a business-management student | 我念的是企管系。 = I'm in the business management department.
+國際關係: 念國際關係 = to study international relations | 研究國際關係 = to research international relations | 他在研究所念國際關係。 = He's studying international relations at graduate school. | 我對國際關係很有興趣。 = I'm very interested in international relations.
+
+== 2.15
+春節: 過春節 = to celebrate the Spring Festival | 春節假期 = the Spring Festival holiday | 春節快樂！ = Happy Spring Festival! | 你春節回家嗎？ = Are you going home for the Spring Festival? | 春節是最熱鬧的節日。 = The Spring Festival is the liveliest holiday.
+伯伯: 王伯伯 = Uncle Wang | 一位老伯伯 = an elderly gentleman | 伯伯好！ = Hello, uncle! | 伯伯，新年快樂！ = Happy New Year, uncle! | 王伯伯請我們去他家吃年夜飯。 = Uncle Wang invited us to his home for New Year's Eve dinner.
+年夜飯: 吃年夜飯 = to have New Year's Eve dinner | 準備年夜飯 = to prepare New Year's Eve dinner | 全家人一起吃年夜飯。 = The whole family eats New Year's Eve dinner together. | 今年的年夜飯在哪裡吃？ = Where are we having New Year's Eve dinner this year?
+打擾: 打擾一下 = excuse me for interrupting | 打擾你了 = sorry to have bothered you | 對不起，打擾一下。 = Sorry to bother you. | 我不想打擾他休息。 = I don't want to disturb his rest. | 這麼晚還打擾你，真不好意思。 = I'm so sorry to bother you this late.
+女兒: 我女兒 = my daughter | 大女兒 = eldest daughter | 兩個女兒 = two daughters | 我女兒今年五歲。 = My daughter is five this year. | 他有一個女兒，在國外念書。 = He has a daughter who is studying abroad.
+國外: 在國外 = abroad | 去國外旅行 = to travel abroad | 國外的朋友 = friends overseas | 我女兒在國外工作。 = My daughter works abroad. | 他在國外住了十年。 = He lived abroad for ten years.
+圍爐: 全家圍爐 = the whole family gathers for the New Year's Eve meal | 一起圍爐 = to gather for the New Year's Eve meal | 除夕夜我們全家一起圍爐。 = On New Year's Eve our whole family gathers for dinner. | 圍爐的時候大家都很開心。 = Everyone is happy at the reunion dinner.
+意思: 什麼意思 = what does it mean | 有意思 = interesting | 不好意思 = sorry; embarrassed | 這個字是什麼意思？ = What does this character mean? | 「圍爐」的意思是全家人一起吃年夜飯。 = 圍爐 means the whole family eating New Year's Eve dinner together.
+全家: 全家人 = the whole family | 全家一起 = the whole family together | 全家福 = a family portrait | 我們全家都喜歡旅行。 = Our whole family loves travelling. | 過年的時候全家人都回來了。 = The whole family came back for New Year.
+孩子: 小孩子 = a small child | 兩個孩子 = two children | 帶孩子 = to look after children | 孩子們都很喜歡過年。 = The children all love New Year. | 他有三個孩子。 = He has three children.
+吉祥: 吉祥話 = auspicious sayings | 很吉祥 = very auspicious | 吉祥的顏色 = a lucky colour | 紅色是吉祥的顏色。 = Red is a lucky colour. | 過年的時候要說吉祥話。 = At New Year you should say auspicious things.
+年紀: 年紀大 = old | 年紀小 = young | 上了年紀 = getting on in years | 伯伯年紀大了。 = Uncle is getting old. | 您今年多大年紀？ = How old are you this year? (polite, to an elder)
+過年: 回家過年 = to go home for New Year | 過年的時候 = at New Year | 過年好！ = Happy New Year! | 你今年在哪裡過年？ = Where are you spending New Year this year? | 過年的時候，孩子們可以拿到壓歲錢。 = At New Year, children get New Year's money.
+除夕夜: 除夕夜吃年夜飯 = to have the reunion dinner on New Year's Eve | 除夕夜守歲 = to stay up on New Year's Eve | 除夕夜全家人聚在一起。 = On New Year's Eve the whole family gets together. | 除夕夜我們都睡得很晚。 = On New Year's Eve we all go to bed late.
+睡著: 睡著了 = fell asleep | 還沒睡著 = not asleep yet | 孩子已經睡著了。 = The child is already asleep. | 他看電視看到睡著了。 = He fell asleep watching TV. | 我昨天晚上睡不著(zháo)。 = I couldn't get to sleep last night.
+壓歲錢: 給壓歲錢 = to give New Year's money | 拿壓歲錢 = to get New Year's money | 收到壓歲錢 = to receive New Year's money | 孩子們最喜歡拿壓歲錢。 = Children love getting New Year's money best of all. | 伯伯給了我一個紅包，裡面是壓歲錢。 = Uncle gave me a red envelope with New Year's money inside.
+恭喜發財: 恭喜發財！ = Wishing you prosperity! | 恭喜發財，紅包拿來！ = Wishing you prosperity. Now hand over the red envelope! (playful) | 過年見面要說「恭喜發財」。 = When you meet people at New Year you say 恭喜發財.
+好了: 好了，我們走吧。 = Right, let's go. | 好了，別生氣了。 = All right, stop being angry. | 好了，好了，我知道了。 = OK, OK, I get it. | 好了，今天就上到這裡。 = Right, that's all for today's class.
+節日: 重要的節日 = an important holiday | 華人的節日 = Chinese festivals | 節日快樂！ = Happy holidays! | 春節是華人最重要的節日。 = The Spring Festival is the most important Chinese holiday. | 你們國家有什麼節日？ = What festivals does your country have?
+打掃: 打掃房間 = to clean one's room | 打掃乾淨 = to clean up thoroughly | 打掃一下 = to tidy up a bit | 過年以前要把家裡打掃乾淨。 = Before New Year the house has to be cleaned thoroughly. | 我每個週末打掃房間。 = I clean my room every weekend.
+另外: 另外一個 = another one | 另外還有 = there is also | 我買了春聯，另外還買了年糕。 = I bought couplets, and I also bought rice cake. | 另外，別忘了帶護照。 = Also, don't forget to bring your passport. | 這是另外一件事。 = That's a separate matter.
+春聯: 貼春聯 = to put up New Year couplets | 寫春聯 = to write couplets | 買春聯 = to buy couplets | 過年的時候家家都貼春聯。 = At New Year every household puts up couplets. | 春聯上寫著吉祥話。 = The couplets have auspicious sayings written on them.
+除夕: 除夕那天 = on New Year's Eve | 除夕晚上 = on the evening of New Year's Eve | 除夕那天大家都回家。 = On New Year's Eve everyone goes home. | 今年的除夕是星期六。 = New Year's Eve falls on a Saturday this year.
+年糕: 吃年糕 = to eat New Year rice cake | 做年糕 = to make rice cake | 蒸年糕 = to steam rice cake | 過年吃年糕，意思是「步步高升」。 = Eating rice cake at New Year stands for rising step by step. | 媽媽做的年糕最好吃。 = Mum's rice cake is the best.
+橘子: 吃橘子 = to eat a tangerine | 一個橘子 = a tangerine | 買橘子 = to buy tangerines | 冬天的橘子又甜又便宜。 = Tangerines in winter are sweet and cheap. | 過年送橘子，意思是「大吉大利」。 = Giving tangerines at New Year stands for good luck and prosperity.
+守歲: 一起守歲 = to see the New Year in together | 守歲到天亮 = to stay up until dawn | 除夕夜我們全家一起守歲。 = On New Year's Eve our whole family stays up together. | 孩子們也想守歲，可是很快就睡著了。 = The children wanted to stay up too, but they soon fell asleep.
+說法: 不同的說法 = a different way of putting it | 這種說法 = this way of saying it; this theory | 有一種說法 = one theory has it | 這個說法對不對？ = Is that the right way to say it? | 兩個地方的說法不一樣。 = The two places say it differently.
+晚: 很晚 = very late | 太晚了 = too late | 晚一點 = a bit later | 睡得很晚 = to go to bed late | 對不起，我來晚了。 = Sorry I'm late. | 除夕夜大家都睡得很晚。 = On New Year's Eve everyone goes to bed late.
+活: 活到一百歲 = to live to a hundred | 活得很快樂 = to live happily | 活著 = alive | 祝您活到一百歲！ = May you live to a hundred! | 要活就要動。 = To stay alive, keep moving. (a saying)
+平安: 很平安 = safe and sound | 平安回家 = to get home safely | 一路平安 = have a safe journey | 祝你平安！ = I wish you well! | 希望大家都平安。 = I hope everyone stays safe.
+出門: 出門以前 = before going out | 不想出門 = not wanting to go out | 出門的時候別忘了帶傘。 = Don't forget your umbrella when you go out. | 他一早就出門了。 = He went out first thing in the morning.
+拜年: 去拜年 = to go and pay New Year visits | 給伯伯拜年 = to pay uncle a New Year visit | 拜個年 = to pay a New Year call | 大年初一要去拜年。 = On New Year's Day you go visiting. | 我們去給王伯伯拜年吧。 = Let's go and wish Uncle Wang a happy New Year.
+又: 又過了一年 = another year has passed | 明天又要上班了。 = Back to work again tomorrow. | 又是新的一年了，恭喜發財！ = It's a new year again. Wishing you prosperity! | 他又來拜年了。 = He's come to pay a New Year visit again.
+起來: 笑起來 = to start laughing | 熱鬧起來 = to get lively | 忙起來 = to get busy | 天氣熱起來了。 = The weather is starting to get hot. | 過年以前，大家都忙起來了。 = Before New Year, everyone gets busy. | 他忽然笑起來。 = He suddenly burst out laughing.
+華人: 華人的節日 = Chinese festivals | 華人文化 = Chinese culture | 全世界的華人 = Chinese people all over the world | 世界各地的華人都過春節。 = Chinese people everywhere celebrate the Spring Festival.
+貼上: 貼上春聯 = to put up the couplets | 貼上照片 = to stick on a photo | 我們在門上貼上春聯。 = We put the couplets up on the door. | 請在這裡貼上你的照片。 = Please attach your photo here.
+年年有餘: 祝你年年有餘！ = May you have plenty every year! | 過年吃魚，意思是「年年有餘」。 = Eating fish at New Year stands for having plenty every year. | 「年年有餘」是過年常說的吉祥話。 = 年年有餘 is an auspicious saying often heard at New Year.
+步步高升: 祝你步步高升！ = May you rise step by step! | 吃年糕的意思是「步步高升」。 = Eating rice cake stands for rising step by step. | 祝你在新公司步步高升。 = I wish you every success at the new company.
+大吉大利: 祝你大吉大利！ = Wishing you luck and prosperity! | 新的一年，大吉大利！ = Good luck and prosperity in the new year! | 橘子的意思是「大吉大利」。 = Tangerines stand for luck and prosperity.
+放鞭炮: 過年放鞭炮 = to set off firecrackers at New Year | 喜歡放鞭炮 = to love setting off firecrackers | 孩子們最喜歡放鞭炮。 = Children love setting off firecrackers best of all. | 這裡不可以放鞭炮。 = Firecrackers aren't allowed here. | 大年初一早上，家家都放鞭炮。 = On the morning of New Year's Day every household sets off firecrackers.
+大年初一: 大年初一早上 = on the morning of New Year's Day | 大年初一拜年 = to pay visits on New Year's Day | 大年初一不可以打掃。 = You mustn't sweep on New Year's Day. | 大年初一大家都穿新衣服。 = Everyone wears new clothes on New Year's Day.
+大年初五: 到了大年初五 = when the fifth day of the New Year comes | 大年初五開始上班 = to go back to work on the fifth day | 很多商店大年初五才開門。 = Many shops don't open until the fifth day of the New Year. | 大年初五以後，大家又忙起來了。 = After the fifth day, everyone gets busy again.

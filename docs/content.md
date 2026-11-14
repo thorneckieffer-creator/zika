@@ -48,3 +48,14 @@ Short original reading passages per lesson, shown by the `story` drill mode (fun
 - **In the app:** text is segmented longest-known-word first (`rdSegment`); tapping a word shows its reading and meaning and marks it for review; finishing sends marked words to the hard list and counts the read in `S.read`.
 - **Coverage so far:** Book 3 Lessons 1–4, two passages each.
 
+## Usage phrases (用法, v50)
+
+For each word, a few short collocations and then one or two short sentences, so a word is learned with the company it keeps (搬 → 搬東西, 搬到台北, 搬出去, 我下個月要搬到學校附近。). Thorne asked for these in November 2026, starting at Book 2 Lesson 6.
+
+- **Source of truth:** `tools/content/usage_phrases.txt`, one line per word: `詞: 中文 = English | 中文 = English`. Sections are `== 2.6` (book.lesson). The format is described at the top of the file. Written for the app, never copied from the textbook.
+- **The rules,** enforced by `python3 tools/check_usage.py`: a phrase uses only characters met by the end of its word's lesson (numerals allowed); it contains its headword (for a separable verb, the characters in order: 潛過水); every word of a covered lesson has at least two phrases, people's names excepted. `--write` installs them into the `const USAGE = …;` line of `index.html`; `--show 2.6` prints a lesson with its pinyin for proofreading; `--review` lists every place a reading had to be chosen.
+- **Pinyin is generated, not typed.** A phrase is cut into the longest words `WORDS` knows and each keeps the publisher's reading and spacing; a character standing alone takes the reading it has in `WORDS`; standalone 一 and 不 get their tone change; 了 after 不 or 得 is liǎo. Where a character has several readings the default is in `DEFAULT` in the tool, and the phrase can force one in place: `你得(děi)去`, `長(zhǎng)大`, `睡不著(zháo)`, `熱情地(de)`. Everyday words the course never lists (台灣, 電腦, 星期) are in `EXTRA` so they are written as one word. After adding phrases, read the `--review` list.
+- **Writing them:** three to six per word; collocations first, shortest first; sentences last and short. Use the word in the sense the lesson teaches (the gloss in `WORDS`), plus a second very common sense where there is one (酸: 我的腿很酸). The checker's list of unknown characters is the guide to rewording; the common traps before Book 2 Lesson 11 are 讓, 被, 愛, 全, 條, 洗, 完, 懂, 跑 and 簡單.
+- **In the app** (the third script block, `us*`): `usBlock(w)` puts the first three on the answer side of a review card with the rest one tap away, and all of them in the Brain's word detail; a phrase is spoken by the system voice when tapped (the packs hold words, not phrases). `S.settings.usageCards === false` turns the card list off. The 用法 drill shows the English and the phrase with the word blanked; a miss changes nothing by itself, and the finish screen offers to put the missed words on the hard list.
+- **Coverage so far:** Book 2 Lessons 6–15: 436 words, 1,979 phrases.
+

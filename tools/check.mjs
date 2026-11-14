@@ -85,6 +85,23 @@ if (WORDS && BOOKS) {
     note(`${points} grammar points`);
   }
 
+  /* usage phrases: every key is a word, every phrase is [中文, pinyin, English], and it contains its word's characters */
+  const USAGE = data('USAGE');
+  if (USAGE) {
+    let phrases = 0;
+    for (const [id, list] of Object.entries(USAGE)) {
+      const w = WORDS.find(x => x.id === id);
+      if (!w) { fail(`USAGE: ${id} is not a word`); continue; }
+      if (!Array.isArray(list) || !list.length) fail(`USAGE: ${id} ${w.t} has no phrases`);
+      for (const p of list || []) {
+        phrases++;
+        if (!(Array.isArray(p) && p.length === 3 && p.every(x => typeof x === 'string' && x.trim()))) fail(`USAGE: ${id} ${w.t} has a malformed phrase ${JSON.stringify(p)}`);
+      }
+    }
+    const lessons = new Set(Object.keys(USAGE).map(id => (WORDS.find(x => x.id === id) || {}).l));
+    note(`${phrases} usage phrases for ${Object.keys(USAGE).length} words in ${lessons.size} lessons (python3 tools/check_usage.py checks their vocabulary)`);
+  }
+
   /* coverage: strokes, components, voice packs — gaps degrade gracefully, so they are notes, not failures */
   const strokes = existsSync(join(root, 'assets/strokes.json')) ? JSON.parse(read('assets/strokes.json')) : null;
   if (!strokes) fail('assets/strokes.json is missing');

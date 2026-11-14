@@ -6,6 +6,7 @@ One list of what is not done, by area. Take an item off when it ships; add one w
 
 - **Book 3, Lessons 5–12.** Lessons 1–4 are in (v41). The other two volumes (`MBLCECC009`, `MBLCECC010`) still show a cover only in the DangDai app: Thorne downloads them there, then the importer runs again ([content.md](content.md)).
 - **Book 4**, the same way, after Book 3.
+- **Usage phrases** (用法) cover Book 2 Lessons 6–15 (v50). Next: Book 3 Lessons 1–4, then Book 2 Lessons 1–5 and Book 1, in the order Thorne asks for ([content.md](content.md#usage-phrases-用法-v50)). They have no recorded audio: a pack of phrase clips would give them the 曉臻 voice instead of the system one.
 - **Short essays per lesson**, original, built from each lesson's vocabulary and grammar. Thorne asked for these and will say which lesson to start with.
 - Three Book 3 characters (嚐, 汙, 崁) have no stroke data or component breakdown in the open sources.
 

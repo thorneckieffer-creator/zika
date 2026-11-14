@@ -29,28 +29,31 @@ HAN = re.compile(r'[㐀-鿿]')
 NUM = dict(zip('零一二三四五六七八九十百千萬兩', 'líng yī èr sān sì wǔ liù qī bā jiǔ shí bǎi qiān wàn liǎng'.split()))
 PUNCT = {'，': ',', '。': '.', '？': '?', '！': '!', '、': ',', '：': ':', '；': ';', '…': '…', '「': '“', '」': '”', '—': '—'}
 ENDS = '。？！'
+QUIET = '一不的個會幾和'      # chosen by rule or never in doubt: left out of --review
 SUFFIX = '們'          # written onto the word before it: péngyǒumen
-# The reading a character takes when it stands alone and WORDS knows more than one.
-DEFAULT = {'了': 'le', '得': 'de', '著': 'zhe', '地': 'de', '的': 'de', '個': 'ge', '還': 'hái', '都': 'dōu', '長': 'cháng',
-           '好': 'hǎo', '少': 'shǎo', '當': 'dāng', '倒': 'dào', '那': 'nà', '哪': 'nǎ', '這': 'zhè', '要': 'yào', '大': 'dà',
-           '上': 'shàng', '下': 'xià', '看': 'kàn', '中': 'zhōng', '分': 'fēn', '行': 'xíng', '教': 'jiāo', '種': 'zhǒng',
-           '為': 'wèi', '重': 'zhòng', '過': 'guò', '和': 'hàn', '會': 'huì', '子': 'zi', '頭': 'tóu', '生': 'shēng',
-           '家': 'jiā', '人': 'rén', '天': 'tiān', '年': 'nián', '點': 'diǎn', '裡': 'lǐ', '在': 'zài', '有': 'yǒu',
-           '我': 'wǒ', '你': 'nǐ', '他': 'tā', '她': 'tā', '是': 'shì', '很': 'hěn', '也': 'yě', '來': 'lái', '去': 'qù',
-           '到': 'dào', '就': 'jiù', '對': 'duì', '給': 'gěi', '想': 'xiǎng', '說': 'shuō', '多': 'duō', '沒': 'méi',
-           '吧': 'ba', '嗎': 'ma', '呢': 'ne', '啊': 'a', '喔': 'ō', '啦': 'la', '麼': 'me', '西': 'xī', '方': 'fāng',
-           '期': 'qí', '候': 'hòu', '友': 'yǒu', '識': 'shì', '服': 'fú', '氣': 'qì', '思': 'sī', '情': 'qíng',
-           '息': 'xí', '白': 'bái', '飯': 'fàn', '事': 'shì', '道': 'dào', '見': 'jiàn', '喜': 'xǐ', '歡': 'huān',
-           '東': 'dōng', '兒': 'ér', '日': 'rì', '月': 'yuè', '號': 'hào', '本': 'běn', '些': 'xiē', '起': 'qǐ',
-           '覺': 'jué', '便': 'biàn', '樂': 'lè', '發': 'fā', '相': 'xiāng', '處': 'chù', '假': 'jià', '空': 'kòng',
-           '差': 'chā', '只': 'zhǐ', '量': 'liàng', '數': 'shù', '間': 'jiān', '難': 'nán', '興': 'xìng', '應': 'yīng',
-           '乾': 'gān', '正': 'zhèng', '更': 'gèng', '久': 'jiǔ', '父': 'fù', '夫': 'fū', '用': 'yòng', '一': 'yī', '不': 'bù'}
+# The reading a character takes when it stands alone and WORDS knows more than one full-tone reading.
+# (A character with one full-tone reading and a neutral one — 姐 jiě / jie — takes the full tone unless listed here.)
+DEFAULT = {'了': 'le', '得': 'de', '著': 'zhe', '地': 'dì', '的': 'de', '個': 'ge', '子': 'zi', '和': 'hàn', '會': 'huì',
+           '好': 'hǎo', '長': 'cháng', '當': 'dāng', '便': 'biàn', '覺': 'jué', '樂': 'lè', '為': 'wèi', '行': 'xíng',
+           '空': 'kōng', '差': 'chā', '分': 'fēn', '教': 'jiāo', '相': 'xiāng', '應': 'yīng', '調': 'diào', '待': 'dài',
+           '擔': 'dān', '幾': 'jǐ', '一': 'yī', '不': 'bù'}
+# Everyday words the course uses without listing them (or lists only as a pattern), so they are written as one word.
+EXTRA = {'星期': 'xīngqí', '電腦': 'diànnǎo', '第一': 'dìyī', '一下': 'yíxià', '一樣': 'yíyàng', '一些': 'yìxiē',
+         '大家': 'dàjiā', '這裡': 'zhèlǐ', '那裡': 'nàlǐ', '這些': 'zhèxiē', '那些': 'nàxiē', '一共': 'yígòng',
+         '不用': 'búyòng', '不要': 'búyào', '不會': 'búhuì', '不是': 'búshì', '不太': 'bútài', '不對': 'búduì',
+         '沒有': 'méiyǒu', '還有': 'háiyǒu', '只有': 'zhǐyǒu', '這個': 'zhège', '那個': 'nàge',
+         '哪個': 'nǎge', '每天': 'měitiān', '每個': 'měi ge', '一個': 'yí ge', '兩個': 'liǎng ge', '幾個': 'jǐ ge',
+         '台灣': 'Táiwān', '台北': 'Táiběi', '常常': 'chángcháng', '別人': 'biérén', '有人': 'yǒu rén', '一直': 'yìzhí',
+         '一百': 'yìbǎi', '一千': 'yìqiān', '一萬': 'yíwàn', '電子': 'diànzǐ', '假日': 'jiàrì', '可樂': 'kělè',
+         '紅包': 'hóngbāo', '公車': 'gōngchē'}
+PROPER = {'王': 'Wáng'}   # a surname standing alone keeps its capital
+NOJOIN = {'好的'}        # words that would swallow a neighbour: 很好的 is 很好 + 的, not 很 + 好的
 
 # ---------- pinyin syllables ----------
 INITIALS = ['zh', 'ch', 'sh', 'b', 'p', 'm', 'f', 'd', 't', 'n', 'l', 'g', 'k', 'h', 'j', 'q', 'x', 'r', 'z', 'c', 's', 'y', 'w', '']
 FINALS = ['iang', 'iong', 'uang', 'ueng', 'ang', 'eng', 'ong', 'iao', 'ian', 'ing', 'uai', 'uan', 'üan', 'ai', 'ei', 'ao', 'ou',
           'an', 'en', 'er', 'ia', 'ie', 'iu', 'in', 'ua', 'uo', 'ui', 'un', 'ue', 'üe', 'ün', 'a', 'o', 'e', 'i', 'u', 'ü']
-SYL = {i + f for i in INITIALS for f in FINALS}
+SYL = {i + f for i in INITIALS for f in FINALS if i or f[0] in 'aoe'}
 TONES = {'̄': 1, '́': 2, '̌': 3, '̀': 4}
 
 
@@ -109,14 +112,19 @@ def split_syllables(run, n):
     return [unicodedata.normalize('NFC', ''.join(letters[a:b])) for a, b in found[0]]
 
 
+def head_of(w):
+    """The word itself: no bracketed variant, no “+ noun” pattern text."""
+    return re.sub(r'\s*\+\s*[a-z]+|[a-z]+\s*\+\s*', '', w['t'].split('（')[0]).strip()
+
+
 def word_groups(w):
     """A word's reading as groups of syllables, one syllable per character, keeping the publisher's spacing.
     Returns None when the reading cannot be laid against the characters."""
-    t = w['t'].split('（')[0]
+    t = head_of(w)
     chars = HAN.findall(t)
     if len(chars) != len(t):
         return None
-    p = w['p'].split('/')[0].split('（')[0].strip()
+    p = re.split(r'[/(（,]', w['p'])[0].strip()
     erhua = t.endswith('兒') and plain(p).endswith('r') and not plain(p).endswith('er')
     groups, n_left = [], len(chars) - (1 if erhua else 0)
     runs = p.split()
@@ -150,10 +158,15 @@ def join(syls):
 
 class Reader:
     def __init__(self, WORDS):
-        self.words, self.chars, self.unsplit = {}, defaultdict(Counter), []
+        self.words, self.chars, self.unsplit, self.alone = {}, defaultdict(Counter), [], {}
+        for t, p in EXTRA.items():
+            self.words[t] = word_groups({'t': t, 'p': p}) or sys.exit(f'EXTRA: cannot read {t} {p}')
         for w in WORDS:
-            t = w['t'].split('（')[0]
+            t = head_of(w)
             g = word_groups(w)
+            if not g and '（' in w['t']:          # 忘（了） wàngle: the reading covers the bracketed part too
+                t = re.sub(r'[（）]', '', w['t'])
+                g = word_groups({'t': t, 'p': w['p']})
             if not g:
                 self.unsplit.append(w)
                 continue
@@ -164,21 +177,32 @@ class Reader:
             for c, s in zip(hs, flat):
                 if s:
                     self.chars[c][s.lower()] += 1
-            if t not in self.words:
+            if t not in self.words or t in EXTRA:
                 self.words[t] = g
+            if len(hs) == 1 and hs[0] not in self.alone:
+                self.alone[hs[0]] = flat[0].lower()
         self.maxlen = max(len(t) for t in self.words)
         self.choices = []          # (char, reading, phrase) for --review
 
-    def single(self, c, phrase):
-        if c in NUM and c not in self.chars:
-            return NUM[c]
+    def single(self, c, phrase, prev=''):
+        if c == '了' and prev and prev in '不得':      # 吃不了, 受得了
+            return 'liǎo'
+        if c in PROPER:
+            return PROPER[c]
         opts = self.chars.get(c)
         if not opts:
             return NUM.get(c)
+        if c in NUM and c not in DEFAULT:
+            return NUM[c]
         if len(opts) == 1:
             return next(iter(opts))
-        r = DEFAULT.get(c) or opts.most_common(1)[0][0]
-        self.choices.append((c, r, phrase, c not in DEFAULT))
+        toned = [r for r in opts if tone(r)]
+        r = DEFAULT.get(c) or (toned[0] if len(toned) == 1 else None)
+        guessed = r is None
+        if guessed:
+            r = self.alone.get(c) or opts.most_common(1)[0][0]
+        if c in DEFAULT or guessed:
+            self.choices.append((c, r, phrase, guessed))
         return r
 
     def read(self, text):
@@ -199,7 +223,7 @@ class Reader:
             hit = None
             for L in range(min(self.maxlen, len(clean) - i), 1, -1):
                 s = clean[i:i + L]
-                if s in self.words and not any(k in forced for k in range(i, i + L)):
+                if s in self.words and (s not in NOJOIN or s == clean) and not any(k in forced for k in range(i, i + L)):
                     hit = s
                     break
             if hit:
@@ -208,7 +232,7 @@ class Reader:
                 continue
             ch = clean[i]
             if HAN.match(ch):
-                toks.append(['c', forced.get(i) or self.single(ch, clean), i, ch])
+                toks.append(['c', forced.get(i) or self.single(ch, clean, clean[i - 1] if i else ''), i, ch])
             else:
                 toks.append(['p', ch, i, ch])
             i += 1
@@ -224,7 +248,7 @@ class Reader:
             nxt_ch = clean[t[2] + 1] if t[2] + 1 < len(clean) else ''
             nxt = first_syl(k + 1)
             if t[3] == '一':
-                if prev in '第初十期' or prev in NUM or nxt is None or (nxt_ch in NUM) or nxt_ch in '月號樓':
+                if (prev and (prev in '第初十期' or prev in NUM)) or nxt is None or (nxt_ch in NUM) or nxt_ch in '月號樓':
                     t[1] = 'yī'
                 elif tone(nxt) == 4 or nxt_ch == '個':
                     t[1] = 'yí'
@@ -300,7 +324,7 @@ def main():
     for book, lesson, head, items, n in parse(SRC):
         ln = books[book] + lesson - 1
         covered.add((book, lesson, ln))
-        cands = [w for w in WORDS if w['l'] == ln and (w['t'] == head or w['t'].split('（')[0] == head)]
+        cands = [w for w in WORDS if w['l'] == ln and head in (w['t'], w['t'].split('（')[0], head_of(w))]
         k = seen_head[(ln, head)]
         seen_head[(ln, head)] += 1
         where = f'B{book} L{lesson} {head} (line {n})'
@@ -309,7 +333,7 @@ def main():
             continue
         w = cands[k]
         known = {c for x in WORDS if x['l'] <= ln for c in HAN.findall(x['t'])} | set(NUM)
-        hw = [h for h in re.split(r'[（）]', w['t']) if h]
+        hw = [head_of(w)] + [h for h in re.split(r'[（）]', w['t'])[1:] if h]
         rows = []
         for zh, en in items:
             clean, py = reader.read(zh)
@@ -354,6 +378,8 @@ def main():
         for c, r, phrase, guessed in reader.choices:
             by[(c, r, guessed)].append(phrase)
         for (c, r, guessed), ps in sorted(by.items()):
+            if c in QUIET and not guessed:
+                continue
             print(f'  {c} → {r}{"  (no default set — most common reading used)" if guessed else ""}: ' + ' · '.join(dict.fromkeys(ps)))
     if problems:
         print('\n' + '\n'.join('  ✗ ' + p for p in problems))

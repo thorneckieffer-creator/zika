@@ -4,11 +4,15 @@ The app area: `index.html`, `sw.js`, `manifest.webmanifest`. Read this before ch
 
 ## Reading `index.html`
 
-Three lines of `index.html` are enormous single-line JSON blobs (`const WORDS`, `const GRAMMAR`, `const COMPONENTS`) and one is the minified QR library. Never read them whole; grep with `cut -c1-300` and parse them with a script.
+Five lines of `index.html` are enormous single-line JSON blobs (`const WORDS`, `const GRAMMAR`, `const COMPONENTS`, `const READINGS`, `const USAGE`) and one is the minified QR library. Never read them whole; grep with `cut -c1-300` and parse them with a script.
 
 ## Script blocks
 
-`index.html` holds two inline scripts that share one global scope. The first is everything up to v43, layer on layer. The second, added in v44, holds the shell (`sh*`: top bar, tab icons, the look, *Where you are*, the Today layout) and My words (`my*`). New features go in the second block, or in a new block of their own, as plain functions with a prefix. `tools/check.mjs` syntax-checks every block.
+`index.html` holds two inline scripts that share one global scope. The first is everything up to v43, layer on layer. The second, added in v44, holds the shell (`sh*`: top bar, tab icons, the look, *Where you are*, the Today layout) and My words (`my*`). The third, added in v50, holds the usage phrases (`us*`) and their `USAGE` data line. New features go in the second block, or in a new block of their own, as plain functions with a prefix. `tools/check.mjs` syntax-checks every block.
+
+A function in a later block is not defined while the first block paints the opening view, so the first block calls it guarded: `window.usBlock?usBlock(w):''`.
+
+**A drill that takes over the Drill tab** (Stories, 用法) does not wrap `startDrill` / `renderDrill` again. It registers once: `DRILL_SCREENS[mode] = {start, render}` (defined beside the Stories code), plus a `DMODES.push` for its tile. `start()` sets `drillMode` and calls `go('drill')`; `render()` paints `#vDrill` while `dq` is null.
 
 ## Layers
 
