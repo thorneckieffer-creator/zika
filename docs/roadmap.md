@@ -1,0 +1,38 @@
+# Roadmap and open work
+
+One list of what is not done, by area. Take an item off when it ships; add one when you find it.
+
+## Content
+
+- **Book 3, Lessons 5–12.** Lessons 1–4 are in (v41). The other two volumes (`MBLCECC009`, `MBLCECC010`) still show a cover only in the DangDai app: Thorne downloads them there, then the importer runs again ([content.md](content.md)).
+- **Book 4**, the same way, after Book 3.
+- **Short essays per lesson**, original, built from each lesson's vocabulary and grammar. Thorne asked for these and will say which lesson to start with.
+- Three Book 3 characters (嚐, 汙, 崁) have no stroke data or component breakdown in the open sources.
+
+## Voice
+
+- **Thorne's own voice** (`me`, `audio-me`). The recorder page, the BreezyVoice builder and the app slot shipped in v42; the pack itself is not built. It ships only after Thorne approves the sound by ear ([voice.md](voice.md)).
+- **雲哲 male pack** (`audio-tw-m`) was never completed: the read-aloud service throttled the build.
+- **Book 3 words have no bundled clips.** The 曉臻 pack predates them, so 338 words and characters play in the system voice (`node tools/check.mjs` lists them).
+
+## App
+
+Behaviour gaps, not yet fixed:
+
+- Heteronyms still share one clip in the 曉臻 pack (得 de/děi, 了 le/liǎo). The app has looked for a per-reading clip (`字@pinyin`) since v42, but only packs from the BreezyVoice builder contain them.
+- The Today hero says "Deck cleared" from the live lane alone, even when catch-up or maintenance cards are due.
+- The Up-next panel's "will start now" count ignores the per-lane intake.
+- Turning a card type on in Settings does not create that card for words already in the deck.
+- The exam clock in the 口試 drill is not tied to the recording.
+
+Structure:
+
+- **One layer.** Fold the version-by-version wrappers into a single definition of each function, one function at a time with the smoke test, never as one rewrite ([architecture.md](architecture.md#layers)).
+- **Leaner sync.** Send changes rather than the whole deck.
+
+Verified dead or superseded code that is still in the file, to be removed one piece at a time with the smoke test:
+
+- `TIERS`, `RECUR_TGT`, `CATCHUP_SCHED`, `tierWords`, `recurPoints`, `drillTier` and the `drillScope==='tier'` branch (the tier card was stubbed out in v33).
+- The first `renderLib` body, the first `buildQueue` body and the first `compLines` body (each replaced wholesale by a later layer).
+- The `dict` branch of the first `renderDrill`, and the write-card front in the first `renderRev`.
+- `NOTION.hub/.catchup/.prep/.book1/.chars`, CSS `.complines`, `.gres`, `.serif-en`, `.kai`.

@@ -44,6 +44,7 @@ The sync code is the only secret: anyone who has it can read and write that deck
 index.html            the whole app: styles, data, logic
 sw.js                 service worker (offline shell + asset cache)
 manifest.webmanifest  install metadata
+voice.html            records a reference sentence for a cloned voice pack
 assets/
   audio-tw.pack       zh-TW neural voice 曉臻 (female), 1,707 clips: words + characters
   audio-tw-index.json clip offsets into the pack
@@ -51,11 +52,15 @@ assets/
   strokes.json        stroke-order data for 1,003 characters
   hanzi-writer.min.js stroke animation engine
   icon-*.png
-tools/check.mjs            release check: syntax, versions, data integrity
-tools/build_voice_pack.py  builds a voice pack from the word list
-tools/import_dangdai.py    imports lessons from a downloaded DangDai volume
-tools/add_characters.py    adds stroke data and component breakdowns for new characters
-tools/content/             original grammar write-ups for new books
+tools/
+  check.mjs                  release check: syntax, versions, data integrity
+  import_dangdai.py          imports lessons from a downloaded DangDai volume
+  add_characters.py          adds stroke data and component breakdowns for new characters
+  content/                   original grammar write-ups for new books; 注音 readings per word
+  build_voice_pack.py        builds a voice pack from the word list (Microsoft neural voices)
+  build_voice_pack_breezy.py builds a pack in a cloned voice (BreezyVoice), with
+  build_voice_staged.sh        a staged runner and build_readings.py for pinned readings
+docs/                 working notes by area: architecture, content, voice, releasing, roadmap
 ```
 
 **State.** One JSON object in `localStorage` under the key `shida_b1_fsrs_v2`. The key name is historical and must not change, because every device's progress lives under it.
@@ -97,13 +102,24 @@ node tools/check.mjs                           # run before every release
 
 A release is a commit on `main`; GitHub Pages deploys it within a couple of minutes. Each release bumps the version in two places that the check keeps in step: `APP_VERSION` in `index.html` and `VERSION` in `sw.js`.
 
-`CLAUDE.md` holds the working notes for anyone (or any assistant) changing the code: the layered structure, the data schemas and the rules that protect existing progress.
+`CLAUDE.md` is the starting point for anyone (or any assistant) changing the code: who owns what, and the rules that protect existing progress. The detail is split by area under `docs/`:
+
+| Notes | What is in them |
+|---|---|
+| [docs/architecture.md](docs/architecture.md) | How `index.html` is layered, the data schemas, scheduler, sync, audio playback. |
+| [docs/content.md](docs/content.md) | Adding a book: where the word lists come from and what may be copied. |
+| [docs/voice.md](docs/voice.md) | Voice packs and the two builders. |
+| [docs/releasing.md](docs/releasing.md) | The release steps, GitHub Pages, and working in two sessions at once. |
+| [docs/roadmap.md](docs/roadmap.md) | Everything still open, by area. |
 
 ## Roadmap
 
 - **Books 3 and 4.** Book 3 is being added volume by volume from the publisher's 當代中文 app (`tools/import_dangdai.py`, `tools/add_characters.py`); Lessons 5–12 and Book 4 follow. Grammar explanations, example sentences and reading passages for the new lessons are written for this app rather than copied from the textbook.
+- **Your own voice.** A voice pack cloned from a short recording of the learner, built with the open-source BreezyVoice model.
 - **Leaner sync.** Send changes rather than the whole deck.
 - **One layer.** Fold the version-by-version patches in `index.html` into a single definition of each function.
+
+The full list, including known gaps, is in [docs/roadmap.md](docs/roadmap.md).
 
 ## Credits
 

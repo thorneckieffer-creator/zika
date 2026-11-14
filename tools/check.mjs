@@ -92,7 +92,7 @@ if (WORDS && BOOKS) {
   if (COMPONENTS) { const miss = [...chars].filter(c => !COMPONENTS[c]); if (miss.length) note(`COMPONENTS: ${miss.length} characters without a breakdown: ${miss.slice(0, 20).join('')}`); }
 
   const wanted = new Set(); for (const w of WORDS) { const k = audioKey(w.t); if (k) wanted.add(k); } for (const c of chars) wanted.add(c);
-  for (const pack of ['audio-tw', 'audio-tw-m']) {
+  for (const pack of ['audio-tw', 'audio-tw-m', 'audio-me']) {
     const idxFile = `assets/${pack}-index.json`, packFile = `assets/${pack}.pack`;
     if (!existsSync(join(root, idxFile)) || !existsSync(join(root, packFile))) { note(`${pack}: not present`); continue; }
     const idx = JSON.parse(read(idxFile)), size = statSync(join(root, packFile)).size;

@@ -1,8 +1,9 @@
 # macOS
 .DS_Store
 
-# Claude Code — per-machine settings stay local
+# Claude Code — per-machine settings and second-session worktrees stay local
 .claude/settings.local.json
+.claude/worktrees/
 
 # Old working copies
 zika-v17/
