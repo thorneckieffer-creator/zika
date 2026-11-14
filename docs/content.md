@@ -38,3 +38,13 @@ What the importer does by hand, for reference:
 4. Add any new characters to `assets/strokes.json` (Hanzi Writer data format) and `COMPONENTS`.
 5. Rebuild the voice packs with `tools/build_voice_pack.py` and bump `ASSETS` in `sw.js`.
 6. `node tools/check.mjs` reports any lesson without words, character without strokes, or word without a clip.
+
+## Stories (短文, v43)
+
+Short original reading passages per lesson, shown by the `story` drill mode (functions prefixed `rd`).
+
+- **Source of truth:** `tools/content/reading_passages.py` — `R[(book, lesson)] = [{t, en, zh, tr}]`. Thorne asked for new texts in different settings built from each lesson's vocabulary and grammar; these are written for the app, never copied from the textbook.
+- **The rule:** a passage may use only characters that appear in some word up to its lesson (numerals are allowed). `python3 tools/check_reading.py` lists any character from a later lesson and how many of the lesson's new words the passage uses; `--write` installs the passages into the `const READINGS = …;` line of `index.html`.
+- **In the app:** text is segmented longest-known-word first (`rdSegment`); tapping a word shows its reading and meaning and marks it for review; finishing sends marked words to the hard list and counts the read in `S.read`.
+- **Coverage so far:** Book 3 Lessons 1–4, two passages each.
+

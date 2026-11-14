@@ -20,3 +20,15 @@ BreezyVoice setup on this Mac lives in `~/.cache/zika-voice/bv/` (Miniforge, a P
 - Claude cannot hear audio. Whisper listen-back catches gross failures on words of two or more syllables but is unreliable on single syllables; Thorne has to approve the sound by ear before a pack ships.
 
 After building or extending a pack, bump `ASSETS` in `sw.js` and run `node tools/check.mjs`, which reports every word without a clip.
+
+## Tone coach (聲調教練, v43, beta)
+
+A drill mode (`tcoach`, functions prefixed `tc`) that records the learner saying a word, shows the pitch curve of each syllable against the native clip's, and grades each tone. It runs entirely in the browser; no audio leaves the device.
+
+- **Pipeline:** recording → 16 kHz → YIN pitch track (`tcPitch`) → cleaning (`tcClean`) → voiced stretches merged or split into one per syllable (`tcSyllables`) → each syllable reduced to 16 points (`tcShape`) → a small softmax classifier (`tcClassify`, weights in `TC_W`).
+- **The classifier was fitted on the bundled 曉臻 clips**: 1,962 labelled non-neutral syllables, 90% on held-out syllables (tone 1 97%, tone 2 94%, tone 3 72%, tone 4 92%). If the analysis changes, refit it: decode every clip, build the same features, train, and replace `TC_W`. It has never been validated against a human learner's voice — treat grades as a guide, and the curves as the real feedback.
+- **Speaker normalisation:** pitch is judged against the speaker's own mid pitch and spread. For the native voice these are measured once per pack (`tcNativeStats`, cached in localStorage). For the learner they are learned from every recording (`S.vp`: frame count, sum, sum of squares, in semitones re 100 Hz); the first run asks for one read-aloud sentence so it starts with a real estimate.
+- **Expected tones** come from the word's pinyin with third-tone sandhi applied (`tcExpected`); neutral tones are shown but not graded.
+- **State:** `S.tone` holds totals per tone, a confusion count (`"2>3"`), and the best score per word. Both `S.tone` and `S.vp` sync.
+- **Not done:** sentence-level practice; tone-pair drills chosen from the learner's weakest confusions; a classifier trained on more than one voice.
+

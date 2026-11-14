@@ -49,7 +49,7 @@ def load_keys():
     return sorted(keys)
 
 
-async def synth(key, voice, rate, cache, sem, stats):
+async def synth(key, voice, rate, cache, sem, stats, pause=0.6):
     import edge_tts
     path = cache / (key + '.mp3')
     if path.exists() and path.stat().st_size > 1000:
@@ -62,7 +62,7 @@ async def synth(key, voice, rate, cache, sem, stats):
                 await asyncio.wait_for(edge_tts.Communicate(key, voice, rate=rate).save(str(path)), timeout=30)
                 if path.stat().st_size > 1000:
                     stats['made'] += 1
-                    await asyncio.sleep(0.6)   # stay well under the service's burst limit
+                    await asyncio.sleep(pause)   # stay well under the service's burst limit (it blocks for hours past ~60 a minute)
                     return
             except (Exception, asyncio.TimeoutError):
                 pass
@@ -79,8 +79,9 @@ async def main():
     ap.add_argument('--rate', default='-12%', help='speaking rate relative to normal (default: slightly slow)')
     ap.add_argument('--out', default='audio-tw-m', help='basename under assets/: <out>.pack and <out>-index.json')
     ap.add_argument('--cache', default=str(Path.home() / '.cache' / 'zika-voice'))
-    ap.add_argument('--jobs', type=int, default=2)
+    ap.add_argument('--jobs', type=int, default=1)
     ap.add_argument('--limit', type=int, default=0, help='only the first N keys (for a quick test)')
+    ap.add_argument('--pause', type=float, default=2.0, help='seconds to wait after each clip')
     a = ap.parse_args()
 
     keys = load_keys()
@@ -92,7 +93,7 @@ async def main():
     sem = asyncio.Semaphore(a.jobs)
     print(f'{len(keys)} keys · voice {a.voice} · rate {a.rate}', flush=True)
 
-    todo = [synth(k, a.voice, a.rate, cache, sem, stats) for k in keys]
+    todo = [synth(k, a.voice, a.rate, cache, sem, stats, a.pause) for k in keys]
     for i in range(0, len(todo), 50):
         await asyncio.gather(*todo[i:i + 50])
         print(f'  {min(i + 50, len(todo))}/{len(todo)} · new {stats["made"]} · cached {stats["cached"]} · failed {len(stats["failed"])}', flush=True)

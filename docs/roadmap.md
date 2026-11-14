@@ -12,7 +12,9 @@ One list of what is not done, by area. Take an item off when it ships; add one w
 ## Voice
 
 - **Thorne's own voice** (`me`, `audio-me`). The recorder page, the BreezyVoice builder and the app slot shipped in v42; the pack itself is not built. It ships only after Thorne approves the sound by ear ([voice.md](voice.md)).
-- **雲哲 male pack** (`audio-tw-m`) was never completed: the read-aloud service throttled the build.
+- **雲哲 male pack** (`audio-tw-m`): Thorne prefers a native voice to the clone of his own ("it doesn't sound like me"). The read-aloud service came back, and a slow-paced build (`--pause 2`) is the way to finish it.
+- **Tone coach** shipped as a beta in v43; next are sentence practice and drills aimed at the learner's weakest tone pairs ([voice.md](voice.md)).
+- **Stories** cover Book 3 Lessons 1–4; Books 1–2 lessons and more settings per lesson are still to write ([content.md](content.md)).
 - **Book 3 words have no bundled clips.** The 曉臻 pack predates them, so 338 words and characters play in the system voice (`node tools/check.mjs` lists them).
 
 ## App

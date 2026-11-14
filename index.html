@@ -698,7 +698,7 @@ html{-webkit-tap-highlight-color:transparent;touch-action:pan-x pan-y}   /* an a
 <div id="printSheet"></div>
 <script>
 /* ============ VERSION ============ */
-const APP_VERSION=42;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
+const APP_VERSION=43;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
 
 /* ============ THEME ============ */
 function curTheme(){return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';}
@@ -5271,6 +5271,380 @@ renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
   document.getElementById('vSet').insertAdjacentHTML('beforeend',`<div class="small muted" style="text-align:center;margin:0 0 10px">字卡 v${APP_VERSION} · ${WORDS.length} words · ${BOOKS.length} books · this device: ${esc(DEVICE.name)}</div>`);
 }catch(e){}};})(renderSet);
 try{tabsSync();tabIntoView();if(view==='set')renderSet();}catch(e){}
+
+/* ============================================================
+   v43 — 聲調教練 Tone coach (beta). Record a word, see your pitch
+   curve against the native speaker's, and get each syllable's tone
+   graded. Everything is signal processing in the browser: no audio
+   leaves the device. The app keeps a running picture of your voice
+   (mid pitch and range) and of which tones you miss.
+   ============================================================ */
+const TC_SR=16000, TC_HOP=0.01, TC_FRAME=0.04, TC_FMIN=70, TC_FMAX=420;
+/* mono Float32 at any rate → 16 kHz (box-filter decimation is plenty for pitch) */
+function tcResample(x,sr){
+  if(sr===TC_SR)return x;
+  const ratio=sr/TC_SR, n=Math.floor(x.length/ratio), y=new Float32Array(n);
+  for(let i=0;i<n;i++){const a=Math.floor(i*ratio), b=Math.min(x.length,Math.floor((i+1)*ratio)); let s=0; for(let j=a;j<b;j++)s+=x[j]; y[i]=s/Math.max(1,b-a);}
+  return y;
+}
+/* YIN pitch tracker → Hz per 10 ms frame, 0 where unvoiced */
+function tcPitch(x){
+  const N=Math.round(TC_FRAME*TC_SR), H=Math.round(TC_HOP*TC_SR), tMin=Math.floor(TC_SR/TC_FMAX), tMax=Math.ceil(TC_SR/TC_FMIN);
+  const frames=Math.max(0,Math.floor((x.length-N-tMax)/H)), f0=new Float32Array(frames), d=new Float32Array(tMax+1);
+  let peak=0; for(let i=0;i<x.length;i++){const a=Math.abs(x[i]); if(a>peak)peak=a;}
+  const gate=Math.max(0.01,peak*0.06);
+  for(let f=0;f<frames;f++){
+    const o=f*H; let e=0; for(let j=0;j<N;j++)e+=x[o+j]*x[o+j];
+    if(Math.sqrt(e/N)<gate)continue;
+    let run=0, best=0;
+    for(let t=1;t<=tMax;t++){
+      let s=0; for(let j=0;j<N;j++){const v=x[o+j]-x[o+j+t]; s+=v*v;}
+      run+=s; d[t]=run?s*t/run:1;
+    }
+    for(let t=tMin;t<tMax;t++){ if(d[t]<0.14){ while(t+1<tMax&&d[t+1]<d[t])t++; best=t; break; } }
+    if(!best){ let m=1; for(let t=tMin;t<tMax;t++)if(d[t]<m){m=d[t];best=t;} if(m>0.3)continue; }
+    const a=d[best-1], b=d[best], c=d[best+1], den=a-2*b+c, shift=den?0.5*(a-c)/den:0;
+    f0[f]=TC_SR/(best+(Math.abs(shift)<1?shift:0));
+  }
+  return f0;
+}
+/* clean a raw track: octave slips out, single-frame blips out, short gaps bridged; returns semitones (NaN = unvoiced) re 100 Hz */
+function tcClean(f0){
+  const n=f0.length, st=new Float32Array(n).fill(NaN), v=[];
+  for(let i=0;i<n;i++)if(f0[i]>0)v.push(Math.log2(f0[i]/100)*12);
+  if(v.length<4)return st;
+  const med=v.slice().sort((a,b)=>a-b)[v.length>>1];
+  for(let i=0;i<n;i++){ if(!(f0[i]>0))continue; let s=Math.log2(f0[i]/100)*12; if(s-med>9.5)s-=12; else if(med-s>9.5)s+=12; if(Math.abs(s-med)<=11)st[i]=s; }
+  for(let i=1;i<n-1;i++){ if(!isNaN(st[i])&&isNaN(st[i-1])&&isNaN(st[i+1]))st[i]=NaN; }                       /* lone frames */
+  for(let i=1;i<n-1;i++){ if(!isNaN(st[i])&&!isNaN(st[i-1])&&!isNaN(st[i+1])){const m=[st[i-1],st[i],st[i+1]].sort((a,b)=>a-b)[1]; if(Math.abs(st[i]-m)>3)st[i]=m;} }
+  for(let i=0;i<n;i++){ if(!isNaN(st[i]))continue; let j=i; while(j<n&&isNaN(st[j]))j++; if(i>0&&j<n&&j-i<=4){for(let k=i;k<j;k++)st[k]=st[i-1]+(st[j]-st[i-1])*(k-i+1)/(j-i+1);} i=j; }
+  return st;
+}
+/* voiced stretches → exactly `count` syllables: close gaps are merged, over-long stretches are split */
+function tcSyllables(st,count){
+  let runs=[]; const n=st.length;
+  for(let i=0;i<n;i++){ if(isNaN(st[i]))continue; let j=i; while(j<n&&!isNaN(st[j]))j++; if(j-i>=4)runs.push([i,j]); i=j; }
+  if(!runs.length||count<1)return [];
+  while(runs.length>count){ let k=0, g=Infinity; for(let i=0;i<runs.length-1;i++){const gap=runs[i+1][0]-runs[i][1]; if(gap<g){g=gap;k=i;}} runs.splice(k,2,[runs[k][0],runs[k+1][1]]); }
+  while(runs.length<count){ let k=0, L=0; for(let i=0;i<runs.length;i++){const len=runs[i][1]-runs[i][0]; if(len>L){L=len;k=i;}} if(L<8)break; const [a,b]=runs[k], mid=(a+b)>>1; runs.splice(k,1,[a,mid],[mid,b]); }
+  return runs;
+}
+/* one syllable's contour as 16 evenly spaced points (semitones), with the unsteady edges trimmed */
+function tcShape(st,a,b){
+  const pts=[]; for(let i=a;i<b;i++)if(!isNaN(st[i]))pts.push(st[i]);
+  const cut=Math.floor(pts.length*0.12), core=pts.slice(cut,pts.length-cut); if(core.length<3)return null;
+  const out=new Array(16); for(let i=0;i<16;i++){const p=i*(core.length-1)/15, k=Math.floor(p), fr=p-k; out[i]=core[k]+(core[Math.min(core.length-1,k+1)]-core[k])*fr;}
+  return out;
+}
+/* Softmax over one syllable: 16 contour points (z-scored against the speaker's own range), its length, a bias.
+   Fitted on the 1,962 non-neutral syllables of the bundled native clips; 90% on held-out syllables
+   (tone 1 97%, tone 2 94%, tone 3 72%, tone 4 92%). Refit if the analysis above changes. */
+const TC_W=[
+ [-0.16,-0.22,-0.23,-0.25,-0.23,-0.22,0.01,0.19,0.28,0.46,0.57,0.52,0.44,0.41,0.58,0.86,0.76,-0.59],
+ [0.19,-0.16,-0.44,-0.63,-0.62,-0.47,-0.35,-0.3,-0.19,-0.01,0.13,0.29,0.37,0.33,0.29,0.18,0.83,0.37],
+ [0.32,0.27,0.06,0.14,0.32,0.32,0.06,-0.11,-0.33,-0.45,-0.62,-0.78,-0.66,-0.41,-0.32,-0.29,-1.42,-0.38],
+ [-0.35,0.11,0.61,0.74,0.53,0.38,0.28,0.21,0.24,0,-0.08,-0.02,-0.14,-0.34,-0.55,-0.75,-0.17,0.6]];
+function tcClassify(shape,frames,sp){
+  const x=shape.map(v=>(v-sp.base)/sp.sd); x.push(Math.min(3,frames/30));
+  const z=TC_W.map(r=>{let s=r[17];for(let j=0;j<17;j++)s+=r[j]*x[j];return s;}), m=Math.max(...z), e=z.map(v=>Math.exp(v-m)), sum=e.reduce((a,b)=>a+b,0), p=e.map(v=>v/sum);
+  let k=0; for(let i=1;i<4;i++)if(p[i]>p[k])k=i;
+  return {tone:k+1,p,z:x.slice(0,16)};
+}
+/* the tones a listener should hear: pinyin as written, plus third-tone sandhi (3+3 → 2+3) */
+function tcExpected(p){
+  const t=toneSeq(p).slice();
+  for(let i=0;i<t.length-1;i++)if(t[i]===3&&t[i+1]===3)t[i]=2;
+  return t;
+}
+/* one utterance → pitch track, and per syllable its contour and the tone it sounds like */
+function tcAnalyse(x,sr,count,sp){
+  const st=tcClean(tcPitch(tcResample(x,sr))), voiced=[];
+  for(const v of st)if(!isNaN(v))voiced.push(v);
+  if(voiced.length<6)return null;
+  const med=voiced.slice().sort((a,b)=>a-b)[voiced.length>>1], who=sp||{base:med,sd:3.2};
+  const syl=tcSyllables(st,count).map(([a,z])=>{const shape=tcShape(st,a,z); return shape?Object.assign({a,z},tcClassify(shape,z-a,who)):null;});
+  return {med,voiced,syl,sp:who};
+}
+
+/* ---------- who is speaking ---------- */
+/* The native voice: mid pitch and spread measured once per voice pack from a hundred clips. */
+const TC_NATIVE={};
+async function tcDecode(buf){
+  const ctx=new (window.OfflineAudioContext||window.webkitOfflineAudioContext)(1,1,TC_SR);
+  const audio=await new Promise((res,rej)=>{const pr=ctx.decodeAudioData(buf,res,rej); if(pr&&pr.then)pr.then(res,rej);});
+  return {x:audio.getChannelData(0),sr:audio.sampleRate};
+}
+async function tcClip(key){ if(!(await loadPack())||!AIDX[key])return null; const [o,l]=AIDX[key]; return tcDecode(APACK.slice(o,o+l)); }
+async function tcNativeStats(){
+  const id=APACK_ID||'f'; if(TC_NATIVE[id])return TC_NATIVE[id];
+  try{const c=JSON.parse(store.getItem('zika_tc_native_'+id)||'null'); if(c&&c.sd){TC_NATIVE[id]=c;return c;}}catch(e){}
+  const all=[], keys=WORDS.filter(w=>{const n=[...audioKey(w.t)].length;return n>=1&&n<=3;}).map(w=>audioKey(w.t)).filter((k,i,a)=>AIDX[k]&&a.indexOf(k)===i);
+  for(let i=0;i<keys.length&&i<100;i++){const c=await tcClip(keys[Math.floor(i*keys.length/100)]); if(!c)continue; for(const v of tcClean(tcPitch(tcResample(c.x,c.sr))))if(!isNaN(v))all.push(v);}
+  if(all.length<200)return {base:14,sd:3.2};
+  all.sort((a,b)=>a-b); const mean=all.reduce((a,b)=>a+b,0)/all.length;
+  const s={base:all[all.length>>1],sd:Math.sqrt(all.reduce((a,b)=>a+(b-mean)*(b-mean),0)/all.length)};
+  TC_NATIVE[id]=s; try{store.setItem('zika_tc_native_'+id,JSON.stringify(s));}catch(e){} return s;
+}
+/* You: the app learns your mid pitch and your range from every recording, so "high" and "low" are judged
+   against your own voice. Until it has heard about three seconds of you it leans on the current take. */
+function tcState(){S.tone=S.tone||{n:0,by:{},conf:{},w:{}};S.vp=S.vp||{n:0,sum:0,sq:0};return S.tone;}
+function tcUserStats(utterMed){
+  tcState(); const v=S.vp;
+  if(v.n<300)return {base:utterMed,sd:3.2,learning:true};
+  const mean=v.sum/v.n, sd=Math.sqrt(Math.max(0,v.sq/v.n-mean*mean));
+  return {base:mean,sd:Math.min(5,Math.max(2,sd))};
+}
+function tcLearn(voiced){
+  tcState(); const v=S.vp; for(const s of voiced){v.n++;v.sum+=s;v.sq+=s*s;}
+  if(v.n>30000){v.n=Math.round(v.n/2);v.sum/=2;v.sq/=2;}        /* keep following the voice as it changes */
+}
+
+/* ---------- the drill ---------- */
+const TC={list:[],i:0,state:'ask',stream:null,rec:null,timer:0,res:null,ref:null,url:null,busy:false,err:''};
+const TC_NAME={1:'high and level',2:'rising',3:'low',4:'falling'};
+function tcPool(){
+  return drillWords().filter(w=>{const k=audioKey(w.t), n=[...k].length, t=tcExpected(w.p); return /^[㐀-鿿]+$/.test(k)&&n>=1&&n<=4&&t.length===n&&t.some(x=>x>0);});
+}
+function tcStart(){
+  const pool=tcPool(); if(pool.length<2){toast('Not enough words in that scope for the tone coach');return;}
+  TC.list=shuf(pool).slice(0,10).map(w=>w.id); TC.i=0; TC.res=null; TC.err=''; TC.done=0; TC.right=0; TC.total=0;
+  tcState(); TC.state=S.vp.n<300?'cal':'ask';        /* first time: hear a sentence, to learn this voice's range */
+  drillMode='tcoach'; dq=null; go('drill');
+}
+function tcRelease(){
+  clearTimeout(TC.timer);
+  try{if(TC.rec&&TC.rec.state!=='inactive')TC.rec.stop();}catch(e){}
+  try{if(TC.stream)TC.stream.getTracks().forEach(t=>t.stop());}catch(e){}
+  TC.stream=null; TC.rec=null;
+}
+const TC_CAL='大家好，我現在在臺灣學中文。我每天都練習聽、說、讀、寫。';
+async function tcCalDone(blob){
+  TC.busy=true; TC.state='think'; tcRender();
+  try{
+    const a=await tcDecode(await blob.arrayBuffer()), voiced=[];
+    for(const v of tcClean(tcPitch(tcResample(a.x,a.sr))))if(!isNaN(v))voiced.push(v);
+    tcLearn(voiced); save();
+    if(S.vp.n>=300){TC.state='ask';TC.err='';toast('Got it — the coach now knows your voice range');}
+    else{TC.state='cal';TC.err='I need a little more of your voice — read the whole sentence at a normal pace.';}
+  }catch(e){TC.state='cal';TC.err='That recording could not be read. Try again.';}
+  TC.busy=false; tcRender();
+}
+async function tcRecord(){
+  if(TC.state==='rec'){tcStopRec();return;}
+  const cal=TC.state==='cal', w=byId[TC.list[TC.i]]; if(!w||TC.busy)return;
+  try{ if(!TC.stream)TC.stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:false,noiseSuppression:false,autoGainControl:false}}); }
+  catch(e){ TC.err='The microphone is blocked. Allow it for this site, then try again.'; tcRender(); return; }
+  const chunks=[], rec=new MediaRecorder(TC.stream); TC.rec=rec; TC.err='';
+  rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
+  rec.onstop=()=>{ if(TC.rec!==rec)return; const b=new Blob(chunks,{type:rec.mimeType||'audio/webm'}); if(cal)tcCalDone(b); else tcGrade(b); };
+  rec.start(); TC.state='rec'; TC.cal=cal; tcRender();
+  TC.timer=setTimeout(tcStopRec,cal?12000:1400+700*[...audioKey(w.t)].length);
+}
+function tcStopRec(){ clearTimeout(TC.timer); try{if(TC.rec&&TC.rec.state!=='inactive')TC.rec.stop();}catch(e){} }
+/* grade one take. `input` is the recording (a Blob), or already-decoded audio {x, sr} */
+async function tcGrade(input){
+  const wid=TC.list[TC.i], w=byId[wid]; if(!w)return;
+  TC.busy=true; TC.state='think'; tcRender();
+  try{
+    const mine=input.x?input:await tcDecode(await input.arrayBuffer());
+    if(TC.url)URL.revokeObjectURL(TC.url); TC.url=input.x?null:URL.createObjectURL(input);
+    const want=tcExpected(w.p), n=want.length;
+    const rough=tcAnalyse(mine.x,mine.sr,n,null);
+    if(!rough||rough.syl.length!==n||rough.syl.some(s=>!s)){ TC.err=rough?'I could not find '+n+' clear syllable'+(n>1?'s':'')+' in that take — say it a little slower and closer to the microphone.':'I could not hear a voice in that take. Check the microphone and try again.'; TC.state='ask'; TC.busy=false; tcRender(); return; }
+    const me=tcUserStats(rough.med), got=tcAnalyse(mine.x,mine.sr,n,me);
+    let ref=null; const clip=await tcClip(audioKey(w.t)); if(clip){const ns=await tcNativeStats(); ref=tcAnalyse(clip.x,clip.sr,n,ns);}
+    const T=tcState(); let right=0, graded=0;
+    const syl=got.syl.map((s,i)=>{const e=want[i]; if(!e)return {e:0,ok:null,s};
+      const ok=s.tone===e, close=!ok&&s.p[e-1]>=0.28; graded++; if(ok)right++;
+      T.by[e]=T.by[e]||[0,0]; T.by[e][1]++; if(ok)T.by[e][0]++; else {const k=e+'>'+s.tone;T.conf[k]=(T.conf[k]||0)+1;}
+      return {e,ok,close,s};});
+    T.n++; const rec=T.w[wid]||[0,0]; rec[0]++; rec[1]=Math.max(rec[1],Math.round(right/Math.max(1,graded)*100)); T.w[wid]=rec;
+    tcLearn(got.voiced);
+    TC.res={syl,ref,right,graded,learning:!!me.learning}; TC.state='done'; TC.err=''; TC.total+=graded; TC.right+=right;
+    haptic(right===graded?'good':'again'); save();
+  }catch(e){ TC.err='That recording could not be read. Try again.'; TC.state='ask'; }
+  TC.busy=false; tcRender();
+}
+function tcNext(){ TC.i++; TC.state='ask'; TC.res=null; TC.err=''; TC.done++; tcRender(); }
+function tcAgain(){ TC.state='ask'; TC.res=null; TC.err=''; tcRender(); }
+function tcPlayMine(){ if(TC.url)new Audio(TC.url).play().catch(()=>{}); }
+/* two pitch curves per syllable: the native speaker's in grey, yours in colour, each drawn against its own voice's range */
+function tcChart(res,chars){
+  const n=res.syl.length, W=118, H=132, y=z=>Math.max(8,Math.min(H-8,H/2-z*(H/2-10)/2.6));
+  const line=(pts,x0)=>pts.map((z,i)=>(i?'L':'M')+(x0+14+i*(W-28)/15).toFixed(1)+','+y(z).toFixed(1)).join('');
+  let g='';
+  for(let i=0;i<n;i++){
+    const x0=i*W, s=res.syl[i], r=res.ref&&res.ref.syl[i];
+    g+=`<rect x="${x0+3}" y="3" width="${W-6}" height="${H-6}" rx="10" class="tc-cell"/>`
+      +`<line x1="${x0+10}" x2="${x0+W-10}" y1="${H/2}" y2="${H/2}" class="tc-mid"/>`
+      +(r?`<path d="${line(r.z,x0)}" class="tc-ref"/>`:'')
+      +`<path d="${line(s.s.z,x0)}" class="tc-me ${s.ok===null?'na':s.ok?'ok':'no'}"/>`;
+  }
+  return `<svg class="tc-chart" viewBox="0 0 ${n*W} ${H}" style="max-width:${n*150}px" role="img" aria-label="pitch curves, yours against the native speaker">${g}</svg>`;
+}
+function tcRender(){
+  const el=document.getElementById('vDrill'); if(!el||drillMode!=='tcoach')return;
+  if(TC.i>=TC.list.length){
+    tcRelease();
+    el.innerHTML=`<div class="card done"><div class="zhd zh">練完了</div><div style="font-weight:600;font-size:16px">${TC.total?Math.round(TC.right/TC.total*100):0}% of tones on target · ${TC.list.length} words</div>
+      <div class="small muted" style="margin-top:10px">${tcSummary()}</div>
+      <div class="row" style="justify-content:center;gap:8px;margin-top:16px"><button class="btn" onclick="tcStart()">Another ten</button><button class="btn ghost" onclick="drillMode=null;renderDrill()">Back to drills</button></div></div>`;
+    return;
+  }
+  const w=byId[TC.list[TC.i]], chars=[...audioKey(w.t)], want=tcExpected(w.p), res=TC.res, st=TC.state;
+  const head=`<div class="rev-top"><span class="qtype">聲調教練 · Tone coach <span class="tc-beta">beta</span></span><span class="qprog">${TC.i+1} / ${TC.list.length}</span></div>`;
+  if(st==='cal'||(TC.cal&&(st==='rec'||st==='think'))){
+    el.innerHTML=head+`<div class="stage" style="min-height:300px"><div class="hint">first, let the coach hear your voice</div>
+      <div class="zh" style="font-size:22px;line-height:1.7;margin:10px 0 6px">${esc(TC_CAL)}</div>
+      <div class="small muted">Read it aloud at your normal pace. From this the coach learns how high and low your voice goes, so every tone is judged against your own range. It keeps learning with each recording.</div>
+      ${TC.err?`<div class="tc-err">${esc(TC.err)}</div>`:''}
+      <div class="row" style="justify-content:center;margin-top:16px"><button class="btn tc-rec ${st==='rec'?'on':''}" onclick="tcRecord()" ${st==='think'?'disabled':''}>${st==='rec'?'■ Stop':st==='think'?'Listening…':'● Record'}</button></div>
+      <div class="small muted" style="text-align:center;margin-top:10px">${st==='rec'?'recording — press Stop when you finish':'<span class="link" onclick="TC.state=\'ask\';TC.cal=false;tcRender()">skip for now</span>'}</div></div>`;
+    return;
+  }
+  const word=`<div class="bigzh zh" style="font-size:54px">${esc(w.t.split('（')[0])}</div>
+    <div class="row" style="justify-content:center;gap:9px"><span class="pyline" style="font-size:23px">${tonePinyin(esc(w.p))}</span>${spkBtn(w.id)}</div>
+    <div class="meaning" style="font-size:15px;margin-top:2px">${esc(w.m)}</div>`;
+  let body;
+  if(st==='done'&&res){
+    const lines=res.syl.map((s,i)=>s.ok===null?'':s.ok?'':`<div><b class="zh">${esc(chars[i])}</b> should be tone ${s.e} (${TC_NAME[s.e]}) — yours sounded ${s.close?'closer to':'like'} tone ${s.s.tone} (${TC_NAME[s.s.tone]}).</div>`).join('');
+    body=`${tcChart(res,chars)}
+      <div class="tc-chips">${res.syl.map((s,i)=>`<span class="tc-chip ${s.ok===null?'na':s.ok?'ok':'no'}"><b class="zh">${esc(chars[i])}</b><i>${s.e?'tone '+s.e:'neutral'}</i>${s.ok===null?'':s.ok?'✓':'✗'}</span>`).join('')}</div>
+      <div class="tc-say">${res.right===res.graded?'Every tone on target.':lines}</div>
+      <div class="small muted" style="margin-top:8px">grey = the native speaker · colour = you${res.learning?' · still learning your voice range, so the first few grades are rough':''}</div>
+      <div class="row" style="justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap">${TC.url?`<button class="btn ghost sm" onclick="tcPlayMine()">▶ Mine</button>`:''}<button class="btn ghost sm" onclick="speakWord('${w.id}')">▶ Native</button><button class="btn ghost" onclick="tcAgain()">Try again</button><button class="btn" onclick="tcNext()">Next →</button></div>`;
+  }else{
+    body=`<div class="hint" style="margin-top:10px">listen · then record yourself saying it</div>
+      ${TC.err?`<div class="tc-err">${esc(TC.err)}</div>`:''}
+      <div class="row" style="justify-content:center;gap:10px;margin-top:14px"><button class="btn ghost" onclick="speakWord('${w.id}')">▶ Listen</button>
+        <button class="btn tc-rec ${st==='rec'?'on':''}" onclick="tcRecord()" ${st==='think'?'disabled':''}>${st==='rec'?'■ Stop':st==='think'?'Listening…':'● Record'}</button></div>
+      <div class="small muted" style="text-align:center;margin-top:10px">${st==='rec'?'recording — it stops by itself':'<span class="link" onclick="tcNext()">skip this word</span>'}</div>`;
+  }
+  el.innerHTML=head+`<div class="stage" style="min-height:300px">${word}${body}</div>`;
+}
+/* what the recordings so far say about your tones */
+function tcSummary(){
+  const T=tcState(), rows=[1,2,3,4].filter(t=>T.by[t]&&T.by[t][1]).map(t=>({t,ok:T.by[t][0],n:T.by[t][1]}));
+  if(!rows.length)return 'No recordings yet.';
+  const worst=Object.entries(T.conf).sort((a,b)=>b[1]-a[1])[0];
+  return rows.map(r=>`tone ${r.t}: <b>${Math.round(r.ok/r.n*100)}%</b> of ${r.n}`).join(' · ')
+    +(worst&&worst[1]>=3?`<br>Most often, your tone ${worst[0][0]} comes out as tone ${worst[0][2]} (${TC_NAME[worst[0][2]]} instead of ${TC_NAME[worst[0][0]]}).`:'');
+}
+function tcPanel(){
+  const T=tcState(); if(!T.n)return '';
+  return `<div class="card"><div class="lab">Your tones · ${T.n} recordings</div><div class="small muted">${tcSummary()}</div></div>`;
+}
+DMODES.push(['tcoach','聲調教練 Tone coach','record yourself · see your tones against a native speaker']);
+startDrill=(function(orig){return function(mode){tcRelease();if(mode==='tcoach')return tcStart();return orig.apply(this,arguments);};})(startDrill);
+renderDrill=(function(orig){return function(){
+  if(drillMode==='tcoach'&&!dq&&TC.list.length){tcRender();return;}
+  orig.apply(this,arguments);
+  try{if(!dq&&drillMode!=='mtest'&&drillMode!=='extest'){const el=document.getElementById('vDrill');if(el&&!el.querySelector('.tc-panel')){const h=tcPanel();if(h)el.insertAdjacentHTML('beforeend','<div class="tc-panel">'+h+'</div>');}}}catch(e){}
+};})(renderDrill);
+go=(function(orig){return function(v){if(v!=='drill')tcRelease();return orig.apply(this,arguments);};})(go);
+(function(){const st=document.createElement('style');st.textContent=`
+.tc-beta{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line2);border-radius:99px;padding:1px 6px;color:var(--mut);margin-left:4px}
+.tc-chart{display:block;width:100%;margin:14px auto 6px}
+.tc-cell{fill:var(--panel);stroke:var(--line)}
+.tc-mid{stroke:var(--line2);stroke-dasharray:3 4}
+.tc-ref{fill:none;stroke:var(--mut2);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;opacity:.75}
+.tc-me{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.tc-me.ok{stroke:var(--acc)}.tc-me.no{stroke:var(--red)}.tc-me.na{stroke:var(--mut)}
+.tc-chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+.tc-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:99px;padding:4px 11px;font-size:12.5px;font-weight:700}
+.tc-chip b{font-size:17px}.tc-chip i{font-style:normal;font-weight:500;color:var(--mut)}
+.tc-chip.ok{color:var(--acc)}.tc-chip.no{color:var(--red)}.tc-chip.na{color:var(--mut)}
+.tc-say{font-size:14px;margin-top:12px;text-align:center;line-height:1.6}
+.tc-err{font-size:13.5px;color:var(--red);text-align:center;margin-top:10px}
+.tc-rec.on{background:var(--red);color:#fff}
+`;document.head.appendChild(st);})();
+
+/* ============================================================
+   v43 — 短文 Stories. Short original passages, one or more per
+   lesson, written only with characters met by the end of that
+   lesson (tools/check_reading.py enforces it) and leaning on the
+   lesson's new words and grammar. Tap a word for its reading and
+   meaning; words you tap can go to the hard list.
+   ============================================================ */
+const READINGS = {"31":[{"t":"開學第一天","en":"The first day of term","zh":"今天開學了。我們班有不到二十個學生，新生只有我一個。老師很嚴，她說明得很清楚：每個星期筆試以外，還有口試和口頭報告。我的口才不好，所以壓力很大。第一天我起得太晚，差一點遲到，好不容易才找到位子。旁邊的同學告訴我，不管功課多不多，他每天都很用功。我想，這樣下去的話，恐怕我也得熬夜了。","tr":"Term started today. Our class has fewer than twenty students, and I am the only new one. The teacher is strict, and she explained it clearly: besides a written test every week, there is an oral test and an oral report. I am not a good speaker, so I feel a lot of pressure. On the first day I got up too late and was almost late; I only just managed to find a seat. The classmate next to me told me that whether or not there is much homework, he works hard every day. I thought: if it goes on like this, I am afraid I will have to stay up late too."},{"t":"她想轉系","en":"She wants to change majors","zh":"美美是獨生女，念的是私立大學的會計系。會計系很熱門，可是跟她的個性不合，她念得很痛苦。她的個性活潑，外語也好，所以想轉到外語系。父母反對，他們擔心她以後找不到工作。美美說，不管父母反對不反對，她都不想放棄自己的理想。她好不容易才填好表，辦了申請手續，老師也幫她寫了推薦信。成績單沒問題的話，下個學期她就能轉系了。","tr":"Meimei is an only daughter studying accounting at a private university. Accounting is a popular major, but it does not suit her personality, and studying it makes her miserable. She is lively and good at foreign languages, so she wants to transfer to the foreign languages department. Her parents object; they worry she will not find a job later. Meimei says that whether her parents object or not, she does not want to give up her own ideal. She finally managed to fill in the form and go through the application, and her teacher wrote her a recommendation letter. If her transcript is fine, she can change majors next semester."}],"32":[{"t":"週年慶","en":"The anniversary sale","zh":"百貨公司的週年慶到了，很多商品都打折，八折起。我想買一件外套。店員給我看一件羊毛的，摸起來很舒服，樣子也好看，可是有一點短。一般來說，這個牌子的品質不錯，打完折比原價省了一千多塊。我沒帶那麼多現金，只好刷卡。回家以後，我才看到外套上有一個破洞。還好發票沒弄丟，第二天我就拿去換了一件。","tr":"The department store’s anniversary sale has arrived, and many goods are discounted, from 20% off. I wanted to buy a coat. The clerk showed me a wool one; it felt comfortable and looked good, but it was a little short. Generally speaking this brand’s quality is good, and after the discount it was more than a thousand dollars below the original price. I had not brought that much cash, so I had to pay by card. Only after I got home did I see a hole in the coat. Luckily I had not lost the receipt, and the next day I took it back and exchanged it."},{"t":"手機的帳單","en":"The phone bill","zh":"上個月我在電信門市辦了月租型的手機。店員說每個月只要五百塊。可是帳單來了，我嚇了一跳，並不是五百塊，是九百多塊。我打電話到客服中心，他們解釋說，五百塊並不包括上網的錢。我覺得自己被騙了，尤其是店員沒說清楚。再說，我的手機常常自動關機，還得拿去修理。朋友說，像我這樣的顧客最好換成預付卡，不然就選吃到飽的。","tr":"Last month I signed up for a monthly phone plan at a telecom shop. The clerk said it was only five hundred dollars a month. But when the bill came I got a shock: it was not five hundred at all, it was over nine hundred. I called the customer service centre, and they explained that the five hundred does not include data. I felt cheated, especially because the clerk had not made it clear. Besides, my phone often shuts itself off and has to go in for repair. A friend said a customer like me had better switch to a prepaid card, or else choose the unlimited plan."}],"33":[{"t":"台北的天氣","en":"Taipei weather","zh":"台北的天氣變化很大，就像後母臉，說變就變。早上還出大太陽，下午就颳風下雨。雨季的時候幾乎天天下雨，空氣又悶又潮濕，衣服很容易發霉，幸虧我買了一台除濕機。夏天的氣溫常常是三十五度，感覺比實際的溫度還熱，沒有冷氣的話，我真受不了。冬天不到零下，算是暖和的，可是受到濕氣的影響，還是覺得很冷。難怪台灣人冬天那麼愛吃火鍋。","tr":"Taipei’s weather changes a great deal — like a stepmother’s face, it turns just like that. In the morning the sun is blazing, and by afternoon it is windy and raining. In the rainy season it rains almost every day; the air is stuffy and damp and clothes go mouldy easily, so luckily I bought a dehumidifier. In summer it is often thirty-five degrees and feels hotter than the actual temperature; without air conditioning I really could not stand it. Winter does not go below zero, so it counts as mild, but because of the damp it still feels cold. No wonder Taiwanese people love hot pot so much in winter."},{"t":"中秋節","en":"The Mid-Autumn Festival","zh":"農曆八月十五是中秋節。古時候的農人在這個季節收成，所以要拜神、祭祖，謝謝祖先。現在住在城市裡的人多少還有這個習慣。這一天最重要的事是團聚：工作再忙，大家也要回家。晚上月亮又大又圓，一家人坐在外面吃月餅和柚子，聽老人說月亮的故事，感覺很溫馨。有人說這些做法是迷信，可是我覺得過節的作用是讓家人難得見一次面。","tr":"The fifteenth day of the eighth lunar month is the Mid-Autumn Festival. In ancient times farmers brought in the harvest in this season, so they worshipped the gods and made offerings to thank their ancestors. People living in cities today still keep something of this custom. The most important thing on this day is being together: however busy work is, everyone goes home. In the evening the moon is big and round, and the family sits outside eating mooncakes and pomelos and listening to the old folks tell stories about the moon; it feels very warm. Some say these practices are superstition, but I think the point of a festival is to give a family a rare chance to see each other."}],"34":[{"t":"平溪放天燈","en":"Sky lanterns in Pingxi","zh":"元宵節那天，我跟同學上平溪放天燈。我們在天燈上寫了願望，我寫的是「希望我的中文越來越好」。山上手機沒有訊號，還好我們碰到一位當地的老闆，他很有耐心地告訴我們怎麼走，還請我們喝紅茶。他說他開店不是為了賺錢，而是喜歡交朋友。台灣的人情味不但有名，還讓我很感動。回台北以前，我們吃了雞排和水煎包，價錢不貴，吃一口就知道很道地。這次校外教學，我一點也不覺得無聊。","tr":"On the Lantern Festival, my classmates and I went up to Pingxi to release sky lanterns. We wrote our wishes on the lantern; mine was “I hope my Chinese keeps getting better.” There was no phone signal on the mountain, but luckily we ran into a local shop owner who patiently told us the way and even treated us to black tea. He said he did not open his shop to make money, but because he likes making friends. Taiwanese hospitality is not only famous; it really moved me. Before going back to Taipei we ate fried chicken cutlet and pan-fried buns; they were not expensive, and one bite told us they were the real thing. On this field trip I was not bored for a moment."},{"t":"非去台南不可","en":"You simply have to go to Tainan","zh":"我的同事鈴木說，喜歡美食的人非去台南不可。台南是台灣最古老的城市，有很多古蹟，像赤崁樓和孔廟，還有不少木造的老房子留下來。台南人重視歷史和風俗，對吃也很講究，早上的一碗粥都很道地。那裡的街道很窄，生活的速度很慢。我從來沒去過，鈴木說我錯過了很多。下個月我打算在台南待三天，白天欣賞美麗的古蹟，晚上看夜景、吃擔仔麵。","tr":"My colleague Suzuki says anyone who loves good food simply has to go to Tainan. Tainan is Taiwan’s oldest city and has many historic sites, such as Chihkan Tower and the Confucius Temple, and quite a few old wooden houses survive. People in Tainan value history and custom and are particular about food too; even a bowl of morning congee is the real thing. The streets there are narrow and the pace of life is slow. I have never been, and Suzuki says I have missed a lot. Next month I plan to spend three days in Tainan, admiring the beautiful sites by day and enjoying the night view and danzai noodles in the evening."}]};
+const RD={ln:0,i:-1,segs:[],unk:new Set(),sel:-1,en:false};
+function rdLessons(){return Object.keys(READINGS).map(Number).sort((a,b)=>a-b);}
+function rdState(){S.read=S.read||{};return S.read;}
+/* longest known word first; everything else falls through one character at a time */
+function rdSegment(text){
+  const out=[]; let i=0;
+  while(i<text.length){
+    let hit=null;
+    for(let L=Math.min(5,text.length-i);L>=1;L--){const s=text.substr(i,L); if(WORD_BY_T[s]){hit=s;break;}}
+    if(hit){out.push({t:hit,w:WORD_BY_T[hit]});i+=hit.length;continue;}
+    const ch=text[i]; out.push(/[㐀-鿿]/.test(ch)?{t:ch,w:null}:{t:ch,p:1}); i++;
+  }
+  return out;
+}
+function rdStart(){
+  const have=rdLessons(); if(!have.length){toast('No stories yet');return;}
+  const want=drillScope==='lesson'?drillLesson:(S.settings.curLesson||have[0]);
+  RD.ln=have.includes(want)?want:(have.filter(l=>l<=want).pop()||have[0]); RD.i=-1;
+  drillMode='story'; dq=null; go('drill');
+}
+function rdOpen(i){const p=READINGS[RD.ln][i]; RD.i=i; RD.segs=rdSegment(p.zh); RD.unk=new Set(); RD.sel=-1; RD.en=false; rdRender(); window.scrollTo(0,0);}
+function rdTap(i){const s=RD.segs[i]; if(!s||s.p)return; RD.sel=i; if(s.w){if(RD.unk.has(i))RD.unk.delete(i);else RD.unk.add(i);} rdRender();}
+function rdListen(){const p=READINGS[RD.ln][RD.i]; if(p)speakText(p.zh);}
+function rdQuiet(){try{speechSynthesis.cancel();}catch(e){}}
+function rdDone(){
+  const R=rdState(), k=RD.ln+':'+RD.i; R[k]=(R[k]||0)+1;
+  const ids=[...new Set([...RD.unk].map(i=>RD.segs[i].w&&RD.segs[i].w.id).filter(Boolean))]; ids.forEach(addHard);
+  save(); if(ids.length)toast(ids.length+' word'+(ids.length>1?'s':'')+' → hard list');
+  rdQuiet(); RD.i=-1; rdRender();
+}
+function rdRender(){
+  const el=document.getElementById('vDrill'); if(!el||drillMode!=='story')return;
+  const have=rdLessons(), list=READINGS[RD.ln]||[], R=rdState();
+  const head=`<div class="rev-top"><span class="qtype">短文 · Stories</span><span class="qprog">${esc(lnLabel(RD.ln))}</span></div>`;
+  if(RD.i<0){
+    el.innerHTML=head+`<div class="card"><div class="lab">Pick a lesson</div>
+        <div class="rd-lessons">${have.map(l=>`<button class="${l===RD.ln?'on':''}" onclick="RD.ln=${l};rdRender()">${esc(lnLabel(l))}</button>`).join('')}</div>
+        <div class="small muted" style="margin-top:8px">Each story uses only characters you have met by the end of its lesson, so it is all review plus that lesson's new words.</div></div>
+      <div class="card"><div class="lab">${esc(lnLabel(RD.ln))} · ${esc(LESSON_TITLES[RD.ln]||'')}</div>
+        ${list.map((p,i)=>`<div class="rd-item" onclick="rdOpen(${i})"><div><b class="zh">${esc(p.t)}</b><div class="small muted">${esc(p.en)} · ${[...p.zh].filter(c=>/[㐀-鿿]/.test(c)).length} characters</div></div><span class="rd-go">${R[RD.ln+':'+i]?'✓ read '+R[RD.ln+':'+i]+'×':'Read →'}</span></div>`).join('')}</div>
+      <div class="row" style="justify-content:center;margin-top:6px"><button class="btn ghost" onclick="drillMode=null;renderDrill()">Back to drills</button></div>`;
+    return;
+  }
+  const p=list[RD.i], sel=RD.sel>=0?RD.segs[RD.sel]:null;
+  const gloss=sel?(sel.w?`<b class="zh" style="font-size:20px">${esc(sel.t)}</b> <span class="pyline">${tonePinyin(esc(sel.w.p))}</span> ${spkBtn(sel.w.id)}<div>${esc(sel.w.m)} <span class="small muted">· ${esc(lnLabel(sel.w.l))}</span></div>`
+      :`<b class="zh" style="font-size:20px">${esc(sel.t)}</b> <span class="small muted">a character you know from other words</span>`)
+    :'<span class="small muted">tap any word for its reading and meaning · tapped words are marked to review</span>';
+  el.innerHTML=head+`<div class="stage rd-stage">
+      <div class="rd-title zh">${esc(p.t)}</div><div class="small muted" style="margin-bottom:12px">${esc(p.en)}</div>
+      <div class="rd-text zh" lang="zh-Hant">${RD.segs.map((s,i)=>s.p?esc(s.t):`<span class="rd-w ${RD.unk.has(i)?'unk':''} ${RD.sel===i?'sel':''} ${s.w&&s.w.l===RD.ln?'new':''}" onclick="rdTap(${i})">${esc(s.t)}</span>`).join('')}</div>
+      <div class="rd-gloss">${gloss}</div>
+      ${RD.en?`<div class="rd-en">${esc(p.tr)}</div>`:''}
+      <div class="row" style="justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap"><button class="btn ghost sm" onclick="rdListen()">▶ Listen</button><button class="btn ghost sm" onclick="RD.en=!RD.en;rdRender()">${RD.en?'Hide':'Show'} English</button><button class="btn" onclick="rdDone()">Done ✓${RD.unk.size?' · '+RD.unk.size+' to review':''}</button></div>
+      <div class="small muted" style="text-align:center;margin-top:10px">underlined = this lesson's new words · <span class="link" onclick="rdQuiet();RD.i=-1;rdRender()">back to the list</span></div></div>`;
+}
+DMODES.push(['story','短文 Stories','short readings from the words you know · tap for meanings']);
+startDrill=(function(orig){return function(mode){if(mode==='story')return rdStart();return orig.apply(this,arguments);};})(startDrill);
+renderDrill=(function(orig){return function(){if(drillMode==='story'&&!dq){rdRender();return;}orig.apply(this,arguments);};})(renderDrill);
+(function(){const st=document.createElement('style');st.textContent=`
+.rd-lessons{display:flex;gap:6px;flex-wrap:wrap}
+.rd-lessons button{border:1px solid var(--line);background:var(--panel);color:var(--mut);border-radius:99px;padding:6px 12px;font-size:12.5px;font-weight:600;cursor:pointer}
+.rd-lessons button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.rd-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 2px;border-top:1px solid var(--line);cursor:pointer}
+.rd-item:first-of-type{border-top:0}
+.rd-item b{font-size:19px}
+.rd-go{font-size:12.5px;font-weight:700;color:var(--acc);white-space:nowrap}
+.rd-stage{text-align:left;min-height:300px}
+.rd-title{font-size:26px;text-align:center}
+.rd-stage>.small{text-align:center}
+.rd-text{font-size:23px;line-height:2.05;letter-spacing:.02em;text-align:justify}
+.rd-w{cursor:pointer;border-radius:6px;padding:1px 0;transition:background .12s}
+.rd-w.new{text-decoration:underline;text-decoration-color:var(--line2);text-decoration-thickness:2px;text-underline-offset:6px}
+.rd-w.unk{background:var(--tint);color:var(--red)}
+.rd-w.sel{outline:2px solid var(--acc);outline-offset:1px}
+.rd-gloss{margin-top:14px;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);font-size:14px;min-height:54px}
+.rd-en{margin-top:12px;font-size:14.5px;line-height:1.65;color:var(--mut)}
+@media(max-width:560px){.rd-text{font-size:21px;line-height:1.95}}
+`;document.head.appendChild(st);})();
 </script>
 </body>
 </html>
