@@ -2,12 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>字卡 · 當代中文</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#faf9f7">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="字卡">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
 :root{--cjk:"Songti TC","Noto Serif TC","Songti SC","STSong","PMingLiU","MingLiU",serif;
@@ -135,11 +137,6 @@ details.guide .gd p{margin-bottom:9px}
 .grades button:hover{background:var(--tint)}
 .grades .iv{display:block;font-weight:500;font-size:10.5px;color:var(--mut);margin-top:1px;font-variant-numeric:tabular-nums}
 .grades .g1{color:var(--red)}.grades .g2{color:var(--amber)}.grades .g3{color:var(--acc)}.grades .g4{color:var(--blue)}
-.canv-box{margin:4px auto 0;position:relative;width:min(280px,100%)}
-canvas.pad{background:var(--padbg);border:1px solid var(--line2);border-radius:14px;touch-action:none;width:100%;aspect-ratio:1;display:block}
-.canv-ghost{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:190px;color:var(--ghost);pointer-events:none;overflow:hidden}
-.canv-tools{display:flex;gap:8px;justify-content:center;align-items:center;margin-top:10px}
-.repchip{font-size:12px;font-weight:700;color:var(--acc);background:var(--accT);border-radius:99px;padding:4px 12px;font-variant-numeric:tabular-nums}
 .done{padding:46px 10px;text-align:center}
 .done .zhd{font-size:40px;margin-bottom:10px}
 kbd{background:var(--tint);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;font-size:11px;color:var(--mut)}
@@ -617,14 +614,65 @@ body.focus .wrap{padding-top:14px}
 .istep.done b{color:var(--mut);text-decoration:line-through;text-decoration-color:var(--line2)}
 .istep b{font-size:14px}
 #ipadCard .qrbox svg{width:150px;height:150px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:4px}
+/* ---- v39: iPhone and iPad ---- */
+/* the tab bar scrolls sideways when it does not fit; auto margins centre it when it does
+   (justify-content:center would push the first tabs off-screen where they cannot be reached) */
+.tabs{justify-content:flex-start;gap:28px;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.tabs button{flex:none;white-space:nowrap}
+.tabs button:first-child{margin-left:auto}
+.tabs button:last-child{margin-right:auto}
+@media(max-width:900px){
+  .tabs{gap:22px;margin-left:-18px;margin-right:-18px;padding:0 18px;
+    -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%);
+            mask-image:linear-gradient(90deg,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%)}
+}
+/* notch, rounded corners and the Home indicator */
+@supports(padding:max(0px)){
+  .wrap{padding-left:max(18px,env(safe-area-inset-left));padding-right:max(18px,env(safe-area-inset-right));
+    padding-top:max(26px,calc(env(safe-area-inset-top) + 12px));padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+}
+/* comfortable touch targets on fingers-first devices */
+@media(pointer:coarse){
+  .tabs button{padding-top:13px;padding-bottom:15px}
+  .btn.sm{min-height:36px}
+  .spk{min-width:40px;min-height:40px}
+}
+html{-webkit-tap-highlight-color:transparent;touch-action:pan-x pan-y}   /* an app, not a document: no pinch or double-tap zoom to get stuck in */
+@media(pointer:coarse){input:not([type=range]):not([type=checkbox]),textarea,select{font-size:16px}}
+.lpick{display:inline-flex;gap:6px;flex-wrap:wrap}
+.tbtn.rf{right:auto;left:0}
+.tbtn.rf.spin{animation:rfspin .8s linear infinite}
+@keyframes rfspin{to{transform:rotate(360deg)}}
+#ptr{position:fixed;top:calc(env(safe-area-inset-top) + 6px);left:50%;transform:translate(-50%,0);z-index:1100;opacity:0;pointer-events:none;
+  background:var(--ink);color:var(--bg);font-size:12px;font-weight:600;padding:7px 14px;border-radius:99px;transition:opacity .15s}
+#tabMore{display:none}
+/* phones: the tabs become a bottom bar with four everyday tabs and More for the rest */
+@media(max-width:700px){
+  .tabs{position:fixed;left:0;right:0;bottom:0;z-index:900;margin:0;padding:5px 6px calc(5px + env(safe-area-inset-bottom));gap:3px;
+    flex-wrap:wrap-reverse;overflow:visible;background:var(--bg);border-top:1px solid var(--line);border-bottom:0;
+    box-shadow:0 -8px 26px rgba(0,0,0,.07);-webkit-mask-image:none;mask-image:none}
+  .tabs::before{content:"";order:1;flex-basis:100%;height:0}
+  .tabs button{flex:1 1 0;min-width:0;margin:0!important;padding:11px 2px 10px;font-size:12px;border-radius:11px;text-align:center}
+  .tabs button.on{background:var(--tint)}
+  .tabs button.on::after{display:none}
+  .tabs .b{margin-left:3px;padding:1px 5px}
+  .tabs #tabMore{display:block}
+  .tabs button.t2{display:none;order:2;flex:1 1 30%;margin-bottom:3px!important;background:var(--panel);border:1px solid var(--line)}
+  .tabs.more button.t2{display:block}
+  .tabs.more button.t2.on{background:var(--tint)}
+  .wrap{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
+  #toastHost{bottom:calc(78px + env(safe-area-inset-bottom))}
+  body.focus .wrap{padding-bottom:40px}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="mast">
     <span class="seal">字卡</span>
+    <button class="tbtn rf" id="refreshBtn" title="refresh — sync and load the latest version" aria-label="refresh" onclick="appRefresh()">↻</button>
     <button class="tbtn" id="themeBtn" title="day / night" onclick="toggleTheme()">☾</button>
-    <div class="eng">臺北 · 師大 · Contemporary Chinese I</div>
+    <div class="eng">臺北 · 師大 · Contemporary Chinese</div>
     <div class="greet" id="greet"></div>
   </header>
   <div id="bkBanner" class="banner" style="display:none">No backup in over a week — <b>Settings → Backup</b> → choose a file once and it saves itself from then on.</div>
@@ -645,10 +693,13 @@ body.focus .wrap{padding-top:14px}
   <div id="vLib" style="display:none"></div>
   <div id="vRev" style="display:none"></div>
   <div id="vSet" style="display:none"></div>
-  <div class="foot">FSRS-5 · vocabulary via Zhong Chinese · 加油</div>
+  <div class="foot">FSRS-5 · vocabulary via Zhong Chinese · 加油 · <span id="appVer"></span></div>
 </div>
 <div id="printSheet"></div>
 <script>
+/* ============ VERSION ============ */
+const APP_VERSION=39;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
+
 /* ============ THEME ============ */
 function curTheme(){return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';}
 function applyTheme(t){
@@ -666,9 +717,26 @@ const COMPONENTS = {"故":{"p":"gù","g":"reason, cause","d":["古","攵"],"t":"
 const LESSON_TITLES = {1:"Welcome to Taiwan!",2:"My Family",3:"What Are You Doing Over the Weekend?",4:"Excuse Me. How Much Does That Cost in Total?",5:"Beef Noodles Are Really Delicious",6:"Their School Is Up in the Mountains",7:"Going to KTV at 9 o'clock in the Morning",8:"Taking a Train to Tainan",9:"Where Will You Go for the Holidays?",10:"The Fruit in Taiwan Tastes Really Good",11:"I Would Like to Rent a Place",12:"How Long Will You Be Studying Chinese in Taiwan?",13:"Happy Birthday!",14:"It's So Cold!",15:"I Don't Feel Well",16:"Excuse Me. How Do You Get to Shida?",17:"Take the MRT Instead!",18:"Your Chinese Has Improved!",19:"I Work Part-time. I Teach French.",20:"Attending a Wedding Reception",21:"I Plan to Move Closer to School",22:"The Garbage Truck Is Here!",23:"Learning Kung Fu",24:"That City Is Really Beautiful",25:"Come to My Place to Make Dumplings",26:"Taiwan Really Has Lots of Fun Places",27:"How to Have a Healthy Diet?",28:"I Lost My Cell Phone",29:"I Am Going to Start Looking for a Job",30:"Lunar New Year"};
 const byId = {}; WORDS.forEach(w=>byId[w.id]=w);
 const isName = w => /^a (woman|man) from/.test(w.m)||/name of a (girl|boy|man|woman)|, a (man|woman) from/.test(w.m);
-const MAX_LN=30;
-const bookOf=ln=>ln<=15?1:2;
-const lnLabel=ln=>ln<=15?('B1 L'+ln):('B2 L'+(ln-15));
+/* Books and lessons. Lessons are numbered globally and contiguously; a new book is one entry here plus its data. */
+const BOOKS=[{n:1,zh:'一',first:1,count:15},{n:2,zh:'二',first:16,count:15}];
+const MAX_LN=BOOKS[BOOKS.length-1].first+BOOKS[BOOKS.length-1].count-1;
+const bookAt=ln=>BOOKS.find(b=>ln>=b.first&&ln<b.first+b.count)||BOOKS[BOOKS.length-1];
+const bookOf=ln=>bookAt(ln).n;
+const bookRange=n=>{const b=BOOKS.find(x=>x.n===n)||BOOKS[0];return [b.first,b.first+b.count-1];};
+const lessonsOf=n=>{const [a,z]=bookRange(n);return Array.from({length:z-a+1},(_,i)=>a+i);};
+const lnInBook=ln=>ln-bookAt(ln).first+1;
+const lnLabel=ln=>'B'+bookOf(ln)+' L'+lnInBook(ln);
+const lnShort=ln=>(bookOf(ln)===1?'':bookAt(ln).zh)+lnInBook(ln);
+/* Lessons are always chosen book by book: pick the book, then the lesson inside it.
+   `js` runs with `v` = the chosen lesson (the internal lesson index never reaches the screen). */
+function lessonPick(cur,js){
+  const b=bookAt(cur);
+  return '<span class="lpick"><select class="vsel" aria-label="Book" onchange="{const v=bookRange(+this.value)[0];'+js+'}">'
+    +BOOKS.map(x=>'<option value="'+x.n+'"'+(x.n===b.n?' selected':'')+'>Book '+x.n+'</option>').join('')+'</select>'
+    +'<select class="vsel" aria-label="Lesson" onchange="{const v=+this.value;'+js+'}">'
+    +lessonsOf(b.n).map(l=>'<option value="'+l+'"'+(l===cur?' selected':'')+'>Lesson '+lnInBook(l)+'</option>').join('')+'</select></span>';
+}
+const bookButtons=(cur,onclick)=>BOOKS.map(b=>'<button class="'+(cur===b.n?'on':'')+'" data-bk="'+b.n+'"'+(onclick?' onclick="'+onclick(b)+'"':'')+'>'+b.zh+' Book '+b.n+'</button>').join('');
 
 /* ============ SAFE STORAGE ============ */
 const store = (()=>{try{const t='__t';localStorage.setItem(t,'1');localStorage.removeItem(t);return localStorage;}catch(e){document.addEventListener('DOMContentLoaded',()=>{document.getElementById('storageBanner').style.display='block'});const m={};return{getItem:k=>k in m?m[k]:null,setItem:(k,v)=>{m[k]=String(v)},removeItem:k=>{delete m[k]}}}})();
@@ -771,15 +839,16 @@ function rate(cid,g){
     else {c.st='rev'; schedule(nextIntervalDays(c.S));}
   } else if(c.st==='learn'||c.st==='relearn'){
     S.log[today].rev++;
-    c.reps++;c.last=now;c.S=stabShort(c.S,g);
+    c.reps++;c.last=now;c.S=stabShort(c.S,g);c.D=updD(c.D,g);
     if(g===1)c.due=now+1*MIN; else if(g===2)c.due=now+5*MIN;
     else {c.st='rev'; schedule(Math.max(1,nextIntervalDays(c.S)));}
   } else {
     S.log[today].rev++;
     const t=Math.max(0.01,(now-c.last)/DAY), r=retrievability(t,c.S);
-    c.D=updD(c.D,g); c.reps++; c.last=now;
-    if(g===1){c.lapses++;c.S=stabForget(c.S,c.D,r);c.st='relearn';c.due=now+5*MIN;}
-    else {c.S=stabRecall(c.S,c.D,r,g);schedule(nextIntervalDays(c.S));}
+    const d0=c.D;            /* FSRS-5: the new stability uses the difficulty the card had going in */
+    c.D=updD(d0,g); c.reps++; c.last=now;
+    if(g===1){c.lapses++;c.S=stabForget(c.S,d0,r);c.st='relearn';c.due=now+5*MIN;}
+    else {c.S=stabRecall(c.S,d0,r,g);schedule(nextIntervalDays(c.S));}
   }
   // mastery timestamps for the Brain view
   if(c.st==='rev'&&c.S>=MASTER_S){if(!c.mastAt)c.mastAt=now;}
@@ -789,7 +858,7 @@ function rate(cid,g){
 
 /* ============ CARDS / MODES ============ */
 const MODES=['rec','prod'];
-const MODE_LABEL={rec:'Recognize · 認字',prod:'Recall · 回想'};
+const MODE_LABEL={rec:'Recognize · 認字',prod:'Write · 聽寫'};
 function cardId(wid,m){return wid+':'+m;}
 function wordOf(cid){return byId[cid.split(':')[0]];}
 function modeOf(cid){return cid.split(':')[1];}
@@ -797,6 +866,7 @@ function tracked(wid){return MODES.some(m=>S.cards[cardId(wid,m)]);}
 function trackWord(wid){MODES.forEach(m=>{if(S.settings.modes[m]&&!S.cards[cardId(wid,m)])S.cards[cardId(wid,m)]={};});save();}
 function untrackWord(wid){MODES.forEach(m=>{delete S.cards[cardId(wid,m)];});save();}
 function markKnown(wid){ // "I already know this" — skip learning, verify in ~3 weeks
+  if(S.pick)S.pick=S.pick.filter(x=>x!==wid);
   MODES.forEach(m=>{
     if(!S.settings.modes[m])return;
     const k=cardId(wid,m), c=S.cards[k];
@@ -806,6 +876,7 @@ function markKnown(wid){ // "I already know this" — skip learning, verify in ~
   save();
 }
 function markMastered(wid){ // "I've mastered this" — straight onto the shelf, resurface in ~3 months, NO paper reps
+  if(S.pick)S.pick=S.pick.filter(x=>x!==wid);
   MODES.forEach(m=>{
     if(!S.settings.modes[m])return;
     S.cards[cardId(wid,m)]={st:'rev',S:90,D:3,due:Date.now()+fuzz(90)*DAY,last:Date.now(),reps:1,lapses:0,days:99,known:1,mastAt:Date.now()};
@@ -855,14 +926,81 @@ function buildQueue(){
 function dueCount(){const q=buildQueue();return q.learn.length+q.rev.length+q.fresh.length;}
 
 /* ============ TONE COLORING ============ */
+/* Pinyin in the data is written word by word (huānyíng), so tones are read per syllable, not per token. */
 const toneMarks={'ā':1,'á':2,'ǎ':3,'à':4,'ē':1,'é':2,'ě':3,'è':4,'ī':1,'í':2,'ǐ':3,'ì':4,'ō':1,'ó':2,'ǒ':3,'ò':4,'ū':1,'ú':2,'ǔ':3,'ù':4,'ǖ':1,'ǘ':2,'ǚ':3,'ǜ':4};
+const PY_BASE={'ā':'a1','á':'a2','ǎ':'a3','à':'a4','ē':'e1','é':'e2','ě':'e3','è':'e4','ī':'i1','í':'i2','ǐ':'i3','ì':'i4','ō':'o1','ó':'o2','ǒ':'o3','ò':'o4','ū':'u1','ú':'u2','ǔ':'u3','ù':'u4','ǖ':'ü1','ǘ':'ü2','ǚ':'ü3','ǜ':'ü4','ń':'n2','ň':'n3','ǹ':'n4','ḿ':'m2'};
+const PY_SYL=new Set(('a ai an ang ao e ei en eng er o ou '+
+ 'ba bai ban bang bao bei ben beng bi bian biao bie bin bing bo bu '+
+ 'pa pai pan pang pao pei pen peng pi pian piao pie pin ping po pou pu '+
+ 'ma mai man mang mao me mei men meng mi mian miao mie min ming miu mo mou mu '+
+ 'fa fan fang fei fen feng fo fou fu '+
+ 'da dai dan dang dao de dei den deng di dia dian diao die ding diu dong dou du duan dui dun duo '+
+ 'ta tai tan tang tao te teng ti tian tiao tie ting tong tou tu tuan tui tun tuo '+
+ 'na nai nan nang nao ne nei nen neng ni nian niang niao nie nin ning niu nong nou nu nuan nun nuo nü nüe '+
+ 'la lai lan lang lao le lei leng li lia lian liang liao lie lin ling liu lo long lou lu luan lun luo lü lüe '+
+ 'ga gai gan gang gao ge gei gen geng gong gou gu gua guai guan guang gui gun guo '+
+ 'ka kai kan kang kao ke kei ken keng kong kou ku kua kuai kuan kuang kui kun kuo '+
+ 'ha hai han hang hao he hei hen heng hong hou hu hua huai huan huang hui hun huo '+
+ 'ji jia jian jiang jiao jie jin jing jiong jiu ju juan jue jun '+
+ 'qi qia qian qiang qiao qie qin qing qiong qiu qu quan que qun '+
+ 'xi xia xian xiang xiao xie xin xing xiong xiu xu xuan xue xun '+
+ 'zha zhai zhan zhang zhao zhe zhei zhen zheng zhi zhong zhou zhu zhua zhuai zhuan zhuang zhui zhun zhuo '+
+ 'cha chai chan chang chao che chen cheng chi chong chou chu chua chuai chuan chuang chui chun chuo '+
+ 'sha shai shan shang shao she shei shen sheng shi shou shu shua shuai shuan shuang shui shun shuo '+
+ 'ra ran rang rao re ren reng ri rong rou ru rua ruan rui run ruo '+
+ 'za zai zan zang zao ze zei zen zeng zi zong zou zu zuan zui zun zuo '+
+ 'ca cai can cang cao ce cen ceng ci cong cou cu cuan cui cun cuo '+
+ 'sa sai san sang sao se sen seng si song sou su suan sui sun suo '+
+ 'ya yan yang yao ye yi yin ying yo yong you yu yuan yue yun '+
+ 'wa wai wan wang wei wen weng wo wu r m n ng hm').split(' '));
+/* split one run of pinyin letters into syllables: [{text, tone}] ; want = expected count (0 = unknown) */
+function pySplit(run,want){let strict=true;
+  const chars=[...run], base=[], tones=[];
+  for(const ch of chars){const lo=ch.toLowerCase(), m=PY_BASE[lo]; base.push(m?m[0]:lo); tones.push(m?+m[1]:0);}
+  const n=base.length, memo=new Map();
+  /* fewest-syllable segmentation that respects apostrophes; prefer exactly `want` syllables when possible */
+  function seg(i,left){ /* returns array of end indices or null */
+    if(i===n)return (left===0||left<0)?[]:null;
+    if(left===0)return null;
+    const key=i+'|'+left; if(memo.has(key))return memo.get(key);
+    let best=null;
+    for(let j=Math.min(n,i+6);j>i;j--){
+      const s=base.slice(i,j).join('');
+      if(s.includes("'")||s.includes('’'))continue;
+      if(!PY_SYL.has(s))continue;
+      /* orthography: a syllable starting with a, e or o inside a word is written with an apostrophe */
+      if(strict&&i>0&&'aeo'.includes(base[i])&&base[i-1]!=="'"&&base[i-1]!=='’')continue;
+      /* a syllable carries at most one tone mark */
+      let marks=0; for(let k=i;k<j;k++)if(tones[k])marks++; if(marks>1)continue;
+      let nx=j; if(base[nx]==="'"||base[nx]==='’')nx++;
+      const rest=seg(nx,left>0?left-1:left);
+      if(rest){best=[j].concat(rest);break;}
+    }
+    memo.set(key,best); return best;
+  }
+  let ends=want>0?seg(0,want):null;
+  if(!ends){memo.clear();ends=seg(0,-1);}
+  if(!ends){strict=false;memo.clear();ends=seg(0,-1);}
+  if(!ends)return null;
+  const out=[]; let i=0;
+  for(const j of ends){let tone=0;for(let k=i;k<j;k++)if(tones[k])tone=tones[k];out.push({text:chars.slice(i,j).join(''),tone});i=j;if(base[i]==="'"||base[i]==='’'){out[out.length-1].text+=chars[i];i++;}}
+  return out;
+}
+const PY_RUN=/(&[#\w]+;)|([A-Za-zÀ-ɏḿ'’]+)/g;
+/* colour each syllable by its own tone; anything that is not pinyin passes through untouched */
 function tonePinyin(p){
-  return p.split(/(\s+|\/|,|·|\+)/).map(part=>{
-    if(/^\s*$|^\/$|^,$|^\+$/.test(part))return part;
-    let tone=0;
-    for(const ch of part){if(toneMarks[ch]){tone=toneMarks[ch];break;}}
-    return '<span class="tone'+tone+'">'+part+'</span>';
-  }).join('');
+  return String(p).replace(PY_RUN,(m,ent,run)=>{
+    if(ent)return ent;
+    const syl=pySplit(run,0);
+    if(!syl){let t=0;for(const ch of run){const k=toneMarks[ch.toLowerCase()];if(k){t=k;break;}}return '<span class="tone'+t+'">'+run+'</span>';}
+    return syl.map(s=>'<span class="tone'+s.tone+'">'+s.text+'</span>').join('');
+  });
+}
+/* tones of a word, one per syllable (first reading only when alternatives are listed) */
+function toneSeq(p){
+  const first=String(p).split(/[\/,;(（]/)[0], out=[];
+  (first.match(/[A-Za-zÀ-ɏḿ'’]+/g)||[]).forEach(run=>{const syl=pySplit(run,0);if(syl)syl.forEach(s=>out.push(s.tone));});
+  return out;
 }
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
@@ -915,7 +1053,7 @@ function renderHome(){
   const mature=Object.values(S.cards).filter(c=>c.st==='rev'&&c.S>=21).length;
   const totalCards=Object.keys(S.cards).length;
   const charSet=new Set(), tradDiff=new Set();
-  trackedWords.forEach(w=>{ if(MODES.some(m=>(S.cards[cardId(w.id,m)]||{}).st!==undefined)){ for(const ch of w.t){ if(/\p{Script=Han}/u.test(ch)){charSet.add(ch); if(w.s)tradDiff.add(ch);} } } });
+  trackedWords.forEach(w=>{ if(MODES.some(m=>(S.cards[cardId(w.id,m)]||{}).st!==undefined)){ const tr=[...w.t], si=w.s?[...w.s]:null; tr.forEach((ch,i)=>{ if(/\p{Script=Han}/u.test(ch)){charSet.add(ch); if(si&&(si.length!==tr.length||si[i]!==ch))tradDiff.add(ch);} }); } });
   let streak=0;const d=new Date();
   if(!S.log[dkey(d)])d.setDate(d.getDate()-1);
   while(S.log[dkey(d)]&&(S.log[dkey(d)].rev+S.log[dkey(d)].new)>0){streak++;d.setDate(d.getDate()-1);}
@@ -955,11 +1093,11 @@ function renderHome(){
     <div class="fc">${fc.map((v,i)=>`<div class="bar ${i===0?'t':''}"><i style="height:${Math.round(v/fmax*44)+2}px"></i><span>${names[i]}</span><b>${v}</b></div>`).join('')}</div>
     <div class="small muted" style="margin-top:6px;text-align:center">cards coming due over the next week</div>
     <details class="guide"><summary>How this app works ›</summary><div class="gd">
-      <p><b>Adding words.</b> In the Library, tap ＋ next to a word (or "Study lesson") to put it in your deck. Each word becomes two recognition cards: <b>Recognize</b> — see the 字, recall its meaning, pinyin and tones — and <b>Recall</b> — see the English, recall which 字 it is and say it with the right tones. Neither asks you to write on screen; handwriting lives on paper and in Skritter. Already know a word from your simplified days? Tap ✓ instead: it skips the learning phase entirely and quietly resurfaces in ~3 weeks just to verify.</p>
-      <p><b>Timing (FSRS).</b> Every grade feeds a memory model that estimates how long until you'd forget that exact card, and the next review lands just before that moment. Intervals stretch as a card gets stronger (10m → 1d → 3d → 8d → 20d…) and shrink when you miss. "Again" restarts a card through short steps, "Good" is the normal path, "Easy" jumps ahead. The small number under each button is the exact wait it will apply.</p>
+      <p><b>Adding words.</b> In the Library, tap ＋ next to a word (or "Study lesson") to put it in your deck. Each word becomes two cards: <b>Recognize</b> — see the 字, recall its meaning, pinyin and tones — and <b>Write</b> — hear the word, write it on paper, then check. Nothing is drawn on screen; handwriting lives on paper and in Skritter. Already know a word from your simplified days? Tap ✓ instead: it skips the learning phase entirely and quietly resurfaces in ~3 weeks just to verify.</p>
+      <p><b>Timing (FSRS).</b> Every grade feeds a memory model that estimates how long until you'd forget that exact card, and the next review lands just before that moment. Intervals stretch as a card gets stronger (minutes, then days, then weeks and months) and shrink when you miss. "Again" restarts a card through short steps, "Good" is the normal path, "Easy" jumps ahead. The small number under each button is the exact wait it will apply.</p>
       <p><b>Early reps &amp; paper.</b> New characters follow a taper on real paper: day 1 you write them ×${S.settings.writeTarget||20}, day 2 they return for ×5, day 3 one last re-exposure — then FSRS takes over. The "Tonight's paper list" card collects exactly which characters are at which day and prints a 田字格 sheet with the right number of boxes. Words you mark ✓ or ★ skip paper entirely.</p>
-      <p><b>Grammar.</b> The Grammar tab holds every pattern from the Zhong Chinese lessons, each drilled five ways: fill-in-the-blank, multiple choice, build-the-sentence, finish-the-sentence, and create-your-own. Mastery dots fill as you drill.</p>
-      <p><b>Daily flow.</b> ~9 new words per day by default (Settings), plus whatever is due. Miss a day? Nothing is lost — cards simply wait.</p>
+      <p><b>Grammar.</b> The Grammar tab holds the patterns for every lesson, each drilled five ways: fill-in-the-blank, multiple choice, build-the-sentence, finish-the-sentence, and create-your-own. Mastery dots fill as you drill.</p>
+      <p><b>Daily flow.</b> ${S.settings.newPerDay??8} new words a day from the live lesson (Settings → Daily intake), plus whatever is due. Miss a day? Nothing is lost — cards simply wait.</p>
     </div></details>
   </div>`;
   badge();
@@ -974,33 +1112,50 @@ function rankVoice(v){
   if(/國語|臺灣|Taiwan/i.test(nm))s+=50;
   if(/zh[-_]TW/i.test(v.lang))s+=25;
   if(/Google/i.test(v.name))s+=30;
-  if(/Mei-?Jia|美佳|Yating|雅婷|Hsiao|曉|Ting-?Ting|婷|Xiaoxiao|Female|女/i.test(nm))s+=40;
-  if(/Liang|Aaron|YunJhe|雲哲|Kangkang|Male|男/i.test(nm))s-=30;
+  const male=voiceId()==='m';
+  if(/Mei-?Jia|美佳|Yating|雅婷|Hsiao|曉|Ting-?Ting|婷|Xiaoxiao|Female|女/i.test(nm))s+=male?-30:40;
+  if(/Liang|Aaron|YunJhe|雲哲|Kangkang|\bMale|男/i.test(nm))s+=male?40:-30;
   if(/zh[-_]CN|cmn/i.test(v.lang))s+=8;
   if(/粵|Cantonese|HK/i.test(nm))s-=40;
   if(!v.localService)s+=6;
   return s;
 }
-/* bundled neural audio (female standard Mandarin) with speech-synthesis fallback */
+/* Bundled neural audio: one pack per voice (a single file of MP3 clips plus an index of offsets),
+   with the system speech voice as the fallback for anything the pack does not hold. */
+const VOICE_PACKS={f:{file:'audio-tw',name:'曉臻',who:'female'},m:{file:'audio-tw-m',name:'雲哲',who:'male'}};
+function voiceId(){return VOICE_PACKS[S.settings.voicePack]?S.settings.voicePack:'f';}
+/* which packs this deployment actually carries — Settings only offers voices that exist */
+const VOICE_OK={f:true};
+Object.keys(VOICE_PACKS).filter(v=>v!=='f').forEach(v=>{
+  fetch('assets/'+VOICE_PACKS[v].file+'-index.json').then(r=>{VOICE_OK[v]=r.ok;}).catch(()=>{VOICE_OK[v]=false;})
+    .then(()=>{try{if(VOICE_OK[v]&&view==='set')renderSet();}catch(e){}});
+});
 const AUDIO_MISS={};
 let curAudio=null;
 function audioKey(t){t=String(t).split('（')[0];const h=t.replace(/[^㐀-鿿]/g,'');return h||t.replace(/[^A-Za-z0-9]/g,'');}
-function hasTwVoice(){if(!VOICES.length)loadVoices();return VOICES.some(v=>/zh[-_]TW/i.test(v.lang)||/國語|臺灣|Taiwan|Mei-?Jia/i.test(v.name));}
-let APACK=null,APACKP=null,AIDX=null,AURL={};
+let APACK=null,APACKP=null,AIDX=null,AURL={},APACK_ID=null;
 function loadPack(){
-  if(APACK)return Promise.resolve(true);
-  if(APACKP)return APACKP;
-  APACKP=Promise.all([
-    fetch('assets/audio-index.json').then(r=>{if(!r.ok)throw 0;return r.json()}),
-    fetch('assets/audio.pack').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()})
-  ]).then(([idx,buf])=>{AIDX=idx;APACK=buf;return true;}).catch(()=>false);
-  return APACKP;
+  const want=voiceId();
+  if(APACKP&&APACKP.want===want)return APACKP;
+  const get=v=>Promise.all([
+    fetch('assets/'+VOICE_PACKS[v].file+'-index.json').then(r=>{if(!r.ok)throw 0;return r.json()}),
+    fetch('assets/'+VOICE_PACKS[v].file+'.pack').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()})
+  ]).then(([idx,buf])=>({v,idx,buf}));
+  const pr=get(want).catch(e=>{if(want==='f')throw e;return get('f');})   /* a voice that is not on the server falls back to the default one */
+    .then(got=>{
+      if(APACKP!==pr)return APACKP||false;                                /* the voice changed while this one was loading */
+      for(const k in AURL)URL.revokeObjectURL(AURL[k]); AURL={}; for(const k in AUDIO_MISS)delete AUDIO_MISS[k];
+      AIDX=got.idx; APACK=got.buf; APACK_ID=got.v; return true;
+    })
+    .catch(()=>{if(APACKP===pr)APACKP=null;return false;});               /* a failed load is retried on the next play, not remembered */
+  pr.want=want; APACKP=pr; return pr;
 }
 function playBundled(text,onFail){
   const k=audioKey(text);
   if(!k||AUDIO_MISS[k]){onFail();return;}
   loadPack().then(ok=>{
-    if(!ok||!AIDX[k]){AUDIO_MISS[k]=1;onFail();return;}
+    if(!ok||!AIDX){onFail();return;}
+    if(!AIDX[k]){AUDIO_MISS[k]=1;onFail();return;}
     try{
       if(!AURL[k]){
         const[o,l]=AIDX[k];
@@ -1008,20 +1163,22 @@ function playBundled(text,onFail){
       }
       if(curAudio){try{curAudio.pause();}catch(e){}}
       const a=new Audio(AURL[k]);
-      a.playbackRate=Math.min(1.3,audioSpeed()/0.9); // clips were recorded at 0.9× — speed setting scales them
+      a.playbackRate=Math.min(1.3,audioSpeed()/0.9); // clips are recorded slightly slow — the speed setting scales them
       curAudio=a;
       a.onerror=()=>{AUDIO_MISS[k]=1;onFail();};
-      a.play().catch(()=>{AUDIO_MISS[k]=1;onFail();});
+      a.play().catch(()=>{onFail();});
     }catch(e){onFail();}
   });
 }
+/* 'auto' and 'bundled' both play the bundled Taiwan voice first; 'system' always uses the device's speech voice */
 function playAudio(text){
-  const mode=S.settings.audioSrc||'auto';
-  // Taiwanese-accented system voices (Google 國語（臺灣）, Mei-Jia) beat the bundled
-  // mainland-accented recording — prefer them whenever one exists.
-  if(mode==='bundled'){playBundled(text,()=>speakText(text));return;}
-  if(mode==='system'){speakText(text);return;}
-  if(hasTwVoice()){speakText(text);}else{playBundled(text,()=>speakText(text));}
+  if((S.settings.audioSrc||'auto')==='system'){speakText(text);return;}
+  playBundled(text,()=>speakText(text));
+}
+function setVoice(v){
+  if(!VOICE_PACKS[v])return;
+  S.settings.voicePack=v; save(); if(view==='set')renderSet();
+  loadPack().then(ok=>{ if(ok&&APACK_ID===v)playAudio('謝謝'); else toast(VOICE_PACKS[v].name+' could not be loaded — check the connection and try again'); });
 }
 function pickVoice(){
   if(!VOICES.length)loadVoices();
@@ -1162,7 +1319,8 @@ function buildQuestion(p,type){
 }
 const GTYPES=[['fib','Fill in the blank'],['mc','Multiple choice'],['build','Build the sentence'],['finish','Finish the sentence'],['create','Create your own']];
 function startGramQuiz(scope){ // scope: array of points
-  const pts=scope.filter(p=>p.s.length);
+  const pts=(scope||[]).filter(p=>p.s&&p.s.length);
+  if(!pts.length){toast('No grammar points for this lesson yet');return;}
   const qs=[];
   const types=GTYPES.map(t=>t[0]);
   const n=Math.min(12,Math.max(6,pts.length*2));
@@ -1223,16 +1381,17 @@ function renderGram(){
       body=`<div class="qen">Finish it: “${esc(q.s.en)}”</div>
       <div class="qzh zh">${esc(q.head)}<span class="blank">…</span></div>
       ${done?`<div class="qzh zh" style="color:var(--acc)">${esc(q.s.zh)} ${aud(q.s.zh)}</div>`
+      :gq.state==='reveal'?(q.mine?`<div class="small muted" style="text-align:center;margin:6px 0">yours: <span class="zh">${esc(q.head+q.mine)}</span></div>`:'')
       :`<textarea class="gtxt zh" id="gramInp" placeholder="say it aloud or type the rest…"></textarea>
-        <div class="qfoot"><button class="btn" onclick="gq.state='reveal';renderGram()">Reveal</button></div>`}
+        <div class="qfoot"><button class="btn" onclick="gq.qs[gq.i].mine=(document.getElementById('gramInp')||{}).value||'';gq.state='reveal';renderGram()">Reveal</button></div>`}
       ${gq.state==='reveal'?`<div class="qzh zh" style="color:var(--acc)">${esc(q.s.zh)} ${aud(q.s.zh)}</div>
         <div class="qfoot"><button class="btn ghost" onclick="gramAnswer(false)">Missed it</button><button class="btn" onclick="gramAnswer(true)">Got it ✓</button></div>`:''}`;
     } else { // create
-      body=`<div class="qen" style="font-size:15px;color:var(--ink)">${esc(p.cy||('Write your own sentence using 「'+p.tgt[0]+'」'))}</div>
-      <div class="qen">pattern: <b class="zh" style="color:var(--acc)">${p.tgt.map(esc).join(' / ')}</b></div>
+      body=`<div class="qen" style="font-size:15px;color:var(--ink)">${esc(p.cy||(p.tgt&&p.tgt.length?'Write your own sentence using 「'+p.tgt[0]+'」':'Write your own sentence with this pattern'))}</div>
+      ${p.tgt&&p.tgt.length?`<div class="qen">pattern: <b class="zh" style="color:var(--acc)">${p.tgt.map(esc).join(' / ')}</b></div>`:''}
       ${gq.state==='ask'?`<textarea class="gtxt zh" id="gramInp" placeholder="寫你自己的句子…"></textarea>
-        <div class="qfoot"><button class="btn" onclick="gq.state='reveal';renderGram()">Compare with model</button></div>`:''}
-      ${gq.state==='reveal'?`<div class="gsent" style="justify-content:center"><span class="z zh">${esc(q.s.zh)}</span>${aud(q.s.zh)}</div><div class="qen">${esc(q.s.en)}</div>
+        <div class="qfoot"><button class="btn" onclick="gq.qs[gq.i].mine=(document.getElementById('gramInp')||{}).value||'';gq.state='reveal';renderGram()">Compare with model</button></div>`:''}
+      ${gq.state==='reveal'?`${q.mine?`<div class="small muted" style="text-align:center;margin:6px 0">yours: <span class="zh">${esc(q.mine)}</span></div>`:''}<div class="gsent" style="justify-content:center"><span class="z zh">${esc(q.s.zh)}</span>${aud(q.s.zh)}</div><div class="qen">${esc(q.s.en)}</div>
         <div class="qfoot"><button class="btn ghost" onclick="gramAnswer(false)">Needs work</button><button class="btn" onclick="gramAnswer(true)">Mine works ✓</button></div>`:''}`;
     }
     el.innerHTML=`
@@ -1247,10 +1406,9 @@ function renderGram(){
   const gBook=bookOf(gramLesson);
   el.innerHTML=`
   <div class="segbar"><span class="cap">Book</span>
-    <button class="${gBook===1?'on':''}" onclick="gramLesson=1;gramOpen={};renderGram()">一 Book 1</button>
-    <button class="${gBook===2?'on':''}" onclick="gramLesson=16;gramOpen={};renderGram()">二 Book 2</button>
+    ${bookButtons(gBook,b=>'gramLesson='+b.first+';gramOpen={};renderGram()')}
   </div>
-  <div class="filters" style="margin-bottom:14px">${Array.from({length:15},(_,i)=>(gBook-1)*15+i+1).map(ln=>`<button class="${gramLesson===ln?'on':''}" onclick="gramLesson=${ln};gramOpen={};renderGram()">${ln>15?ln-15:ln}</button>`).join('')}</div>
+  <div class="filters" style="margin-bottom:14px">${lessonsOf(gBook).map(ln=>`<button class="${gramLesson===ln?'on':''}" onclick="gramLesson=${ln};gramOpen={};renderGram()">${lnInBook(ln)}</button>`).join('')}</div>
   <div class="card" style="padding:16px 20px">
     <div class="row spread">
       <div><b>${lnLabel(gramLesson)} · ${LESSON_TITLES[gramLesson]}</b><div class="small muted">${pts.length} grammar points · drills mix all five exercise types</div></div>
@@ -1403,7 +1561,7 @@ function charModel(){
   });
   return [...map.values()];
 }
-function firstTone(p){for(const ch of p){if(toneMarks[ch])return toneMarks[ch];}return 0;}
+function firstTone(p){for(const ch of String(p)){const t=toneMarks[ch.toLowerCase()];if(t)return t;}return 0;}
 function posGroup(w){
   if(isName(w))return 'Names';
   const p=w.pos;
@@ -1470,7 +1628,7 @@ function renderBrain(){
   let chars=charModel().sort((a,b)=>a.lesson-b.lesson||a.stage-b.stage);
   let words=studyWords().map(w=>({...w,stage:wordStage(w.id),due:wordDueNow(w.id),mem:wordMem(w.id),mastAt:wordMastAt(w.id)}));
   if(brainScope!=='all'){
-    const lo=(brainScope-1)*15+1, hi=brainScope*15;
+    const [lo,hi]=bookRange(brainScope);
     words=words.filter(w=>w.l>=lo&&w.l<=hi);
     chars=chars.filter(c=>c.lesson>=lo&&c.lesson<=hi);
   }
@@ -1502,7 +1660,7 @@ function renderBrain(){
   const groups=isChars?[['stage','Stage'],['lesson','Lesson'],['simp','Trad ≠ Simp']]:[['stage','Stage'],['lesson','Lesson'],['pos','Word type'],['tone','Tone']];
   if(!groups.some(g=>g[0]===brainGroup))brainGroup='stage';
   const ctrlHtml='<div class="segbar"><span class="cap">Scope</span>'
-    +[[1,'Book 1'],[2,'Book 2'],['all','Everything']].map(v=>'<button class="'+(brainScope===v[0]?'on':'')+'" onclick="brainScope='+(typeof v[0]==='string'?'\'all\'':v[0])+';brainSel=null;renderBrain()">'+v[1]+'</button>').join('')
+    +BOOKS.map(b=>[b.n,'Book '+b.n]).concat([['all','Everything']]).map(v=>'<button class="'+(brainScope===v[0]?'on':'')+'" onclick="brainScope='+(typeof v[0]==='string'?'\'all\'':v[0])+';brainSel=null;renderBrain()">'+v[1]+'</button>').join('')
     +'</div><div class="segbar"><span class="cap">View</span>'
     +[['chars','Characters'],['words','Words']].map(v=>'<button class="'+(brainView===v[0]?'on':'')+'" onclick="brainView=\''+v[0]+'\';brainSel=null;renderBrain()">'+v[1]+'</button>').join('')
     +'</div><div class="segbar"><span class="cap">Group</span>'
@@ -1519,7 +1677,7 @@ function renderBrain(){
         +'<div class="row" style="gap:8px"><span class="tag '+(e.stage>=3?'mat':e.stage>0?'ok':'')+'">'+STAGE_NAMES[e.stage]+'</span>'
         +(SIMP_CHAR[e.ch]?'<span class="tag simp">简 '+esc(SIMP_CHAR[e.ch])+'</span>':'<span class="tag">same in simplified</span>')
         +(e.due?'<span class="tag due">due now</span>':'')+'</div>'
-        +(mem!==null?'<div class="kv"><span>memory right now <b>'+mem+'%</b></span><span>first met in <b>Lesson '+e.lesson+'</b></span></div><div class="membar"><i style="width:'+mem+'%"></i></div>':'<div class="kv"><span>first appears in <b>Lesson '+e.lesson+'</b></span></div>')
+        +(mem!==null?'<div class="kv"><span>memory right now <b>'+mem+'%</b></span><span>first met in <b>'+(typeof e.lesson==='number'?lnLabel(e.lesson):e.lesson)+'</b></span></div><div class="membar"><i style="width:'+mem+'%"></i></div>':'<div class="kv"><span>first appears in <b>Lesson '+e.lesson+'</b></span></div>')
         +'<div style="margin-top:10px">'+e.words.map(wid=>{const w=byId[wid];return '<span class="wchip zh" onclick="brainSel={type:\'word\',id:\''+wid+'\'};renderBrain()">'+esc(w.t)+' <span class="muted">'+esc(w.p)+'</span></span>';}).join('')+'</div>'
         +charStoryHtml(e.ch)
         +'</div><button class="close" onclick="brainSel=null;renderBrain()">✕</button></div>';
@@ -1620,14 +1778,13 @@ function renderLib(){
   const el=document.getElementById('vLib');
   let html=`<input class="search" placeholder="Search 字 · pinyin · meaning" value="${esc(libSearch)}" oninput="libSearch=this.value;renderLib()">
   <div class="segbar"><span class="cap">Book</span>
-    <button class="${libBook===1?'on':''}" onclick="libBook=1;openLessons={};renderLib()">一 Book 1</button>
-    <button class="${libBook===2?'on':''}" onclick="libBook=2;openLessons={};renderLib()">二 Book 2</button>
+    ${bookButtons(libBook,b=>'libBook='+b.n+';openLessons={};renderLib()')}
   </div>
   <div class="filters">
     ${[['all','All'],['tracked','In deck'],['due','Due'],['untracked','Not started'],['simp','Trad ≠ Simp']].map(([k,t])=>`<button class="${libFilter===k?'on':''}" onclick="libFilter='${k}';renderLib()">${t}</button>`).join('')}
   </div>`;
   const q=libSearch.trim().toLowerCase();
-  const lnStart=q?1:(libBook-1)*15+1, lnEnd=q?MAX_LN:libBook*15;
+  const lnStart=q?1:bookRange(libBook)[0], lnEnd=q?MAX_LN:bookRange(libBook)[1];
   for(let ln=lnStart;ln<=lnEnd;ln++){
     const ws=WORDS.filter(w=>w.l===ln).filter(w=>{
       if(q&&!(w.t.includes(q)||w.p.toLowerCase().includes(q)||w.m.toLowerCase().includes(q)))return false;
@@ -1683,7 +1840,7 @@ function wrowHtml(w,showLn){
 }
 
 /* ---- REVIEW ---- */
-let rq=null, cur=null, revealed=false, undoStack=[], sessionN=0, padReps=0, hintShown=false;
+let rq=null, cur=null, revealed=false, undoStack=[], sessionN=0, hintShown=false;
 function startReview(){rq=buildQueue();sessionN=0;nextCard();}
 function pickNext(){
   const now=Date.now();
@@ -1694,7 +1851,7 @@ function pickNext(){
   if(rq.learn.length)return rq.learn[0];
   return null;
 }
-function nextCard(){cur=pickNext();revealed=false;padReps=0;hintShown=false;renderRev();}
+function nextCard(){cur=pickNext();revealed=false;hintShown=false;renderRev();}
 function renderRev(){
   const el=document.getElementById('vRev');
   badge();
@@ -1746,7 +1903,6 @@ function renderRev(){
     <div class="small muted" style="text-align:center;margin-top:10px"><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd></div>`
   :`<div style="margin-top:16px"><button class="btn big" onclick="reveal()">Show answer</button></div>
     <div class="small muted" style="text-align:center;margin-top:10px"><kbd>space</kbd></div>`}`;
-  const pad=document.getElementById('pad'); if(pad)initPad(pad);
   if(revealed){
     if(S.settings.autoplayAudio)setTimeout(()=>speakWord(w.id),120);
     if(m==='prod'&&S.settings.strokeAnim&&document.getElementById('strokeHost')){
@@ -1754,42 +1910,34 @@ function renderRev(){
     }
   }
 }
-function reveal(){let drawing=null;const old=document.getElementById('pad');if(old&&old._snap)drawing=old._snap();revealed=true;renderRev();if(drawing){const pad=document.getElementById('pad');if(pad)restorePad(pad,drawing);}}
+function reveal(){revealed=true;renderRev();}
 function skipKnown(level){if(!cur)return;const wid=cur.split(':')[0];(level==='m'?markMastered:markKnown)(wid);['learn','rev','fresh'].forEach(k=>{rq[k]=rq[k].filter(cid=>cid.split(':')[0]!==wid);});nextCard();}
+/* One grade = one undo step. The snapshot holds everything a grade can touch, so undo is exact. */
 function grade(g){
   if(!cur)return;
-  undoStack.push({cid:cur,card:S.cards[cur]?JSON.parse(JSON.stringify(S.cards[cur])):{},log:JSON.parse(JSON.stringify(S.log)),intro:JSON.parse(JSON.stringify(S.intro))});
+  const snap=o=>JSON.parse(JSON.stringify(o||{}));
+  undoStack.push({cid:cur,card:snap(S.cards[cur]),log:snap(S.log),intro:snap(S.intro),cintro:snap(S.cintro),gintro:snap(S.gintro),sib:snap(S.sib),hard:(S.hard||[]).slice(),pick:(S.pick||[]).slice(),ses:snap(SES)});
   if(undoStack.length>25)undoStack.shift();
+  const was=S.cards[cur]; if(!was||was.st===undefined)SES.newN++;
+  SES.n++; SES.g[g]=(SES.g[g]||0)+1;
+  if(g>=3){SES.run++;if(SES.run>SES.best)SES.best=SES.run;} else SES.run=0;
   rate(cur,g);sessionN++;
   ['learn','rev','fresh'].forEach(k=>{const i=rq[k].indexOf(cur);if(i>-1)rq[k].splice(i,1);});
   const c=S.cards[cur];
-  if(c.due<=Date.now()+15*MIN&&(c.st==='learn'||c.st==='relearn'))rq.learn.push(cur);
+  /* still in its learning steps → back into this session, unless the grade just parked it as a leech */
+  if(!c.susp&&c.due<=Date.now()+15*MIN&&(c.st==='learn'||c.st==='relearn'))rq.learn.push(cur);
   nextCard();
 }
 function doUndo(){ // step back through as many cards as the stack holds
   const u=undoStack.pop(); if(!u)return;
   const had=Object.keys(u.card).length;
   S.cards[u.cid]=had?u.card:{};
-  S.log=u.log;S.intro=u.intro;save();
+  S.log=u.log;S.intro=u.intro;
+  if(u.sib){S.cintro=u.cintro;S.gintro=u.gintro;S.sib=u.sib;S.hard=u.hard;S.pick=u.pick;}
+  if(u.ses)Object.assign(SES,u.ses);
+  save();
   cur=u.cid;revealed=true;sessionN=Math.max(0,sessionN-1);renderRev();
 }
-function toggleGhost(){S.settings.ghost=!S.settings.ghost;save();renderRev();}
-
-/* scratchpad */
-function initPad(cv){
-  const dpr=window.devicePixelRatio||1;
-  const w=cv.clientWidth;cv.width=w*dpr;cv.height=w*dpr;
-  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
-  ctx.lineWidth=6.5;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=cssVar('--ink')||'#1d1c1a';
-  let down=false,px=0,py=0;
-  const pos=e=>{const r=cv.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top];};
-  cv.addEventListener('pointerdown',e=>{down=true;const p=pos(e);px=p[0];py=p[1];cv.setPointerCapture(e.pointerId);e.preventDefault();});
-  cv.addEventListener('pointermove',e=>{if(!down)return;const p=pos(e);ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(p[0],p[1]);ctx.stroke();px=p[0];py=p[1];e.preventDefault();});
-  cv.addEventListener('pointerup',()=>down=false);
-  cv._snap=()=>{try{return cv.toDataURL()}catch(e){return null}};
-}
-function restorePad(cv,dataUrl){const img=new Image();img.onload=()=>{const ctx=cv.getContext('2d');ctx.drawImage(img,0,0,cv.clientWidth,cv.clientWidth);};img.src=dataUrl;}
-function clearPad(){const cv=document.getElementById('pad');if(!cv)return;const ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);}
 
 /* ---- SETTINGS ---- */
 function renderSet(){
@@ -1850,12 +1998,22 @@ function renderSet(){
 function exportData(){
   const blob=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='shida-b1-progress-'+dkey(new Date())+'.json';a.click();
+  a.download='zika-progress-'+dkey(new Date())+'.json';a.click();
 }
 function importData(inp){
   const f=inp.files[0];if(!f)return;
   const r=new FileReader();
-  r.onload=()=>{try{const p=JSON.parse(r.result);if(!p.cards)throw 0;S=p;normalizeState();save();alert('Imported ✓');renderSet();badge();}catch(e){alert('That file does not look like a progress export.')}};
+  r.onload=()=>{
+    let p=null; try{p=JSON.parse(r.result);}catch(e){}
+    if(!p||!p.cards||typeof p.cards!=='object'){alert('That file does not look like a progress export.');return;}
+    const linked=typeof SYNC!=='undefined'&&SYNC.code;
+    if(!confirm('Replace the progress on this device with this file?'+(linked?' Cloud sync is on, so every linked device will receive it too.':'')))return;
+    const keep={}; LOCAL_SETTINGS.concat(STRICT_LOCAL).forEach(k=>{if(S.settings&&k in S.settings)keep[k]=S.settings[k];});
+    p.settings=Object.assign({},S.settings,p.settings||{},keep);   /* anything the file lacks keeps this device's value */
+    delete p._app; delete p._savedAt;
+    S=p; normalizeState(); undoStack.length=0; rq=null; cur=null;
+    save(); alert('Imported ✓'); renderSet(); badge();
+  };
   r.readAsText(f);
 }
 
@@ -1900,6 +2058,7 @@ function triageBack(){if(tri&&tri.i>0){tri.i--;renderLib();}}
 function triageAct(a){
   if(!tri)return;
   const wid=tri.list[tri.i]; if(!wid)return;
+  tri.acts=tri.acts||{}; if(tri.acts[wid])tri.n[tri.acts[wid]]--; tri.acts[wid]=['hard','learn','know','mast'].includes(a)?a:'skip';
   if(a==='hard'){trackWord(wid);addHard(wid);S.pick=S.pick||[];if(!S.pick.includes(wid))S.pick.push(wid);tri.n.hard++;}
   else if(a==='learn'){trackWord(wid);tri.n.learn++;}
   else if(a==='know'){markKnown(wid);tri.n.know++;}
@@ -1968,10 +2127,6 @@ function drillPoints(){
   let out=[]; for(let l=1;l<=MAX_LN;l++) out=out.concat(GRAMMAR[l]||[]);
   return out;
 }
-function toneSeq(p){
-  const parts=String(p).split(/\s+/).filter(Boolean);
-  return parts.map(part=>{let t=0;for(const ch of part){if(toneMarks[ch]){t=toneMarks[ch];break;}}return t;});
-}
 const TONEMARK=['·','ˉ','ˊ','ˇ','ˋ'];
 function toneLabel(seq){return seq.map(t=>TONEMARK[t]).join(' ')+'   ('+seq.join('-')+')';}
 
@@ -1998,8 +2153,10 @@ function startDrill(mode){
         continue;
       }
       const kind=['c2m','m2c','a2c'][Math.floor(Math.random()*3)];
-      const sameLesson=bank.filter(x=>x.l===w.l&&x.id!==w.id);
-      const distr=sample(sameLesson.length>=3?sameLesson:bank.filter(x=>x.id!==w.id),3,[w]);
+      const seenT=new Set([w.t]), seenM=new Set([w.m]);
+      const distinct=list=>shuf(list).filter(x=>x.id!==w.id&&!seenT.has(x.t)&&!seenM.has(x.m)&&seenT.add(x.t)&&seenM.add(x.m));
+      let distr=distinct(bank.filter(x=>x.l===w.l)).slice(0,3);
+      if(distr.length<3)distr=distr.concat(distinct(bank).slice(0,3-distr.length));
       qs.push({mode:'rec',kind,w,opts:shuf([w,...distr])});
     }
   } else if(mode==='sent'){
@@ -2029,16 +2186,22 @@ function drillPick(i){
 function drillNext(){dq.i++;dq.state='ask';dq.chosen=null;recState=null;renderDrill();}
 
 /* recording */
+let REC_ACTIVE=null;   /* the one live MediaRecorder, tracked apart from recState so it can always be stopped */
 async function recStart(){
+  recKill();
   try{
     const stream=await navigator.mediaDevices.getUserMedia({audio:true});
     const mr=new MediaRecorder(stream);const chunks=[];
+    if(recState&&recState.url)URL.revokeObjectURL(recState.url);
+    const mine={rec:mr,url:null};
     mr.ondataavailable=e=>chunks.push(e.data);
-    mr.onstop=()=>{const b=new Blob(chunks,{type:mr.mimeType||'audio/webm'});
-      if(recState&&recState.url)URL.revokeObjectURL(recState.url);
-      recState={url:URL.createObjectURL(b),rec:null};
-      stream.getTracks().forEach(t=>t.stop());renderDrill();};
-    recState={rec:mr,url:null};mr.start();renderDrill();
+    mr.onstop=()=>{
+      stream.getTracks().forEach(t=>t.stop());          /* release the microphone whatever happens next */
+      if(REC_ACTIVE===mr)REC_ACTIVE=null;
+      if(recState!==mine)return;                         /* the card moved on — this take belongs to nothing */
+      recState={url:URL.createObjectURL(new Blob(chunks,{type:mr.mimeType||'audio/webm'})),rec:null};
+      if(view==='drill')renderDrill();};
+    recState=mine;REC_ACTIVE=mr;mr.start();renderDrill();
   }catch(e){recState={err:'Mic unavailable — check the browser permission.'};renderDrill();}
 }
 function recStop(){if(recState&&recState.rec)recState.rec.stop();}
@@ -2047,6 +2210,7 @@ function recPlay(){if(recState&&recState.url)new Audio(recState.url).play().catc
 /* 口試 exam prompt */
 let examP=null, examT=null;
 function makeExam(){
+  recKill();
   const ln=drillLesson;
   const pts=(GRAMMAR[ln]||[]);
   const ws=WORDS.filter(w=>w.l===ln&&!isName(w));
@@ -2078,7 +2242,7 @@ function renderDrill(){
     <button class="${drillScope==='hard'?'on':''}" onclick="drillScope='hard';dq=null;renderDrill()">My hard list (${(S.hard||[]).length})</button>
     <button class="${drillScope==='due'?'on':''}" onclick="drillScope='due';dq=null;renderDrill()">Due now</button>
     <button class="${drillScope==='deck'?'on':''}" onclick="drillScope='deck';dq=null;renderDrill()">Whole deck</button>
-    ${drillScope==='lesson'?`<select class="vsel" onchange="drillLesson=+this.value;dq=null;renderDrill()">${Array.from({length:MAX_LN},(_,i)=>i+1).map(l=>`<option value="${l}" ${drillLesson===l?'selected':''}>${esc(lnLabel(l))}</option>`).join('')}</select>`:''}
+    ${drillScope==='lesson'?lessonPick(drillLesson,'drillLesson=v;dq=null;renderDrill()'):''}
   </div>`;
 
   if(!drillMode||!dq){
@@ -2100,7 +2264,7 @@ function renderDrill(){
     el.innerHTML=`<div class="card done">
       <div class="zhd zh">${pct>=80?'太好了！':pct>=50?'不錯！':'加油！'}</div>
       <div style="font-weight:600;font-size:16px">${dq.ok} / ${dq.qs.length} · ${pct}%</div>
-      <div class="muted small" style="margin-top:4px">Missed words went onto your hard list and back into the review queue.</div>
+      <div class="muted small" style="margin-top:4px">Missed words go onto your hard list and back into the review queue.</div>
       <div class="qfoot" style="margin-top:16px">
         <button class="btn ghost" onclick="dq=null;renderDrill()">Back</button>
         <button class="btn" onclick="startDrill('${drillMode}')">Again</button>
@@ -2147,7 +2311,8 @@ function renderDrill(){
       ${p.pat?`<div class="patline">${esc(p.pat)}</div>`:`<div class="small muted">${esc(p.e||'')}</div>`}
       <div class="hint">造句 — write your own sentence with ${p.tgt&&p.tgt.length?`「<b class="zh">${esc(p.tgt[0])}</b>」`:'this pattern'}</div>
       ${dq.state==='ask'?`<textarea class="gtxt zh" placeholder="寫一個句子…"></textarea>
-        <div class="qfoot"><button class="btn" onclick="dq.state='reveal';renderDrill()">Compare with the models</button></div>`:''}
+        <div class="qfoot"><button class="btn" onclick="dq.qs[dq.i].mine=(document.querySelector('#vDrill .gtxt')||{}).value||'';dq.state='reveal';renderDrill()">Compare with the models</button></div>`:''}
+      ${dq.state!=='ask'&&q.mine?`<div class="revealbox" style="margin-bottom:8px"><div class="gsent"><span class="z zh">${esc(q.mine)}</span><span class="e">your sentence</span></div></div>`:''}
       ${dq.state!=='ask'?`<div class="revealbox">${p.s.slice(0,4).map(s=>`<div class="gsent"><span class="z zh">${esc(s.zh)}</span><button class="spk" onclick="playAudio('${esc(s.zh).replace(/'/g,"\\'")}')">${SPK_SVG}</button><span class="e">${esc(s.en)}</span>${s.py?`<div class="py2" style="width:100%">${tonePinyin(esc(s.py))}</div>`:''}</div>`).join('')}
         ${p.tw?`<div class="notebox tw"><b>Taiwan</b> ${esc(p.tw)}</div>`:''}
         ${p.ov?`<div class="notebox ov"><b>Overlap</b> ${esc(p.ov)}</div>`:''}</div>`:''}
@@ -2413,7 +2578,9 @@ buildQueue=function(){
     if(!S.settings.includeNames&&isName(w))continue;
     if(!S.settings.modes[modeOf(cid)])continue;
     if(c.st===undefined){freshAll.push(cid);continue;}   /* new pairs are never buried */
-    if(sibBuried(cid))continue;                          /* sibling already done today */
+    /* a write card that is out of scope is never served, so it must not hold the word ahead of its sibling */
+    if(modeOf(cid)==='prod'&&typeof prodInScope==='function'&&!prodInScope(w.id))continue;
+    if(c.st==='rev'&&sibBuried(cid))continue;            /* sibling already done today; learning steps always finish */
     if(c.due<=now){(c.st==='rev'?rev:learn).push(cid);}
   }
   learn.sort((a,b)=>S.cards[a].due-S.cards[b].due);
@@ -2523,9 +2690,8 @@ function qPanel(){
     </div>
     ${qOpen?`
     <div class="qload">
-      <select class="qsel" onchange="S.settings.curLesson=+this.value;save();renderHome()">
-        ${Array.from({length:30},(_,k)=>k+1).map(x=>`<option value="${x}" ${x===ln?'selected':''}>${esc(lnLabel(x))} — ${WORDS.filter(y=>y.l===x&&!isName(y)).length} words</option>`).join('')}
-      </select>
+      ${lessonPick(ln,'S.settings.curLesson=v;save();renderHome()')}
+      <span class="small muted">${WORDS.filter(y=>y.l===ln&&!isName(y)).length} words</span>
       <button class="btn sm ghost" onclick="qLoadLesson(${ln})">Load all</button>
       <button class="btn sm ghost" onclick="qLoadLesson(${ln},10)">+10</button>
       <button class="btn sm ghost" onclick="qLoadHard()">Hard list</button>
@@ -2583,18 +2749,26 @@ function libScore(e,q,qn){
   if(e.t===q)return 100;
   if(e.t.indexOf(q)===0)return 92;
   if(e.t.indexOf(q)>-1)return 84;
+  let py=0, en=0;
   if(qn){
-    if(e.pn===qn)return 76;
-    if(e.alias&&e.alias===qn)return 74;
-    if(e.pn.indexOf(qn)===0)return 68;
-    if(e.alias&&e.alias.indexOf(qn)===0)return 66;
-    if(e.p.indexOf(qn)>-1||e.pn.indexOf(qn)>-1)return 52;
+    if(e.pn===qn)py=76;
+    else if(e.alias&&e.alias===qn)py=74;
+    else if(e.pn.indexOf(qn)===0)py=68;
+    else if(e.alias&&e.alias.indexOf(qn)===0)py=66;
+    else if(e.p.indexOf(qn)>-1||e.pn.indexOf(qn)>-1)py=52;
   }
-  if(e.m===q)return 48;
-  if(e.m.indexOf(q)===0)return 40;
-  if(libWordStart(e.m,q))return 32;
-  if(e.m.indexOf(q)>-1)return 18;
-  return 0;
+  /* an English word that is the whole gloss, or one of its senses, outranks a pinyin fragment:
+     "he" should find 他 before every word whose pinyin merely contains "he" */
+  if(e.m===q)en=72;
+  else if(libSense(e.m,q))en=70;
+  else if(e.m.indexOf(q)===0)en=40;
+  else if(libWordStart(e.m,q))en=32;
+  else if(e.m.indexOf(q)>-1)en=18;
+  return Math.max(py,en);
+}
+/* true when q is one complete sense of a gloss: "to eat; to have a meal" → "eat" */
+function libSense(m,q){
+  return String(m).split(/[,;\/()]/).some(s=>s.trim().replace(/^(to|a|an|the) /,'')===q);
 }
 function libPassesFilter(w){
   if(!S.settings.includeNames&&isName(w))return false;
@@ -2637,8 +2811,7 @@ function libEnsureChrome(){
       <button id="libQx" class="searchx" title="clear" style="display:${libSearch?'':'none'}">✕</button>
     </div>
     <div class="segbar"><span class="cap">Book</span>
-      <button data-bk="1">一 Book 1</button>
-      <button data-bk="2">二 Book 2</button>
+      ${bookButtons(libBook)}
     </div>
     <div class="filters">
       ${[['all','All'],['tracked','In deck'],['due','Due'],['untracked','Not started'],['simp','Trad ≠ Simp']]
@@ -2721,7 +2894,7 @@ function renderLibResults(){
     return;
   }
   /* no query — the lesson accordions, unchanged in behaviour */
-  const lnStart=(libBook-1)*15+1, lnEnd=libBook*15;
+  const [lnStart,lnEnd]=bookRange(libBook);
   let html='';
   for(let ln=lnStart;ln<=lnEnd;ln++){
     const all=LESSON_WORDS[ln]||[];
@@ -2999,16 +3172,20 @@ function fbOnRemote(r){
   }
   fbAdopt(r,'live');
 }
-const LOCAL_SETTINGS=['voiceName','audioSrc','theme','lastBackup','bkName','autoBackup','haptics','_bkWarned'];
+const LOCAL_SETTINGS=['voiceName','audioSrc','theme','lastBackup','bkName','autoBackup','haptics','_bkWarned'];   /* kept when this device has a value */
+const STRICT_LOCAL=['preloadedAt'];   /* facts about this device only: never inherited from another one */
+function strictLocalGet(){const own={};STRICT_LOCAL.forEach(k=>{if(S.settings&&k in S.settings)own[k]=S.settings[k];});return own;}
+function strictLocalPut(own){STRICT_LOCAL.forEach(k=>{if(k in own)S.settings[k]=own[k];else delete S.settings[k];});}
 function fbAdopt(r,how){
   let p=null; try{p=JSON.parse(r.json);}catch(e){}
   if(!p||!p.cards){SYNC.lastErr='Cloud state unreadable';syncUI('error');return;}
   const before=JSON.stringify(S), keep={}, prevFlags={}; for(const k in (S.settings||{}))if(/^_/.test(k))prevFlags[k]=S.settings[k];
   LOCAL_SETTINGS.forEach(k=>{if(S.settings&&k in S.settings)keep[k]=S.settings[k];});
+  const own=strictLocalGet();
   SYNC.revert={json:before,dev:r.device,at:r.synced_at};
   SYNC.applying=true;
   try{
-    S=p; S.settings=Object.assign({},S.settings||{},keep,prevFlags); S.settings.modes=Object.assign({rec:true,prod:true},S.settings.modes||{});
+    S=p; S.settings=Object.assign({},S.settings||{},keep,prevFlags); strictLocalPut(own); S.settings.modes=Object.assign({rec:true,prod:true},S.settings.modes||{});
     S.pick=S.pick||[]; S.hard=S.hard||[]; S.log=S.log||{}; S.intro=S.intro||{}; S.hist=S.hist||{d:[],s:[]};
     try{store.setItem(KEY,JSON.stringify(S));}catch(e){}
     try{bkQueue();}catch(e){}
@@ -3023,12 +3200,13 @@ function fbAdopt(r,how){
 function fbRevert(){
   const rv=SYNC.revert; if(!rv)return;
   let p=null; try{p=JSON.parse(rv.json);}catch(e){return;}
-  const keep={}; LOCAL_SETTINGS.forEach(k=>{if(S.settings&&k in S.settings)keep[k]=S.settings[k];});
-  S=p; S.settings=Object.assign({},S.settings||{},keep); SYNC.revert=null;
+  const keep={}, own=strictLocalGet(); LOCAL_SETTINGS.forEach(k=>{if(S.settings&&k in S.settings)keep[k]=S.settings[k];});
+  S=p; S.settings=Object.assign({},S.settings||{},keep); strictLocalPut(own); SYNC.revert=null;
   save(); rerenderAfterSync(); toast('Reverted — this device\'s version is now the cloud version');
 }
 function rerenderAfterSync(){
   try{
+    undoStack.length=0;
     badge();
     if(view==='rev'){ if(rq){rq=buildQueue();['learn','rev','fresh'].forEach(k=>{rq[k]=rq[k].filter(c=>c!==cur);});} if(cur&&!S.cards[cur])nextCard(); else renderRev(); }
     else if(view==='set')renderSet(); else go(view);
@@ -3072,6 +3250,7 @@ async function fbPush(){
     SYNC.at=at; SYNC.remoteAt=at; SYNC.remoteDev=DEVICE.name; SYNC.dirty=(SYNC.gen||0)!==gen0; SYNC.retry=0; syncMetaSave(); if(SYNC.dirty)SYNC.again=true;
     fbLogLocal('push',Math.round(p.bytes/1024)+' KB');
     try{f.push(f.ref(f.db,'rooms/'+SYNC.code+'/sync_log'),{device:DEVICE.name,device_id:DEVICE.id,at,bytes:p.bytes,due:p.summary.due});}catch(e){}
+    fbPruneLog();
     syncUI('ok');
   }catch(e){
     SYNC.lastErr=String(e&&e.message||e); fbLogLocal('error',SYNC.lastErr);
@@ -3087,6 +3266,16 @@ async function fbPush(){
     SYNC.pushing=false;
     if(SYNC.again){SYNC.again=false;fbSchedulePush();}
   }
+}
+/* the sync log is a diagnostic trail, not history: once per session it is trimmed to its last 50 entries */
+async function fbPruneLog(){
+  if(SYNC.pruned||!SYNC.fb||!SYNC.code)return; SYNC.pruned=true;
+  try{
+    const f=SYNC.fb, ref=f.ref(f.db,'rooms/'+SYNC.code+'/sync_log'), v=(await f.get(ref)).val(); if(!v)return;
+    const keys=Object.keys(v).sort(); if(keys.length<=60)return;
+    const keep={}; keys.slice(-50).forEach(k=>{keep[k]=v[k];});
+    await f.set(ref,keep); fbLogLocal('trim',(keys.length-50)+' old log entries');
+  }catch(e){}
 }
 /* every save marks the state dirty and schedules a push; adopting cloud state never does */
 save=(function(orig){return function(){orig.apply(this,arguments);if(SYNC.applying)return;SYNC.dirty=true;syncMetaSave();fbSchedulePush();};})(save);
@@ -3225,10 +3414,11 @@ function animOn(){return S.settings.anim!==false&&!(window.matchMedia&&matchMedi
 
 /* review: card slides in; the grade you just gave colours the edge of the next card for a beat */
 let lastGrade=0;
-renderRev=(function(orig){return function(){orig.apply(this,arguments);if(!animOn())return;const st=document.querySelector('#vRev .stage');if(!st)return;
+renderRev=(function(orig){return function(){orig.apply(this,arguments);
+  const done=document.querySelector('#vRev .card.done'); if(done&&sessionN>0&&!done.dataset.party){done.dataset.party=1;if(animOn())confetti();haptic('done');}
+  if(!animOn())return;const st=document.querySelector('#vRev .stage');if(!st)return;
   st.classList.add(revealed?'flip-in':'slide-in'); if(lastGrade&&!revealed){st.classList.add(lastGrade===1?'from-again':lastGrade===2?'from-hard':'from-good');lastGrade=0;}
   st.addEventListener('animationend',()=>st.classList.remove('slide-in','flip-in'),{once:true});
-  const done=document.querySelector('#vRev .card.done'); if(done&&sessionN>0&&!done.dataset.party){done.dataset.party=1;confetti();haptic('done');}
 };})(renderRev);
 grade=(function(orig){return function(g){lastGrade=g;haptic(g===1?'again':'good');
   if(animOn()){const st=document.querySelector('#vRev .stage');if(st){st.classList.add(g===1?'swipe-left':'swipe-right');}}
@@ -3299,13 +3489,6 @@ try{ if(view==='home')renderHome(); else if(view==='set')renderSet(); }catch(e){
    ============================================================ */
 const SES={t0:0,n:0,g:[0,0,0,0,0],run:0,best:0,newN:0,lastRun:0};
 function sesReset(){SES.t0=Date.now();SES.n=0;SES.g=[0,0,0,0,0];SES.run=0;SES.best=0;SES.newN=0;SES.lastRun=0;}
-startReview=(function(orig){return function(){sesReset();orig.apply(this,arguments);};})(startReview);
-grade=(function(orig){return function(g){
-  const c=cur&&S.cards[cur]; const wasNew=!c||c.st===undefined;
-  SES.n++; SES.g[g]=(SES.g[g]||0)+1; if(wasNew)SES.newN++;
-  if(g>=3){SES.run++;if(SES.run>SES.best)SES.best=SES.run;} else SES.run=0;
-  orig.apply(this,arguments);
-};})(grade);
 function todayDone(){const l=S.log[dkey(new Date())];return l?(l.rev||0)+(l.new||0):0;}
 function nextDueText(){
   const now=Date.now(); let next=Infinity;
@@ -3434,18 +3617,18 @@ renderLibResults=(function(orig){return function(){orig.apply(this,arguments);tr
   if(libSearch.trim())return;
   const box=document.getElementById('libResults'); if(!box)return;
   const csm=charStageMap();
-  const lnStart=(libBook-1)*15+1, lnEnd=libBook*15;
+  const [lnStart,lnEnd]=bookRange(libBook);
   /* overview strip: one mini ring per lesson, tap to open it */
   let strip='', bookChars=new Set(), bookKnown=0;
   for(let ln=lnStart;ln<=lnEnd;ln++){
     const m=lessonMastery(ln,csm); lessonChars(ln).forEach(ch=>bookChars.add(ch));
     const cur=(S.settings.curLesson||0)===ln;
     strip+=`<div class="lmini ${cur?'cur':''} ${m.known?'':'none'}" title="${esc(lnLabel(ln))} · ${LESSON_TITLES[ln]||''} · ${m.known}/${m.n} characters known" onclick="openLessons[${ln}]=true;renderLibResults();setTimeout(()=>{const e=document.querySelector('.lesson[data-ln=&quot;${ln}&quot;]');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});},40)">
-      ${ring2(m,40,4)}<span class="lm-n">${ln>15?ln-15:ln}</span><span class="lm-p">${m.n?Math.round(m.frac*100):0}%</span></div>`;
+      ${ring2(m,40,4)}<span class="lm-n">${lnInBook(ln)}</span><span class="lm-p">${m.n?Math.round(m.frac*100):0}%</span></div>`;
   }
   bookChars.forEach(ch=>{if((csm[ch]||0)>=3)bookKnown++;});
   const pct=bookChars.size?Math.round(bookKnown/bookChars.size*100):0;
-  box.insertAdjacentHTML('afterbegin',`<div class="card lmap"><div class="row spread" style="margin-bottom:10px"><div class="lab" style="margin:0">Book ${libBook===1?'一':'二'} · characters you know</div><div class="small muted"><b data-count="${bookKnown}">0</b> of ${bookChars.size} · ${pct}%</div></div>
+  box.insertAdjacentHTML('afterbegin',`<div class="card lmap"><div class="row spread" style="margin-bottom:10px"><div class="lab" style="margin:0">Book ${(BOOKS.find(b=>b.n===libBook)||BOOKS[0]).zh} · characters you know</div><div class="small muted"><b data-count="${bookKnown}">0</b> of ${bookChars.size} · ${pct}%</div></div>
     <div class="lstrip">${strip}</div>
     <div class="small muted" style="margin-top:8px">Dark arc = characters that hold for 3 weeks or more. Pale arc = met and still learning. A character counts once you know it in any word, so later lessons fill in before you reach them.</div></div>`);
   /* per-lesson ring in each accordion head */
@@ -3479,7 +3662,7 @@ function wordCat(w){ if(isName(w)||!w.pos)return 'name'; for(const c of WCATS){i
 let brainCat=null;
 studyWords=(function(orig){return function(){const ws=orig.apply(this,arguments);return (brainCat&&renderBrain._in)?ws.filter(w=>wordCat(w)===brainCat):ws;};})(studyWords);
 function catPanel(){
-  const lo=brainScope==='all'?1:(brainScope-1)*15+1, hi=brainScope==='all'?MAX_LN:brainScope*15;
+  const [lo,hi]=brainScope==='all'?[1,MAX_LN]:bookRange(brainScope);
   const ws=WORDS.filter(w=>(!isName(w)||S.settings.includeNames)&&w.l>=lo&&w.l<=hi);
   const bins={}; ws.forEach(w=>{const k=wordCat(w);(bins[k]=bins[k]||[]).push(w);});
   const tiles=WCATS.filter(c=>bins[c[0]]).map(c=>{
@@ -3690,7 +3873,7 @@ buildQueue=(function(orig){return function(){
     if(c.due<=now)(c.st==='rev'?rev:learn).push(cid);
   }
   const _cl=S.settings.curLesson||26; fresh.sort((a,b)=>((GP[b.slice(2)].l>=_cl-1)-(GP[a.slice(2)].l>=_cl-1))||(GP[b.slice(2)].l-GP[a.slice(2)].l));
-  const allow=Math.max(0,(S.settings.newGramPerDay||4)-((S.gintro||{})[today]||0));
+  const allow=Math.max(0,(S.settings.newGramPerDay??4)-((S.gintro||{})[today]||0));
   q.learn=q.learn.concat(learn).sort((a,b)=>S.cards[a].due-S.cards[b].due);
   q.rev=q.rev.concat(rev.sort((a,b)=>S.cards[a].due-S.cards[b].due));
   q.fresh=q.fresh.concat(fresh.slice(0,allow));
@@ -3745,7 +3928,7 @@ function gramSetPanel(){const s=S.settings,n=Object.keys(S.cards).filter(isGram)
     <div class="set-row"><div><b>Cloze cards</b><div class="d">Every tracked grammar point becomes a fill-the-blank sentence card, scheduled by FSRS like a word. ${n} in the deck now — add lessons from the Grammar tab.</div></div>
       <button class="tgl ${s.gramCards!==false?'on':''}" onclick="S.settings.gramCards=S.settings.gramCards===false?true:false;save();renderSet();badge()"><i></i></button></div>
     <div class="set-row"><div><b>New grammar cards per day</b><div class="d">how many fresh patterns may start each day, on top of new words</div></div>
-      <input type="number" min="0" max="30" value="${s.newGramPerDay||4}" onchange="S.settings.newGramPerDay=Math.max(0,parseInt(this.value)||0);save();badge()"></div></div>`;}
+      <input type="number" min="0" max="30" value="${s.newGramPerDay??4}" onchange="S.settings.newGramPerDay=Math.max(0,parseInt(this.value)||0);save();badge()"></div></div>`;}
 renderSet=(function(orig){return function(){orig.apply(this,arguments);try{document.getElementById('vSet').insertAdjacentHTML('beforeend',gramSetPanel());}catch(e){}};})(renderSet);
 
 /* ---- 2. Which one? ---- */
@@ -3855,7 +4038,7 @@ function planAct(k,arg){
     sent:()=>{drillScope='lesson';drillLesson=cl;go('drill');startDrill('sent');},
     speak:()=>{drillScope='lesson';drillLesson=cl;go('drill');startDrill('speak');},
     exam:()=>{drillLesson=cl;go('drill');makeExam();setTimeout(()=>{const e=document.querySelector('.examcard');if(e)e.scrollIntoView({behavior:'smooth',block:'center'});},50);},
-    triage:()=>{const ln=arg&&arg.ln||cl;libBook=bookOf(ln);go('lib');startTriage(ln,arg&&arg.dlg);},
+    triage:()=>{const ln=arg&&arg.ln||cl;libBook=bookOf(ln);go('lib');startTriage(ln,hasDlg(ln)?(arg&&arg.dlg):0);},
     confuse:()=>startConfuse(null), read:()=>startRead(), rev:()=>go('rev'),
     lib:()=>{const ln=arg&&arg.ln||cl;libBook=bookOf(ln);openLessons[ln]=true;go('lib');setTimeout(()=>{const e=document.querySelector('.lesson[data-ln="'+ln+'"]');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});},60);}
   };
@@ -4023,7 +4206,7 @@ function lpRender(){
   const it=LP.list[LP.i]||{zh:'',en:''}, d=DIALOGUES[LP.ln], show=!LP.hide||LP.shown;
   const stat=(S.listen||{})[String(LP.ln)];
   el.innerHTML=`<div class="segbar"><span class="cap">Listen</span>
-      <select class="vsel" onchange="LP.ln=+this.value;LP.src=DIALOGUES[LP.ln]?'dlg':'sent';startListen()">${Array.from({length:MAX_LN},(_,i)=>i+1).filter(l=>GRAMMAR[l]&&GRAMMAR[l].length).map(l=>`<option value="${l}" ${LP.ln===l?'selected':''}>${esc(lnLabel(l))}${DIALOGUES[l]?' · 對話':''}</option>`).join('')}</select>
+      ${lessonPick(LP.ln,"LP.ln=v;LP.src=DIALOGUES[LP.ln]?'dlg':'sent';startListen()")}
       <button class="${LP.src==='dlg'?'on':''}" ${d?'':'disabled'} onclick="LP.src='dlg';startListen()">對話</button>
       <button class="${LP.src==='sent'?'on':''}" onclick="LP.src='sent';startListen()">Sentences</button>
       <button class="${LP.hide?'on':''}" onclick="LP.hide=!LP.hide;lpRender()">Hide text</button>
@@ -4084,12 +4267,13 @@ buildQueue=(function(orig){return function(){
   try{
     const now=Date.now(), maxRev=S.settings.revUnlimited?9999:(S.settings.maxRev||200), cl=S.settings.curLesson||23;
     const due=[];
-    for(const cid in S.cards){const c=S.cards[cid],w=wordOf(cid);if(!w||!c||c.susp||c.st!=='rev'||c.due>now)continue;if(!S.settings.includeNames&&isName(w))continue;if(!S.settings.modes[modeOf(cid)])continue;if(modeOf(cid)==='prod'&&!prodInScope(w.id))continue;due.push(cid);}
+    for(const cid in S.cards){const c=S.cards[cid],w=wordOf(cid);if(!w||!c||c.susp||c.st!=='rev'||c.due>now)continue;if(!S.settings.includeNames&&isName(w))continue;if(!S.settings.modes[modeOf(cid)])continue;if(modeOf(cid)==='prod'&&!prodInScope(w.id))continue;if(sibBuried(cid))continue;due.push(cid);}
     const gap=lastStudyGap();
     if(!(due.length>maxRev*1.25||(gap>=5&&due.length>40)))return q;
     const live=cid=>{const w=wordOf(cid);return w.l>=cl-1||isHard(w.id);};
     const R=cid=>{const c=S.cards[cid];return retrievability(Math.max(0.01,(now-c.last)/DAY),c.S);};
     due.sort((a,b)=>(live(b)-live(a))||(R(b)-R(a)));
+    if(S.settings.burySib){const seen=new Set();for(let i=0;i<due.length;i++){const wid=due[i].split(':')[0];if(seen.has(wid))due.splice(i--,1);else seen.add(wid);}}
     const today=Math.min(maxRev,Math.max(60,Math.ceil(due.length/4)));
     const gram=q.rev.filter(isGram);
     q.rev=due.slice(0,today).concat(gram);
@@ -4206,7 +4390,7 @@ syncPanel=(function(orig){return function(){
   let add='';
   if(SYNC.code){
     add=`<div class="set-row linkrow"><div><b>Link another device</b>
-        <div class="d">On the iPad: point the Camera at this code, tap the link, and the app opens already linked.
+        <div class="d">On an iPhone or iPad: point the Camera at this code, tap the link, and the app opens already linked.
         Then <b>Share ↑ → Add to Home Screen</b>. The home-screen app keeps its own storage, so open it once and type <b>${esc(SYNC.code)}</b> when it asks — after that it stays linked.</div>
         <div class="row" style="gap:6px;margin-top:8px"><button class="btn ghost sm" onclick="fbCopyLink()">Copy link</button></div></div>
         <div class="qrbox" title="${esc(syncLink())}">${qrSvg(syncLink(),4)}</div></div>`;
@@ -4294,7 +4478,7 @@ function mtRender(){
   const el=document.getElementById('vDrill'),T=mtGet();
   const wid=T.order[T.i],w=wid&&byId[wid];
   const tot=mtStats(),lessons=[];for(let l=T.lo;l<=T.hi;l++)lessons.push(l);
-  const strip=`<div class="lstrip" style="margin:8px 0 4px">${lessons.map(l=>{const s=mtStats(l);const m={n:s.n,frac:s.n?s.m/s.n:0,lfrac:s.n?s.done/s.n:0};const cur=w&&w.l===l;return `<div class="lmini ${cur?'cur':''}" title="${esc(lnLabel(l))} · ★${s.m} ~${s.l} ✗${s.h} · ${s.todo} left" onclick="mtJump(${l})">${ring2(m,40,4)}<span class="lm-n">${l>15?'二'+(l-15):l}</span><span class="lm-p">${s.done}/${s.n}</span></div>`;}).join('')}</div>`;
+  const strip=`<div class="lstrip" style="margin:8px 0 4px">${lessons.map(l=>{const s=mtStats(l);const m={n:s.n,frac:s.n?s.m/s.n:0,lfrac:s.n?s.done/s.n:0};const cur=w&&w.l===l;return `<div class="lmini ${cur?'cur':''}" title="${esc(lnLabel(l))} · ★${s.m} ~${s.l} ✗${s.h} · ${s.todo} left" onclick="mtJump(${l})">${ring2(m,40,4)}<span class="lm-n">${lnShort(l)}</span><span class="lm-p">${s.done}/${s.n}</span></div>`;}).join('')}</div>`;
   if(!w){el.innerHTML=`<div class="card done"><div class="zhd zh">寫完了</div><div style="font-weight:600;font-size:16px">Test complete · ${tot.n} words</div>
     <div class="sum" style="margin-top:14px"><div><b>${tot.m}</b><span>★ wrote it</span></div><div><b>${tot.l}</b><span>~ shaky</span></div><div><b>${tot.h}</b><span>✗ couldn’t</span></div></div>
     <div class="small muted" style="margin-top:12px">Shaky and ✗ words are in your deck with their write cards live; ✗ words are on the hard list and tonight’s paper. ★ words are parked and resurface in about three months.</div>
@@ -4364,7 +4548,7 @@ buildQueue=(function(orig){return function(){
   const q=orig.apply(this,arguments);
   try{
     const today=dkey(new Date()), now=Date.now();
-    const allow={live:Math.max(0,(S.settings.newUnlimited?9999:(S.settings.newPerDay||8))-((S.intro||{})[today]||0)),catch:Math.max(0,(S.settings.newCatchPerDay||5)-((S.cintro||{})[today]||0)),maint:0};
+    const allow={live:Math.max(0,(S.settings.newUnlimited?9999:(S.settings.newPerDay??8))-((S.intro||{})[today]||0)),catch:Math.max(0,(S.settings.newCatchPerDay??5)-((S.cintro||{})[today]||0)),maint:0};
     const all=[];
     for(const cid in S.cards){const c=S.cards[cid];if(!c||c.susp||c.st!==undefined||isGram(cid))continue;const w=wordOf(cid);if(!w)continue;if(!S.settings.includeNames&&isName(w))continue;if(!S.settings.modes[modeOf(cid)])continue;if(modeOf(cid)==='prod'&&!prodInScope(w.id))continue;all.push(cid);}
     const mOrd={rec:0,prod:1}, pickIdx=wid=>{const i=(S.pick||[]).indexOf(wid);return i===-1?9999:i;};
@@ -4398,10 +4582,10 @@ function lanePanel(){
     <div class="lane-n"><b>${c.due+c.fresh}</b><span>${c.due} due${c.fresh?` · ${c.fresh} new`:''} · ~${sec(c.due+c.fresh)} min</span></div>
     <button class="btn sm ${c.due+c.fresh?'':'ghost'}" ${c.due+c.fresh?'':'disabled'} onclick="startLane('${k}')">${c.due+c.fresh?'Start':'Clear'}</button></div>`;
   return `<div class="card"><div class="row spread" style="margin-bottom:4px"><div><div class="lab" style="margin:0">Three lanes · one queue</div><div class="small muted">same scheduler underneath; this is just where today’s cards come from</div></div></div>
-    ${row('live','This week · '+esc(lnLabel(cl-1))+' – '+esc(lnLabel(cl)),'new words at '+(S.settings.newPerDay||8)+'/day, 聽寫 write cards, this lesson’s grammar',L.live)}
-    ${row('catch','Catch-up · the shaky ones',(mt?mt+' flagged by the mastery test':'flagged by the mastery test')+' + hard list · '+(S.settings.newCatchPerDay||5)+' enter per day',L.catch)}
+    ${row('live','This week · '+esc(lnLabel(cl-1))+' – '+esc(lnLabel(cl)),'new words at '+(S.settings.newPerDay??8)+'/day, 聽寫 write cards, this lesson’s grammar',L.live)}
+    ${row('catch','Catch-up · the shaky ones',(mt?mt+' flagged by the mastery test':'flagged by the mastery test')+' + hard list · '+(S.settings.newCatchPerDay??5)+' enter per day',L.catch)}
     ${row('maint','Maintenance · everything else','long intervals, a few a day, never dropped',L.maint)}
-    <div class="small muted" style="margin-top:8px">A card graded <b>Good</b> comes back on the date under the button. ~10 reviews per new word over its first month is the planning rule, so ${(S.settings.newPerDay||8)+(S.settings.newCatchPerDay||5)} new a day settles near ${((S.settings.newPerDay||8)+(S.settings.newCatchPerDay||5))*10} reviews a day; lower either intake in Settings if that’s too many.</div></div>`;
+    <div class="small muted" style="margin-top:8px">A card graded <b>Good</b> comes back on the date under the button. ~10 reviews per new word over its first month is the planning rule, so ${(S.settings.newPerDay??8)+(S.settings.newCatchPerDay??5)} new a day settles near ${((S.settings.newPerDay??8)+(S.settings.newCatchPerDay??5))*10} reviews a day; lower either intake in Settings if that’s too many.</div></div>`;
 }
 renderHome=(function(orig){return function(){orig.apply(this,arguments);try{
   const v=document.getElementById('vHome'); const hero=v.querySelector('.card.hero'); if(hero)hero.insertAdjacentHTML('afterend',lanePanel());
@@ -4422,14 +4606,14 @@ wrowHtml=(function(orig){return function(w,showLn){let h=orig.apply(this,argumen
 /* settings: catch-up intake */
 renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
   const v=document.getElementById('vSet'); const strat=[...v.querySelectorAll('.card')].find(c=>/Card strategy/.test(c.textContent)); if(!strat)return;
-  strat.insertAdjacentHTML('beforeend',`<div class="set-row"><div><b>Catch-up words per day</b><div class="d">how many shaky / ✗ words from old lessons may start each day, separate from this week’s new words</div></div><input type="number" min="0" max="30" value="${S.settings.newCatchPerDay||5}" onchange="S.settings.newCatchPerDay=Math.max(0,parseInt(this.value)||0);save();badge()"></div>`);
+  strat.insertAdjacentHTML('beforeend',`<div class="set-row"><div><b>Catch-up words per day</b><div class="d">how many shaky / ✗ words from old lessons may start each day, separate from this week’s new words</div></div><input type="number" min="0" max="30" value="${S.settings.newCatchPerDay??5}" onchange="S.settings.newCatchPerDay=Math.max(0,parseInt(this.value)||0);save();badge()"></div>`);
 }catch(e){}};})(renderSet);
 try{badge();if(view==='home')renderHome();}catch(e){}
 
 /* ============================================================
    v31 — Catch-up gets its own tab. Today is the live week only.
    ============================================================ */
-if(!S.settings._v31){S.settings._v31=1;S.settings.newCatchPerDay=Math.max(S.settings.newCatchPerDay||0,12);if((S.settings.maxRev||0)<300)S.settings.maxRev=300;try{save();}catch(e){}}
+if(!S.settings._v31){S.settings._v31=1;S.settings.newCatchPerDay=Math.max(S.settings.newCatchPerDay??0,12);if((S.settings.maxRev||0)<300)S.settings.maxRev=300;try{save();}catch(e){}}
 /* tab + container */
 (function(){
   const tabs=document.querySelector('.tabs'); if(tabs&&!document.getElementById('tabCatch')){
@@ -4548,10 +4732,10 @@ function toggleKeyHelp(){
   if(h.style.display==='flex'){h.style.display='none';return;}
   h.innerHTML=`<div class="modal-card"><div class="lab">Keyboard</div>
     <div class="kgrid">
-      <div><kbd>t</kbd> Today</div><div><kbd>r</kbd> Review</div><div><kbd>d</kbd> Drill</div><div><kbd>c</kbd> Catch-up</div>
+      <div><kbd>t</kbd> Today</div><div><kbd>r</kbd> Review</div><div><kbd>d</kbd> Drill</div><div><kbd>c</kbd> Catch-up</div><div><kbd>e</kbd> 大考試</div>
       <div><kbd>g</kbd> Grammar</div><div><kbd>b</kbd> Brain</div><div><kbd>l</kbd> Library</div><div><kbd>s</kbd> Settings</div>
       <div><kbd>space</kbd> reveal</div><div><kbd>1</kbd>–<kbd>4</kbd> grade</div><div><kbd>f</kbd> focus mode in review</div><div><kbd>esc</kbd> close</div>
-      <div><kbd>1</kbd>–<kbd>3</kbd> test: couldn’t · shaky · wrote it</div><div><kbd>?</kbd> this card</div>
+      <div><kbd>1</kbd>–<kbd>3</kbd> writing test: ✗ · ~ · ✓</div><div><kbd>u</kbd> undo the last grade</div><div><kbd>?</kbd> this card</div>
     </div></div>`;
   h.style.display='flex';
 }
@@ -4573,7 +4757,7 @@ try{badge();if(view==='home')renderHome();}catch(e){}
 /* one state shape, whatever path loaded it (import, snapshot restore, cloud adopt) */
 function normalizeState(){
   S.settings=S.settings||{}; S.settings.modes=Object.assign({rec:true,prod:true},S.settings.modes||{});
-  if(!S.settings.retention)S.settings.retention=0.9; if(!S.settings.newPerDay)S.settings.newPerDay=8; if(!S.settings.maxRev)S.settings.maxRev=300; if(!S.settings.writeTarget)S.settings.writeTarget=20;
+  if(!S.settings.retention)S.settings.retention=0.9; if(S.settings.newPerDay==null)S.settings.newPerDay=8; if(!S.settings.maxRev)S.settings.maxRev=300; if(!S.settings.writeTarget)S.settings.writeTarget=20;
   S.cards=S.cards||{}; S.pick=S.pick||[]; S.hard=S.hard||[]; S.log=S.log||{}; S.intro=S.intro||{}; S.hist=S.hist||{d:[],s:[]}; S.sib=S.sib||{}; S.cf=S.cf||{}; S.gram=S.gram||{};
 }
 normalizeState();
@@ -4590,7 +4774,7 @@ rerenderAfterSync=(function(orig){return function(){QV++;return orig.apply(this,
 /* review sessions can start filtered and capped without a stray first card */
 let REV_FILTER=null, REV_CAP=0;
 startReview=function(){
-  sesReset(); rq=buildQueue(); sessionN=0;
+  sesReset(); undoStack.length=0; rq=buildQueue(); sessionN=0;
   if(REV_FILTER){['learn','rev','fresh'].forEach(k=>{rq[k]=rq[k].filter(REV_FILTER);});}
   if(REV_CAP){let left=REV_CAP-rq.learn.length;rq.learn=rq.learn.slice(0,REV_CAP);rq.rev=rq.rev.slice(0,Math.max(0,left));left-=rq.rev.length;rq.fresh=rq.fresh.slice(0,Math.max(0,left));}
   REV_FILTER=null; REV_CAP=0; nextCard();
@@ -4624,8 +4808,8 @@ planAct=(function(orig){return function(k,arg){if(k==='test'){mtResume();if(arg&
 /* keyboard map: never while a drill is running, never a no-op restart of the same view */
 document.addEventListener('keydown',e=>{ if(e.defaultPrevented)return; if(KEYMAP[e.key]&&!e.metaKey&&!e.ctrlKey&&!e.altKey){const tg=e.target;if(tg&&(/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)||tg.isContentEditable))return; if((view==='drill'&&dq)||(KEYMAP[e.key]===view)||(view==='drill'&&drillMode==='mtest'))e.stopImmediatePropagation();} },true);
 /* speech + microphone never outlive the screen that started them */
-startDrill=(function(orig){return function(mode){if(mode!=='listen')try{lpStop();}catch(e){}return orig.apply(this,arguments);};})(startDrill);
-function recKill(){try{if(recState&&recState.rec&&recState.rec.state!=='inactive')recState.rec.stop();}catch(e){}}
+startDrill=(function(orig){return function(mode){recKill();if(mode!=='listen')try{lpStop();}catch(e){}return orig.apply(this,arguments);};})(startDrill);
+function recKill(){try{if(REC_ACTIVE&&REC_ACTIVE.state!=='inactive')REC_ACTIVE.stop();}catch(e){}}
 drillNext=(function(orig){return function(){recKill();return orig.apply(this,arguments);};})(drillNext);
 go=(function(orig){return function(v){if(v!=='drill')recKill();return orig.apply(this,arguments);};})(go);
 /* answer flash now applied after the re-render, where the buttons actually are */
@@ -4645,31 +4829,17 @@ try{badge();if(view==='home')renderHome();}catch(e){}
       weekday plan. Grammar stays in Notion.
    ============================================================ */
 /* ---- 1. audio ---- */
-let PACK_TW=false;
-loadPack=(function(orig){return function(){
-  if(APACK)return Promise.resolve(true);
-  if(APACKP)return APACKP;
-  APACKP=Promise.all([
-    fetch('assets/audio-tw-index.json').then(r=>{if(!r.ok)throw 0;return r.json()}),
-    fetch('assets/audio-tw.pack').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()})
-  ]).then(([idx,buf])=>{AIDX=idx;APACK=buf;PACK_TW=true;return true;}).catch(()=>{APACKP=null;return orig();});
-  return APACKP;
-};})(loadPack);
-playAudio=(function(orig){return function(text){
-  const mode=S.settings.audioSrc||'auto';
-  if(mode==='auto'){ /* bundled Taiwan neural first; the system voice only if the pack lacks the clip */
-    loadPack().then(ok=>{ if(ok&&PACK_TW)playBundled(text,()=>speakText(text)); else orig(text); });
-    return;
-  }
-  return orig(text);
-};})(playAudio);
 /* warm the pack early so the first card doesn't wait */
 setTimeout(()=>{try{loadPack();}catch(e){}},1500);
 renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
   const sel=document.querySelector('#vSet select[onchange*="audioSrc"]'); if(!sel)return;
-  sel.options[0].textContent='Auto — bundled Taiwan voice 曉臻 (neural), system voice as fallback';
+  sel.options[0].textContent='Auto — bundled Taiwan voice, system voice as fallback';
   sel.options[2].textContent='Bundled Taiwan voice only (offline)';
-  const d=sel.closest('.set-row').querySelector('.d'); if(d)d.textContent='The bundled voice is Microsoft’s zh-TW 曉臻 neural voice, pre-rendered for every word and every character at a slightly slow pace — full tones, Taiwan reading (垃圾 lèsè). Works offline once loaded.';
+  const row=sel.closest('.set-row'), d=row.querySelector('.d');
+  if(d)d.textContent='The bundled voices are Microsoft’s zh-TW neural voices, pre-rendered for every word and every character at a slightly slow pace — full tones, Taiwan readings (垃圾 lèsè). They work offline once stored on the device.';
+  const voices=Object.keys(VOICE_PACKS).filter(v=>VOICE_OK[v]);
+  if(voices.length>1)row.insertAdjacentHTML('beforebegin',`<div class="set-row"><div><b>Bundled voice</b><div class="d">曉臻 is the female voice, 雲哲 the male one. Tap one to switch and hear a sample; the choice follows you to your other devices.</div></div>
+    <div class="row" style="gap:6px;flex-wrap:wrap;justify-content:flex-end">${voices.map(v=>`<button class="btn sm ${voiceId()===v?'':'ghost'}" onclick="setVoice('${v}')">${VOICE_PACKS[v].name} · ${VOICE_PACKS[v].who}</button>`).join('')}</div></div>`);
 }catch(e){}};})(renderSet);
 
 /* ---- 3. 萌典 ---- */
@@ -4753,14 +4923,14 @@ async function preloadOffline(btn){
   try{
     say('Loading voice pack…'); const ok=await loadPack(); if(!ok)throw new Error('voice pack');
     say('Loading stroke data…'); await loadStrokes(); await ensureHW();
-    if('caches' in window){try{const c=await caches.open('zika-preload');await c.addAll(['assets/audio-tw.pack','assets/audio-tw-index.json','assets/strokes.json','assets/hanzi-writer.min.js']);}catch(e){}}
+    if('caches' in window){try{const c=await caches.open('zika-assets-v1'),f='assets/'+VOICE_PACKS[APACK_ID||'f'].file;await c.addAll([f+'.pack',f+'-index.json','assets/strokes.json','assets/hanzi-writer.min.js']);}catch(e){}}
     S.settings.preloadedAt=Date.now(); save(); say('Ready offline ✓'); toast('Voice pack and strokes are stored on this device');
   }catch(e){say('Could not preload — try on wifi');}
 }
 function offlinePanel(){
   const at=S.settings.preloadedAt;
   return `<div class="card" id="offlineCard"><div class="lab">Offline & audio</div>
-    <div class="set-row"><div><b>Store the voice pack and strokes on this device</b><div class="d">About 22 MB once, on wifi. After that every word and character speaks, and the 寫字 quiz draws, with no connection — including on the MRT. <span id="preStat">${at?'Ready offline ✓ · '+ago(at):'Not stored yet'}</span></div></div>
+    <div class="set-row"><div><b>Store the voice pack and strokes on this device</b><div class="d">About 22 MB once, on Wi-Fi. After that every word and character speaks, and stroke order plays, with no connection — including on the MRT. Switching the bundled voice needs one more download. <span id="preStat">${at?'Ready offline ✓ · '+ago(at):'Not stored yet'}</span></div></div>
       <button class="btn sm ${at?'ghost':''}" onclick="preloadOffline(this)">${at?'Refresh':'Download now'}</button></div></div>`;
 }
 /* ---- 1. iPad card ---- */
@@ -4768,21 +4938,22 @@ function ipadPanel(){
   const linked=!!SYNC.code, ios=(typeof isIOS==='function')&&isIOS(), standalone=(typeof isStandalone==='function')&&isStandalone();
   const step=(n,t,d,done)=>`<div class="istep ${done?'done':''}"><span class="in">${done?'✓':n}</span><div><b>${t}</b><div class="small muted">${d}</div></div></div>`;
   if(!ios){ /* the Mac side */
-    return `<div class="card" id="ipadCard"><div class="lab">Set up the iPad</div>
+    return `<div class="card" id="ipadCard"><div class="lab">Set up your iPhone or iPad</div>
       ${step(1,'Generate a sync code on this Mac','Settings → Cloud sync → Generate. The code is just a room name; the Mac’s deck becomes the shared one.',linked)}
-      ${step(2,'Scan the QR code with the iPad camera','It opens the app in Safari already linked to this deck. If it asks which copy wins, pick <b>Mac</b>.',false)}
+      ${step(2,'Scan the QR code with the iPhone or iPad camera','It opens the app in Safari already linked to this deck. If it asks which copy wins, pick <b>Mac</b>.',false)}
       ${step(3,'Add it to the Home Screen','In Safari: Share ↑ → Add to Home Screen. The Home Screen app keeps its own storage — open it once and tap <b>Paste</b> (the code is copied for you).',false)}
-      ${step(4,'Download the voice pack on the iPad','Settings → Offline & audio → Download now, on wifi. Then it works on the MRT.',false)}
-      ${linked?`<div class="row" style="gap:12px;align-items:flex-start;margin-top:10px;flex-wrap:wrap"><div class="qrbox">${qrSvg(syncLink(),4)}</div><div class="small muted" style="flex:1;min-width:200px">Code <b style="font-size:15px;color:var(--ink)">${esc(SYNC.code)}</b><br>Point the iPad camera here, or <span class="link" onclick="fbCopyLink()">copy the link</span> and AirDrop it.<br><br>Status: ${esc(SYNC_LABEL[SYNC.status]||SYNC.status)}${SYNC.remoteDev&&SYNC.remoteDev!==DEVICE.name?` · last write from <b>${esc(SYNC.remoteDev)}</b> ${esc(ago(SYNC.remoteAt))}`:''}</div></div>`:`<div class="row" style="gap:6px;margin-top:10px"><button class="btn sm" onclick="fbNewCode();renderSet()">Generate the code</button></div>`}
+      ${step(4,'Download the voice pack on that device','Settings → Offline & audio → Download now, on Wi-Fi. Then it works on the MRT.',false)}
+      ${linked?`<div class="row" style="gap:12px;align-items:flex-start;margin-top:10px;flex-wrap:wrap"><div class="qrbox">${qrSvg(syncLink(),4)}</div><div class="small muted" style="flex:1;min-width:200px">Code <b style="font-size:15px;color:var(--ink)">${esc(SYNC.code)}</b><br>Point the camera here, or <span class="link" onclick="fbCopyLink()">copy the link</span> and AirDrop it.<br><br>Status: ${esc(SYNC_LABEL[SYNC.status]||SYNC.status)}${SYNC.remoteDev&&SYNC.remoteDev!==DEVICE.name?` · last write from <b>${esc(SYNC.remoteDev)}</b> ${esc(ago(SYNC.remoteAt))}`:''}</div></div>`:`<div class="row" style="gap:6px;margin-top:10px"><button class="btn sm" onclick="fbNewCode();renderSet()">Generate the code</button></div>`}
     </div>`;
   }
   /* the iPad side */
-  return `<div class="card" id="ipadCard"><div class="lab">This iPad</div>
-    ${step(1,'Linked to the shared deck',linked?'Code <b>'+esc(SYNC.code)+'</b> · '+esc(SYNC_LABEL[SYNC.status]||SYNC.status):'Scan the QR code on the Mac (Settings → Set up the iPad), or paste the code below.',linked)}
+  const kind=guessDevice();
+  return `<div class="card" id="ipadCard"><div class="lab">This ${esc(kind)}</div>
+    ${step(1,'Linked to the shared deck',linked?'Code <b>'+esc(SYNC.code)+'</b> · '+esc(SYNC_LABEL[SYNC.status]||SYNC.status):'Scan the QR code on the Mac (Settings → Set up your iPhone or iPad), or paste the code below.',linked)}
     ${linked?'':`<div class="row" style="gap:6px;margin:6px 0 10px"><input id="ipadCodeInp" class="search" style="margin:0;width:160px;padding:7px 10px;font-size:13px" placeholder="zika-xxxxxx" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="btn sm" onclick="fbSetCode(document.getElementById('ipadCodeInp').value)">Link</button><button class="btn ghost sm" onclick="fbPasteCode('ipadCodeInp')">Paste</button></div>`}
     ${step(2,'On the Home Screen',standalone?'You’re in the Home Screen app.':'In Safari: Share ↑ → Add to Home Screen. Open it from there; it keeps its own storage, so paste the code once more if it asks.',standalone)}
-    ${step(3,'Voice pack stored for offline',S.settings.preloadedAt?'Ready ✓':'Settings → Offline & audio → Download now, on wifi.',!!S.settings.preloadedAt)}
-    ${step(4,'Device name',DEVICE.name==='iPad'?'Shows as iPad on the Mac.':'Showing as '+esc(DEVICE.name)+' — set it to iPad in Cloud sync → This device.',DEVICE.name==='iPad')}
+    ${step(3,'Voice pack stored for offline',S.settings.preloadedAt?'Ready ✓':'Settings → Offline & audio → Download now, on Wi-Fi.',!!S.settings.preloadedAt)}
+    ${step(4,'Device name',DEVICE.name===kind?'Shows as '+esc(kind)+' on your other devices.':'Showing as '+esc(DEVICE.name)+' — set it to '+esc(kind)+' in Cloud sync → This device.',DEVICE.name===kind)}
   </div>`;
 }
 /* copying the code before the Home Screen hint makes the second link a paste */
@@ -4791,16 +4962,19 @@ showInstallHint=(function(orig){return function(){try{if(SYNC.code&&navigator.cl
 function intakePanel(){
   const s=S.settings;
   const row=(t,d,ctrl)=>`<div class="set-row"><div><b>${t}</b><div class="d">${d}</div></div>${ctrl}</div>`;
-  const num=(k,min,max,def,extra)=>`<input type="number" min="${min}" max="${max}" value="${s[k]||def}" onchange="S.settings.${k}=Math.max(${min},parseInt(this.value)||${def});save();badge();${extra||''}">`;
+  const num=(k,min,max,def,extra)=>`<input type="number" min="${min}" max="${max}" value="${s[k]??def}" onchange="const v=parseInt(this.value);S.settings.${k}=Math.max(${min},isNaN(v)?${def}:v);save();badge();${extra||''}">`;
+  const free=(k,ctrl)=>`<div class="row" style="gap:10px">${s[k]?'':ctrl}<label class="small muted" style="display:flex;align-items:center;gap:5px;white-space:nowrap"><input type="checkbox" ${s[k]?'checked':''} onchange="S.settings.${k}=this.checked;save();badge();renderSet()">no limit</label></div>`;
+  const cl=s.curLesson||MAX_LN;
   return `<div class="card" id="intakeCard"><div class="lab">Daily intake</div>
-    ${row('This week’s new words','per day, from the live lesson; both cards of a word may start the same day',num('newPerDay',0,60,8))}
+    ${row('Live lesson','the lesson your class is on now. It decides what counts as “this week”, which write cards are live, and the daily plan',lessonPick(cl,'S.settings.curLesson=v;save();badge();renderSet()'))}
+    ${row('This week’s new words','per day, from the live lesson; both cards of a word may start the same day',free('newUnlimited',num('newPerDay',0,60,8)))}
     ${row('Catch-up words','per day, only words the mastery test marked shaky or ✗',num('newCatchPerDay',0,60,12))}
     ${row('Grammar cloze cards','per day; the Grammar tab decides which lessons are in',num('newGramPerDay',0,30,4))}
-    ${row('Review cap','most cards shown per day across all lanes',num('maxRev',10,9999,300))}
+    ${row('Review cap','most cards shown per day across all lanes',free('revUnlimited',num('maxRev',10,9999,300)))}
     ${row('Desired retention','85–90% is the sweet spot; 95% roughly doubles the load',`<div class="row"><input type="range" min="80" max="97" value="${Math.round((s.retention||0.9)*100)}" onchange="S.settings.retention=this.value/100;save();this.nextElementSibling.textContent=this.value+'%'" oninput="this.nextElementSibling.textContent=this.value+'%'"><b>${Math.round((s.retention||0.9)*100)}%</b></div>`)}
-    <div class="small muted" style="margin-top:6px">Rule of thumb: about ten reviews per new card in its first month. ${(s.newPerDay||8)+(s.newCatchPerDay||12)+(s.newGramPerDay||4)} new a day settles near ${((s.newPerDay||8)+(s.newCatchPerDay||12)+(s.newGramPerDay||4))*10} reviews a day.</div></div>`;
+    <div class="small muted" style="margin-top:6px">Rule of thumb: about ten reviews per new card in its first month. ${(s.newPerDay??8)+(s.newCatchPerDay??12)+(s.newGramPerDay??4)} new a day settles near ${((s.newPerDay??8)+(s.newCatchPerDay??12)+(s.newGramPerDay??4))*10} reviews a day.</div></div>`;
 }
-const SET_ORDER=['Set up the iPad','This iPad','Cloud sync','Daily intake','Card strategy','Offline & audio','Audio & strokes','Backup','Look & feel','Card types','Schedule','Grammar in the queue','Confidence · shared with Notion'];
+const SET_ORDER=['Set up your iPhone or iPad','This iPhone','This iPad','Cloud sync','Daily intake','Card strategy','Offline & audio','Audio & strokes','Backup','Look & feel','Card types','Schedule','Grammar in the queue','Confidence · shared with Notion'];
 renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
   const v=document.getElementById('vSet');
   v.insertAdjacentHTML('afterbegin',ipadPanel()+intakePanel()+offlinePanel());
@@ -4920,7 +5094,7 @@ function exRender(){
     <div class="small muted" style="margin-top:12px">Across the whole range the piles now stand at <b>✗ ${no}</b> and <b>~ ${so}</b>. ✗ words are on the hard list and the 田字格 sheet; ~ words have a live write card; ✓ words are parked.</div>
     <div class="row" style="justify-content:center;gap:8px;margin-top:16px;flex-wrap:wrap"><button class="btn" onclick="exGet().run=null;save();go('exam')">Back to 大考試</button>${no?`<button class="btn ghost" onclick="exStart('no')">Re-test the ✗ pile (${no})</button>`:''}${exIds('untested').length?`<button class="btn ghost" onclick="exStart('untested')">Next untested lesson</button>`:''}</div></div>`;return;}
   const r=EX.revealed,s=exStats(w.l),lessons=[];for(let l=X.lo;l<=X.hi;l++)lessons.push(l);
-  const strip=`<div class="lstrip" style="margin:8px 0 4px">${lessons.map(l=>{const st=exStats(l);const m={n:st.n,frac:st.n?st.m/st.n:0,lfrac:st.n?st.done/st.n:0};return `<div class="lmini ${w.l===l?'cur':''}" title="${esc(lnLabel(l))} · ✓${st.m} ~${st.l} ✗${st.h} · ${st.todo} left" onclick="exStart('lesson',${l})">${ring2(m,40,4)}<span class="lm-n">二${l-15}</span><span class="lm-p">${st.done}/${st.n}</span></div>`;}).join('')}</div>`;
+  const strip=`<div class="lstrip" style="margin:8px 0 4px">${lessons.map(l=>{const st=exStats(l);const m={n:st.n,frac:st.n?st.m/st.n:0,lfrac:st.n?st.done/st.n:0};return `<div class="lmini ${w.l===l?'cur':''}" title="${esc(lnLabel(l))} · ✓${st.m} ~${st.l} ✗${st.h} · ${st.todo} left" onclick="exStart('lesson',${l})">${ring2(m,40,4)}<span class="lm-n">${lnShort(l)}</span><span class="lm-p">${st.done}/${st.n}</span></div>`;}).join('')}</div>`;
   el.innerHTML=`<div class="rev-top"><span class="qtype">大考試 · ${esc(R.label)}</span><span class="qprog">${esc(lnLabel(w.l))} · ${R.i+1} / ${R.ids.length}${exRes(wid)?` · was ${exRes(wid)==='m'?'✓':exRes(wid)==='l'?'~':'✗'}`:''}</span></div>
   ${strip}
   <div class="stage ${animOn()?(r?'flip-in':'slide-in'):''}" style="min-height:300px">
@@ -4969,7 +5143,15 @@ function exPile(kind){
   const byLn={};ids.forEach(id=>{const w=byId[id];(byLn[w.l]=byLn[w.l]||[]).push(w);});
   return Object.keys(byLn).sort((a,b)=>a-b).map(l=>`<div class="small muted" style="margin:10px 0 4px"><b>${esc(lnLabel(+l))}</b> · ${byLn[l].length}</div><div class="paper-chips">${byLn[l].map(w=>`<div class="pchip" style="cursor:pointer" title="${esc(w.m)} · tap to hear" onclick="speakWord('${w.id}')"><span class="c zh">${esc(w.t.split('（')[0])}</span><span class="p">${esc(w.p)}</span><span class="small muted" style="font-size:10.5px;max-width:110px;text-align:center;line-height:1.2">${esc(w.m.length>22?w.m.slice(0,21)+'…':w.m)}</span></div>`).join('')}</div>`).join('');
 }
-function exEdit(){const X=exGet();const lo=parseInt(prompt('First app lesson in the range (B2 L6 = 21)',X.lo));if(!lo)return;const hi=parseInt(prompt('Last app lesson in the range (B2 L13 = 28)',X.hi));if(!hi)return;const date=prompt('Exam date (YYYY-MM-DD)',X.date);if(!date)return;X.lo=Math.max(1,Math.min(MAX_LN,lo));X.hi=Math.max(X.lo,Math.min(MAX_LN,hi));X.date=date;X.run=null;save();renderExam();}
+let EX_EDIT=false;
+function exEdit(){EX_EDIT=!EX_EDIT;renderExam();}
+function exSet(k,v){
+  const X=exGet();
+  if(k==='lo'){X.lo=v;if(X.hi<v)X.hi=v;}
+  else if(k==='hi'){X.hi=v;if(X.lo>v)X.lo=v;}
+  else if(k==='date'){if(!/^\d{4}-\d\d-\d\d$/.test(v))return;X.date=v;}
+  X.run=null;save();badge();renderExam();
+}
 function renderExam(){
   const el=document.getElementById('vExam'),X=exGet(),tot=exStats(),days=exDays();
   const lessons=[];for(let l=X.lo;l<=X.hi;l++)lessons.push(l);
@@ -4987,7 +5169,8 @@ function renderExam(){
         ${so?`<button class="btn ghost" onclick="exStart('sorta')">Re-test ~ (${so})</button>`:''}
       </div></div>
   </div>
-  <div class="card"><div class="row spread" style="margin-bottom:8px"><div><div class="lab" style="margin:0">① Writing test · lesson by lesson</div><div class="small muted">English + pinyin facing you → write it on paper → ✓ yes · ~ sorta · ✗ hell no</div></div><span class="link small" onclick="exEdit()">range · date</span></div>
+  <div class="card"><div class="row spread" style="margin-bottom:8px"><div><div class="lab" style="margin:0">① Writing test · lesson by lesson</div><div class="small muted">English + pinyin facing you → write it on paper → ✓ yes · ~ sorta · ✗ hell no</div></div><span class="link small" onclick="exEdit()">${EX_EDIT?'done':'range · date'}</span></div>
+    ${EX_EDIT?`<div class="row" style="gap:10px;flex-wrap:wrap;align-items:center;margin:2px 0 14px"><span class="small muted">from</span>${lessonPick(X.lo,"exSet('lo',v)")}<span class="small muted">to</span>${lessonPick(X.hi,"exSet('hi',v)")}<span class="small muted">exam date</span><input type="date" class="vsel" value="${esc(X.date)}" onchange="exSet('date',this.value)"></div>`:''}
     <div class="clist">${lessons.map(l=>{const c=exStats(l);const m={n:c.n,frac:c.n?c.m/c.n:0,lfrac:c.n?c.done/c.n:0};
       return `<div class="crow ${c.todo===0&&c.l+c.h===0?'done':''}"><div class="lring">${ring2(m,44,4.5)}<span>${c.n?Math.round(c.m/c.n*100):0}<i>%</i></span></div>
         <div class="tier-b"><b>${esc(lnLabel(l))} · ${esc(LESSON_TITLES[l]||'')}</b><div class="small muted">${c.todo?`<b>${c.todo}</b> untested · `:''}✓ ${c.m} · ~ ${c.l} · <span style="color:var(--red)">✗ ${c.h}</span></div></div>
@@ -5013,6 +5196,73 @@ renderHome=(function(orig){return function(){orig.apply(this,arguments);try{
 mtRender=(function(orig){return function(){orig.apply(this,arguments);try{const g=document.querySelectorAll('#vDrill .grades button');g.forEach(b=>{const s=b.querySelector('.g1,.g2,.g4');if(!s)return;if(/Couldn/.test(s.textContent))s.textContent='✗ Hell no';else if(/Shaky/.test(s.textContent))s.textContent='~ Sorta';else if(/Wrote/.test(s.textContent))s.textContent='★ Yes';});}catch(e){}};})(mtRender);
 if(!S.settings._v38){S.settings._v38=1;exGet();try{save();}catch(e){}}
 try{badge();if(view==='home')renderHome();}catch(e){}
+
+/* ============================================================
+   v39 — refresh. Most of this release is in place above: the
+   BOOKS table, per-syllable tones, FSRS-5 update order, exact
+   undo, selectable bundled voice, device-local offline state,
+   sync-log trimming. What follows is the glue that has no other
+   natural home.
+   ============================================================ */
+/* version stamp */
+(function(){const el=document.getElementById('appVer');if(el)el.textContent='v'+APP_VERSION;})();
+/* drills open on the live lesson */
+drillLesson=S.settings.curLesson||drillLesson;
+/* e = 大考試 */
+KEYMAP.e='exam';
+/* ---- phones: bottom bar with More ---- */
+(function(){
+  const bar=document.querySelector('.tabs'); if(!bar||document.getElementById('tabMore'))return;
+  ['tabCatch','tabGram','tabBrain','tabLib','tabSet'].forEach(id=>{const b=document.getElementById(id);if(b)b.classList.add('t2');});
+  const m=document.createElement('button'); m.id='tabMore'; m.type='button'; m.textContent='More'; m.setAttribute('aria-label','more tabs');
+  m.onclick=()=>bar.classList.toggle('more'); bar.appendChild(m);
+  document.addEventListener('click',e=>{if(bar.classList.contains('more')&&!bar.contains(e.target))bar.classList.remove('more');});
+})();
+function tabsSync(){
+  const bar=document.querySelector('.tabs'), m=document.getElementById('tabMore'); if(!bar||!m)return;
+  bar.classList.remove('more'); m.classList.toggle('on',!!bar.querySelector('button.t2.on'));
+}
+/* ---- refresh: push anything unsent, pick up the newest version, reload ---- */
+async function appRefresh(){
+  const b=document.getElementById('refreshBtn'); if(b)b.classList.add('spin');
+  try{ if(SYNC.dirty&&SYNC.fb&&SYNC.code&&!SYNC.blocked)await fbPush(); }catch(e){}
+  try{ if('serviceWorker' in navigator){const reg=await navigator.serviceWorker.getRegistration(); if(reg)await reg.update();} }catch(e){}
+  location.reload();
+}
+/* a copy left open for days (the Home Screen app especially) learns about a release when it comes back to the front */
+let UPD_AT=0;
+async function checkForUpdate(){
+  if(Date.now()-UPD_AT<60000||!navigator.onLine)return; UPD_AT=Date.now();
+  try{
+    const r=await fetch('sw.js',{cache:'no-store'}); if(!r.ok)return;
+    const m=(await r.text()).match(/const VERSION = 'zika-v(\d+)'/); if(!m||+m[1]<=APP_VERSION)return;
+    if(view==='rev'&&cur)toast('A newer version of 字卡 is ready',{action:'Refresh',onAction:appRefresh,ms:20000}); else appRefresh();
+  }catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkForUpdate();});
+/* pull down to refresh inside the Home Screen app, which has no reload button of its own */
+(function(){
+  if(!isStandalone())return;
+  const tip=document.createElement('div'); tip.id='ptr'; document.body.appendChild(tip);
+  let y0=null,pull=0;
+  const rest=()=>{tip.style.opacity=0;tip.style.transform='translate(-50%,0)';};
+  document.addEventListener('touchstart',e=>{pull=0;y0=(window.scrollY<=0&&e.touches.length===1&&!e.target.closest('.modal,.tabs'))?e.touches[0].clientY:null;},{passive:true});
+  document.addEventListener('touchmove',e=>{if(y0===null)return;pull=e.touches[0].clientY-y0;if(pull<=0||window.scrollY>0){rest();return;}
+    tip.textContent=pull>110?'↻ release to refresh':'↓ pull to refresh';tip.style.opacity=Math.min(1,pull/110);tip.style.transform='translate(-50%,'+Math.min(56,pull/2.2)+'px)';},{passive:true});
+  document.addEventListener('touchend',()=>{if(y0!==null&&pull>110&&window.scrollY<=0){tip.textContent='Refreshing…';appRefresh();}else rest();y0=null;},{passive:true});
+})();
+/* the active tab is always in view on a narrow screen (scrolls the bar only, never the page) */
+function tabIntoView(){
+  const t=document.querySelector('.tabs button.on'), bar=t&&t.parentElement; if(!bar||bar.scrollWidth<=bar.clientWidth)return;
+  const left=bar.scrollLeft+t.getBoundingClientRect().left-bar.getBoundingClientRect().left-(bar.clientWidth-t.offsetWidth)/2;
+  try{bar.scrollTo({left:Math.max(0,left),behavior:animOn()?'smooth':'auto'});}catch(e){bar.scrollLeft=Math.max(0,left);}
+}
+go=(function(orig){return function(v){const r=orig.apply(this,arguments);try{tabsSync();tabIntoView();}catch(e){}return r;};})(go);
+/* Settings: say which version this device is running */
+renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
+  document.getElementById('vSet').insertAdjacentHTML('beforeend',`<div class="small muted" style="text-align:center;margin:0 0 10px">字卡 v${APP_VERSION} · ${WORDS.length} words · ${BOOKS.length} books · this device: ${esc(DEVICE.name)}</div>`);
+}catch(e){}};})(renderSet);
+try{tabsSync();tabIntoView();if(view==='set')renderSet();}catch(e){}
 </script>
 </body>
 </html>

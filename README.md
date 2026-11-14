@@ -1,39 +1,73 @@
-# 字卡 · Shida Book 1 FSRS Tracker
+# 字卡 Zìkǎ
 
-Traditional-character spaced-repetition app for *A Course in Contemporary Chinese* Book 1 (NTNU/Shida), with FSRS-5 scheduling, handwriting practice with stroke-order animations, tone-colored pinyin with speech, and a live "brain" visualization of every character you know.
+A spaced-repetition study app for *A Course in Contemporary Chinese* (當代中文課程), the textbook series used at NTNU's Mandarin Training Center in Taipei. It covers Books 1 and 2 today: 1,228 words, 873 characters and 168 grammar points across 30 lessons, in Traditional characters with Taiwan readings.
 
-## Deploy to GitHub Pages (one-time, ~5 minutes)
+**Live app:** https://thorneckieffer-creator.github.io/zika/
 
-1. Create a new repo on github.com (e.g. `zika`), **Public**.
-2. Upload everything in this folder (drag-and-drop works on github.com → "uploading an existing file"). Keep the folder structure (`assets/` etc.).
-3. Repo → **Settings → Pages** → Source: "Deploy from a branch" → Branch: `main`, folder `/ (root)` → Save.
+It is a single-page progressive web app with no build step and no server of its own. It installs to the Home Screen on iPhone, iPad and Mac, works offline, and keeps every device on the same deck through Firebase.
 
-Two minutes later your app is live at `https://<your-username>.github.io/zika/`.
+## What it does
 
-### Or with git / Claude Code
+| Area | What you get |
+|---|---|
+| **Scheduling** | FSRS-5. Two cards per word (recognise, and recall/write) plus grammar cloze cards, with a daily intake per lane. |
+| **Three lanes** | *This week* (the live lesson), *Catch-up* (words the writing test flagged, plus the hard list) and *Maintenance* (everything else). |
+| **Writing** | Paper-first. The writing test shows English and pinyin, you write the character on paper, then grade yourself. Missed words go to a printable 田字格 sheet that tapers ×20 → ×5 → ×1. |
+| **Exam prep (大考試)** | A lesson range and a date. Every word is sorted into ✓ / ~ / ✗ piles that can be re-tested, dictated, reviewed or printed. |
+| **Drills** | 認字 recognition, 聲調 tones, 聽寫 dictation, sentence dictation, "Which one?" confusables, reading sprint, sentence building, speaking. |
+| **Characters** | Stroke-order animation, component breakdown (meaning part and sound part), phonetic series, and a 萌典 panel with radical, stroke count, 注音 and definition. |
+| **Audio** | Bundled Taiwan neural voices for every word and every character (曉臻, female; 雲哲, male, when its pack is installed), with the system voice as fallback. |
+| **Brain** | A map of every character you know, by lesson and by word type, with a time-lapse. |
+| **Notion** | Deep links to the lesson pages, and a confidence export (Hard / Learning / Know / Mastered) for the Characters table. |
 
-```bash
-cd site
-git init && git add -A && git commit -m "字卡 v3"
-gh repo create zika --public --source=. --push
-gh api repos/{owner}/zika/pages -X POST -f 'source[branch]=main' -f 'source[path]=/'
+## Install
+
+**iPhone and iPad.** Open the live app in Safari, then Share → **Add to Home Screen**. The Home Screen app keeps its own storage, separate from Safari, so link it once (see below) and download the offline pack from **Settings → Offline & audio** while on Wi-Fi.
+
+**Mac.** Use it in the browser, or install it from Chrome (address bar → Install) or Safari (File → Add to Dock). Desktop Chrome also enables the automatic backup file.
+
+## Linking devices
+
+Progress syncs through a shared *sync code*.
+
+1. On the first device: **Settings → Cloud sync → Generate**.
+2. On every other device: scan the QR code shown there, or type the code and tap **Link**.
+3. On iPhone or iPad, repeat step 2 once inside the Home Screen app.
+
+A device that has never been studied on adopts the cloud deck silently. If both sides hold progress, the app asks which copy wins and keeps the other for one undo.
+
+The sync code is the only secret: anyone who has it can read and write that deck. Keep it out of screenshots and out of this repository.
+
+## How it works
+
+```
+index.html            the whole app: styles, data, logic
+sw.js                 service worker (offline shell + asset cache)
+manifest.webmanifest  install metadata
+assets/
+  audio-tw.pack       zh-TW neural voice 曉臻 (female), 1,707 clips: words + characters
+  audio-tw-index.json clip offsets into the pack
+  audio-tw-m.*        zh-TW neural voice 雲哲 (male), same layout, offered in Settings when present
+  strokes.json        stroke-order data for 871 characters
+  hanzi-writer.min.js stroke animation engine
+  icon-*.png
+tools/check.mjs            release check: syntax, versions, data integrity
+tools/build_voice_pack.py  builds a voice pack from the word list
 ```
 
-Or just tell Claude Code: *"deploy this folder to GitHub Pages"*.
+**State.** One JSON object in `localStorage` under the key `shida_b1_fsrs_v2`. The key name is historical and must not change, because every device's progress lives under it.
 
+**Sync.** Firebase Realtime Database with anonymous sign-in. Each save writes the whole state to `rooms/<sync code>/study_state` after a short debounce; other devices listening on that code adopt it within about a second. Last write wins, and the database rejects any write older than the one it holds. Settings that belong to a device (voice, theme, backup file, offline pack) do not sync.
 
-## Cloud sync between devices (v18)
+**Offline.** The service worker serves the app shell network-first with a cache fallback, and keeps audio and stroke data in a separate long-lived cache so an app update never forces a second 22 MB download.
 
-Progress syncs through a Firebase Realtime Database. Both devices join the same **sync code**; every save writes the whole study state (last write wins) and the other device picks it up within about a second. Offline, the app keeps working from its local copy and pushes when it reconnects.
+**Backup.** Three rolling daily snapshots inside the browser, an optional file that desktop Chrome rewrites after every session, and manual export/import.
 
-### One-time Firebase setup (about 5 minutes)
+### Firebase setup (only if you fork this)
 
-1. https://console.firebase.google.com → **Add project** (name it `zika-sync`, Analytics off).
-2. **Build → Realtime Database → Create database** (any region, start in test mode).
-3. **Build → Authentication → Get started → Sign-in method → Anonymous → Enable**.
-4. **Project settings (gear) → Your apps → Web (`</>`)** → register the app → copy the `firebaseConfig` object.
-5. Either paste that object into `const FIREBASE_CONFIG = …` near the end of `index.html`, or open the app → **Settings → Cloud sync → Firebase config** and paste it there (per browser).
-6. **Realtime Database → Rules**, replace with the rules below and publish.
+1. Create a Firebase project, add a Realtime Database, and enable **Anonymous** sign-in.
+2. Register a web app and paste its config into `FIREBASE_CONFIG` in `index.html`.
+3. Publish these database rules:
 
 ```json
 {
@@ -51,40 +85,23 @@ Progress syncs through a Firebase Realtime Database. Both devices join the same 
 }
 ```
 
-The `.validate` line makes the server reject any write older than what it already holds, so a stale device can never overwrite a newer one.
+## Development
 
-### Linking devices (v28: one scan)
-
-**Mac:** Settings → Cloud sync → **Generate**. The card then shows a QR code and a *Copy link* button.
-**iPad:** point the Camera at the QR code → tap the link → Safari opens the app already linked and pulls the Mac's deck. Then Share → **Add to Home Screen**. The home-screen app has its own storage on iPadOS, so open it once and type the same code on the *Cloud sync is off* card on Today → **Link**. Done — it stays linked.
-
-A device that has never reviewed anything adopts the cloud copy silently; one that has its own progress asks which copy should win.
-
-
-On the first device: **Settings → Cloud sync → Generate**. Type the same code on the second device and tap **Link**. If both devices already hold progress, the app asks which copy should win. The `Mac` / `iPad` badge in the header shows this device's name and the sync state: pulsing = sending, ✓ = synced, hollow = offline.
-
-Device-local settings (voice, audio source, appearance, backup file) do not sync; everything else does.
-
-## On your phone
-
-Open the URL in Safari/Chrome → Share → **Add to Home Screen**. It installs like a native app and works offline after the first visit (reviews on the MRT included). Progress lives in the browser and, once Cloud sync is set up (below), on every device that shares your sync code.
-
-## Best audio
-
-The app uses your device's speech voices and auto-picks the best Mandarin one. In desktop Chrome, open Settings (in-app) and select **"Google 國語（臺灣）"** for Google-Translate-quality Taiwanese Mandarin. On iPhone, iOS's built-in **Mei-Jia** (zh-TW) is used automatically.
-
-## Updating the app
-
-Replace `index.html` with a newer version and push — your progress is untouched (it lives in your browser's storage, not the file). Keep occasional JSON exports as backup insurance.
-
-## What's in here
-
+```bash
+python3 -m http.server 8791 --bind 127.0.0.1   # then open http://127.0.0.1:8791/
+node tools/check.mjs                           # run before every release
 ```
-index.html            the entire app (vocab data embedded)
-sw.js                 offline cache (PWA)
-manifest.webmanifest  home-screen install metadata
-assets/
-  hanzi-writer.min.js stroke-order animation engine
-  strokes/            stroke data for all 490 Book 1 characters
-  icon-192/512.png    app icon
-```
+
+A release is a commit on `main`; GitHub Pages deploys it within a couple of minutes. Each release bumps the version in two places that the check keeps in step: `APP_VERSION` in `index.html` and `VERSION` in `sw.js`.
+
+`CLAUDE.md` holds the working notes for anyone (or any assistant) changing the code: the layered structure, the data schemas and the rules that protect existing progress.
+
+## Roadmap
+
+- **Books 3 and 4.** Lessons are addressed through a `BOOKS` table, so a new book is a data change rather than a code change. Each lesson needs its word list, title, grammar points, audio clips, stroke data and character components; the plan is to source vocabulary from Zhong Chinese and check it against the publisher's 當代中文 app.
+- **Leaner sync.** Send changes rather than the whole deck.
+- **One layer.** Fold the version-by-version patches in `index.html` into a single definition of each function.
+
+## Credits
+
+Vocabulary lists follow *A Course in Contemporary Chinese* (NTNU Mandarin Training Center; Linking Publishing), compiled with Zhong Chinese. Scheduling is [FSRS-5](https://github.com/open-spaced-repetition/fsrs4anki/wiki/The-Algorithm). Stroke data and animation are from [Hanzi Writer](https://hanziwriter.org/) and Make Me a Hanzi. Dictionary panels use [萌典](https://www.moedict.tw/). QR codes use qrcode-generator (MIT). The app is a personal study tool and is not affiliated with NTNU or the publisher.
