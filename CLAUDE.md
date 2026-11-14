@@ -93,7 +93,6 @@ Verified dead or superseded code that is still in the file, to be removed one pi
 Known behaviour gaps, not yet fixed:
 
 - Heteronyms share one clip (得 de/děi, 了 le/liǎo) because clips are keyed by characters alone.
-- `DLGSPLIT` (dialogue I/II split for 聽寫) only has lessons 22–23; other lessons triage as a whole.
 - The Today hero says "Deck cleared" from the live lane alone, even when catch-up or maintenance cards are due.
 - The Up-next panel's "will start now" count ignores the per-lane intake.
 - Turning a card type on in Settings does not create that card for words already in the deck.
@@ -106,15 +105,31 @@ Known behaviour gaps, not yet fixed:
 3. Serve locally (`python3 -m http.server 8791 --bind 127.0.0.1`; port 8765 is taken by another project on this Mac) and smoke-test: open every tab, start a review, grade a card, run one drill, check the console. Check a 390-px-wide frame for iPhone and ~820 px for iPad.
 4. Commit as `vNN — what changed` and push `main`.
 
-## Adding a book (Books 3 and 4 are planned)
+## Adding a book (Books 3 and 4 are next)
 
-Sources: vocabulary and lesson context from Zhong Chinese (app.zhongchinese.com); cross-check against the publisher's 當代中文 app.
+### Where the content comes from
 
-1. Add the book to `BOOKS` (check the real lesson count; Books 1–2 have 15 each).
-2. Append words to `WORDS` with new ids continuing from the current maximum, `l` = global lesson number.
-3. Add `LESSON_TITLES` entries, and `GRAMMAR` entries if available.
+1. **The publisher's 當代中文 (DangDai) app, installed on Thorne's Mac.** It is the authoritative source. Each downloaded volume is a folder of local files, not just screens:
+   - Find the folder with `mdfind -name ".syd" | grep SoyongMebook` → `…/Application Support/SoyongMebook/MBLCECC00N/`.
+   - A volume holds five lessons. `MBLCECC002–004` are Book 1 (L1–5, 6–10, 11–15), `005–007` are Book 2, `008–010` are Book 3, and so on.
+   - `*-01-03.sqlite` → table `newwords`: `id` (`b02u11_d2v003` = book 2, lesson 11, dialogue 2, item 3), `entry`, `pinyin`, `zhuyin`, `partofspeech`, `explantion` (sic), `category` (Vocabulary / Phrases / Names), `vocorder`. Table `menu` has lesson titles; `chinesecharacter` has radical and stroke count.
+   - Dialogue and essay pages are images (`bNNuNN_tNNpNN.png`); audio is per-syllable MP3.
+   - As of v40 only Books 1–2 are downloaded. Book 3's volumes show a cover image only: **Thorne has to download them inside the app** before anything can be read.
+2. **Zhong Chinese** (app.zhongchinese.com) for cross-checking. The Chrome extension currently blocks that domain for Claude; Thorne has to allow it in the extension's site permissions.
+
+The app's Books 1–2 word list has been checked against the publisher's table: 1,228 entries on both sides, same order, pinyin identical apart from nine cosmetic differences.
+
+### What may be copied
+
+Word lists and their metadata (pinyin, part of speech, a short gloss, which dialogue a word belongs to) go into the app. **The textbook's dialogues, essays and example sentences do not** — this repository is public and those texts are the publisher's. Read them to learn how the vocabulary and grammar are used, then write original sentences and short essays that use the same words and patterns. That is also what Thorne asked for: new short essays built from each lesson's vocabulary and grammar.
+
+### Steps
+
+1. Add the book to `BOOKS` (use the real lesson count from the app's `menu` tables).
+2. Append words to `WORDS` with new ids continuing from the current maximum, in `vocorder`. Never interleave: snapshots are positional.
+3. Add `LESSON_TITLES`, the lesson's `DLGMAP` string (from the `_d1` / `_d2` part of each id; later books pair a dialogue with an essay), and `GRAMMAR` entries with original example sentences.
 4. Add any new characters to `assets/strokes.json` (Hanzi Writer data format) and `COMPONENTS`.
-5. Rebuild both voice packs with `tools/build_voice_pack.py`, bump `ASSETS` in `sw.js`.
+5. Rebuild the voice packs with `tools/build_voice_pack.py` and bump `ASSETS` in `sw.js`.
 6. `node tools/check.mjs` reports any lesson without words, character without strokes, or word without a clip.
 
 ## External services

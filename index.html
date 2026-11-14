@@ -698,7 +698,7 @@ html{-webkit-tap-highlight-color:transparent;touch-action:pan-x pan-y}   /* an a
 <div id="printSheet"></div>
 <script>
 /* ============ VERSION ============ */
-const APP_VERSION=39;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
+const APP_VERSION=40;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
 
 /* ============ THEME ============ */
 function curTheme(){return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';}
@@ -2526,14 +2526,16 @@ if('serviceWorker' in navigator&&/^https?:/.test(location.protocol)){try{navigat
    ============================================================ */
 
 /* ============================================================
-   v15 — 聽寫 dialogue split. One number per lesson: how many of
-   that lesson's words belong to Dialogue I. Everything after is
-   Dialogue II. Taken from the textbook vocabulary lists.
+   v15 — 聽寫 dialogue split: which dialogue each word of a lesson
+   belongs to (see DLGMAP below).
    ============================================================ */
-var DLGSPLIT={22:19,23:21};   /* B2 L7: 垃圾…怎麼辦 = D1 (19), 聊…路上 = D2 (23) · B2 L8: 功夫…走不了路 = D1 (21), 好處…想起 = D2 (15) */
-var DLG={};
-(function(){for(const k in DLGSPLIT){const n=+DLGSPLIT[k];
-  WORDS.filter(w=>w.l===+k).forEach((w,i)=>{DLG[w.id]=i<n?1:2;});}})();
+/* One digit per word, in WORDS order within the lesson: 1 = 對話一, 2 = 對話二. Taken from the
+   publisher's 當代中文 app, which files every vocabulary item under its dialogue — so 聽寫一 and
+   聽寫二 are split for every lesson of Books 1–2. A new book adds its lessons here. */
+var DLGMAP={1:'1111111111111111111111112222222222222222222',2:'1111111111111111111111222222222222222',3:'11111111111111111111111222222222222222222',4:'111111111111111111122222222222221222',5:'11111111111111111111122222222222222222',6:'11111111111111111111111222212222222222222',7:'111111111111111112222222222222222222222',8:'1111111111111111111122222222222222',9:'111111111111112222222222222222',10:'1111111111111112222222222222222222',11:'1111111111111111111111122222222222222222',12:'1111111111111111111111222212222222222',13:'1111111111111111111111122222222222222222',14:'11111111111111111122222222222222222',15:'11111111111111111111122222222222222222222222',16:'11111111111111111111111222222222222222222222',17:'1111111111111111111112222222222222222222222222',18:'11111111111111111111111122222222222222222',19:'111111111111111111111111111222222222222222222',20:'11111111111111111222222222222222222222222222',21:'111111111111111111111111111112222222222222222222',22:'111111111111111111122222222222222222222222',23:'111111111111111111111222222222222222',24:'111111111111111111112222222222222222222222',25:'111111111111111111111111111112222222222222222',26:'1111111111111111111111112222222222222222222222',27:'11111111111111111111111111111222222222222222222',28:'11111111111111111111111222222222222222222222',29:'11111111111111111111112222222222222222222222222',30:'111111111111111111222222222222222222222222'};
+var DLGSPLIT={}, DLG={};
+(function(){for(const k in DLGMAP){const s=DLGMAP[k];DLGSPLIT[k]=(s.match(/1/g)||[]).length;
+  WORDS.filter(w=>w.l===+k).forEach((w,i)=>{const d=+s[i];if(d)DLG[w.id]=d;});}})();
 /* defensive: the app's first render runs before this block executes, so these
    must never throw on undefined — otherwise the rest of the script dies. */
 function dlgOf(wid){return (typeof DLG!=='undefined'&&DLG&&DLG[wid])||0;}
