@@ -3,13 +3,13 @@
    - Assets (audio packs, stroke data, icons, the pinned Firebase SDK): cache-first in a long-lived
      cache that survives app updates.
    Keep VERSION in step with APP_VERSION in index.html (tools/check.mjs verifies it). */
-const VERSION = 'zika-v40';
+const VERSION = 'zika-v41';
 const SHELL = VERSION;                 // replaced on every release
 const ASSETS = 'zika-assets-v1';       // bump only when a file under assets/ changes
 const KEEP = [SHELL, ASSETS];
 
 const SHELL_FILES = ['./', './index.html', './manifest.webmanifest'];
-const ASSET_FILES = ['./assets/hanzi-writer.min.js', './assets/strokes.json', './assets/icon-192.png', './assets/icon-512.png'];
+const ASSET_FILES = ['./assets/hanzi-writer.min.js', './assets/strokes.json?v=2', './assets/icon-192.png', './assets/icon-512.png'];
 
 const sameOrigin = url => url.origin === location.origin;
 const isShell = url => sameOrigin(url) && (url.pathname.endsWith('/index.html') || url.pathname.endsWith('/'));

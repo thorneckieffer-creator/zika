@@ -1,6 +1,6 @@
 # 字卡 Zìkǎ
 
-A spaced-repetition study app for *A Course in Contemporary Chinese* (當代中文課程), the textbook series used at NTNU's Mandarin Training Center in Taipei. It covers Books 1 and 2 today: 1,228 words, 873 characters and 168 grammar points across 30 lessons, in Traditional characters with Taiwan readings.
+A spaced-repetition study app for *A Course in Contemporary Chinese* (當代中文課程), the textbook series used at NTNU's Mandarin Training Center in Taipei. It covers Books 1 and 2 in full and Book 3 through Lesson 4 so far: 1,478 words, 1,005 characters and 199 grammar points across 34 lessons, in Traditional characters with Taiwan readings.
 
 **Live app:** https://thorneckieffer-creator.github.io/zika/
 
@@ -48,11 +48,14 @@ assets/
   audio-tw.pack       zh-TW neural voice 曉臻 (female), 1,707 clips: words + characters
   audio-tw-index.json clip offsets into the pack
   audio-tw-m.*        zh-TW neural voice 雲哲 (male), same layout, offered in Settings when present
-  strokes.json        stroke-order data for 871 characters
+  strokes.json        stroke-order data for 1,003 characters
   hanzi-writer.min.js stroke animation engine
   icon-*.png
 tools/check.mjs            release check: syntax, versions, data integrity
 tools/build_voice_pack.py  builds a voice pack from the word list
+tools/import_dangdai.py    imports lessons from a downloaded DangDai volume
+tools/add_characters.py    adds stroke data and component breakdowns for new characters
+tools/content/             original grammar write-ups for new books
 ```
 
 **State.** One JSON object in `localStorage` under the key `shida_b1_fsrs_v2`. The key name is historical and must not change, because every device's progress lives under it.
@@ -98,7 +101,7 @@ A release is a commit on `main`; GitHub Pages deploys it within a couple of minu
 
 ## Roadmap
 
-- **Books 3 and 4.** Lessons are addressed through a `BOOKS` table, so a new book is a data change rather than a code change. Each lesson needs its word list, title, grammar points, audio clips, stroke data and character components; the plan is to source vocabulary from Zhong Chinese and check it against the publisher's 當代中文 app.
+- **Books 3 and 4.** Book 3 is being added volume by volume from the publisher's 當代中文 app (`tools/import_dangdai.py`, `tools/add_characters.py`); Lessons 5–12 and Book 4 follow. Grammar explanations, example sentences and reading passages for the new lessons are written for this app rather than copied from the textbook.
 - **Leaner sync.** Send changes rather than the whole deck.
 - **One layer.** Fold the version-by-version patches in `index.html` into a single definition of each function.
 
