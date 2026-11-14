@@ -19,7 +19,7 @@ It is a single-page progressive web app with no build step and no server of its 
 | **Characters** | Stroke-order animation, component breakdown (meaning part and sound part), phonetic series, and a 萌典 panel with radical, stroke count, 注音 and definition. |
 | **Audio** | Bundled Taiwan neural voices for every word and every character (曉臻, female; 雲哲, male, when its pack is installed), with the system voice as fallback. |
 | **Brain** | A map of every character you know, by lesson and by word type, with a time-lapse. |
-| **Yours** | Set your name, book and lesson in one place; day, night or automatic; the warm Paper palette or a neutral Clean one; six accent colours; study characters in sans, 明體 or 楷體. |
+| **Yours** | Set your name, book and lesson in one place; day, night or automatic; the warm Paper palette or a neutral Clean one; six accent colours; study characters in 明體, sans or 楷體. |
 | **Notion** | Deep links to the lesson pages, and a confidence export (Hard / Learning / Know / Mastered) for the Characters table. |
 
 ## Install
