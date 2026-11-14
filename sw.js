@@ -3,7 +3,7 @@
    - Assets (audio packs, stroke data, icons, the pinned Firebase SDK): cache-first in a long-lived
      cache that survives app updates.
    Keep VERSION in step with APP_VERSION in index.html (tools/check.mjs verifies it). */
-const VERSION = 'zika-v45';
+const VERSION = 'zika-v46';
 const SHELL = VERSION;                 // replaced on every release
 const ASSETS = 'zika-assets-v1';       // bump only when a file under assets/ changes
 const KEEP = [SHELL, ASSETS];

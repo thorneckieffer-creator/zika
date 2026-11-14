@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>字卡 · 當代中文</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#f6f7f9">
+<meta name="theme-color" content="#f3edde">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -16,10 +16,36 @@
   /* study characters: the face is a setting (html[data-zh]) — sans by default, 明體 or 楷體 on request */
   --cjk:"PingFang TC","Noto Sans TC","Heiti TC","Microsoft JhengHei",sans-serif;
   --ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI","Inter",Roboto,"Helvetica Neue",Arial,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
-  /* light — neutral surfaces, one brand colour for actions, green kept for "learned / correct" */
+  /* Paper, the default palette — rice paper, tea, a little lantern red (the app's original colours) */
+  --bg:#f3edde; --panel:#fbf7eb; --tint:#ece4d0; --ink:#2a241c; --mut:#94886e; --mut2:#c6bba0;
+  --line:#e3d9c1; --line2:#d3c7aa;
+  --acc:#25695a; --accT:#e2ece4;
+  --lant:#b23a2a; --red:#b23a2a; --amber:#a8681b; --blue:#33628f; --plum:#7c5296; --gold:#96712c;
+  --t1:#b23a2a; --t2:#2e7d54; --t3:#33628f; --t4:#7c5296; --t0:#94886e;
+  --sealFg:#f8efdf;
+  --s0bg:#eae2cd; --s0fg:#a99d80; --s1bg:#dcebe7; --s1fg:#2a241c; --s2bg:#7fbfb3; --s2fg:#123f38;
+  --s3bg:#2f9184; --s3fg:#fff; --s4bg:#0b5d54; --s4fg:#fff;
+  --padbg:#fffdf6; --ghost:rgba(42,36,28,.08);
+  /* things you tap. Classic (the default accent): ink buttons, tea-green links, the red mark */
+  --brand:var(--ink); --brandFg:var(--bg); --brandInk:var(--acc); --brandT:var(--accT);
+  --logo:var(--lant); --logoFg:var(--sealFg);
+}
+html[data-theme="dark"]{
+  /* night — night-market ink, lantern neon, warm paper text */
+  --bg:#131519; --panel:#1d2026; --tint:#262a31; --ink:#e9e2d1; --mut:#8f897a; --mut2:#555b64;
+  --line:#2a2e36; --line2:#3b414c;
+  --acc:#5cb3a0; --accT:#20322c;
+  --lant:#e8604a; --red:#e8604a; --amber:#d9a05b; --blue:#7aa9dc; --plum:#b993dd; --gold:#d9a05b;
+  --t1:#e57862; --t2:#66bd8b; --t3:#7aa9dc; --t4:#b993dd; --t0:#8f8a7d;
+  --sealFg:#f8efdf;
+  --s0bg:#272a30; --s0fg:#6c7078; --s1bg:#254139; --s1fg:#bcd9d0; --s2bg:#357c6d; --s2fg:#d9f0e9;
+  --s3bg:#5cb3a0; --s3fg:#0f2b25; --s4bg:#a5e6d6; --s4fg:#113129;
+  --padbg:#23262c; --ghost:rgba(233,226,209,.09);
+}
+/* Clean, the optional palette (Settings → Look & feel): neutral white and grey */
+html[data-pal="clean"]{
   --bg:#f6f7f9; --panel:#ffffff; --tint:#f0f2f5; --ink:#0d1117; --mut:#667085; --mut2:#b0b7c3;
   --line:#e7e9ee; --line2:#d5d9e0;
-  --brand:#2563eb; --brandInk:#2563eb; --brandFg:#ffffff; --brandT:#e8effd;
   --acc:#0f8a5f; --accT:#e3f4ec;
   --lant:#d92d20; --red:#d92d20; --amber:#b54708; --blue:#1d6fd6; --plum:#7a4fd6; --gold:#a16207;
   --t1:#d92d20; --t2:#0f8a5f; --t3:#1d6fd6; --t4:#7a4fd6; --t0:#8a93a3;
@@ -28,10 +54,9 @@
   --s3bg:#2e9e77; --s3fg:#fff; --s4bg:#0b6b4b; --s4fg:#fff;
   --padbg:#ffffff; --ghost:rgba(13,17,23,.07);
 }
-html[data-theme="dark"]{
+html[data-pal="clean"][data-theme="dark"]{
   --bg:#0b0d10; --panel:#15181d; --tint:#1e2229; --ink:#eceef2; --mut:#8b93a1; --mut2:#525a67;
   --line:#23272f; --line2:#343a45;
-  --brand:#2f6bff; --brandInk:#7ea6ff; --brandFg:#ffffff; --brandT:#16233f;
   --acc:#3ecf9a; --accT:#10291f;
   --lant:#ff6b5e; --red:#ff6b5e; --amber:#f0a94b; --blue:#6aa9ff; --plum:#b08cff; --gold:#e3b341;
   --t1:#ff7a6e; --t2:#4fd1a1; --t3:#6aa9ff; --t4:#b08cff; --t0:#8b93a1;
@@ -40,17 +65,18 @@ html[data-theme="dark"]{
   --s3bg:#3ecf9a; --s3fg:#06241a; --s4bg:#a6f0d3; --s4fg:#06241a;
   --padbg:#1a1d23; --ghost:rgba(236,238,242,.09);
 }
-/* accent colour (Settings → Look & feel) */
+/* accent colour (Settings → Look & feel); without one the accent is Classic, above */
+html[data-accent]{--brandFg:#ffffff;--logo:var(--brand);--logoFg:#ffffff}
+html[data-accent="blue"]{--brand:#2563eb;--brandInk:#2563eb;--brandT:#e8effd}
 html[data-accent="green"]{--brand:#0b8457;--brandInk:#0b8457;--brandT:#e1f3ea}
 html[data-accent="violet"]{--brand:#6d4aff;--brandInk:#6d4aff;--brandT:#eeeaff}
 html[data-accent="rose"]{--brand:#d6336c;--brandInk:#d6336c;--brandT:#fbe7ee}
 html[data-accent="orange"]{--brand:#d9480f;--brandInk:#d9480f;--brandT:#fdebe1}
-html[data-accent="graphite"]{--brand:#0d1117;--brandInk:#0d1117;--brandT:#e9ebef}
+html[data-theme="dark"][data-accent="blue"]{--brand:#2f6bff;--brandInk:#7ea6ff;--brandT:#16233f}
 html[data-theme="dark"][data-accent="green"]{--brand:#0e9f6e;--brandInk:#4fd1a1;--brandT:#10291f}
 html[data-theme="dark"][data-accent="violet"]{--brand:#7c5cff;--brandInk:#b3a1ff;--brandT:#221b45}
 html[data-theme="dark"][data-accent="rose"]{--brand:#e8477a;--brandInk:#ff8fb1;--brandT:#3a1624}
 html[data-theme="dark"][data-accent="orange"]{--brand:#f06a1d;--brandInk:#ffa268;--brandT:#3a2010}
-html[data-theme="dark"][data-accent="graphite"]{--brand:#eceef2;--brandInk:#eceef2;--brandFg:#0b0d10;--brandT:#262a31}
 html[data-zh="song"]{--cjk:"Songti TC","Noto Serif TC","Songti SC","STSong","PMingLiU","MingLiU",serif}
 html[data-zh="kai"]{--cjk:"Kaiti TC","BiauKai","DFKai-SB","Kaiti SC","STKaiti","Noto Serif TC",serif}
 html{transition:none}
@@ -691,7 +717,7 @@ body{font-family:var(--ui);font-size:15px;line-height:1.5;letter-spacing:-.003em
 .mast{position:sticky;top:0;z-index:850;display:flex;align-items:center;gap:8px;text-align:left;margin:0 -18px 6px;
   padding:calc(env(safe-area-inset-top) + 10px) 18px 10px;background:var(--bg)}
 .brand{display:inline-flex;align-items:center;gap:9px;border:0;background:none;color:var(--ink);cursor:pointer;padding:2px 4px 2px 0;font:inherit}
-.brand .logo{width:30px;height:30px;border-radius:9px;background:var(--brand);color:var(--brandFg);display:flex;align-items:center;justify-content:center;
+.brand .logo{width:30px;height:30px;border-radius:9px;background:var(--logo);color:var(--logoFg);display:flex;align-items:center;justify-content:center;
   font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;font-size:17px;font-weight:600;line-height:1}
 .brand .bname{font-size:17px;font-weight:700;letter-spacing:-.01em}
 .mast .grow{flex:1;order:1}
@@ -707,7 +733,7 @@ body{font-family:var(--ui);font-size:15px;line-height:1.5;letter-spacing:-.003em
 .tabs button .ti{display:none}
 .tabs button.on{color:var(--ink)}
 .tabs button.on::after{background:var(--brand);height:2px;animation:none}
-.tabs .b{background:var(--brand);color:var(--brandFg);font-size:10.5px}
+.tabs .b{background:var(--brandInk);color:var(--bg);font-size:10.5px}
 .tabs .b.zero{display:none}
 #setBtn{display:none}
 @media(min-width:701px){
@@ -749,19 +775,16 @@ body{font-family:var(--ui);font-size:15px;line-height:1.5;letter-spacing:-.003em
 .stage{box-shadow:none;border-radius:20px}
 .card.hero{background:var(--panel);padding:22px}
 .card.hero::before{display:none}
-.ring .fg{stroke:var(--brand)}
-.ring .fg.soft{stroke:var(--brand);opacity:.3}
-.ring.full .fg,.ring.r2.full .fg:not(.soft){stroke:var(--acc);filter:none}
+.ring .fg{stroke:var(--brandInk)}
+.ring .fg.soft{stroke:var(--brandInk);opacity:.3}
+.ring.full .fg,.ring.r2.full .fg:not(.soft){stroke:var(--gold);filter:none}
 .hero-line{font-size:19px;font-weight:700;letter-spacing:-.015em}
 .chip{background:var(--tint);border-color:transparent;color:var(--mut)}
-.chip.hot{background:#fff1dc;color:var(--amber);animation:none}
-html[data-theme="dark"] .chip.hot{background:#33260f}
-.sbar i{background:var(--brand)}
-.banner{background:#fff6e5;border-color:#f6e2b8;color:#8a5a00}
+.chip.hot{animation:none}
+.sbar i{background:var(--brandInk)}
 .modal{background:rgba(9,11,15,.5)}
 .modal-card{border:0;border-radius:20px;box-shadow:0 24px 70px rgba(0,0,0,.28)}
 .tgl.on,.filters button.on,.segbar button.on,.wbtn.on{background:var(--brand);border-color:var(--brand);color:var(--brandFg)}
-.tgl i{background:#fff}
 input[type=range],.tl-scrub{accent-color:var(--brand)}
 .search,select.vsel,input[type=number],.qsel{border-color:var(--line2);border-radius:10px}
 .search:focus,select.vsel:focus,input[type=number]:focus,.myin:focus{border-color:var(--brand);outline:0;box-shadow:0 0 0 3px var(--brandT)}
@@ -816,7 +839,7 @@ textarea.myin{min-height:120px;resize:vertical;line-height:1.5}
 .seg button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
 .set-row .seg,.set-row .swatches{flex:none;flex-wrap:nowrap}
 .meaning,.pos{font-family:var(--ui)}
-.swatch[title="graphite"]{background:var(--ink)!important}
+.swatch[title="classic"]{background:var(--ink)!important}
 /* ---- my words ---- */
 .my-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:4px 0 14px}
 .my-head h1{font-size:24px;font-weight:700;letter-spacing:-.02em}
@@ -850,7 +873,7 @@ textarea.myin{min-height:120px;resize:vertical;line-height:1.5}
   .stat{min-width:0}
 }
 </style>
-<script>try{var L=JSON.parse(localStorage.getItem('zika_look')||'{}'),R=document.documentElement;if(L.t==='dark'||(L.t==='auto'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))R.setAttribute('data-theme','dark');if(L.a)R.setAttribute('data-accent',L.a);if(L.z)R.setAttribute('data-zh',L.z);}catch(e){}</script>
+<script>try{var L=JSON.parse(localStorage.getItem('zika_look')||'{}'),R=document.documentElement;if(L.t==='dark'||(L.t==='auto'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))R.setAttribute('data-theme','dark');if(L.p)R.setAttribute('data-pal',L.p);if(L.a)R.setAttribute('data-accent',L.a);if(L.z)R.setAttribute('data-zh',L.z);}catch(e){}</script>
 </head>
 <body>
 <div class="wrap">
@@ -885,7 +908,7 @@ textarea.myin{min-height:120px;resize:vertical;line-height:1.5}
 <div id="printSheet"></div>
 <script>
 /* ============ VERSION ============ */
-const APP_VERSION=45;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
+const APP_VERSION=46;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
 
 /* ============ THEME ============ */
 function curTheme(){return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';}
@@ -5862,16 +5885,18 @@ const ICON={
 const TAB_ICON={tabHome:'home',tabRev:'rev',tabDrill:'drill',tabCatch:'catch',tabExam:'exam',tabGram:'gram',tabBrain:'brain',tabLib:'lib',tabSet:'set',tabMy:'my',tabMore:'more'};
 
 /* ---------- look: accent colour and the face study characters are set in ---------- */
-const ACCENTS={blue:'#2563eb',green:'#0b8457',violet:'#6d4aff',rose:'#d6336c',orange:'#d9480f',graphite:'#0d1117'};
+const ACCENTS={classic:'#2a241c',blue:'#2563eb',green:'#0b8457',violet:'#6d4aff',rose:'#d6336c',orange:'#d9480f'};   /* classic = ink buttons, tea-green links */
+const PALETTES={paper:'Paper',clean:'Clean'};
 const ZH_FONTS={sans:'Sans 黑體',song:'Song 明體',kai:'Kai 楷體'};
 function shLook(){
-  const r=document.documentElement, a=S.settings.accent, z=S.settings.zhFont;
-  if(a&&a!=='blue'&&ACCENTS[a])r.dataset.accent=a; else delete r.dataset.accent;
+  const r=document.documentElement, a=S.settings.accent, z=S.settings.zhFont, pal=S.settings.palette;
+  if(pal==='clean')r.dataset.pal='clean'; else delete r.dataset.pal;
+  if(a&&a!=='classic'&&ACCENTS[a])r.dataset.accent=a; else delete r.dataset.accent;
   if(z&&z!=='sans'&&ZH_FONTS[z])r.dataset.zh=z; else delete r.dataset.zh;
   /* remembered outside the deck so the next start can paint the right look before the deck is parsed */
-  try{store.setItem('zika_look',JSON.stringify({t:S.settings.theme||'auto',a:r.dataset.accent||'',z:r.dataset.zh||''}));}catch(e){}
+  try{store.setItem('zika_look',JSON.stringify({t:S.settings.theme||'auto',p:r.dataset.pal||'',a:r.dataset.accent||'',z:r.dataset.zh||''}));}catch(e){}
   const tb=document.getElementById('themeBtn'); if(tb)tb.innerHTML=SVG(curTheme()==='dark'?ICON.sun:ICON.moon);
-  const mc=document.querySelector('meta[name="theme-color"]'); if(mc)mc.setAttribute('content',cssVar('--bg')||'#f6f7f9');
+  const mc=document.querySelector('meta[name="theme-color"]'); if(mc)mc.setAttribute('content',cssVar('--bg')||'#f3edde');
 }
 applyTheme=(function(orig){return function(){const r=orig.apply(this,arguments);try{shLook();}catch(e){}return r;};})(applyTheme);
 fbAdopt=(function(orig){return function(){const r=orig.apply(this,arguments);try{shLook();}catch(e){}return r;};})(fbAdopt);
@@ -5991,8 +6016,10 @@ renderHome=(function(orig){return function(){orig.apply(this,arguments);try{shHo
 renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
   const v=document.getElementById('vSet'), ln=shLesson();
   const cards=[...v.querySelectorAll('.card')], look=cards.find(c=>/^Look & feel/.test(((c.querySelector('.lab')||{}).textContent||'').trim()));
-  const a=S.settings.accent||'blue', z=S.settings.zhFont||'sans';
-  const rows=`<div class="set-row"><div><b>Accent colour</b><div class="d">buttons, links and the active tab; follows you to your other devices</div></div>
+  const a=ACCENTS[S.settings.accent]?S.settings.accent:'classic', z=S.settings.zhFont||'sans', pal=S.settings.palette==='clean'?'clean':'paper';
+  const rows=`<div class="set-row"><div><b>Palette</b><div class="d">Paper is the warm original; Clean is neutral white and grey. Both have a day and a night side</div></div>
+      <div class="seg">${Object.keys(PALETTES).map(k=>`<button class="${pal===k?'on':''}" onclick="shSetLook('palette','${k}')">${PALETTES[k]}</button>`).join('')}</div></div>
+    <div class="set-row"><div><b>Accent colour</b><div class="d">buttons, links and the active tab. Classic is ink and tea green; follows you to your other devices</div></div>
       <div class="swatches">${Object.keys(ACCENTS).map(k=>`<button class="swatch${a===k?' on':''}" style="background:${ACCENTS[k]}" title="${k}" aria-label="${k}" onclick="shSetLook('accent','${k}')"></button>`).join('')}</div></div>
     <div class="set-row"><div><b>Character style</b><div class="d">the face study characters are shown in: a clean sans, the textbook’s 明體, or 楷體, which is closest to handwriting</div></div>
       <div class="seg">${Object.keys(ZH_FONTS).map(k=>`<button class="${z===k?'on':''}" onclick="shSetLook('zhFont','${k}')">${ZH_FONTS[k]}</button>`).join('')}</div></div>`;

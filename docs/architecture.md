@@ -41,7 +41,7 @@ New work should edit a function where it is defined when that is practical, and 
 
 How it should look and why is in [design.md](design.md). The pieces:
 
-- `.mast` is the sticky top bar; `shLook()` applies the accent (`html[data-accent]`) and the character face (`html[data-zh]`) from `S.settings.accent` and `S.settings.zhFont`, and writes `zika_look` to localStorage so a one-line script in `<head>` can paint the right theme before the deck is parsed.
+- `.mast` is the sticky top bar; `shLook()` applies the palette (`html[data-pal]`), the accent (`html[data-accent]`) and the character face (`html[data-zh]`) from `S.settings.palette`, `S.settings.accent` and `S.settings.zhFont`, and writes `zika_look` to localStorage so a one-line script in `<head>` can paint the right theme before the deck is parsed.
 - `shHome()` runs after every `renderHome` layer: it adds the greeting, the course chip and the two deck tiles, and moves every card below the lanes into one `<details class="fold">` (open or closed is remembered per device in `zika_home_more`).
 - `shCourse()` is the *Where you are* sheet: `shSetLesson()` sets `S.settings.curLesson`; the name is `S.settings.userName`.
 - Tabs created after start-up get their icon from `TAB_ICON` through `shTabIcons()`.

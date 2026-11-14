@@ -2,11 +2,13 @@
 
 Thorne's brief (November 2026): sleek, simple, efficient and fast, in the manner of the big consumer apps; a blend of the best of Skritter and Quizlet; less decoration around the name; personal to where the learner is in the course. v44 rebuilt the shell to this. Keep new screens inside it.
 
+He then asked for the app's original colours back ("the dark, grayer background and the original color flow"), so since v46 the default palette is **Paper** — the warm rice-paper day side and the night-market night side the app always had, with ink buttons, tea-green links and the red mark — inside the new layout. The neutral white-and-grey palette from v44 is still there as **Clean** in Settings → Look & feel. The paper texture, the rotated seal and the letter-spaced capitals did not come back.
+
 ## Principles
 
 1. **One thing to do next.** Today opens on the greeting, where you are in the book, and one filled button. Everything else on that screen is secondary and most of it is folded away.
-2. **Content first, chrome quiet.** White surfaces on a light grey page, hairline borders, no shadows, no textures, no hover lift. Colour is reserved for meaning.
-3. **Two colours with jobs.** `--brand` is for things you tap: the primary button, links, the active tab, focus. `--acc` (green) means learned or correct. Never use the brand colour for a result, or green for a button.
+2. **Content first, chrome quiet.** Flat surfaces a shade lighter than the page, hairline borders, no shadows, no textures, no hover lift. Colour is reserved for meaning.
+3. **Colours with jobs.** `--brand` fills things you tap (the primary button, toggles, the active tab line) and `--brandInk` is brand-coloured text and strokes on the page (links, the progress ring). With the default *Classic* accent those are ink and tea green; the other accents make both one colour. `--acc` (green) means learned or correct. Never write a result in `--brand`, or fill a button with `--acc`.
 4. **Plain words.** Sentence case. No letter-spaced capitals. Labels say what the thing is.
 5. **Fast.** No full-screen effects, short transitions (160 ms), nothing that re-renders more than its own view.
 6. **Book by book.** Always "Book 2 · Lesson 7", never a running lesson number.
@@ -20,7 +22,7 @@ Thorne's brief (November 2026): sleek, simple, efficient and fast, in the manner
 
 ## Tokens
 
-All colour comes from variables at the top of the stylesheet. Light and dark define the same names; the accent choice (`html[data-accent]`) redefines `--brand`, `--brandInk` (brand-coloured text on the page background) and `--brandT` (its tint). The face study characters are set in is `--cjk`, switched by `html[data-zh]` (sans, 明體, 楷體); interface text uses `--ui` and is always sans.
+All colour comes from variables at the top of the stylesheet. The palette (`:root` is Paper, `html[data-pal="clean"]` is Clean) and its night side (`html[data-theme="dark"]`) define the same names; an accent choice (`html[data-accent]`) redefines `--brand`, `--brandInk`, `--brandFg` and `--brandT` (the tint), and the mark's `--logo`. The face study characters are set in is `--cjk`, switched by `html[data-zh]` (sans, 明體, 楷體); interface text uses `--ui` and is always sans.
 
 New styles use the variables and never a literal colour, so they work in dark mode and with every accent.
 
