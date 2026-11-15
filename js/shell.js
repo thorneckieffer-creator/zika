@@ -152,11 +152,42 @@ function tabsSync(){
   const bar=document.querySelector('.tabs'), m=document.getElementById('tabMore'); if(!bar||!m)return;
   bar.classList.remove('more'); m.classList.toggle('on',!!bar.querySelector('button.t2.on'));
 }
-/* ---- refresh: push anything unsent, pick up the newest version, reload ---- */
+/* ---- the service worker and releases ----
+   sw.js keeps the whole app on the device and serves it from there, so a release reaches this page in two steps:
+   the worker stores the new files in the background, then takes over and the page is loaded again. */
+let SW_TOUCHED=false, SW_REFRESHING=false;
+function swStart(){
+  if(!('serviceWorker' in navigator)||!/^https?:/.test(location.protocol))return;
+  /* while developing on this machine the worker stays off, so an edit shows on reload; add ?sw to the address to try it */
+  if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)&&!/[?&]sw\b/.test(location.search))return;
+  const had=!!navigator.serviceWorker.controller;   /* false on the very first visit: the worker taking over then is not a release */
+  ['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,()=>{SW_TOUCHED=true;},{capture:true,once:true,passive:true}));
+  try{
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had)swUpdated();});
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }catch(e){}
+}
+/* a new release has taken over: load it at once if nothing has been touched since the app opened, otherwise offer it */
+function swUpdated(){
+  if(SW_REFRESHING)return;                          /* appRefresh() is already on its way to a reload */
+  let last=0; try{last=+sessionStorage.getItem('zika_reloaded')||0;}catch(e){}
+  if(!SW_TOUCHED&&Date.now()-last>10000){try{sessionStorage.setItem('zika_reloaded',String(Date.now()));}catch(e){} location.reload();return;}
+  toast('A newer version of 字卡 is ready',{action:'Refresh',onAction:()=>location.reload(),ms:20000});
+}
+/* resolves when a release that is being stored has taken over or has failed, and after `ms` at the latest */
+function swSettled(reg,ms){
+  const w=reg.installing||reg.waiting; if(!w)return Promise.resolve();
+  return new Promise(done=>{
+    const t=setTimeout(done,ms), check=()=>{if(w.state==='activated'||w.state==='redundant'){clearTimeout(t);done();}};
+    w.addEventListener('statechange',check); check();
+  });
+}
+/* ---- refresh: push anything unsent, pick up the newest release, reload ---- */
 async function appRefresh(){
+  SW_REFRESHING=true;
   const b=document.getElementById('refreshBtn'); if(b)b.classList.add('spin');
   try{ if(SYNC.dirty&&SYNC.fb&&SYNC.code&&!SYNC.blocked)await fbPush(); }catch(e){}
-  try{ if('serviceWorker' in navigator){const reg=await navigator.serviceWorker.getRegistration(); if(reg)await reg.update();} }catch(e){}
+  try{ if('serviceWorker' in navigator){const reg=await navigator.serviceWorker.getRegistration(); if(reg){await reg.update();await swSettled(reg,15000);}} }catch(e){}
   location.reload();
 }
 /* a copy left open for days (the Home Screen app especially) learns about a release when it comes back to the front */

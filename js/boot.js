@@ -87,7 +87,7 @@ document.addEventListener('click',function armOnce(){
 takeSnapshot(true);
 applyTheme(S.settings.theme||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
 (()=>{const h=new Date().getHours();const g=h<5?'夜深了，加油':h<11?'早安':h<14?'午安':h<18?'下午好':'晚上好';const el=document.getElementById('greet');if(el)el.textContent=g+'，Thorne';})();
-if('serviceWorker' in navigator&&/^https?:/.test(location.protocol)){try{navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}}
+swStart();
 S.sib = S.sib || {};                              /* {dayKey:{wid:cid}} — who owns the word today */
 if(S.settings.burySib===undefined) S.settings.burySib = true;
 if(S.settings.newUnlimited===undefined) S.settings.newUnlimited = false;

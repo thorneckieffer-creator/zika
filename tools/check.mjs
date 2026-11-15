@@ -39,6 +39,11 @@ if (!appV) fail('js/core.js: APP_VERSION not found');
 if (!swV) fail('sw.js: VERSION not found');
 if (appV && swV && appV !== swV) fail(`version mismatch: js/core.js APP_VERSION=${appV}, sw.js VERSION=zika-v${swV}`);
 
+/* the service worker's list of shell files matches what is on disk (node tools/stamp.mjs rewrites it) */
+{ const { stampIsCurrent, shellFiles } = await import('./stamp.mjs');
+  if (!stampIsCurrent()) fail('sw.js: the list of shell files is out of date — run node tools/stamp.mjs, then check again');
+  else note(`service worker: ${shellFiles().length} shell files stamped`); }
+
 /* 3. the storage key that holds everyone's progress has not moved */
 if (!/const KEY='shida_b1_fsrs_v2'/.test(core)) fail("js/core.js: storage KEY must stay 'shida_b1_fsrs_v2' — changing it orphans all saved progress");
 
