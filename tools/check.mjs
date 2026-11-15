@@ -37,10 +37,12 @@ if (!/const KEY='shida_b1_fsrs_v2'/.test(html)) fail("index.html: storage KEY mu
 
 /* 4. embedded data */
 const data = name => {
-  const line = lines.find(l => l.startsWith(`const ${name} = `));
-  if (!line) { fail(`index.html: ${name} not found`); return null; }
+  const file = `data/${name.toLowerCase()}.js`;
+  if (!existsSync(join(root, file))) { fail(`${file} is missing`); return null; }
+  const line = read(file).split('\n').find(l => l.startsWith(`const ${name} = `));
+  if (!line) { fail(`${file}: the "const ${name} = " line was not found`); return null; }
   try { return JSON.parse(line.slice(`const ${name} = `.length).replace(/;\s*$/, '')); }
-  catch (e) { fail(`index.html: ${name} is not valid JSON (${e.message})`); return null; }
+  catch (e) { fail(`${file}: ${name} is not valid JSON (${e.message})`); return null; }
 };
 const WORDS = data('WORDS'), GRAMMAR = data('GRAMMAR'), COMPONENTS = data('COMPONENTS');
 

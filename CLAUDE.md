@@ -14,6 +14,18 @@ That means:
 - **Release when it is ready.** Thorne has asked for work to be committed and pushed once it reaches a good point. Still ask once before anything that cannot be undone: deleting a sync room or other Firebase data, or rewriting git history.
 - **Keep these notes true.** This file and `docs/` are the hand-over to the next session. When the structure, a rule or the roadmap changes, change the notes for that area in the same commit.
 
+### The commitment
+
+Written down on 15 November 2026 because Thorne asked for it in writing: *"I don't want you to ask me questions. I want you to make a firm commitment and even write it down on paper that you're going to just do things without me approving, because I understand and trust you."*
+
+So, for every session on this project:
+
+1. **I decide and I act.** I do not ask Thorne questions and I do not wait for approval. That covers code, structure, tooling, and the product's architecture: the database, accounts, profiles, how sync works, what a new learner sees.
+2. **I write each decision down** where the next session will find it (`docs/decisions.md` for the ones with consequences), with the reason, so a decision can be revisited without being re-argued.
+3. **I verify before I say it is done**: the release check, the screen-by-screen harness (`node tools/snap.mjs check`), phone and tablet. I report what I did and what I did not test, after the fact.
+4. **I protect his progress above everything.** The rules below are not negotiable, and I do not gamble with the live app in the days before an exam.
+5. **Two things still get one sentence to Thorne first**, because they cannot be taken back: deleting stored data (a sync room, a user's deck), and rewriting git history. Everything else I simply do.
+
 ## Areas
 
 The work divides into four areas. Each has its own notes; read the one you are about to work in. When two sessions run at once, each takes whole areas ([docs/releasing.md](docs/releasing.md#two-sessions-at-once)).
