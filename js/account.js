@@ -19,12 +19,16 @@
      root     the uid whose tree this device reads and writes: its own for a
               guest or an account, the owner's for a member.
 
-   For the sync engine (sy*)
+   For the sync engine (sy*, js/sync-records.js) — the wiring is listed under
+   "Plugging in" in docs/multi-user.md
      acRoot()            'users/<uid>' to read and write, or null while not ready
      acOn('root', fn)    fn({root, prev, why}) whenever that changes; why is one of
-                         start join leave revoked signin signout delete
+                         start join leave revoked signin signout delete reset
      acDenied()          call it when a read or write under acRoot() is refused;
                          it checks whether this device was removed
+     cfg.flush           send what is unsent           (asked before a copy is erased)
+     cfg.stopSync        stop the engine               (before a tree is removed or left)
+     cfg.importRoom      take in a sync room's deck    (the one-time move, acMigrateRoom)
    Everything goes through an adapter (acFirebaseAdapter for the real service, a
    fake in tools/test/) so the logic can be tested without Firebase.
    ============================================================ */
@@ -43,9 +47,9 @@ const AC = {
     ownerName: null,            /* () => the learner's name, shown to a device that joins */
     deckSummary: null,          /* () => {started: 1234} — lets the approve sheet warn about an empty deck */
     flush: null,                /* async () => send what this device has not synced yet; false if it could not */
-    wipeLocal: null,            /* () => remove the deck from this device (the app owns that storage) */
-    toRecords: null,            /* (state, opts) => {path: {m, v}} — the sync engine's splitter */
-    localSettings: null,        /* setting names that never leave a device */
+    stopSync: null,             /* () => stop the sync engine: called before this device's online tree is removed or left */
+    wipeLocal: null,            /* () => remove the deck from this device (the app owns that storage, the engine's included) */
+    importRoom: null,           /* async (roomRecord) => hand a sync room's deck to the sync engine; false if it could not */
     now: () => Date.now(),
   },
   ad: null, phase: 'off', user: null, root: null, ownerName: '', devices: {}, join: null,
@@ -230,7 +234,7 @@ async function acCreateAccount(email, password) {
    or a member's place in someone else's deck. Returns a reason when it should not go ahead. */
 async function acBeforeSwitch(force) {
   const role = acRole(), me = AC.user.uid;
-  if (role === 'member') { AC.leaving = true; try { await AC.ad.remove('users/' + AC.root + '/devices/' + me); } catch (e) {} acSave(null); return null; }
+  if (role === 'member') { acPause(); AC.leaving = true; try { await AC.ad.remove('users/' + AC.root + '/devices/' + me); } catch (e) {} acSave(null); return null; }
   if (role === 'guest') {
     const others = Object.keys(AC.devices || {}).length;
     if (others && !force) return { ok: false, code: 'has-devices', n: others, err: (others === 1 ? 'One other device uses' : others + ' other devices use') + ' this deck. They will stop syncing if this device moves to another account.' };
@@ -240,6 +244,7 @@ async function acBeforeSwitch(force) {
 }
 async function acRemoveOwnTree() {
   const me = AC.user.uid, map = {};
+  acPause();                         /* or the engine would write the tree back record by record */
   const code = await AC.ad.get('users/' + me + '/joining');
   if (code && await AC.ad.get('joins/' + code)) map['joins/' + code] = null;
   map['users/' + me] = null;
@@ -301,6 +306,7 @@ async function acSignOut(opts) {
   if (acRole() !== 'account') return { ok: false, code: 'not-account', err: 'There is no account to sign out of on this device.' };
   /* everything this device has not sent yet goes up first; only then may its copy be erased */
   if (!(await acFlush())) return { ok: false, code: 'unsynced', err: 'This device has changes that have not reached your account yet. Go online and try again, so nothing is lost.' };
+  acPause();
   if (!(opts && opts.keepLocal)) await acWipe();
   try {
     AC.why = 'signout';
@@ -310,8 +316,9 @@ async function acSignOut(opts) {
     return { ok: true };
   } catch (e) { AC.why = ''; return acFail(e); }
 }
-/* the app's hooks: send what is unsent (false = could not), and erase the deck from this device */
+/* the app's hooks: send what is unsent (false = could not), stop syncing, and erase the deck from this device */
 async function acFlush() { if (!AC.cfg.flush) return true; try { return (await AC.cfg.flush()) !== false; } catch (e) { return false; } }
+function acPause() { if (AC.cfg.stopSync) { try { AC.cfg.stopSync(); } catch (e) {} } }
 async function acWipe() { if (AC.cfg.wipeLocal) { try { await AC.cfg.wipeLocal(); } catch (e) {} } }
 function acNextRoot(ms) {
   return new Promise(res => {
@@ -379,6 +386,7 @@ async function acJoinSeen(code, v) {
     /* the answer is only a pointer; what counts is that the owner's tree really lets this device in */
     const g = await AC.ad.get('users/' + owner + '/devices/' + me);
     if (!g) throw { code: 'PERMISSION_DENIED' };
+    acPause();
     try { await AC.ad.update({ ['joins/' + code]: null, ['users/' + me]: null }); } catch (e) {}    /* this device's own online copy and the request go */
     if (AC.un.join) { try { AC.un.join(); } catch (e) {} AC.un.join = null; }
     if (AC.timer) { try { clearTimeout(AC.timer); } catch (e) {} AC.timer = null; }
@@ -427,6 +435,8 @@ async function acRevoke(deviceUid) {
 /* a member steps out; what it holds stays on it, as a guest deck of its own */
 async function acLeave() {
   if (acRole() !== 'member') return { ok: false, code: 'not-member', err: 'This device is not using someone else\'s deck.' };
+  await acFlush();                   /* what it has not sent yet goes to the deck first, if it can */
+  acPause();
   AC.leaving = true;                 /* the refusals that follow its own removal are not news */
   try { await AC.ad.remove('users/' + AC.root + '/devices/' + AC.user.uid); }
   catch (e) { if (acErrCode(e) === 'network') { AC.leaving = false; return acFail(e); } }
@@ -444,6 +454,7 @@ async function acDeleteMyData(opts) {
   const role = acRole(); opts = opts || {};
   if (role === 'member') {
     /* the copy goes first: once this device has left it is a guest, and a guest's deck is sent up */
+    acPause();
     await acWipe();
     const r = await acLeave(); if (!r.ok) return r;
     return { ok: true, what: 'left' };
@@ -474,76 +485,49 @@ async function acExportData() {
 
 /* ---------- moving a deck from a sync room to this account ----------
    Designed and tested against a fake; never run against the live project.
-   It only ever READS the room. It can be run any number of times: a finished move is skipped,
-   an interrupted one picks up where it stopped, and a record that is already there with a
-   stamp at least as new is left alone.
 
-   o.code     the sync code of the room (never stored anywhere by this function)
-   o.local    {state, at, dirty} — this device's deck and its sync marks (SYNC.at, SYNC.dirty).
-              The move goes ahead only from a settled deck: nothing unsent, and level with the room.
-   o.toRecords (state, {stamp, localSettings}) => {'cards/w1:rec': {m, v}, …}; the sync engine's
-              own splitter belongs here. acStateToRecords is the reference one. */
+   This function is the order of events and the safeguards. Turning the room's one blob into
+   records is the sync engine's work (syImport), handed in as o.importRoom: it stamps what it
+   imports as old, so anything studied since, on any device, wins over it — which is what makes
+   running the move twice harmless.
+
+   It only ever READS the room, and it stores the sync code nowhere.
+     a finished move is skipped                  (the marker at meta/migration says done)
+     an interrupted one is simply done again     (the marker says copying)
+     it starts only from a settled deck          (nothing unsent, and level with the room)
+
+   o.code        the sync code of the room
+   o.local       {at, dirty} — this device's sync marks (SYNC.at, SYNC.dirty); leave it out on a
+                 device that never used the room
+   o.importRoom  async (roomRecord) => truthy when the engine has taken the deck in AND sent it;
+                 defaults to cfg.importRoom */
 async function acMigrateRoom(o) {
   o = o || {};
   if (!acIsOwner()) return { ok: false, code: 'not-owner', err: 'Move the deck from a device that is not using someone else\'s.' };
-  const me = AC.user.uid, base = 'users/' + me, ad = AC.ad;
+  const imp = o.importRoom || AC.cfg.importRoom;
+  if (typeof imp !== 'function') return { ok: false, code: 'no-import', err: 'Syncing by record is not switched on in this version.' };
+  const me = AC.user.uid, at = 'users/' + me + '/meta/migration', ad = AC.ad;
   try {
-    const marker = await ad.get(base + '/meta/migration');
+    const marker = await ad.get(at);
     if (marker && marker.state === 'done') return { ok: true, skipped: true, marker };
     const code = String(o.code || '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 40);
-    let r = null;
-    if (code) r = await ad.get('rooms/' + code + '/study_state');
-    let state = null, srcAt = 0, from = '';
-    if (r && r.json) {
-      if (o.local) {
-        if (o.local.dirty) return { ok: false, code: 'unsynced', err: 'This device has changes the room has not received yet. Let it finish syncing, then try again.' };
-        if ((o.local.at || 0) !== r.synced_at) return { ok: false, code: 'behind', err: 'Another device saved more recently. Open the app there, or let this one catch up, then try again.' };
-      }
-      try { state = JSON.parse(r.json); } catch (e) { return { ok: false, code: 'unreadable', err: 'The deck in the room could not be read. Nothing was changed.' }; }
-      from = 'room'; srcAt = Number(r.synced_at) || 0;
-    } else if (o.local && o.local.state) { state = o.local.state; from = 'local'; srcAt = Number(o.local.at) || AC.cfg.now(); }
-    if (!state || typeof state !== 'object') return { ok: false, code: 'nothing', err: 'There is no deck to move.' };
-    const split = o.toRecords || AC.cfg.toRecords || acStateToRecords;
-    const recs = split(state, { stamp: srcAt, localSettings: o.localSettings || AC.cfg.localSettings });
-    const paths = Object.keys(recs);
-    const have = (await ad.get(base)) || {};
-    const todo = []; let kept = 0;
-    for (const p of paths) {
-      let cur = have; for (const k of p.split('/')) cur = cur && typeof cur === 'object' ? cur[k] : undefined;
-      if (cur && typeof cur.m === 'number' && cur.m >= recs[p].m) { kept++; continue; }
-      todo.push(p);
+    const r = code ? await ad.get('rooms/' + code + '/study_state') : null;
+    if (!r || !r.json) return { ok: false, code: 'nothing', err: 'There is no deck in that room to move.' };
+    if (o.local) {
+      if (o.local.dirty) return { ok: false, code: 'unsynced', err: 'This device has changes the room has not received yet. Let it finish syncing, then try again.' };
+      if ((o.local.at || 0) !== r.synced_at) return { ok: false, code: 'behind', err: 'Another device saved more recently. Open the app there, or let this one catch up, then try again.' };
     }
-    await ad.set(base + '/meta/migration', { state: 'copying', from, src_at: srcAt, records: paths.length, started: ad.serverTimestamp(), device: acDeviceName() });
-    const step = o.chunk || 200;
-    for (let i = 0; i < todo.length; i += step) {
-      const map = {}; for (const p of todo.slice(i, i + step)) map[base + '/' + p] = recs[p];
-      await ad.update(map);
-    }
-    await ad.update({ [base + '/meta/migration/state']: 'done', [base + '/meta/migration/finished']: ad.serverTimestamp() });
-    return { ok: true, from, src_at: srcAt, records: paths.length, written: todo.length, kept };
+    let state = null;
+    try { state = JSON.parse(r.json); } catch (e) {}
+    if (!state || typeof state !== 'object' || !state.cards) return { ok: false, code: 'unreadable', err: 'The deck in the room could not be read. Nothing was changed.' };
+    const srcAt = Number(r.synced_at) || 0, cards = Object.keys(state.cards).length;
+    await ad.set(at, { state: 'copying', from: 'room', src_at: srcAt, records: cards, started: ad.serverTimestamp(), device: acDeviceName() });
+    let took = false;
+    try { took = await imp(r); } catch (e) { took = false; }
+    if (!took) return { ok: false, code: 'import', err: 'The deck could not be sent just now. Nothing is lost: the room is untouched. Try again when you are online.' };
+    await ad.update({ [at + '/state']: 'done', [at + '/finished']: ad.serverTimestamp() });
+    return { ok: true, from: 'room', src_at: srcAt, cards };
   } catch (e) { return acFail(e); }
-}
-/* The reference splitter: one record per card, per setting, per day of the log, per My-words
-   entry, and one per remaining part of the state. Every record is {m: stamp, v: JSON}.
-   PROVISIONAL — the sync engine (sy*) owns the real layout; pass its splitter as toRecords. */
-function acStateToRecords(state, opts) {
-  opts = opts || {};
-  const stamp = Number(opts.stamp) || 1, out = {}, J = JSON.stringify;
-  const ok = k => /^[A-Za-z0-9:_-]{1,24}$/.test(k);
-  let local = opts.localSettings;
-  if (!local) { local = []; try { if (typeof LOCAL_SETTINGS !== 'undefined') local = local.concat(LOCAL_SETTINGS); if (typeof STRICT_LOCAL !== 'undefined') local = local.concat(STRICT_LOCAL); } catch (e) {} }
-  const put = (path, v, m) => { out[path] = { m: m || stamp, v: J(v) }; };
-  for (const [id, c] of Object.entries(state.cards || {})) if (ok(id)) put('cards/' + id, c, (c && c.last) || stamp);
-  for (const [k, v] of Object.entries(state.settings || {})) if (ok(k) && !local.includes(k) && v !== undefined) put('settings/' + k, v);
-  for (const [day, v] of Object.entries(state.log || {})) if (/^\d{4}-\d{2}-\d{2}$/.test(day)) put('log/' + day + '/all', v);
-  const my = state.my;
-  if (my && typeof my === 'object') {
-    for (const [id, w] of Object.entries(my.w || {})) if (ok(id)) put('my/w/' + id, w, (w && w.at) || stamp);
-    for (const [id, c] of Object.entries(my.c || {})) if (ok(id)) put('my/c/' + id, c, (c && c.last) || stamp);
-    for (const [k, v] of Object.entries(my)) if (k !== 'w' && k !== 'c' && ok(k) && v !== undefined) put('my/s/' + k, v);
-  }
-  for (const [k, v] of Object.entries(state)) if (!['cards', 'settings', 'log', 'my'].includes(k) && ok(k) && v !== undefined) put('lists/' + k, v);
-  return out;
 }
 
 /* ---------- Google, by a full-page trip there and back (not offered until cfg.googleClientId is set) ----------

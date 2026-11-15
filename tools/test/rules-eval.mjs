@@ -197,7 +197,9 @@ function ev(n, s) {
         case '===': case '==': return l === r;
         case '!==': case '!=': return l !== r;
         case '<': case '>': case '<=': case '>=':
-          if (!((typeof l === 'number' && typeof r === 'number') || (typeof l === 'string' && typeof r === 'string'))) throw new TypeError('cannot compare ' + typeof l + ' with ' + typeof r);
+          /* two numbers, or two strings (compared character by character, by code unit), or two nulls
+             — the last as targaryen has it, from its authors' checks against the live service */
+          if (!((typeof l === 'number' && typeof r === 'number') || (typeof l === 'string' && typeof r === 'string') || (l === null && r === null))) throw new TypeError('cannot compare ' + (l === null ? 'null' : typeof l) + ' with ' + (r === null ? 'null' : typeof r));
           return n.op === '<' ? l < r : n.op === '>' ? l > r : n.op === '<=' ? l <= r : l >= r;
         case '+':
           if (typeof l === 'number' && typeof r === 'number') return l + r;

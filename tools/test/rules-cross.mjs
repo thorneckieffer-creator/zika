@@ -16,7 +16,7 @@
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { RulesDb } from './rules-eval.mjs';
-import { CASES, BASE, NOW, TS } from './rules-cases.mjs';
+import { CASES, BASE, NOW, TS, H } from './rules-cases.mjs';
 
 const require = createRequire(import.meta.url);
 let targaryen;
@@ -56,13 +56,16 @@ const pick = a => a[Math.floor(rnd() * a.length)];
 const UIDS = ['uOwner', 'uDev', 'uOther', 'uNew', 'uOld', 'uSlow', 'uFresh'];
 const AUTHS = UIDS.map(uid => ({ uid })).concat([null, null]);
 const CODES = ['aaaa2222', 'bbbb3333', 'cccc4444', 'dddd5555', 'BAD-CODE', 'zzzz9999'];
-const KEYS = ['w1:rec', 'w2:prod', 'g:n22-1', 'u7:rec', 'bad key', 'x'.repeat(25), 'curLesson', 'hard', '2026-11-14', '2026-11-15', 'mac', 'w', 'm', 'v', 'seen', 'name', 'at', 'uid', 'ans', 'owner', 'state'];
-const BRANCHES = ['cards', 'log', 'settings', 'lists', 'my', 'profile', 'meta', 'devices', 'joining', 'voice', 'meta/migration'];
-const SCALARS = () => pick([null, null, 1, 0, -5, NOW, NOW - 1, NOW + 5, true, false, 'x', '', 'uOwner', 'uNew', 'uFresh', 'aaaa2222', 'dddd5555', 'x'.repeat(41), 'x'.repeat(401), 'x'.repeat(2001), TS, 'done', '{"st":"rev"}']);
+const KEYS = ['c~w1:rec', 'c~w2:prod', 'c~g:n22-1', 'h~w3', 's~curLesson', 'x~' + 'x'.repeat(499), 'd~2026-11-14~k3j9x2ab', 'h', 'm', 'j', 'd', 'v', 'seen', 'name', 'at', 'uid', 'ans', 'owner', 'state'];
+const BRANCHES = ['rec', 'rec', 'rec', 'meta', 'meta/v', 'meta/migration', 'profile', 'devices', 'joining', 'voice'];
+const DAY = NOW - 86400000;
+/* stamps around the ones in the fixture (c~w1:rec holds H(DAY, 4)): equal, either side, malformed, not a string */
+const STAMPS = () => pick([H(DAY, 4), H(DAY, 4), H(DAY, 3), H(DAY, 5), H(DAY, 0), H(DAY, 1), H(DAY, 2), H(NOW), H(DAY - 5000), H(0, 0, '0a1b2c3d'), H(DAY, 4, 'a0000000'), H(DAY, 4, 'zzzzzzzz'), H(DAY, 4, 'K3J9X2AB'), 'zzzzzzzzz000k3j9x2ab', 'bad stamp', '0n1x8k2ab004', '0n1x8k2ab004' + 'x'.repeat(52), 12345, null]);
+const SCALARS = () => pick([null, null, 1, 0, 2, -5, NOW, NOW - 1, NOW + 5, true, false, 'x', '', '"r,1,2"', 'uOwner', 'uNew', 'uFresh', 'aaaa2222', 'dddd5555', 'x'.repeat(41), 'x'.repeat(61), 'x'.repeat(100001), TS, 'done']);
 function value(depth) {
   const r = rnd();
-  if (depth > 2 || r < 0.35) return SCALARS();
-  if (r < 0.6) return { m: pick([1, NOW, '1', null, TS]), v: SCALARS() };
+  if (depth > 2 || r < 0.25) return rnd() < 0.2 ? STAMPS() : SCALARS();
+  if (r < 0.6) { const o = { h: STAMPS(), m: pick([TS, TS, TS, NOW, NOW - 1, '1', null]) }; const k = rnd(); if (k < 0.6) o.j = pick(['"r,1,2"', '""', '22', 5, null, 'x'.repeat(100001)]); else if (k < 0.85) o.d = pick([1, 1, 2, true]); else if (k < 0.93) { o.j = '1'; o.d = 1; } if (rnd() < 0.05) o.z = 1; return o; }
   if (r < 0.7) return { uid: pick(UIDS), name: pick(['iPad', 'x'.repeat(41), 5]), at: pick([TS, NOW, NOW - 5, 'now']) };
   if (r < 0.8) return { name: pick(['iPad', 'x'.repeat(41), 7]), at: pick([TS, 1, 'one']), seen: pick([null, 1, 'x']) };
   if (r < 0.87) return { owner: pick(UIDS), name: pick(['Lin', null, 'x'.repeat(61)]) };
@@ -148,7 +151,7 @@ console.log('   ' + (diff2 ? diff2 + ' disagreement(s)' : 'no disagreement') + '
         and count how often the two now disagree. Zero would mean the comparison is blind. ---- */
 const weak = JSON.parse(JSON.stringify(RULES));
 weak.rules.users.$uid['.read'] = 'auth != null';
-weak.rules.users.$uid.cards.$id.v['.validate'] = 'true';
+weak.rules.users.$uid.rec.$key['.validate'] = weak.rules.users.$uid.rec.$key['.validate'].replace(">= data.child('h').val()", "!== data.child('h').val()");
 weak.rules.joins.$code.ans['.write'] = weak.rules.joins.$code.ans['.write'].replace(/ && newData\.parent\(\)\.parent\(\)\.parent\(\).*$/, '');
 let seen = 0;
 for (const c of CASES) {

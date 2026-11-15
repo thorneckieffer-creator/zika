@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { RulesDb, _internals } from './rules-eval.mjs';
 import { CASES, BASE, NOW } from './rules-cases.mjs';
-import { rulesText, COLLECTIONS, STAMP } from '../../firebase/build-rules.mjs';
+import { rulesText } from '../../firebase/build-rules.mjs';
 
 const file = new URL('../../firebase/database.rules.json', import.meta.url);
 const text = readFileSync(file, 'utf8');
@@ -54,15 +54,21 @@ test('no rule grants read or write above a single room, request or person', () =
   assert.equal(RULES.rules['.write'], undefined);
 });
 
-test('every collection is indexed on its stamp and closed to other fields', () => {
-  for (const c of COLLECTIONS) {
-    let node = RULES.rules.users.$uid;
-    for (const seg of c.path.slice(0, -1)) node = node[seg];
-    assert.deepEqual(node['.indexOn'], [STAMP], c.path.join('/'));
-    const rec = node[c.path[c.path.length - 1]];
-    assert.equal(rec.$other['.validate'], false, c.path.join('/'));
-    assert.ok(rec[STAMP], c.path.join('/'));
-  }
+test('the records are indexed on m, where the sync engine\'s catch-up query needs it, and closed to other fields', () => {
+  /* This is all that can be checked here: that the entry is in the file, on the node the query
+     runs on. Whether the service then uses it is only visible on the real thing (an unindexed
+     query still answers, it just downloads the whole collection and warns in the console). */
+  const rec = RULES.rules.users.$uid.rec;
+  assert.deepEqual(rec['.indexOn'], ['m']);
+  assert.deepEqual(Object.keys(rec.$key).sort(), ['$other', '.validate', 'd', 'h', 'j', 'm']);
+  assert.equal(rec.$key.$other['.validate'], false);
+});
+
+test('the rule the sync engine asked for is all there (docs/sync.md on users-sync, "What the rules must allow")', () => {
+  const r = RULES.rules.users.$uid.rec.$key, v = r['.validate'];
+  for (const part of ["newData.child('m').val() === now", "newData.child('h').isString()", "(!data.exists() || newData.child('h').val() >= data.child('h').val())"]) assert.ok(v.includes(part), part);
+  assert.ok(r.h['.validate'].includes('newData.val().length < 64'));
+  assert.equal(RULES.rules.users.$uid.meta.v['.validate'].startsWith('newData.isNumber()'), true);
 });
 
 for (const c of CASES) {
@@ -74,8 +80,8 @@ for (const c of CASES) {
 
 test('case names are unique and both answers are well represented', () => {
   assert.equal(new Set(CASES.map(c => c.name)).size, CASES.length);
-  assert.ok(CASES.filter(c => c.allow).length >= 35, 'allowed cases: ' + CASES.filter(c => c.allow).length);
-  assert.ok(CASES.filter(c => !c.allow).length >= 60, 'refused cases: ' + CASES.filter(c => !c.allow).length);
+  assert.ok(CASES.filter(c => c.allow).length >= 55, 'allowed cases: ' + CASES.filter(c => c.allow).length);
+  assert.ok(CASES.filter(c => !c.allow).length >= 110, 'refused cases: ' + CASES.filter(c => !c.allow).length);
 });
 
 /* ---- the evaluator itself: the places where it must be as strict as the service ---- */
@@ -88,6 +94,23 @@ test('evaluator: a type error makes a rule false instead of true', () => {
   assert.equal(db.read(null, 'b').allowed, false, 'auth.uid with nobody signed in');
   assert.equal(db.check({ uid: 'u' }, 'c', null).allowed, false, 'null + 1');
   assert.equal(db.check({ uid: 'u' }, 'c', 1).allowed, true);
+});
+
+test('evaluator: strings compare character by character; a string never compares with a number or with nothing', () => {
+  const rule = "newData.val() >= data.val()";
+  const db = (data) => new RulesDb({ rules: { x: { '.write': rule } } }, data === undefined ? null : { x: data }, { now: NOW });
+  const ok = (data, value) => db(data).check(null, 'x', value).allowed;
+  assert.equal(ok('0n1x8k2ab004k3j9x2ab', '0n1x8k2ab004k3j9x2ab'), true, 'equal');
+  assert.equal(ok('0n1x8k2ab004k3j9x2ab', '0n1x8k2ab005k3j9x2ab'), true, 'later');
+  assert.equal(ok('0n1x8k2ab004k3j9x2ab', '0n1x8k2ab003k3j9x2ab'), false, 'earlier');
+  assert.equal(ok('9', '10'), false, '"10" is before "9": not a numeric comparison');
+  assert.equal(ok('apple', 'Zebra'), false, 'upper case sorts before lower case (code units)');
+  assert.equal(ok('ab', 'abc'), true, 'a longer string with the same start is later');
+  assert.equal(ok(5, '5'), false, 'a string against a number is an error, so false');
+  assert.equal(ok('5', 5), false);
+  assert.equal(ok(undefined, 'a'), false, 'a string against nothing is an error, so false');
+  assert.equal(ok('a', null), false);
+  assert.equal(ok(7, 7), true); assert.equal(ok(7, 6), false);
 });
 
 test('evaluator: write permission comes from the location or above, never from below', () => {
