@@ -1,0 +1,4 @@
+# the second rules evaluator and the official emulator are installed here for cross-checks, never committed
+.cross/
+node_modules/
+*.log
