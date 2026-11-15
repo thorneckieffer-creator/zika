@@ -13,6 +13,32 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="stylesheet" href="css/app.css">
 <script>try{var L=JSON.parse(localStorage.getItem('zika_look')||'{}'),R=document.documentElement;if(L.t==='dark'||(L.t==='auto'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))R.setAttribute('data-theme','dark');if(L.p)R.setAttribute('data-pal',L.p);if(L.a)R.setAttribute('data-accent',L.a);if(L.z)R.setAttribute('data-zh',L.z);}catch(e){}</script>
+<script>
+/* If a file of the app does not arrive, or start-up stops part-way, say so on the page instead of leaving it dead.
+   js/boot.js sets window.zikaStarted when start-up has finished; a file that fails after that is not fatal. */
+(function(){
+  var said=false;
+  function say(what){
+    if(said)return; said=true;
+    var show=function(){
+      var d=document.createElement('div'); d.id='loadFail'; d.setAttribute('role','alert');
+      d.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;background:#fff;color:#222;border:1px solid #c0392b;border-radius:12px;padding:14px 16px;font:15px/1.45 system-ui,sans-serif';
+      var b=document.createElement('b'); b.textContent='字卡 could not start. '; d.appendChild(b);
+      d.appendChild(document.createTextNode(what+' Your progress on this device is safe. '));
+      var again=document.createElement('button'); again.type='button'; again.textContent='Try again';
+      again.style.cssText='margin-left:6px;padding:6px 14px;border-radius:999px;border:0;background:#222;color:#fff;font:inherit;font-weight:600';
+      again.onclick=function(){location.reload();}; d.appendChild(again);
+      document.body.appendChild(d);
+    };
+    if(document.body)show(); else document.addEventListener('DOMContentLoaded',show);
+  }
+  window.addEventListener('error',function(e){
+    var t=e.target; if(window.zikaStarted||!t||(t.tagName!=='SCRIPT'&&t.tagName!=='LINK'))return;
+    var u=String(t.src||t.href||''); if(u)say('A file did not arrive ('+u.split('?')[0].split('/').slice(-2).join('/')+'). Check the connection.');
+  },true);
+  window.addEventListener('load',function(){if(!window.zikaStarted)say('Something stopped it part-way.');});
+})();
+</script>
 </head>
 <body>
 <div class="wrap">

@@ -17,7 +17,13 @@ const html = read('index.html');
 const srcs = [...html.matchAll(/<script src="([^"?]+)(?:\?[^"]*)?"><\/script>/g)].map(x => x[1]);
 const code = srcs.filter(f => f.startsWith('js/')), onDisk = readdirSync(join(root, 'js')).filter(f => f.endsWith('.js')).map(f => 'js/' + f);
 if (!code.length) fail('index.html: no <script src="js/…"> tags found');
-for (const f of srcs) if (!existsSync(join(root, f))) fail(`index.html loads ${f}, which does not exist`);
+const styles = [...html.matchAll(/<link rel="stylesheet" href="([^"?]+)/g)].map(x => x[1]);
+/* the site's file names are case-sensitive and this Mac's are not: a name must match what is on disk letter for letter */
+const onDiskExactly = f => { const parts = f.split('/'); let dir = root; for (const p of parts) { if (!existsSync(dir) || !readdirSync(dir).includes(p)) return false; dir = join(dir, p); } return true; };
+for (const f of [...srcs, ...styles]) if (!onDiskExactly(f)) fail(`index.html loads ${f}, which does not exist under exactly that name`);
+if (!styles.length) fail('index.html: no stylesheet is linked');
+for (const f of ['data/course.js', 'data/words.js', 'data/grammar.js', 'data/components.js', 'data/readings.js', 'data/usage.js']) if (!srcs.includes(f)) fail(`index.html does not load ${f}`);
+if (!/window\.zikaStarted=true/.test(read('js/boot.js'))) fail('js/boot.js: the last line must set window.zikaStarted (index.html reports a failed start by its absence)');
 for (const f of onDisk) if (!code.includes(f)) fail(`${f} is not loaded by index.html`);
 if (code[code.length - 1] !== 'js/boot.js') fail('index.html: js/boot.js must be the last script (it starts the app once everything is defined)');
 for (const f of [...code, 'data/course.js', 'sw.js'].filter(f => existsSync(join(root, f)))) {

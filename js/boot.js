@@ -312,3 +312,4 @@ function bootStart(){
 }
 
 bootLoad(); bootMigrate(); bootMount(); bootListen(); bootStart();
+window.zikaStarted=true;   /* index.html shows a message if this line is never reached */
