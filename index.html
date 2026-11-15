@@ -913,7 +913,7 @@ textarea.myin{min-height:120px;resize:vertical;line-height:1.5}
 <div id="printSheet"></div>
 <script>
 /* ============ VERSION ============ */
-const APP_VERSION=56;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
+const APP_VERSION=57;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
 
 /* ============ THEME ============ */
 function curTheme(){return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';}
@@ -5739,6 +5739,19 @@ function tcQuick(wid){
   m.style.display='flex'; TC.host='tcQuick'; tcRender();
 }
 function tcQuickClose(){ tcRelease(); TC.host=null; TC.list=[]; TC.res=null; shClose(); }
+/* keyboard, for the Mac: Space records (and stops), Enter moves on, A tries again, L listens, Esc closes the sheet */
+document.addEventListener('keydown',e=>{
+  const on=TC.host||(view==='drill'&&drillMode==='tcoach'&&!dq&&TC.list.length&&TC.i<TC.list.length);
+  if(!on||e.repeat||e.metaKey||e.ctrlKey||e.altKey||/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||''))return;
+  const st=TC.state;
+  if(e.code==='Space'&&(st==='ask'||st==='rec'||st==='cal')){e.preventDefault();tcRecord();}
+  else if(e.key==='Enter'&&st==='done'){e.preventDefault();tcNext();}
+  else if((e.key==='a'||e.key==='A')&&st==='done'){tcAgain();}
+  else if((e.key==='l'||e.key==='L')&&(st==='ask'||st==='done')){tcSay();}
+  else if(e.key==='Escape'&&TC.host){tcQuickClose();}
+  else return;
+  e.stopImmediatePropagation();
+},true);
 /* a round of ten words. With a tone pair ("24") the round is ten two-syllable words of that pair, taken from the
    chosen scope or, when it holds too few, from every lesson up to the learner's own. */
 /* what is on the card: a course word, or a short phrase made for this round (TC.items, ids "p:w12:0") */
@@ -5884,14 +5897,16 @@ function tcRender(){
       <div class="tc-chips">${res.syl.map((s,i)=>`<span class="tc-chip ${cls(s)}"><b class="zh">${esc(chars[i])}</b><i>${s.e?'tone '+s.e+(s.wr&&s.wr!==s.e?' (written '+s.wr+')':''):'neutral'}</i>${s.ok===null?'':s.ok?'✓':s.close?'≈':'✗'}</span>`).join('')}</div>
       <div class="tc-say">${res.right===res.graded?'Every tone on target.':lines}</div>
       <div class="tc-key">grey = the native speaker · colour = you${res.learning?' · still learning your voice range, so these first grades are rough':''}</div>
-      <div class="tc-acts">${TC.url?`<button class="btn ghost sm" onclick="tcPlayMine()">▶ Mine</button>`:''}<button class="btn ghost sm" onclick="tcSay()">▶ Native</button><button class="btn ghost sm" onclick="tcAgain()">Again</button><button class="btn sm" onclick="tcNext()">${TC.host?'Done':'Next →'}</button></div>`;
+      <div class="tc-acts">${TC.url?`<button class="btn ghost sm" onclick="tcPlayMine()">▶ Mine</button>`:''}<button class="btn ghost sm" onclick="tcSay()">▶ Native</button><button class="btn ghost sm" onclick="tcAgain()">Again</button><button class="btn sm" onclick="tcNext()">${TC.host?'Done':'Next →'}</button></div>
+      <div class="small muted kbh" style="text-align:center;margin-top:8px"><kbd>enter</kbd> ${TC.host?'done':'next'} · <kbd>A</kbd> again · <kbd>L</kbd> listen</div>`;
   }else{
     body=`<div class="hint" style="margin-top:10px">listen · then record yourself saying it${w.phr?' · the system voice reads phrases':''}</div>
       ${TC.focus&&TC.i===0?`<div class="small muted" style="text-align:center;margin-top:6px">${TC.focus.manual?`This round: ten words of ${tcFocusName(TC.focus)}.`:`This round leans on ${tcFocusName(TC.focus)} — your hardest so far.`}</div>`:''}
       ${TC.err?`<div class="tc-err">${esc(TC.err)}</div>`:''}
       <div class="row" style="justify-content:center;gap:10px;margin-top:14px"><button class="btn ghost" onclick="tcSay()">▶ Listen</button>
         <button class="btn tc-rec ${st==='rec'?'on':''}" onclick="tcRecord()" ${st==='think'?'disabled':''}>${st==='rec'?'■ Stop':st==='think'?'Listening…':'● Record'}</button></div>
-      <div class="small muted" style="text-align:center;margin-top:10px">${st==='rec'?'recording — it stops by itself':TC.host?'':'<span class="link" onclick="tcNext()">skip this '+(w.phr?'phrase':'word')+'</span>'}</div>`;
+      <div class="small muted" style="text-align:center;margin-top:10px">${st==='rec'?'recording — it stops by itself':TC.host?'':'<span class="link" onclick="tcNext()">skip this '+(w.phr?'phrase':'word')+'</span>'}</div>
+      <div class="small muted kbh" style="text-align:center;margin-top:8px"><kbd>space</kbd> record · <kbd>L</kbd> listen</div>`;
   }
   el.innerHTML=head+`<div class="stage" style="min-height:300px">${word}${body}</div>`;
 }
