@@ -19,7 +19,9 @@ BreezyVoice setup on this Mac lives in `~/.cache/zika-voice/bv/` (Miniforge, a P
 - The clone copies the reference's speaking pace as well as its sound.
 - Claude cannot hear audio. Whisper listen-back catches gross failures on words of two or more syllables but is unreliable on single syllables; Thorne has to approve the sound by ear before a pack ships.
 
-After building or extending a pack, bump `ASSETS` in `sw.js` and run `node tools/check.mjs`, which reports every word without a clip.
+After changing a pack that devices may already hold, bump `ASSETS` in `sw.js` (assets are cache-first, so an unchanged name keeps serving the old file). A brand-new pack needs no bump. Either way run `node tools/check.mjs`, which reports every word without a clip.
+
+The 雲哲 pack (`audio-tw-m`, 2,044 clips, every word and character through Book 3 Lesson 4) was built in November 2026 with `tools/build_voice_pack.py --voice zh-TW-YunJheNeural --out audio-tw-m --pause 2.0`. The read-aloud service lets a few dozen requests through and then refuses for a minute or two, so expect about 190 clips an hour; the builder backs off and resumes by itself, and a second run fills any clips that failed.
 
 ## Tone coach (聲調教練, beta; analysis rebuilt in v52)
 
