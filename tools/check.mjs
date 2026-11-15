@@ -124,6 +124,51 @@ if (WORDS && BOOKS) {
 try { const mf = JSON.parse(read('manifest.webmanifest')); for (const i of mf.icons || []) if (!existsSync(join(root, i.src))) fail(`manifest: missing icon ${i.src}`); }
 catch (e) { fail('manifest.webmanifest is not valid JSON'); }
 
+/* 6. the tone coach still hears tones. Glides with the textbook shape of each tone are synthesised at a low, a middle
+      and a high voice and put through the app's own analysis (the code between `const TC_SR=` and the "who is speaking"
+      comment). It needs no recordings, so it runs on every release; tools/tone_lab.mjs is the real measurement. */
+try {
+  const vm = await import('node:vm');
+  const at = re => { const i = lines.findIndex(l => re.test(l)); if (i < 0) throw new Error('marker not found: ' + re); return i; };
+  const src = lines.slice(at(/^const toneMarks=/), at(/^const PY_RUN=/)).join('\n') + '\n' + lines.slice(at(/^function toneSeq\(/), at(/^function esc\(/)).join('\n') + '\n'
+    + lines.slice(at(/^const TC_SR=/), at(/^\/\* -+ who is speaking/)).join('\n') + '\nthis.api={tcTrack,tcClean,tcAnalyse,tcJudge,tcExpected};';
+  const ctx = vm.createContext({ Math, Float32Array, Int8Array, Array, Object, Map, Set, String, Number, isNaN, Infinity, NaN });
+  vm.runInContext(src, ctx); const tc = ctx.api;
+  /* a tone as [time 0–1, height 0–1 of the voice's range] */
+  const SHAPE = { 1: [[0, .86], [1, .86]], 2: [[0, .38], [.25, .36], [1, .9]], 3: [[0, .36], [.45, .06], [.7, .05], [1, .24]], 4: [[0, .95], [1, .12]] };
+  const voice = (lo, hi) => ({ lo, hi, sp: { base: 12 * Math.log2(Math.sqrt(lo * hi) / 100), sd: 12 * Math.log2(hi / lo) / 4 } });
+  const say = (v, tones, gap) => {                         /* sawtooth syllables of 0.36 s, `gap` seconds apart, with room either side */
+    const sr = 16000, x = []; let ph = 0; const silence = t => { for (let i = 0; i < t * sr; i++) x.push(0); };
+    silence(0.3);
+    tones.forEach((t, k) => { const pts = SHAPE[t], n = Math.round(0.36 * sr);
+      for (let i = 0; i < n; i++) { const u = i / n; let j = 0; while (j < pts.length - 2 && u > pts[j + 1][0]) j++;
+        const h = pts[j][1] + (pts[j + 1][1] - pts[j][1]) * (u - pts[j][0]) / (pts[j + 1][0] - pts[j][0]), f = v.lo * Math.pow(v.hi / v.lo, h);
+        ph += f / sr; ph -= Math.floor(ph); const env = Math.min(1, i / 400, (n - i) / 400); x.push(0.5 * env * (2 * ph - 1)); }
+      if (k < tones.length - 1) silence(gap); });
+    silence(0.3); return Float32Array.from(x);
+  };
+  const bad = [];
+  for (const [name, v] of [['a low voice', voice(85, 190)], ['a middle voice', voice(130, 280)], ['a high voice', voice(180, 380)]]) {
+    for (const t of [1, 2, 3, 4]) { const r = tc.tcAnalyse(say(v, [t], 0), 16000, 1, v.sp);
+      if (!r || !r.syl[0] || r.syl[0].tone !== t) bad.push(`${name}: tone ${t} heard as ${r && r.syl[0] ? 'tone ' + r.syl[0].tone : 'nothing'}`);
+      else for (const o of [1, 2, 3, 4]) if (o !== t && tc.tcJudge(r.syl[0], o) === 'ok') bad.push(`${name}: a tone ${t} passes as tone ${o}`); }
+    for (const pair of [[1, 4], [4, 2], [2, 3], [3, 1], [2, 4], [4, 4]]) for (const gap of [0.09, 0]) {     /* two syllables, with a pause and run together */
+      const r = tc.tcAnalyse(say(v, pair, gap), 16000, 2, v.sp), got = r && r.syl.length === 2 && r.syl.every(Boolean) ? r.syl.map(s => s.tone).join('') : 'no two syllables';
+      if (got !== pair.join('')) bad.push(`${name}: tones ${pair.join(' + ')}${gap ? '' : ' run together'} heard as ${got}`); }
+  }
+  /* the cleaner: a voice may fall more than an octave inside one tone and must be left alone; a creaky low tone
+     that flickers between a note and the octave below it must come out as one line */
+  const jumps = st => { let m = 0, prev = NaN; for (const v of st) { if (isNaN(v)) continue; if (!isNaN(prev)) m = Math.max(m, Math.abs(v - prev)); prev = v; } return m; };
+  const fall = Float32Array.from({ length: 70 }, (_, i) => i < 5 || i > 64 ? 0 : i < 35 ? 200 * Math.pow(85 / 200, (i - 5) / 29) : 85);
+  const cf = tc.tcClean(fall), first = cf.find(v => !isNaN(v)), last = Array.from(cf).reverse().find(v => !isNaN(v));
+  if (!(first - last > 13) || jumps(cf) > 3) bad.push(`tcClean: a fall of more than an octave was altered (fell ${(first - last).toFixed(1)} semitones, largest step ${jumps(cf).toFixed(1)})`);
+  const creak = Float32Array.from({ length: 60 }, (_, i) => i < 5 || i > 54 ? 0 : (i > 22 && i < 38 && i % 3 !== 0) ? 77 : 154);
+  if (jumps(tc.tcClean(creak)) > 3) bad.push(`tcClean: octave flicker in a creaky stretch was not repaired (largest step ${jumps(tc.tcClean(creak)).toFixed(1)} semitones)`);
+  if (tc.tcExpected('nǐ hǎo').join('') !== '23' || tc.tcExpected('zhǎnlǎnguǎn').join('') !== '223' || tc.tcExpected('búyào').join('') !== '24') bad.push('tcExpected: third-tone sandhi or pinyin reading changed');
+  if (bad.length) fail('tone coach self-test (synthetic tones through the app\'s analysis):\n      ' + bad.join('\n      '));
+  else note('tone coach: 12 synthetic tones and 36 two-syllable takes heard right at three voices; octave fall kept, octave flicker repaired');
+} catch (e) { fail('tone coach self-test could not run: ' + e.message); }
+
 for (const n of notes) console.log('  · ' + n);
 if (problems.length) { console.error('\nFAILED\n' + problems.map(p => '  ✗ ' + p).join('\n')); process.exit(1); }
 console.log(`\nOK — v${appV}`);
