@@ -15,7 +15,14 @@ The release area: `tools/check.mjs`, `README.md`, `CLAUDE.md`, `docs/`, `.gitign
 1. Make the change. Bump `APP_VERSION` in `index.html` and `VERSION` in `sw.js` to the same number. Bump `ASSETS` in `sw.js` only if a file under `assets/` changed.
 2. `node tools/check.mjs`
 3. Serve locally (`python3 -m http.server 8791 --bind 127.0.0.1`; port 8765 is taken by another project on this Mac) and smoke-test: open every tab, start a review, grade a card, run one drill, check the console. Check a 390-px-wide frame for iPhone, ~820 px for iPad upright, and 1180 × 796 for Thorne's iPad (10th generation) on its side: there the answer side of a review card and its grade buttons must fit without scrolling. Load the page with a throw-away query (`index.html?t=1`) so the service worker does not hand back the previous build.
-4. Commit as `vNN — what changed` and push `main`.
+4. Commit as `vNN — what changed` and push `main`. Two minutes later, confirm the live copy is the one you pushed: `sw.js` on the site carries the new `VERSION`, and `index.html` there has the same `shasum` as the local file.
+
+How to do step 3 from Claude in Chrome, learned the slow way:
+
+- **Resizing the window does not resize the page.** Open any file on the local origin (the manifest will do), replace the document with same-origin iframes of 390 × 844 and 1180 × 820 pointing at `index.html?t=…`, and screenshot those.
+- **Reach into a frame with `frame.contentWindow.eval('…')`.** The app's state lives in top-level `let` and `const`, which are not properties of `window`; assigning `frame.contentWindow.drillScope = …` changes nothing.
+- **Check the deck before touching it.** The local origin (`127.0.0.1:8791`) held an unpaired throw-away deck in November 2026; confirm `SYNC.code` is empty before grading cards or saving, so a test never reaches the real sync room. Do not run tests on the live site's origin.
+- **Anything that records** (tone coach, 口試, the speaking drill) can be driven without a microphone prompt: replace `navigator.mediaDevices.getUserMedia` in the frame with a function that returns `audioContext.createMediaStreamDestination().stream`, with an oscillator connected to it. A sawtooth gliding 250 → 130 Hz is a fourth tone. The context only runs after a real click in that frame.
 
 A change that touches only documentation or `tools/` does not need a version bump: nothing the devices load has changed. Commit it with a plain description instead of a `vNN` title.
 
