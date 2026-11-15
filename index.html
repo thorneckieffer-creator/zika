@@ -913,7 +913,7 @@ textarea.myin{min-height:120px;resize:vertical;line-height:1.5}
 <div id="printSheet"></div>
 <script>
 /* ============ VERSION ============ */
-const APP_VERSION=57;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
+const APP_VERSION=58;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
 
 /* ============ THEME ============ */
 function curTheme(){return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';}
@@ -5652,6 +5652,11 @@ function tcTrack(x,sr){
   for(const v of st)if(!isNaN(v))voiced.push(v);
   return {st,rms:f0.rms,voiced,med:voiced.length?voiced.slice().sort((a,b)=>a-b)[voiced.length>>1]:NaN};
 }
+/* how loud the loud part of a take is (95th percentile of the frame loudness). The human recordings, turned down
+   until this fell to about 0.003, lost twelve points of accuracy; at 0.009 they lost none. Below TC_QUIET the
+   coach asks for a louder take instead of guessing. */
+function tcLoud(tr){const a=Array.from(tr.rms).sort((x,y)=>x-y);return a.length?a[Math.floor(a.length*0.95)]:0;}
+const TC_QUIET=0.005;
 /* a track → per syllable its contour and the tone it sounds like. `sp` is the speaker's {base, sd}; without it
    the take is judged against its own middle. Pass `tr` to reuse a track instead of analysing the audio again. */
 function tcAnalyse(x,sr,count,sp,tr){
@@ -5803,9 +5808,10 @@ const TC_CAL='大家好，我現在在臺灣學中文。我每天都練習聽、
 async function tcCalDone(blob){
   TC.busy=true; TC.state='think'; tcRender();
   try{
-    const a=await tcDecode(await blob.arrayBuffer());
-    tcLearn(tcTrack(a.x,a.sr).voiced); save();
-    if(S.vp.n>=300){TC.state='ask';TC.err='';toast('Got it — the coach now knows your voice range');}
+    const a=await tcDecode(await blob.arrayBuffer()), tr=tcTrack(a.x,a.sr), quiet=tcLoud(tr)<TC_QUIET;
+    if(!quiet){tcLearn(tr.voiced); save();}
+    if(quiet){TC.state='cal';TC.err='That was very quiet — hold the microphone closer and read it again.';}
+    else if(S.vp.n>=300){TC.state='ask';TC.err='';toast('Got it — the coach now knows your voice range');}
     else{TC.state='cal';TC.err='I need a little more of your voice — read the whole sentence at a normal pace.';}
   }catch(e){TC.state='cal';TC.err='That recording could not be read. Try again.';}
   TC.busy=false; tcRender();
@@ -5830,7 +5836,9 @@ async function tcGrade(input){
     const mine=input.x?input:await tcDecode(await input.arrayBuffer());
     if(TC.url)URL.revokeObjectURL(TC.url); TC.url=input.x?null:URL.createObjectURL(input);
     const want=tcExpected(w.p), n=want.length, written=toneSeq(w.p);
-    const rough=tcAnalyse(mine.x,mine.sr,n,null);
+    const tr=tcTrack(mine.x,mine.sr);
+    if(tr.voiced.length>=6&&tcLoud(tr)<TC_QUIET){ TC.err='That take was very quiet — hold the microphone closer, or speak up a little.'; TC.state='ask'; TC.busy=false; tcRender(); return; }
+    const rough=tcAnalyse(null,0,n,null,tr);
     if(!rough||rough.syl.length!==n||rough.syl.some(s=>!s)){ TC.err=rough?'I could not find '+n+' clear syllable'+(n>1?'s':'')+' in that take — say it a little slower and closer to the microphone.':'I could not hear a voice in that take. Check the microphone and try again.'; TC.state='ask'; TC.busy=false; tcRender(); return; }
     const me=tcUserStats(rough.med), got=tcAnalyse(null,0,n,me,rough.tr);
     let ref=null; const clip=await tcClip(audioKey(w.t)); if(clip){const ns=await tcNativeStats(); ref=tcAnalyse(clip.x,clip.sr,n,ns);}

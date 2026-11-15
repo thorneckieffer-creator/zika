@@ -131,7 +131,7 @@ try {
   const vm = await import('node:vm');
   const at = re => { const i = lines.findIndex(l => re.test(l)); if (i < 0) throw new Error('marker not found: ' + re); return i; };
   const src = lines.slice(at(/^const toneMarks=/), at(/^const PY_RUN=/)).join('\n') + '\n' + lines.slice(at(/^function toneSeq\(/), at(/^function esc\(/)).join('\n') + '\n'
-    + lines.slice(at(/^const TC_SR=/), at(/^\/\* -+ who is speaking/)).join('\n') + '\nthis.api={tcTrack,tcClean,tcAnalyse,tcJudge,tcExpected};';
+    + lines.slice(at(/^const TC_SR=/), at(/^\/\* -+ who is speaking/)).join('\n') + '\nthis.api={tcTrack,tcClean,tcLoud,TC_QUIET,tcAnalyse,tcJudge,tcExpected};';
   const ctx = vm.createContext({ Math, Float32Array, Int8Array, Array, Object, Map, Set, String, Number, isNaN, Infinity, NaN });
   vm.runInContext(src, ctx); const tc = ctx.api;
   /* a tone as [time 0–1, height 0–1 of the voice's range] */
@@ -164,6 +164,10 @@ try {
   if (!(first - last > 13) || jumps(cf) > 3) bad.push(`tcClean: a fall of more than an octave was altered (fell ${(first - last).toFixed(1)} semitones, largest step ${jumps(cf).toFixed(1)})`);
   const creak = Float32Array.from({ length: 60 }, (_, i) => i < 5 || i > 54 ? 0 : (i > 22 && i < 38 && i % 3 !== 0) ? 77 : 154);
   if (jumps(tc.tcClean(creak)) > 3) bad.push(`tcClean: octave flicker in a creaky stretch was not repaired (largest step ${jumps(tc.tcClean(creak)).toFixed(1)} semitones)`);
+  /* a take that is too quiet to judge is told apart from one that is merely soft */
+  { const v = voice(130, 280), x = say(v, [4], 0), at = g => tc.tcLoud(tc.tcTrack(x.map(s => s * g), 16000));
+    if (!(at(1) > tc.TC_QUIET && at(0.05) > tc.TC_QUIET && at(0.004) < tc.TC_QUIET)) bad.push(`tcLoud: the too-quiet line moved (full ${at(1).toFixed(4)}, soft ${at(0.05).toFixed(4)}, faint ${at(0.004).toFixed(4)}, line ${tc.TC_QUIET})`);
+    const soft = tc.tcAnalyse(x.map(s => s * 0.05), 16000, 1, v.sp); if (!soft || !soft.syl[0] || soft.syl[0].tone !== 4) bad.push('a soft fourth tone (a twentieth of full level) is no longer heard as tone 4'); }
   if (tc.tcExpected('nǐ hǎo').join('') !== '23' || tc.tcExpected('zhǎnlǎnguǎn').join('') !== '223' || tc.tcExpected('búyào').join('') !== '24') bad.push('tcExpected: third-tone sandhi or pinyin reading changed');
   if (bad.length) fail('tone coach self-test (synthetic tones through the app\'s analysis):\n      ' + bad.join('\n      '));
   else note('tone coach: 12 synthetic tones and 36 two-syllable takes heard right at three voices; octave fall kept, octave flicker repaired');
