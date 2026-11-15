@@ -14,7 +14,7 @@ One list of what is not done, by area. Take an item off when it ships; add one w
 
 - **Thorne's own voice** (`me`, `audio-me`). The recorder page, the BreezyVoice builder and the app slot shipped in v42; the pack itself is not built. It ships only after Thorne approves the sound by ear ([voice.md](voice.md)).
 - **雲哲 male pack** (`audio-tw-m`): Thorne prefers a native voice to the clone of his own ("it doesn't sound like me"). The read-aloud service came back, and a slow-paced build (`--pause 2`) is the way to finish it.
-- **Tone coach**: the analysis was rebuilt and measured against ten voices in v52, and rounds now lean on the learner's weakest tone or tone pair ([voice.md](voice.md#tone-coach-聲調教練-beta-analysis-rebuilt-in-v52)). v53 added the tone-pair map (tap a pair, practise ten words of it). Next: Thorne's verdict on a real microphone; sentence practice; more human voices (men above all) in `tools/tone_lab.mjs`; neutral tones.
+- **Tone coach**: the analysis was rebuilt and measured against ten voices in v52, and rounds now lean on the learner's weakest tone or tone pair ([voice.md](voice.md#tone-coach-聲調教練-beta-analysis-rebuilt-in-v52)). v53 added the tone-pair map (tap a pair, practise ten words of it); v54 put a "check my tones" microphone on the answer side of every review card. Next: Thorne's verdict on a real microphone; sentence practice; more human voices (men above all) in `tools/tone_lab.mjs`; neutral tones.
 - **Stories** cover Book 3 Lessons 1–4; Books 1–2 lessons and more settings per lesson are still to write ([content.md](content.md)).
 - **Book 3 words have no bundled clips.** The 曉臻 pack predates them, so 338 words and characters play in the system voice (`node tools/check.mjs` lists them).
 

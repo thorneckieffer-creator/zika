@@ -50,7 +50,7 @@ How it should look and why is in [design.md](design.md). The pieces:
 - `shCourse()` is the *Where you are* sheet: `shSetLesson()` sets `S.settings.curLesson`; the name is `S.settings.userName`.
 - Tabs created after start-up get their icon from `TAB_ICON` through `shTabIcons()`.
 
-- Phones (≤700 px): the tab bar is fixed to the bottom — Today, Review, Drill, 大考試, More. The other tabs carry class `t2` and sit behind More. Tablets and desktop keep the top bar.
+- Phones (≤700 px): the tab bar is fixed to the bottom — Today, Review, Drill, 大考試, More. The other tabs carry class `t2` and sit behind More. Tablets and desktop keep the top bar. In Review the grade buttons are sticky just above that bar (`#vRev .grades`), so a long answer never pushes them off the screen.
 - The page never zooms (`maximum-scale=1`, `touch-action: pan-x pan-y`): it is an app, not a document.
 - Refresh: the ↻ button, pull-down inside the Home Screen app, and `checkForUpdate()` when the app returns to the foreground (it compares `sw.js` on the server with `APP_VERSION`).
 
