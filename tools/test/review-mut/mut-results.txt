@@ -1,0 +1,79 @@
+noObserve          unit: survives   sim: survives
+noDrift            unit: CAUGHT (1)   sim: survives
+      clock: a stamp from far in the future does not move this clock, and an edit after it sti
+      failing tests:
+noBlind            unit: CAUGHT (1)   sim: survives
+      cards: adding a lesson on one device does not wipe reviews another device did on its car
+      failing tests:
+startHard          unit: CAUGHT (1)   sim: survives
+      start-up housekeeping never overrules what a person did on another device (17.355625ms)
+      failing tests:
+legacyWinsAll      unit: CAUGHT (7)   sim: survives
+      first sync: empty cloud takes the device's deck; an empty device takes the cloud's (10.8
+      first sync: both sides hold data — merged record by record, nobody is asked to pick a si
+      import: a whole-deck blob becomes records; importing again changes nothing (6.194416ms)
+      import: on two devices at once — one deck, nothing counted twice; asked for before the f
+      import: an old blob never overrules newer progress, and fills what is missing (15.665333
+      the app could not store S after the engine changed it: the shadow is dropped, and the ol
+      syFirebase: the adapter drives an SDK with the modular signatures (10.198ms)
+      failing tests:
+legacyCardNever    unit: CAUGHT (3)   sim: survives
+      first sync: both sides hold data — merged record by record, nobody is asked to pick a si
+      import: an old blob never overrules newer progress, and fills what is missing (16.641667
+      a full disk: the shadow is dropped rather than left stale, and the next start merges aga
+      failing tests:
+noFlagRank         unit: CAUGHT (1)   sim: survives
+      migration flags: a flag set anywhere is set everywhere and can never be unset (15.87225m
+      failing tests:
+ackAny             unit: CAUGHT (1)   sim: survives
+      a record changed again while its batch is on its way stays pending until the newer versi
+      failing tests:
+cursorNow          unit: survives   sim: survives
+afterNoBase        unit: CAUGHT (2)   sim: CAUGHT
+      clock: a stamp from far in the future does not move this clock, and an edit after it sti
+      cards: an edit made after seeing the other device's version wins even when this clock is
+      failing tests:
+staleShadowKept    unit: survives   sim: survives
+tellKeepsShadow    unit: CAUGHT (1)   sim: survives
+      the app could not store S after the engine changed it: the shadow is dropped, and the ol
+      failing tests:
+noMnRank           unit: CAUGHT (1)   sim: survives
+      My words: words, their cards, edits and deletions; the id counter only goes up (16.0705m
+      failing tests:
+noFrozen           unit: survives   sim: survives
+noOffset           unit: survives   sim: survives
+noOrder            unit: CAUGHT (8)   sim: CAUGHT
+      lists: a reorder (move to top) reaches the other device, and later additions go to the e
+      lists: My words topics — rename, delete, add and the id counter (18.561333ms)
+      first sync: empty cloud takes the device's deck; an empty device takes the cloud's (4.71
+      first sync: two devices with the same old deck join at the same moment — nothing is coun
+      apply: the same records in any order, with repeats, give the same deck (3287.931208ms)
+      import: a whole-deck blob becomes records; importing again changes nothing (5.68675ms)
+      import: on two devices at once — one deck, nothing counted twice; asked for before the f
+      syFirebase: the adapter drives an SDK with the modular signatures (8.118417ms)
+      failing tests:
+softIsHard         unit: CAUGHT (1)   sim: survives
+      start-up housekeeping never overrules what a person did on another device (13.461625ms)
+      failing tests:
+softCardNoLast     unit: CAUGHT (3)   sim: survives
+      first sync: both sides hold data — merged record by record, nobody is asked to pick a si
+      import: an old blob never overrules newer progress, and fills what is missing (13.743083
+      a full disk: the shadow is dropped rather than left stale, and the next start merges aga
+      failing tests:
+tallyDropRemote    unit: CAUGHT (9)   sim: CAUGHT
+      cards: a deleted card stays deleted — a device that was offline does not bring it back (
+      drill tallies and whole-field records travel; S.conf does not (11.759834ms)
+      first sync: empty cloud takes the device's deck; an empty device takes the cloud's (7.02
+      first sync: both sides hold data — merged record by record, nobody is asked to pick a si
+      first sync with join: "cloud" drops what the device holds (7.195459ms)
+      apply: the same records in any order, with repeats, give the same deck (67.56175ms)
+      a full disk: the shadow is dropped rather than left stale, and the next start merges aga
+      the app could not store S after the engine changed it: the shadow is dropped, and the ol
+      syFirebase: the adapter drives an SDK with the modular signatures (7.550958ms)
+      failing tests:
+lostNotReported    unit: CAUGHT (3)   sim: survives
+      cards: the same card reviewed on two offline devices — the later review wins on both, wh
+      My words: two offline devices that hand out the same id — one word wins, and the device 
+      with the newer-only rule: a refused write is isolated, the cloud's version is taken, the
+      failing tests:
+done
