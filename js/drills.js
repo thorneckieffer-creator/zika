@@ -33,7 +33,6 @@ function drillWords(){
   /* a pile from the exam set */
   if(drillScope==='examset')return EXAM_POOL.map(id=>byId[id]).filter(Boolean).filter(w=>S.settings.includeNames||!isName(w));
   /* a frequency tier */
-  if(drillScope==='tier')return tierWords(TIERS[drillTier-1]||TIERS[0]).filter(w=>S.settings.includeNames||!isName(w));
   let pool;
   if(drillScope==='hard') pool=(S.hard||[]).map(id=>byId[id]).filter(Boolean);
   else if(drillScope==='due') pool=WORDS.filter(w=>MODES.some(m=>{const c=S.cards[cardId(w.id,m)];return c&&c.st!==undefined&&c.due<=Date.now();}));

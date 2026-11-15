@@ -98,25 +98,18 @@ function renderHome(){
   try{const fc=document.querySelector('#vHome .fc');if(fc){const cap=fc.nextElementSibling;(cap||fc).insertAdjacentHTML('afterend',heatmapHtml());}}catch(e){}
   /* Today hero */
   homeHero();
-  /* plan and tier panels */
-  try{const hero=document.querySelector('#vHome .card.hero');if(hero){hero.insertAdjacentHTML('afterend',planPanel()+tierPanel());ringArm(document.getElementById('vHome'));}}catch(e){}
+  /* the plan for the weekday */
+  try{const hero=document.querySelector('#vHome .card.hero');if(hero){hero.insertAdjacentHTML('afterend',planPanel());ringArm(document.getElementById('vHome'));}}catch(e){}
   /* backlog card */
   homeBacklog();
   /* quick 20 */
   try{const b=document.querySelector('#vHome .card.hero .btn.big');if(b&&!b.classList.contains('ghost'))b.insertAdjacentHTML('afterend',`<div class="row" style="justify-content:center;margin-top:8px"><span class="link small" onclick="startQuick(20)">or a quick 20 · about 5 minutes</span></div>`);}catch(e){}
   /* link card */
   homeLinkCard();
-  /* mastery-test panel */
-  try{const hero=document.querySelector('#vHome .card.hero');const bl=document.querySelector('#vHome .card.backlog');(bl||hero).insertAdjacentHTML('afterend',mtPanel());ringArm(document.getElementById('vHome'));}catch(e){}
-  /* lanes; drop the tier card */
-  try{
-  const v=document.getElementById('vHome'); const hero=v.querySelector('.card.hero'); if(hero)hero.insertAdjacentHTML('afterend',lanePanel());
-  /* the mastery test supersedes the tier card */
-  [...v.querySelectorAll('.card')].forEach(c=>{if(/追進度 · Catch-up tiers/.test(c.textContent))c.remove();});
-}catch(e){}
-  /* drop the mastery-test card; Catch-up lane button */
-  try{[...document.querySelectorAll('#vHome .card')].forEach(c=>{if(/寫字測驗 · Writing mastery test/.test(c.textContent))c.remove();});
-  const lane=[...document.querySelectorAll('#vHome .lane')].find(x=>/Catch-up/.test(x.textContent)); if(lane){const b=lane.querySelector('.btn');if(b){b.textContent='Open';b.disabled=false;b.className='btn sm ghost';b.onclick=()=>go('catch');}}
+  /* the three lanes */
+  try{const v=document.getElementById('vHome'); const hero=v.querySelector('.card.hero'); if(hero)hero.insertAdjacentHTML('afterend',lanePanel());}catch(e){}
+  /* the Catch-up lane's button opens the Catch-up tab */
+  try{const lane=[...document.querySelectorAll('#vHome .lane')].find(x=>/Catch-up/.test(x.textContent)); if(lane){const b=lane.querySelector('.btn');if(b){b.textContent='Open';b.disabled=false;b.className='btn sm ghost';b.onclick=()=>go('catch');}}
 }catch(e){}
   /* this week / last */
   try{const st=document.querySelector('#vHome .stats');if(st&&!st.querySelector('.wk')){const a=weekCards(0),b=weekCards(1);st.insertAdjacentHTML('beforeend',`<div class="stat wk"><div class="n">${a}<span class="d"> / ${b}</span></div><div class="l">this week / last</div></div>`);}}catch(e){}
@@ -325,25 +318,7 @@ function nextDueText(){
   return 'next cards '+dkey(d).slice(5).replace('-','/');
 }
 
-/* ---- catch-up tiers (追進度 gameplan, 9/7) ---- */
-const TIERS=[
- {k:1,t:'Tier 1 · on the teacher’s review sheet',d:'he has already flagged these',w:'習慣 計畫 準備 進步 認識 希望 練習 已經 正好 最好 雖然 發現 給 環境 直接 藥局 同意 趕快 不夠 喉嚨 告訴 就 麻煩 班次 離 忘 健康 便利 市區 中心'},
- {k:2,t:'Tier 2 · grammar-carrying words',d:'if a pattern is tested, these are in the sentence',w:'才 差不多 過 想起來 一邊 著 從 往 起來 還是 除了 當 按照 另外 送 祝 把 以後 以前 先 再 更 沒想到 然後',g:'快…了 · 跟…一樣 · 多／少 V · 什麼都 · 一點也不 · 不太'},
- {k:3,t:'Tier 3 · everyday nouns and verbs',d:'what a reading passage would use',w:'房東 房租 套房 客廳 廚房 浴室 熱水器 裝 付 收到 問題 需要 花 獎學金 成績 學費 替 生意 試 打工 介紹 經驗 薪水 履歷表 面談 辦公室 適合 考試 容易 漢字 流利 作業 聊天 醫生 頭痛 發燒 感冒 藥 休息 肚子 保險 關心 天氣 風 傘 颱風 濕 討厭 新聞 可怕 幫忙 迷路 路口 紅綠燈 提款機 超商 應該 郵局 地圖 經過 巷子 車站 換 禮拜 機場 交通 複雜 輕鬆 搭 生日 禮物 訂 傳統 年輕 恭喜 結婚 參加 婚禮 客人 熱鬧 慶祝 紅包'}
-];
-/* the ten patterns that keep coming back (catch-up writing list) */
-const RECUR_TGT=['就','才','一…就','都','一點','有一點','一樣','差不多','了','把','著','起來','還是'];
-/* catch-up lesson schedule from the gameplan (app lesson numbers) */
-/* reset 9/15: back to B1 L11. Weekdays are light (L6/L7 class load), weekends carry two lessons. */
-const CATCHUP_SCHED={'2026-10-03':[11],'2026-10-04':[12],'2026-10-10':[13],'2026-10-11':[14],'2026-10-17':[15],'2026-10-18':[16],'2026-10-24':[17],'2026-10-25':[18],'2026-10-31':[19],'2026-11-01':[20]}; /* October slow lane: one old lesson per weekend day, weekdays stay on the live lesson */
-
-/* ---- 4. Catch-up tiers ---- */
-function tierWords(t){const out=[];t.w.split(/\s+/).forEach(k=>{let w=WORD_BY_T[k];if(!w){const c=WORDS.filter(x=>x.t.split('（')[0].includes(k)&&!isName(x)).sort((a,b)=>a.t.length-b.t.length);w=c.find(x=>x.l>=10&&x.l<=20)||c[0];}if(w&&!out.includes(w))out.push(w);});return out;}
-function tierPanel(){return '';}
-function recurPoints(){const out=[];const cl=S.settings.curLesson||22;for(let l=1;l<=cl;l++)(GRAMMAR[l]||[]).forEach(p=>{if(p.tgt.some(t=>RECUR_TGT.includes(t)))out.push(p);});return out;}
-let drillTier=1;
-
-/* ---- 5. Weekday plan ---- */
+/* ---- the plan for the weekday ---- */
 function planAct(k,arg){
   const cl=S.settings.curLesson||26;
   if(k==='paper'){go('home');setTimeout(()=>{const c=[...document.querySelectorAll('#vHome .card')].find(x=>/paper list/i.test(x.textContent));if(c)c.scrollIntoView({behavior:'smooth',block:'start'});else toast('Nothing on tonight\u2019s paper list yet');},60);return;}

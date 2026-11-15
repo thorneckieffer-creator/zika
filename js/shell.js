@@ -95,13 +95,8 @@ function ringSvg(frac,size,stroke,cls){
 function ringArm(root){requestAnimationFrame(()=>requestAnimationFrame(()=>{(root||document).querySelectorAll('.ring .fg').forEach(c=>{c.style.strokeDashoffset=c.dataset.off;});}));}
 
 const NOTION={
-  hub:'https://app.notion.com/p/3d36bf9d399581a9a777d410d7d1c5c0',
   index:'https://app.notion.com/p/3d36bf9d399581379b21fd2b3287d808',
-  flow:'https://app.notion.com/p/3d96bf9d39958197bd8ac54df73c2cc5',
-  catchup:'https://app.notion.com/p/3d36bf9d3995810c98e0ce9e15caeb93',
-  prep:'https://app.notion.com/p/3d36bf9d39958107b30dfdca3c9ca0b3',
-  book1:'https://app.notion.com/p/3da6bf9d399581f0acdce827bfe67393',
-  chars:'https://app.notion.com/p/c38613d85f17432fbc42cdbb3a822a3d'
+  flow:'https://app.notion.com/p/3d96bf9d39958197bd8ac54df73c2cc5'
 };
 /* app lesson number → Notion lesson page (B1 L1–L9 have no page; the Grammar Index is their record) */
 const NOTION_LESSON={10:'3d36bf9d399581b6b464cdeb1d51efb7',11:'3d36bf9d399581deb910ffd3acfb8a42',12:'3d36bf9d3995815a8dfdec362e430d6e',13:'3d36bf9d3995817fb37fcbf6235dcca7',14:'3d36bf9d399581159e3dde3fd2fecb56',15:'3d36bf9d399581edbeb5d6fa40271af8',16:'3d36bf9d399581a5a577d28e1299beb8',17:'3d36bf9d3995819ca642df9fcfbb22e9',18:'3d36bf9d39958158a7f0f97fdcfbdbc7',19:'3d36bf9d3995810ba90cd7782264a696',20:'3d36bf9d399581d78edfdca54d0a13de',21:'3d36bf9d399581488639c55d7dcff58c',22:'3d36bf9d39958192862fe0b3ce623643'};
