@@ -36,12 +36,15 @@ Because the scope is shared, a function in any file can call a function in any o
 
 ## Start-up
 
-`js/boot.js` runs five steps in order: `bootLoad` (the saved deck, where sync stood), `bootMigrate` (one-time changes to older decks, each behind a flag in `S.settings`), `bootMount` (the parts of the page built by script: sync pill, the Catch-up, 大考試 and My words tabs, More, icons), `bootListen` (keyboard, touch, page lifecycle), `bootStart` (theme, the first paint, sync, the service worker, audio warm-up).
+The saved deck is read earlier than start-up, where `S` is defined in `js/core.js` (`deckLoad`), and nothing may write it until start-up says so (`DECK_READY`; see *Saving*). `js/boot.js` then runs five steps in order: `bootLoad` (is this a device with no deck; where sync stood), `bootMigrate` (one-time changes to older decks, each behind a flag in `S.settings`), `bootMount` (the parts of the page built by script: sync pill, the Catch-up, 大考試 and My words tabs, More, icons), `bootListen` (keyboard, touch, page lifecycle), `bootStart` (theme, the first paint, sync, the service worker, audio warm-up).
 
-- A new one-time migration goes at the end of `bootMigrate` with a new flag ([CLAUDE.md](../CLAUDE.md), rule 3).
+- A new one-time migration goes at the end of `bootMigrate` with a new flag ([CLAUDE.md](../CLAUDE.md), rule 3), and the flag is added to `BOOT_FLAGS` so that a device with no deck (`bootFresh`) starts with it set instead of running it.
+- **A device with no deck** starts clean at Book 1 Lesson 1 and gets the welcome sheet (`shWelcome` in `js/shell.js`); `S.settings.born` marks such a deck. Decks without it are the first learner's and keep his defaults and Notion links (`linksOn`).
 - **What start-up writes by itself must not look like work the learner did.** The day's time-lapse entry and the three oldest migrations store the deck with `saveLocal()`, which writes to the device and queues the backup but does not mark the device as holding unsent changes. A start-up `save()` on an idle linked device raises a sync conflict when another device is ahead; the harness's `open-*` scenarios hold this in place.
 
 ## Saving
+
+Every write of the deck to the device goes through `deckStore()` (`js/core.js`), which refuses before start-up has loaded the deck (`DECK_READY`) and refuses to put a deck with no cards over a stored one that has cards unless the learner asked for that (`DECK_EMPTY_OK`: erase, import, restore, taking the cloud's copy). The cloud push, the backup file and the snapshots hold back in the same cases. Why: [decisions.md](decisions.md).
 
 Every change to `S` ends in `save()`. Many changes in one tick make one write (`saveNow`): the cached queue is dropped, the confidence snapshot refreshed, the deck stored, the backup file queued, and the device marked dirty with a cloud push scheduled (unless the change is the cloud's own copy being adopted).
 

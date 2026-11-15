@@ -2,6 +2,22 @@
 
 Decisions with consequences, newest first, each with its reason. Thorne asked on 15 November 2026 that Claude decide without asking and write the decisions down ([CLAUDE.md](../CLAUDE.md#the-commitment)); this is where they are written. A decision here can be changed, but change it here, with the new reason, in the same commit as the code.
 
+## 2026-11-15 — the deck cannot be written by a page that has not started
+
+Splitting the app into files opened a gap that one file never had: the page's buttons work as soon as their script has loaded, and start-up runs in the last script. At one point on `next`, a tap on the theme button in that gap saved the empty default deck over the real one, and a linked device could then send it to the cloud. The independent review found it; the harness scenario `tap-before-start` reproduces it (2,288 cards became 18) and now holds the fix in place. Three things, each enough on its own:
+
+1. The saved deck is read where `S` is defined (`deckLoad` in `js/core.js`), so `S` is never an empty deck while a saved one exists.
+2. Nothing writes the deck, the backup file, a snapshot or the cloud before `js/boot.js` has loaded and migrated it (`DECK_READY`).
+3. A deck with no cards never replaces a stored one that has cards, and is never pushed from a device that has synced before, unless the learner erased, imported, restored or chose the cloud's copy (`DECK_EMPTY_OK`). Every write of the deck goes through `deckStore()`.
+
+A new way of writing or replacing the deck must go through `deckStore()` and say so with `DECK_EMPTY_OK` if emptying is the point.
+
+## 2026-11-15 — a device with no deck starts clean
+
+Until now a new device ran every migration ever written, which gave it the first learner's history: Book 2 Lesson 11, his exam range and date, his name, links to his Notion pages. A device with no saved deck now starts at Book 1 Lesson 1 with every migration marked done (`bootFresh`), and a welcome sheet asks two things: a name, and where the class is (with "I know the lessons before this one"). Finishing it puts that lesson's words and grammar in the deck. "I already use 字卡 on another device" goes to the sync code instead.
+
+`S.settings.born` marks a deck made this way and travels with it. What is personal to the first learner is tied to decks *without* it, so nothing of his changes: the name default, the exam's default range and date, and the Notion links (hidden by one CSS rule unless `html[data-links]`, which `shLook()` sets from `linksOn()`). No migration is needed and a deck adopted from an older device keeps its links.
+
 ## 2026-11-15 — a release is stored whole on the device and served from there
 
 Before: the page was fetched from the network on every open (with a 3.5-second fallback to the last copy), and everything else was cached as it was first seen. With the app in thirty files that would have run a new page against old scripts after every release. Now `sw.js` stores the whole shell per release, lists it with a hash of each file (`tools/stamp.mjs`), and serves only from that store. A device takes a release whole or keeps the one it has; opening never waits for the network; an unchanged file is not downloaded again.

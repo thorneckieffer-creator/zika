@@ -13,11 +13,14 @@ const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; cha
 export function serve(dir, { port = 0, log = null } = {}) {
   dir = resolve(dir);
   return new Promise(done => {
-    const srv = createServer((req, res) => {
+    const srv = createServer(async (req, res) => {
       if (log) log.push(req.url);
       let p = decodeURIComponent(new URL(req.url, 'http://x').pathname); if (p.endsWith('/')) p += 'index.html';
       const f = normalize(join(dir, p));
       if (!f.startsWith(dir + sep) || !existsSync(f) || !statSync(f).isFile()) { res.writeHead(404); res.end('not found'); return; }
+      /* a page opened with ?slow=<path>&ms=<n> gets that one file late: how a start-up interrupted half-way is rehearsed */
+      const slow = /[?&]slow=([^&#]+)(?:&ms=(\d+))?/.exec(req.headers.referer || '');
+      if (slow && p.endsWith(decodeURIComponent(slow[1]))) await new Promise(r => setTimeout(r, +(slow[2] || 1200)));
       const body = readFileSync(f), range = /bytes=(\d+)-(\d*)/.exec(req.headers.range || '');
       const head = { 'Content-Type': MIME[extname(f)] || 'application/octet-stream', 'Cache-Control': 'no-store', 'Accept-Ranges': 'bytes' };
       if (range) { const a = +range[1], z = range[2] ? +range[2] : body.length - 1; res.writeHead(206, { ...head, 'Content-Range': `bytes ${a}-${z}/${body.length}` }); res.end(body.subarray(a, z + 1)); }

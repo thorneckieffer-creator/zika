@@ -155,11 +155,16 @@ function tabsSync(){
    the worker stores the new files in the background, then takes over and the page is loaded again. */
 let SW_TOUCHED=false, SW_REFRESHING=false;
 function swStart(){
-  if(!('serviceWorker' in navigator)||!/^https?:/.test(location.protocol))return;
-  /* while developing on this machine the worker stays off, so an edit shows on reload; add ?sw to the address to try it */
-  if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)&&!/[?&]sw\b/.test(location.search))return;
-  const had=!!navigator.serviceWorker.controller;   /* false on the very first visit: the worker taking over then is not a release */
+  /* "touched" = the learner has done something since the app opened; a release is never loaded over that without asking */
   ['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,()=>{SW_TOUCHED=true;},{capture:true,once:true,passive:true}));
+  if(!('serviceWorker' in navigator)||!/^https?:/.test(location.protocol))return;
+  /* while developing on this machine the worker stays off, so an edit shows on reload; add ?sw to the address to try it.
+     A worker left on this address by an earlier visit (with ?sw, or by an older version) is removed with what it stored. */
+  if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)&&!/[?&]sw\b/.test(location.search)){
+    try{navigator.serviceWorker.getRegistrations().then(rs=>{rs.forEach(r=>r.unregister());if(rs.length&&window.caches)caches.keys().then(ks=>ks.filter(k=>/^zika-(shell-|v\d)/.test(k)).forEach(k=>caches.delete(k)));}).catch(()=>{});}catch(e){}
+    return;
+  }
+  const had=!!navigator.serviceWorker.controller;   /* false on the very first visit: the worker taking over then is not a release */
   try{
     navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had)swUpdated();});
     navigator.serviceWorker.register('sw.js').catch(()=>{});
@@ -195,7 +200,8 @@ async function checkForUpdate(){
   try{
     const r=await fetch('sw.js',{cache:'no-store'}); if(!r.ok)return;
     const m=(await r.text()).match(/const VERSION = 'zika-v(\d+)'/); if(!m||+m[1]<=APP_VERSION)return;
-    if(view==='rev'&&cur)toast('A newer version of 字卡 is ready',{action:'Refresh',onAction:appRefresh,ms:20000}); else appRefresh();
+    /* never reload over something in progress (a drill, a card, a sheet being typed in): offer it instead */
+    if(SW_TOUCHED)toast('A newer version of 字卡 is ready',{action:'Refresh',onAction:appRefresh,ms:20000}); else appRefresh();
   }catch(e){}
 }
 /* the active tab is always in view on a narrow screen (scrolls the bar only, never the page) */
@@ -236,6 +242,7 @@ function shLook(){
   if(z&&z!=='sans'&&ZH_FONTS[z])r.dataset.zh=z; else delete r.dataset.zh;
   /* remembered outside the deck so the next start can paint the right look before the deck is parsed */
   try{store.setItem('zika_look',JSON.stringify({t:S.settings.theme||'auto',p:r.dataset.pal||'',a:r.dataset.accent||'',z:r.dataset.zh||''}));}catch(e){}
+  if(linksOn())r.dataset.links='1'; else delete r.dataset.links;
   const tb=document.getElementById('themeBtn'); if(tb)tb.innerHTML=SVG(curTheme()==='dark'?ICON.sun:ICON.moon);
   const mc=document.querySelector('meta[name="theme-color"]'); if(mc)mc.setAttribute('content',cssVar('--bg')||'#f3edde');
 }
@@ -256,6 +263,38 @@ function shSetLesson(v){
   v=Math.min(MAX_LN,Math.max(1,v|0)); S.settings.curLesson=v; try{drillLesson=v;}catch(e){}
   save(); badge(); shCourse(); if(view==='home')renderHome(); if(view==='set')renderSet();
 }
+/* ---------- the first run: a device with no deck (js/boot.js, bootFresh) ---------- */
+const WELCOME={ln:1,known:false,name:''};
+function shWelcome(){
+  const ln=WELCOME.ln, m=shHost();
+  m.innerHTML=`<div class="modal-card" id="shWelcomeCard">
+    <div class="sheet-h"><b>Welcome to 字卡</b></div>
+    <div class="small muted" style="margin:-4px 0 14px">Flashcards for <i>A Course in Contemporary Chinese</i>, timed so that each word comes back just before you would forget it. Two things to set; both can be changed later.</div>
+    <div class="frow"><label for="shWelName">Your name</label><input id="shWelName" class="myin" value="${esc(WELCOME.name).replace(/"/g,'&quot;')}" placeholder="Shown in the greeting" autocomplete="off" oninput="WELCOME.name=this.value"></div>
+    <div class="frow"><label>Your class is on</label>${lessonPick(ln,'WELCOME.ln=v;shWelcome()')}</div>
+    <div style="font-size:15px;font-weight:600;margin-bottom:14px">${esc(LESSON_TITLES[ln]||'')}</div>
+    ${ln>1?`<div class="set-row" style="padding:0 0 14px"><div><b>I know the lessons before this one</b><div class="d">their words skip learning and come back for a check in about three weeks</div></div>
+      <button class="tgl ${WELCOME.known?'on':''}" onclick="WELCOME.known=!WELCOME.known;shWelcome()" aria-label="I know the lessons before this one"><i></i></button></div>`:''}
+    <button class="btn big" onclick="shWelcomeDone()">Start with Book ${bookOf(ln)} · Lesson ${lnInBook(ln)}</button>
+    <div class="small muted" style="text-align:center;margin-top:12px"><span class="link" onclick="shWelcomeLink()">I already use 字卡 on another device</span></div>
+  </div>`;
+  m.style.display='flex';
+}
+/* the lesson's words and grammar go into the deck, so there is something to study at once */
+function shWelcomeDone(){
+  const ln=Math.min(MAX_LN,Math.max(1,WELCOME.ln|0)), name=WELCOME.name.trim();
+  if(name)S.settings.userName=name;
+  S.settings.curLesson=ln; try{drillLesson=ln;}catch(e){}
+  if(WELCOME.known)for(let l=1;l<ln;l++)(LESSON_WORDS[l]||[]).forEach(w=>markKnown(w.id));
+  delete S.settings.welcome;
+  trackGram(ln); qLoadLesson(ln);
+  shClose(); go('home');
+}
+/* someone with a deck on another device: straight to the sync code on Today */
+function shWelcomeLink(){shClose();go('home');const i=document.getElementById('homeCodeInp');if(i){try{i.scrollIntoView({block:'center'});}catch(e){}i.focus();}}
+/* the links to the first learner's own notes show only on decks from before the clean first run (no `born`), or where switched on */
+function linksOn(){return !S.settings.born||!!S.settings.notion;}
+
 function shHost(){let m=document.getElementById('shSheet');if(!m){m=document.createElement('div');m.id='shSheet';m.className='modal';
   m.addEventListener('click',e=>{if(e.target===m)shClose();});document.body.appendChild(m);}return m;}
 function shClose(){const m=document.getElementById('shSheet');if(m){m.style.display='none';m.innerHTML='';}}

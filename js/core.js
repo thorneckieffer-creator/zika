@@ -30,21 +30,67 @@ const KEY='shida_b1_fsrs_v2';
 
 /* ============ STATE ============ */
 let S = {cards:{}, settings:{retention:0.9, newPerDay:9, maxRev:200, modes:{rec:true,prod:true}, includeNames:false, ghost:true, earlyDrill:true, writeTarget:20, autoplayAudio:true, speechRate:0.85, voiceName:'', strokeAnim:true}, log:{}, intro:{}, hist:{d:[],s:[]} };
+/* The saved deck is read here, the moment S exists, and not at start-up: the page's buttons work as soon as their
+   script has loaded, so a tap in the gap before js/boot.js runs must never find (and then save) an empty deck.
+   Cards are "w123:rec" / "w123:prod" / "g:n22-1" -> {st:'learn'|'rev'|'relearn', S, D, due, last, reps, lapses, days, known, susp}. */
+function deckLoad(){
+  try{
+    const raw=store.getItem(KEY);
+    if(raw){const p=JSON.parse(raw); S={...S,...p, settings:{...S.settings,...(p.settings||{}), modes:{rec:true,prod:true,...((p.settings||{}).modes||{})}}};}
+    else{
+      const old=store.getItem('shida_b1_fsrs_v1');
+      if(old){ // migrate v1 (hw/mean/pin) -> v2 (rec/prod)
+        const p=JSON.parse(old);
+        const cards={};
+        for(const cid in (p.cards||{})){
+          const parts=cid.split(':'), wid=parts[0], m=parts[1], c=p.cards[cid];
+          if(m==='mean')cards[wid+':rec']=c;
+          else if(m==='hw')cards[wid+':prod']=c;
+          else if(m==='pin'){const k=wid+':prod'; if(!cards[k]||cards[k].st===undefined)cards[k]=(cards[k]&&cards[k].st!==undefined)?cards[k]:c;}
+        }
+        S.cards=cards; S.log=p.log||{}; S.intro={};
+        const os=p.settings||{};
+        S.settings.retention=os.retention||0.9;
+        S.settings.maxRev=os.maxRev||200;
+        S.settings.includeNames=!!os.includeNames;
+        S.settings.ghost=os.ghost!==false;
+        store.setItem(KEY,JSON.stringify(S));   /* stored at once under the current key; nothing else is running yet */
+      }
+    }
+  }catch(e){}
+}
+deckLoad();
+/* The one place the deck is written to this device. Two refusals protect it from a page that is not really running:
+   - nothing is written before start-up has loaded and migrated the deck (DECK_READY, set in js/boot.js);
+   - a deck with no cards never replaces a stored one that has cards, unless the learner asked for exactly that
+     (erase, import, restore, taking the cloud's copy: each sets DECK_EMPTY_OK). DECK_HELD says it was refused,
+     and while it is set nothing goes to the cloud or the backup file either. */
+let DECK_READY=false, DECK_EMPTY_OK=false, DECK_HELD=false;
+function deckStore(){
+  if(!DECK_READY)return false;
+  try{
+    if(!DECK_EMPTY_OK&&!Object.keys(S.cards||{}).length){const old=store.getItem(KEY);if(old&&/"cards":\{"/.test(old)){DECK_HELD=true;return false;}}
+    store.setItem(KEY,JSON.stringify(S)); DECK_HELD=false; return true;
+  }catch(e){return false;}
+}
 const MASTER_S=45; // days of stability = "mastered"
 /* Every change to S ends in save(). Many changes in one tick make one write (saveNow): the state is stored, the
    backup file and the cloud push are queued, and whatever cached a view of the deck is told it is stale. */
 let savePending=false;
 function save(){
+  if(!DECK_READY)return;                      /* start-up has not loaded the deck yet: nothing to save, nothing to send */
   SYNC.gen=(SYNC.gen||0)+1;                  /* a push that began before this change must not clear the dirty mark */
   if(savePending)return; savePending=true;
   queueMicrotask(()=>{savePending=false;try{saveNow();}catch(e){}});
 }
 /* store the deck on this device and queue the backup file; nothing else */
-function saveLocal(){try{store.setItem(KEY,JSON.stringify(S))}catch(e){} bkQueue();}
+function saveLocal(){if(deckStore())bkQueue();}
 function saveNow(){
   QV++;                                       /* the cached queue is out of date */
   try{S.conf=confSnapshot();}catch(e){}       /* the confidence snapshot travels with every copy of the deck */
-  try{store.setItem(KEY,JSON.stringify(S))}catch(e){}
+  if(!DECK_READY)return;
+  deckStore();
+  if(DECK_HELD)return;                        /* an empty deck was refused: it does not go to the backup or the cloud either */
   bkQueue();
   if(SYNC.applying)return;                    /* taking the cloud's copy is not a change made here */
   SYNC.dirty=true;syncMetaSave();fbSchedulePush();

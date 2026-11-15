@@ -8,7 +8,7 @@ Sizes: **phone** 390 × 844 · **iPad upright** 820 × 1180 · **iPad on its sid
 
 Entries marked *(walked)* were checked against v62 on a fresh, unlinked deck at the phone size and at 1180 × 796. Entries marked *(from the notes)* were written from the README and `docs/` and have not been walked yet. The checker cannot edit this file: the first one to test such an entry lists what it found under "Corrections to the feature map" in its report, and the session that made the change corrects the entry and removes the mark.
 
-The checker empties the deck on its own local origin before each run, so every run starts fresh. A fresh deck opens on Book 2 · Lesson 11 with four new grammar cards waiting and no word cards. To get word cards on a fresh deck: Library → open a lesson → **Study lesson**.
+The checker empties the deck on its own local origin before each run, so every run starts fresh. A fresh deck opens on the welcome sheet (below). Finish it at Book 1 · Lesson 1 and Today shows that lesson's first words and grammar cards waiting. To add another lesson's words: Library → open a lesson → **Study lesson**.
 
 ## Core path (every review, all three sizes)
 
@@ -21,6 +21,12 @@ The checker empties the deck on its own local origin before each run, so every r
 7. **Reload.** Reload the page: the card graded in step 4 is still counted, and the deck is as it was.
 8. **Night.** Tap the moon in the top bar: every screen opened so far is readable in the night colours. Tap it again.
 9. **Console.** No errors from the app's own code, and no failed request for a file the app ships.
+
+## Welcome *(new on `next`, checked by the harness scenarios `first-run*`)*
+
+- **Where:** it opens by itself on a device with no deck and no sync code. It does not open on a deck that has been studied, nor when the app is opened from a sync link.
+- **How to test:** empty the deck and reload. Type a name, pick Book 2 and a lesson, switch on "I know the lessons before this one", tap **Start**. Empty the deck again and tap "I already use 字卡 on another device".
+- **Good looks like:** a sheet titled "Welcome to 字卡" with a name field, book and lesson pickers, the lesson's title, and one filled button "Start with Book N · Lesson N". After Start: the greeting carries the name, the course chip shows the chosen lesson, the lesson's first words are waiting, earlier lessons are marked known if asked, no exam line, no links to Notion anywhere, and no "Cloud sync is off" card. The other-device link closes the sheet and puts the cursor in the sync code box on Today; the sheet returns on the next open until it is finished or a deck arrives.
 
 ## Today *(walked)*
 

@@ -163,8 +163,10 @@ function homeBacklog(){try{
 }catch(e){}}
 
 /* link card */
+/* a learner who came in through the welcome sheet and finished it is not asked again here: sync is in Settings */
+function homeUnlinkedQuiet(){return !!S.settings.born&&!S.settings.welcome;}
 function homeLinkCard(){try{
-  if(!fbConfig()||SYNC.code)return;
+  if(!fbConfig()||SYNC.code||homeUnlinkedQuiet())return;
   const host=document.getElementById('vHome'); if(!host||document.getElementById('linkCard'))return;
   const first=localEmpty();
   const html=`<div class="card linkcard" id="linkCard"><div class="lab">☁️ Cloud sync is off on this ${esc(DEVICE.name)}</div>
@@ -183,7 +185,7 @@ function homeLinkCard(){try{
 
 /* iPad card */
 function homeIpadCard(){try{
-  if(!fbConfig()||SYNC.code)return; const host=document.getElementById('vHome'); const old=document.getElementById('linkCard');
+  if(!fbConfig()||SYNC.code||homeUnlinkedQuiet())return; const host=document.getElementById('vHome'); const old=document.getElementById('linkCard');
   if((typeof isIOS==='function')&&isIOS()){const html=ipadPanel(); if(old)old.outerHTML=html; else host.insertAdjacentHTML('afterbegin',html);}
 }catch(e){}}
 
@@ -369,7 +371,7 @@ function lanePanel(){
     <div class="lane-n"><b>${c.due+c.fresh}</b><span>${c.due} due${c.fresh?` · ${c.fresh} new`:''} · ~${sec(c.due+c.fresh)} min</span></div>
     <button class="btn sm ${c.due+c.fresh?'':'ghost'}" ${c.due+c.fresh?'':'disabled'} onclick="startLane('${k}')">${c.due+c.fresh?'Start':'Clear'}</button></div>`;
   return `<div class="card"><div class="row spread" style="margin-bottom:4px"><div><div class="lab" style="margin:0">Three lanes · one queue</div><div class="small muted">same scheduler underneath; this is just where today’s cards come from</div></div></div>
-    ${row('live','This week · '+esc(lnLabel(cl-1))+' – '+esc(lnLabel(cl)),'new words at '+(S.settings.newPerDay??8)+'/day, 聽寫 write cards, this lesson’s grammar',L.live)}
+    ${row('live','This week · '+(cl>1?esc(lnLabel(cl-1))+' – ':'')+esc(lnLabel(cl)),'new words at '+(S.settings.newPerDay??8)+'/day, 聽寫 write cards, this lesson’s grammar',L.live)}
     ${row('catch','Catch-up · the shaky ones',(mt?mt+' flagged by the mastery test':'flagged by the mastery test')+' + hard list · '+(S.settings.newCatchPerDay??5)+' enter per day',L.catch)}
     ${row('maint','Maintenance · everything else','long intervals, a few a day, never dropped',L.maint)}
     <div class="small muted" style="margin-top:8px">A card graded <b>Good</b> comes back on the date under the button. ~10 reviews per new word over its first month is the planning rule, so ${(S.settings.newPerDay??8)+(S.settings.newCatchPerDay??5)} new a day settles near ${((S.settings.newPerDay??8)+(S.settings.newCatchPerDay??5))*10} reviews a day; lower either intake in Settings if that’s too many.</div></div>`;

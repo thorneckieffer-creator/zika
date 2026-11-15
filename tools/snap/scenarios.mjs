@@ -24,6 +24,8 @@ const FLAGS = ['_v18', '_v22', '_v25', '_v26', '_v28', '_v30', '_v31', '_v38'];
 const oldDeck = S => { delete S.exam; delete S.conf; delete S.my; delete S.settings.userName; delete S.settings.prodScope; S.settings.curLesson = 22; S.settings.newPerDay = 9; };
 const unlinked = { zika_sync_meta: JSON.stringify({ at: 0, dirty: false, remoteDev: '' }) };
 const linkedIdle = { zika_sync_code: CODE, zika_sync_meta: JSON.stringify({ at: T0 - 2 * DAY, dirty: false, remoteDev: 'iPad' }) };   /* linked, nothing unsent */
+/* every script but js/boot.js has loaded, and start-up has not run */
+const GAP = `typeof usRender === 'function' && typeof DRILL_SCREENS === 'object' && !window.zikaStarted`;
 const opened = [{ name: 'settings', js: `go('set')`, noShot: true }, { name: 'home', js: `go('home')`, noShot: true }, { name: 'a-little-later', js: `__tick(5000)`, noShot: true }];
 const otherSaves = change => `{ const o = JSON.parse(localStorage.getItem('shida_b1_fsrs_v2')); ${change}; __cloud.other(o, 'iPad', Date.now() + 1000); }`;
 
@@ -65,6 +67,15 @@ export const scenarios = [
 
   /* a brand-new device */
   { name: 'fresh', steps: tabs.map(t => ({ name: 'tab-' + t, js: `go('${t}')` })) },
+  /* the welcome sheet: a new learner starting at the beginning, and one joining a class that is already in Book 2 */
+  { name: 'first-run', steps: [
+    { name: 'name', js: `const i = document.getElementById('shWelName'); i.value = 'Mei'; i.dispatchEvent(new Event('input', { bubbles: true }))` },
+    { name: 'start', js: `shWelcomeDone()` }, { name: 'review', js: `go('rev')` }, { name: 'answer', js: `reveal()` },
+    { name: 'exam-tab', js: `go('exam')` }, { name: 'settings', js: `go('set')`, noShot: true }, { name: 'open-again', reload: true }] },
+  { name: 'first-run-book-2', sizes: ['phone'], steps: [
+    { name: 'pick-lesson', js: `WELCOME.ln = 22; shWelcome()` }, { name: 'know-earlier', js: `WELCOME.known = true; shWelcome()` },
+    { name: 'start', js: `shWelcomeDone()` }, { name: 'library', js: `go('lib')`, noShot: true }, { name: 'grammar', js: `go('gram')`, noShot: true }] },
+  { name: 'first-run-other-device', sizes: ['phone'], steps: [{ name: 'link-instead', js: `shWelcomeLink()` }, { name: 'close-and-reopen', reload: true }] },
   { name: 'fresh-roam', sizes: ['phone'], monkeys: [{ name: 'roam', steps: 150, seed: 5 }] },
 
   /* every tab of a deck in use, at both sizes, with pictures */
@@ -144,6 +155,14 @@ export const scenarios = [
   { name: 'open-link-same-code', fixture: 'deck', sizes: ['phone'], hash: '#sync=' + CODE, local: linkedIdle, cloud: { code: CODE, remote: 'deck', remoteAt: T0 - 3600000 }, steps: opened },
   { name: 'open-cloud-unreadable', fixture: 'deck', sizes: ['phone'], local: linkedIdle, cloud: { code: CODE }, steps: [
     { name: 'bad-copy-arrives', js: `__tick(60000); __cloud.put('rooms/' + SYNC.code + '/study_state', { v: 18, json: '{not json', device: 'iPad', device_id: 'other-device', synced_at: Date.now() + 5, bytes: 1 })`, noShot: true }] },
+
+  /* A tap before start-up has run. The page's buttons work as soon as their script has loaded, so with js/boot.js
+     arriving late (or never) a tap must not store or send an empty deck in place of the saved one. Found by the
+     independent review: at one point on the `next` branch this replaced a 2,288-card deck with an empty one. */
+  { name: 'tap-before-start', fixture: 'deck', local: unlinked, sizes: ['phone'], query: '?slow=js/boot.js&ms=900',
+    early: { when: GAP, js: `toggleTheme(); document.getElementById('setBtn').click()` }, steps: opened },
+  { name: 'tap-before-start-linked', fixture: 'deck', sizes: ['phone'], query: '?slow=js/boot.js&ms=900', local: { zika_sync_code: CODE, zika_sync_meta: JSON.stringify({ at: T0 - 2 * DAY, dirty: false, remoteDev: 'Web' }) }, cloud: { code: CODE, remote: 'deck', remoteAt: T0 - 2 * DAY },
+    early: { when: GAP, js: `toggleTheme()` }, steps: opened },
 
   /* a device in dark mode with the theme left on "auto"; a chosen look */
   { name: 'dark-auto', fixture: 'deck', scheme: 'dark', steps: [{ name: 'settings', js: `go('set')` }, { name: 'review', js: `go('rev'); reveal()` }] },

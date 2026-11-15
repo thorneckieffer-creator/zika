@@ -16,6 +16,7 @@ async function bkDel(){try{const db=await bkIDB();return new Promise(res=>{const
 /* a copy of the deck in the browser, one per day for three days, written at most every ten minutes */
 let snapLast=0;
 function snapshot(){
+  if(!DECK_READY||DECK_HELD)return;
   const n=Date.now();if(n-snapLast<600000)return;snapLast=n;
   try{
     const k=dkey(new Date());
@@ -32,7 +33,7 @@ function snapRestore(k){
     const s=JSON.parse(store.getItem(SNAPKEY)||'{}');
     if(!s[k])return;
     if(!confirm('Restore your progress as it was on '+k+'? This replaces what is in this browser now.'))return;
-    S=JSON.parse(s[k]);normalizeState(); save(); alert('Restored '+k); renderSet(); badge();
+    S=JSON.parse(s[k]);DECK_EMPTY_OK=true;normalizeState(); save(); alert('Restored '+k); renderSet(); badge();
   }catch(e){alert('Could not restore that snapshot.');}
 }
 
@@ -52,7 +53,7 @@ async function bkForget(){
   S.settings.autoBackup=false; delete S.settings.bkName; save(); renderSet();
 }
 async function bkWrite(){
-  if(!bkHandle||bkBusy)return false;
+  if(!bkHandle||bkBusy||!DECK_READY||DECK_HELD)return false;
   bkBusy=true;
   try{
     let p='granted';
@@ -62,7 +63,7 @@ async function bkWrite(){
     await w.write(JSON.stringify(Object.assign({},S,{_app:'zika',_savedAt:new Date().toISOString()}),null,1));
     await w.close();
     S.settings.lastBackup=Date.now();
-    try{store.setItem(KEY,JSON.stringify(S));}catch(e){}   /* direct write — never re-enter save() */
+    deckStore();   /* direct write — never re-enter save() */
     bkNeedPerm=false; bkBusy=false;
     const el=document.getElementById('bkStamp'); if(el)el.textContent=bkAgo();
     return true;
@@ -111,7 +112,7 @@ function bkPanel(){
         <button class="btn ghost sm" onclick="exportData()">Export</button>
         <button class="btn ghost sm" onclick="document.getElementById('impFile').click()">Import</button>
         <input id="impFile" type="file" accept=".json" style="display:none" onchange="importData(this)">
-        <button class="btn ghost sm" style="color:var(--red);border-color:#e8d5d2" onclick="if(confirm('Really erase ALL progress?')){S={cards:{},settings:S.settings,log:{},intro:{},hist:{d:[],s:[]},hard:[],pick:[]};save();renderSet();badge();}">Reset</button>
+        <button class="btn ghost sm" style="color:var(--red);border-color:#e8d5d2" onclick="if(confirm('Really erase ALL progress?')){DECK_EMPTY_OK=true;S={cards:{},settings:S.settings,log:{},intro:{},hist:{d:[],s:[]},hard:[],pick:[]};save();renderSet();badge();}">Reset</button>
       </div></div>
   </div>`;
 }

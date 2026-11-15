@@ -1,7 +1,8 @@
 /* 大考試: the exam tab. A range of lessons and a date, a pass through every word marked ✓ ~ ✗, and piles to drill or print. */
 
 const EXAM_NOTION='https://app.notion.com/p/40d6bf9d399581b39b59dc3bd855a189';
-function exGet(){S.exam=S.exam||{lo:21,hi:28,date:'2026-11-18',name:'大考試',run:null};return S.exam;}
+/* the default is the first learner's exam; a deck made by the clean first run starts with its own book so far and no date */
+function exGet(){S.exam=S.exam||(S.settings.born?{lo:bookRange(bookOf(shLesson()))[0],hi:shLesson(),date:'',name:'大考試',run:null}:{lo:21,hi:28,date:'2026-11-18',name:'大考試',run:null});return S.exam;}
 function exRes(wid){return (mtGet().res||{})[wid];}
 function exWords(ln){const X=exGet();return WORDS.filter(w=>w.l>=X.lo&&w.l<=X.hi&&(!ln||w.l===ln)&&!isName(w)&&!/[+＋]|number|noun/i.test(w.t));}
 function exIds(kind,ln){const ws=exWords(ln);
@@ -11,8 +12,8 @@ function exIds(kind,ln){const ws=exWords(ln);
   if(kind==='untested')return ws.filter(w=>!exRes(w.id)).map(w=>w.id);
   return ws.map(w=>w.id);}
 function exStats(ln){const n={n:0,m:0,l:0,h:0,todo:0};exWords(ln).forEach(w=>{const r=exRes(w.id);n.n++;if(r)n[r]++;else n.todo++;});n.done=n.n-n.todo;return n;}
-function exDays(){const X=exGet();const d=new Date(X.date+'T00:00:00'),t=new Date();t.setHours(0,0,0,0);return Math.round((d-t)/DAY);}
-function exDateLabel(){const X=exGet();const d=new Date(X.date+'T00:00:00');return ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][d.getDay()]+' '+(d.getMonth()+1)+'/'+d.getDate();}
+function exDays(){const X=exGet();if(!X.date)return -9999;const d=new Date(X.date+'T00:00:00'),t=new Date();t.setHours(0,0,0,0);return Math.round((d-t)/DAY);}
+function exDateLabel(){const X=exGet();if(!X.date)return 'no date yet';const d=new Date(X.date+'T00:00:00');return ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][d.getDay()]+' '+(d.getMonth()+1)+'/'+d.getDate();}
 /* ---- the run: a list of ids walked one by one, results written into the shared map ---- */
 const EX={revealed:false,lastSpoken:null};
 function exStart(kind,ln){
@@ -102,8 +103,8 @@ function renderExam(){
   <div class="card hero" style="padding:22px 24px">
     <div class="hero-ring">${ringSvg(tot.n?tot.done/tot.n:0,112,9,'')}<div class="hero-n"><b data-count="${tot.done}">0</b><span>tested of ${tot.n}</span></div></div>
     <div class="hero-body"><div class="lab" style="margin-bottom:4px">🎯 ${esc(X.name)} · ${esc(lnLabel(X.lo))} → ${esc(lnLabel(X.hi))} · ${esc(exDateLabel())}</div>
-      <div class="hero-line">${days>1?days+' days left':days===1?'Tomorrow':days===0?'Today':'Done'}${un?` · ${un} words still untested`:' · every word tested'}</div>
-      <div class="hero-meta"><span class="chip">✓ ${tot.m} yes</span><span class="chip">~ ${so} sorta</span><span class="chip warn">✗ ${no} hell no</span><span class="chip">${un} untested</span><a class="chip" href="${EXAM_NOTION}" target="_blank" rel="noopener" style="color:var(--blue);text-decoration:none">plan page ↗</a></div>
+      <div class="hero-line">${days>1?days+' days left':days===1?'Tomorrow':days===0?'Today':X.date?'Done':'No date set'}${un?` · ${un} words still untested`:' · every word tested'}</div>
+      <div class="hero-meta"><span class="chip">✓ ${tot.m} yes</span><span class="chip">~ ${so} sorta</span><span class="chip warn">✗ ${no} hell no</span><span class="chip">${un} untested</span><a class="chip nl" href="${EXAM_NOTION}" target="_blank" rel="noopener" style="color:var(--blue);text-decoration:none">plan page ↗</a></div>
       <div class="row" style="gap:8px;margin-top:14px;flex-wrap:wrap">
         ${un?`<button class="btn" onclick="exResume()">${live?'Continue the test':'Start the test'}</button>`:`<button class="btn ghost" onclick="exStart('all')">Re-test everything</button>`}
         ${no?`<button class="btn ${un?'ghost':''}" onclick="exStart('no')">Re-test ✗ (${no})</button>`:''}

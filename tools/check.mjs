@@ -22,11 +22,20 @@ const styles = [...html.matchAll(/<link rel="stylesheet" href="([^"?]+)/g)].map(
 const onDiskExactly = f => { const parts = f.split('/'); let dir = root; for (const p of parts) { if (!existsSync(dir) || !readdirSync(dir).includes(p)) return false; dir = join(dir, p); } return true; };
 for (const f of [...srcs, ...styles]) if (!onDiskExactly(f)) fail(`index.html loads ${f}, which does not exist under exactly that name`);
 if (!styles.length) fail('index.html: no stylesheet is linked');
+for (const f of styles.filter(f => existsSync(join(root, f)))) { const css = read(f).replace(/\/\*[\s\S]*?\*\//g, ''), open = (css.match(/\{/g) || []).length, close = (css.match(/\}/g) || []).length;
+  if (open !== close || open < 500) fail(`${f}: ${open} opening braces and ${close} closing ones — the file is cut off or damaged`); }
+/* order: the course data first, then the app with js/core.js before every other script of it */
+{ const firstJs = srcs.findIndex(f => f.startsWith('js/')), lastData = srcs.reduce((n, f, i) => (f.startsWith('data/') ? i : n), -1);
+  if (lastData > firstJs) fail('index.html: every data/ script must come before the first js/ script');
+  if (srcs[firstJs] !== 'js/core.js') fail('index.html: js/core.js must be the first script of the app (it defines the deck and reads the saved one)'); }
+/* what the worker fetches into its long-lived cache exists */
+for (const m of (read('sw.js').match(/const ASSET_FILES = \[([^\]]*)\]/) || ['', ''])[1].matchAll(/'\.\/([^'?]+)/g)) if (!onDiskExactly(m[1])) fail(`sw.js: ASSET_FILES names ${m[1]}, which does not exist`);
 for (const f of ['data/course.js', 'data/words.js', 'data/grammar.js', 'data/components.js', 'data/readings.js', 'data/usage.js']) if (!srcs.includes(f)) fail(`index.html does not load ${f}`);
 if (!/window\.zikaStarted=true/.test(read('js/boot.js'))) fail('js/boot.js: the last line must set window.zikaStarted (index.html reports a failed start by its absence)');
 for (const f of onDisk) if (!code.includes(f)) fail(`${f} is not loaded by index.html`);
 if (code[code.length - 1] !== 'js/boot.js') fail('index.html: js/boot.js must be the last script (it starts the app once everything is defined)');
-for (const f of [...code, 'data/course.js', 'sw.js'].filter(f => existsSync(join(root, f)))) {
+/* the data files and the two libraries are scripts too: a cut-off file or an unclosed comment is a syntax error in the browser */
+for (const f of [...new Set([...srcs, 'sw.js', 'assets/hanzi-writer.min.js'])].filter(f => existsSync(join(root, f)))) {
   try { execFileSync(process.execPath, ['--check', join(root, f)], { stdio: 'pipe' }); }
   catch (e) { fail(`${f} does not parse\n` + String(e.stderr || e.message).split('\n').slice(0, 6).join('\n')); }
 }
@@ -62,7 +71,8 @@ const data = name => {
   try { return JSON.parse(line.slice(`const ${name} = `.length).replace(/;\s*$/, '')); }
   catch (e) { fail(`${file}: ${name} is not valid JSON (${e.message})`); return null; }
 };
-const WORDS = data('WORDS'), GRAMMAR = data('GRAMMAR'), COMPONENTS = data('COMPONENTS');
+const WORDS = data('WORDS'), GRAMMAR = data('GRAMMAR'), COMPONENTS = data('COMPONENTS'), READINGS = data('READINGS');
+if (READINGS && !Object.keys(READINGS).length) fail('data/readings.js: no stories');
 
 const booksSrc = (course.match(/const BOOKS\s*=\s*(\[[^\n]*\]);/) || [])[1];
 let BOOKS = null;

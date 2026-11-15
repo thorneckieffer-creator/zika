@@ -95,8 +95,7 @@ def main():
             if part not in COMP and entry(part):
                 pe = entry(part); pe.pop('d', None); COMP[part] = pe
     if added:
-        lines[ic] = 'const COMPONENTS = ' + json.dumps(COMP, ensure_ascii=False, separators=(',', ':')) + ';'
-        path.write_text('\n'.join(lines), encoding='utf-8')
+        applib.write_data('COMPONENTS', COMP)
     print(f'components: {added} added, {len(nodata)} without dictionary data' + (': ' + ''.join(nodata) if nodata else ''))
 
 

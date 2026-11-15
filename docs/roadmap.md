@@ -22,7 +22,7 @@ One list of what is not done, by area. Take an item off when it ships; add one w
 
 Next for the product:
 
-- **Other users.** The plan, in order, is in [multi-user.md](multi-user.md): a clean first run, accounts, storage per person, sync by card.
+- **Other users.** The plan, in order, is in [multi-user.md](multi-user.md). The clean first run is done on `next` (a device with no deck starts at Book 1 Lesson 1 with a welcome sheet; [decisions.md](decisions.md)). Next: accounts, storage per person, sync by record — designed on the branches `users-accounts` and `users-sync`, not yet wired in. Still Thorne-shaped for a new learner: the weekday plan's wording, the 口試 day, and the copy on the unlinked-device card.
 - **My words:** share a deck with someone else; count its reviews toward the streak; meanings for what the dictionary does not hold (slang such as 沒差 and whole phrases get pinyin from their parts and no meaning; a language model could write one, which needs a small server to keep its key, so it belongs with the accounts work in [multi-user.md](multi-user.md)); looking a word up by its simplified form. Topics shipped in v60 and the dictionary in v62; still open there: sorting many words at once (today it is one word at a time, from its ✎), and topics for course words.
 - **A new app icon.** The Home Screen icon is still the red seal; the app itself now uses the plain mark.
 

@@ -47,7 +47,7 @@ const prelude = (t0, storage) => `(() => {
      stays real (and the recording waits for it); anything longer, and every interval, fires when the scenario's
      clock passes it: __tick(ms) moves the clock and runs what came due on the way, in order. */
   const realST = window.setTimeout.bind(window), realCT = window.clearTimeout.bind(window), realCI = window.clearInterval.bind(window);
-  window.__realSetTimeout = realST; window.__busy = 0;
+  window.__realSetTimeout = realST; window.__realSetInterval = window.setInterval.bind(window); window.__busy = 0;
   let tid = 1e9; const timers = new Map(), shorts = new Map();
   window.setTimeout = (fn, ms, ...args) => {
     if (typeof fn !== 'function') return realST(fn, ms);
@@ -195,8 +195,10 @@ const CAPTURE = quiet => `(async () => {
     scrollH: document.documentElement.scrollHeight, busy: window.__busy, pending: [...window.__pending].join(' '), who: [...new Set((window.__who || []).slice(-60))].join(' '), waited: Math.round(performance.now() - began), errors: window.__errors.splice(0), local: Object.fromEntries(Object.keys(localStorage).sort().filter(k => k !== 'shida_b1_fsrs_v2' && k !== 'zika_snap_v1').map(k => [k, localStorage.getItem(k).length > 400 ? 'len ' + localStorage.getItem(k).length : localStorage.getItem(k)])) };
   /* the deck as it sits in storage: the same as the one in memory unless a save is still owed or start-up wrote something else */
   try { const raw = localStorage.getItem('shida_b1_fsrs_v2'); if (raw === null) extra.stored = 'nothing stored';
-    else { const st = JSON.stringify(stable(JSON.parse(raw))); if (st === JSON.stringify(state)) extra.stored = 'same as in memory';
+    else { const parsed = JSON.parse(raw), st = JSON.stringify(stable(parsed)); extra.storedCards = Object.keys(parsed.cards || {}).length;
+      if (st === JSON.stringify(state)) extra.stored = 'same as in memory';
       else { let x = 5381; for (let i = 0; i < st.length; i++) x = (x * 33 ^ st.charCodeAt(i)) >>> 0; extra.stored = 'differs from memory: ' + x.toString(16) + ' (' + st.length + ' characters)'; } } } catch (e) { extra.stored = 'unreadable'; }
+  extra.early = window.__early || '';
   if (window.__cloud) { const room = (window.__cloud.tree.rooms || {})[window.__cloud.code] || {}, st = room.study_state;
     extra.cloud = { writes: window.__cloud.writes.length, held: st ? { device: st.device, synced_at: st.synced_at, cards: Object.keys(JSON.parse(st.json).cards || {}).length } : null, log: Object.keys(room.sync_log || {}).length };
     extra.sync = typeof SYNC === 'undefined' ? null : { status: SYNC.status, code: SYNC.code, dirty: SYNC.dirty, at: SYNC.at, remoteAt: SYNC.remoteAt, remoteDev: SYNC.remoteDev, lastErr: SYNC.lastErr, log: SYNC.log.map(l => l.kind + ' ' + l.extra) }; }
@@ -235,13 +237,15 @@ async function record(dir, out, { only, size, shots = true, coverage = false, de
     const local = { ...fixtures(sc.fixture), ...(sc.local || {}) };
     /* `cloud.remote` names the fixture whose deck another device has already saved to the room */
     const cloud = sc.cloud && { ...sc.cloud, remote: sc.cloud.remote ? JSON.stringify(JSON.parse(fixtures(sc.cloud.remote).shida_b1_fsrs_v2)) : null };
-    await s('Page.addScriptToEvaluateOnNewDocument', { source: prelude(sc.at || T0, local) + (cloud ? '\n' + fakeCloud(cloud) : '') });
+    /* `early: {when, js}` runs `js` as soon as `when` is true, which can be before the app has started */
+    const early = sc.early ? `\n(() => { const t = window.__realSetInterval(() => { let ok = false; try { ok = !!(${sc.early.when}); } catch (e) {} if (ok) { clearInterval(t); try { ${sc.early.js}; window.__early = 'ran'; } catch (e) { window.__early = 'threw: ' + e.message; } } }, 15); })();` : '';
+    await s('Page.addScriptToEvaluateOnNewDocument', { source: prelude(sc.at || T0, local) + (cloud ? '\n' + fakeCloud(cloud) : '') + early });
     const loaded = new Promise(ok => { const stop = br.on(m => { if (m.sessionId === sessionId && m.method === 'Page.loadEventFired') { stop(); ok(); } }); });
-    await s('Page.navigate', { url: origin + '/index.html' + (sc.hash || '') }); await loaded;
+    await s('Page.navigate', { url: origin + '/index.html' + (sc.query || '') + (sc.hash || '') }); await loaded;
     const evalJs = async js => { const r = await s('Runtime.evaluate', { expression: js, awaitPromise: true, returnByValue: true, userGesture: true });
       if (r.exceptionDetails) return { threw: (r.exceptionDetails.exception && r.exceptionDetails.exception.description || r.exceptionDetails.text || '').split('\n')[0] }; return { value: r.result.value }; };
     const dump = (id, st, ran, c, shot) => writeFileSync(join(out, id + '.txt'), [`# ${id}`, `threw: ${ran.threw || ''}`, `returned: ${st.fixture ? '(fixture)' : ran.value === undefined ? '' : JSON.stringify(ran.value)}`, `view: ${c.extra.view}`, `html-attrs: ${c.extra.attrs}`, `title: ${c.extra.title}`,
-      `styles-in-head: ${c.head}`, `scroll-height: ${c.extra.scrollH}`, `errors: ${JSON.stringify(c.extra.errors)}`, `local: ${JSON.stringify(c.extra.local)}`, `stored: ${c.extra.stored}`, `cloud: ${JSON.stringify(c.extra.cloud || null)}`, `sync: ${JSON.stringify(c.extra.sync || null)}`, `screenshot: ${shot}`,
+      `styles-in-head: ${c.head}`, `scroll-height: ${c.extra.scrollH}`, `errors: ${JSON.stringify(c.extra.errors)}`, `local: ${JSON.stringify(c.extra.local)}`, `stored: ${c.extra.stored}${c.extra.storedCards === undefined ? '' : ' · ' + c.extra.storedCards + ' cards'}`, `early: ${c.extra.early || ''}`, `cloud: ${JSON.stringify(c.extra.cloud || null)}`, `sync: ${JSON.stringify(c.extra.sync || null)}`, `screenshot: ${shot}`,
       '', '## state', JSON.stringify(c.state, null, 1), '', '## html', c.html, ''].join('\n'));
 
     const all = [{ name: 'open', js: '' }, ...(sc.steps || [])];
@@ -372,7 +376,8 @@ const detailOpt = opt('detail');   /* --detail <scenario>:<step> writes the whol
 const common = { only: opt('only'), size: opt('size'), shots: !opt('no-shots'), coverage: !!opt('coverage'), jobs: +opt('jobs', 8),
   detail: typeof detailOpt === 'string' ? { name: detailOpt.split(':')[0], step: +detailOpt.split(':')[1] } : null };
 if (cmd === 'record') { await record(opt('dir', root), join(snapDir, 'golden'), common); process.exit(0); }
-else if (cmd === 'check') { await record(opt('dir', root), join(snapDir, 'now'), common); process.exit(diff(join(snapDir, 'golden'), join(snapDir, 'now'), { loose: !!opt('loose') }) ? 1 : 0); }
+else if (cmd === 'check') { if (!existsSync(join(snapDir, 'golden'))) { console.error(`No golden recording in ${join(snapDir, 'golden')} yet. Record the app as it was before the change: node tools/snap.mjs record (in a copy of the last good commit: --dir <folder>).`); process.exit(1); }
+  await record(opt('dir', root), join(snapDir, 'now'), common); process.exit(diff(join(snapDir, 'golden'), join(snapDir, 'now'), { loose: !!opt('loose') }) ? 1 : 0); }
 else if (cmd === 'run') { await record(opt('dir', root), resolve(opt('out', join(snapDir, 'run'))), common); process.exit(0); }
 else if (cmd === 'diff') process.exit(diff(resolve(argv[1]), resolve(argv[2]), { loose: !!opt('loose'), max: +opt('max', 12) }) ? 1 : 0);
 else if (cmd === 'fixture') { await record(opt('dir', root), join(snapDir, 'fixture-run'), { only: '__fixture', size: 'phone', shots: false, jobs: 1 }); process.exit(0); }

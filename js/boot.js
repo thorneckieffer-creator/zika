@@ -1,6 +1,6 @@
 /* Start-up. Every other file only defines; this one runs, once, when the page has loaded them all:
 
-     bootLoad     what this device saved: the deck, and where sync stood
+     bootLoad     whether this is a device with no deck yet, and where sync stood (the deck itself is read in js/core.js)
      bootMigrate  one-time changes to decks made by older versions, each behind its flag in S.settings
      bootMount    the parts of the page that are built by script (sync pill, the later tabs, icons)
      bootListen   keyboard, touch and page-lifecycle listeners
@@ -10,37 +10,26 @@
    that is why. A new one-time migration goes at the end of bootMigrate with a new flag (CLAUDE.md, rule 3). */
 
 function bootLoad(){
-  /* the deck: cards are "w123:rec" / "w123:prod" / "g:n22-1" -> {st:'learn'|'rev'|'relearn', S, D, due, last, reps, lapses, days, known, susp} */
-  // cards: "wid:mode" -> {st:'learn'|'rev'|'relearn', S,D, due, last, reps, lapses, days, known, susp}
-  try{
-    const raw=store.getItem(KEY);
-    if(raw){const p=JSON.parse(raw); S={...S,...p, settings:{...S.settings,...(p.settings||{}), modes:{rec:true,prod:true,...((p.settings||{}).modes||{})}}};}
-    else{
-      const old=store.getItem('shida_b1_fsrs_v1');
-      if(old){ // migrate v1 (hw/mean/pin) -> v2 (rec/prod)
-        const p=JSON.parse(old);
-        const cards={};
-        for(const cid in (p.cards||{})){
-          const parts=cid.split(':'), wid=parts[0], m=parts[1], c=p.cards[cid];
-          if(m==='mean')cards[wid+':rec']=c;
-          else if(m==='hw')cards[wid+':prod']=c;
-          else if(m==='pin'){const k=wid+':prod'; if(!cards[k]||cards[k].st===undefined)cards[k]=(cards[k]&&cards[k].st!==undefined)?cards[k]:c;}
-        }
-        S.cards=cards; S.log=p.log||{}; S.intro={};
-        const os=p.settings||{};
-        S.settings.retention=os.retention||0.9;
-        S.settings.maxRev=os.maxRev||200;
-        S.settings.includeNames=!!os.includeNames;
-        S.settings.ghost=os.ghost!==false;
-        saveLocal();
-      }
-    }
-  }catch(e){}
+  /* the deck itself was read when js/core.js defined S (deckLoad): S is never an empty deck while a saved one exists */
+  /* no deck of either kind: a device nobody has studied on */
+  try{if(store.getItem(KEY)===null&&store.getItem('shida_b1_fsrs_v1')===null)bootFresh();}catch(e){}
   /* where sync stood when the app was last open */
   (function(){
     try{const m=JSON.parse(store.getItem(FB_META_KEY)||'{}');SYNC.at=m.at||0;SYNC.dirty=!!m.dirty;SYNC.remoteDev=m.remoteDev||'';}catch(e){}
     SYNC.code=(store.getItem(FB_ROOM_KEY)||'').trim();
   })();
+}
+
+/* A device with no deck. Until v62 it ran every migration below, which handed a new learner the first learner's
+   history: Book 2 Lesson 11, his exam, his name. Now it starts clean at Book 1 Lesson 1 with every migration marked
+   as done, and bootStart opens the welcome sheet. `born` marks a deck made this way; it travels with the deck, so
+   what is personal to the first learner (his name as the default, the links to his notes) is tied to decks without it. */
+const BOOT_FLAGS=['_a2','_a3','_a4','_v11','_v18','_v22','_v25','_v26','_v28','_v30','_v31','_v38'];
+function bootFresh(){
+  const s=S.settings;
+  BOOT_FLAGS.forEach(f=>{s[f]=1;});
+  Object.assign(s,{audioSpeed:0.9,haptics:true,theme:'auto',gramCards:true,newGramPerDay:4,examDay:4,prodScope:'current',
+    newCatchPerDay:12,newPerDay:8,maxRev:300,burySib:true,newUnlimited:false,revUnlimited:false,curLesson:1,born:Date.now(),welcome:1});
 }
 
 function bootMigrate(){
@@ -87,7 +76,7 @@ function bootMigrate(){
   /* ---------- who and where: name, book and lesson ---------- */
   /* Decks that existed before names were a setting belong to Thorne. Runs on every start (not behind a flag),
      so a deck adopted from a device that has not updated yet is named too. */
-  if(S.settings.userName===undefined&&Object.keys(S.cards||{}).length){S.settings.userName='Thorne';}
+  if(S.settings.userName===undefined&&!S.settings.born&&Object.keys(S.cards||{}).length){S.settings.userName='Thorne';}
 }
 
 function bootMount(){
@@ -311,5 +300,9 @@ function bootStart(){
   try{shLook();myBadge();if(view==='home')renderHome();else if(view==='set')renderSet();}catch(e){console.error(e);}
 }
 
-bootLoad(); bootMigrate(); bootMount(); bootListen(); bootStart();
+bootLoad();
+DECK_READY=true;   /* from here the deck may be written: nothing a half-loaded page does can reach storage or the cloud (js/core.js, deckStore) */
+bootMigrate(); bootMount(); bootListen(); bootStart();
+/* a new learner is asked two things; a device being linked to an existing deck is not */
+if(S.settings.welcome&&!SYNC.code)shWelcome();
 window.zikaStarted=true;   /* index.html shows a message if this line is never reached */

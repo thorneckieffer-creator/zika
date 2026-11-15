@@ -163,6 +163,6 @@ if (cmd === 'check') {
   for (const n of names) console.log(n.padEnd(13), score(out, data[n]));
   const rows = m => '[\n' + m.map(r => '  [' + r.join(',') + ']').join(',\n') + ']';
   const js = `const TC_NET={\n W1:${rows(out.W1)},\n b1:[${out.b1.join(',')}],\n W2:${rows(out.W2)},\n b2:[${out.b2.join(',')}]};`;
-  if (WRITE) { const a = tcSrc.indexOf('const TC_NET={'), b = tcSrc.indexOf('};', a) + 2; writeFileSync(TONE_FILE, tcSrc.slice(0, a) + js + tcSrc.slice(b)); console.log('TC_NET written to index.html — run `check`, and bump the version before releasing'); }
+  if (WRITE) { const a = tcSrc.indexOf('const TC_NET={'), b = tcSrc.indexOf('};', a) + 2; writeFileSync(TONE_FILE, tcSrc.slice(0, a) + js + tcSrc.slice(b)); console.log('TC_NET written to js/tone-analysis.js — run `check`, and bump the version before releasing'); }
   else console.log('\n' + js + '\n\n(not written; add --write to install it)');
 } else { console.error('usage: node tools/tone_lab.mjs prepare | check | cv | fit [--write]'); process.exit(1); }

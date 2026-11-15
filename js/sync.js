@@ -163,7 +163,8 @@ function fbAdopt(r,how){
   try{
     S=p; S.settings=Object.assign({},S.settings||{},keep,prevFlags); strictLocalPut(own); S.settings.modes=Object.assign({rec:true,prod:true},S.settings.modes||{});
     S.pick=S.pick||[]; S.hard=S.hard||[]; S.log=S.log||{}; S.intro=S.intro||{}; S.hist=S.hist||{d:[],s:[]};
-    try{store.setItem(KEY,JSON.stringify(S));}catch(e){}
+    DECK_EMPTY_OK=true;   /* the cloud's copy was chosen, by this device being empty or by the learner: it is stored whatever it holds */
+    deckStore();
     try{bkQueue();}catch(e){}
     SYNC.at=r.synced_at; SYNC.remoteAt=r.synced_at; SYNC.remoteDev=r.device; SYNC.dirty=false; SYNC.clash=null; syncMetaSave();
   }finally{SYNC.applying=false;}
@@ -178,11 +179,12 @@ function fbRevert(){
   const rv=SYNC.revert; if(!rv)return;
   let p=null; try{p=JSON.parse(rv.json);}catch(e){return;}
   const keep={}, own=strictLocalGet(); LOCAL_SETTINGS.forEach(k=>{if(S.settings&&k in S.settings)keep[k]=S.settings[k];});
-  S=p; S.settings=Object.assign({},S.settings||{},keep); strictLocalPut(own); SYNC.revert=null;
+  S=p; DECK_EMPTY_OK=true; S.settings=Object.assign({},S.settings||{},keep); strictLocalPut(own); SYNC.revert=null;
   save(); rerenderAfterSync(); toast('Reverted — this device\'s version is now the cloud version');
 }
 function rerenderAfterSync(){
-  QV++;   /* the deck was replaced: the kept queue is out of date */
+  QV++;
+  try{if(!S.settings.welcome&&document.getElementById('shWelcomeCard'))shClose();}catch(e){}   /* a deck has arrived: this is no longer a first run */   /* the deck was replaced: the kept queue is out of date */
   try{
     undoStack.length=0;
     badge();
@@ -219,6 +221,10 @@ function fbSchedulePush(){
 }
 async function fbPush(){
   if(SYNC.blocked)return;
+  /* a page that has not started, or whose empty deck was refused, sends nothing; nor does an empty deck from a device
+     that has synced before, unless the learner erased or replaced the deck here */
+  if(!DECK_READY||DECK_HELD)return;
+  if(!DECK_EMPTY_OK&&(SYNC.at||SYNC.remoteAt)&&!Object.keys(S.cards||{}).length)return;
   clearTimeout(SYNC.timer);
   if(!SYNC.fb||!SYNC.code||!SYNC.uid)return;
   if(SYNC.pushing){SYNC.again=true;return;}

@@ -154,7 +154,7 @@ function importData(inp){
     const keep={}; LOCAL_SETTINGS.concat(STRICT_LOCAL).forEach(k=>{if(S.settings&&k in S.settings)keep[k]=S.settings[k];});
     p.settings=Object.assign({},S.settings,p.settings||{},keep);   /* anything the file lacks keeps this device's value */
     delete p._app; delete p._savedAt;
-    S=p; normalizeState(); undoStack.length=0; rq=null; cur=null;
+    S=p; DECK_EMPTY_OK=true; normalizeState(); undoStack.length=0; rq=null; cur=null;
     save(); alert('Imported ✓'); renderSet(); badge();
   };
   r.readAsText(f);
