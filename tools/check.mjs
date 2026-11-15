@@ -149,9 +149,16 @@ if (WORDS && BOOKS) {
   }
 }
 
-/* 5. manifest */
-try { const mf = JSON.parse(read('manifest.webmanifest')); for (const i of mf.icons || []) if (!existsSync(join(root, i.src))) fail(`manifest: missing icon ${i.src}`); }
+/* 5. manifest: the icons exist, and it has no "id" (adding one changes the identity of copies already installed) */
+try {
+  const mf = JSON.parse(read('manifest.webmanifest'));
+  for (const i of mf.icons || []) if (!existsSync(join(root, i.src))) fail(`manifest: missing icon ${i.src}`);
+  if ('id' in mf) fail('manifest: must not have an "id" — installed copies would become a different app');
+}
 catch (e) { fail('manifest.webmanifest is not valid JSON'); }
+
+/* 5b. the page does not zoom (Thorne's standing rule): the viewport keeps maximum-scale=1 */
+if (!/<meta name="viewport"[^>]*maximum-scale=1(\.0)?[,"\s]/.test(html)) fail('index.html: the viewport meta must keep maximum-scale=1 (the page does not zoom)');
 
 /* 6. the tone coach still hears tones. Glides with the textbook shape of each tone are synthesised at a low, a middle
       and a high voice and put through the app's own analysis (js/text.js and js/tone-analysis.js, which touch neither
