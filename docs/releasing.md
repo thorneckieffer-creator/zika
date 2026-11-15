@@ -27,7 +27,7 @@ The release area: `tools/check.mjs`, `tools/stamp.mjs`, `tools/snap.mjs`, `tools
 
 - `record` / `check` for the usual before and after; `run --dir D --out O` and `diff A B` to compare any two copies of the app (for example a `git archive` of the last release against the working folder).
 - `--only <text>` runs the scenarios whose name contains it; `--coverage` lists the functions no scenario reached; `--detail <scenario>:<step>` dumps the page and state at one step of a random run.
-- It compares the page's HTML, the deck in memory, whether the stored deck matches it, what is in `localStorage`, what was sent to the stand-in cloud, and a picture (changed only above 60 differing pixels). It stubs the service worker and the microphone: `tools/swtest.mjs` and `tools/tone_lab.mjs` cover those.
+- It compares the page's HTML, the deck in memory, whether the stored deck matches it, what is in `localStorage`, what was sent to the stand-in cloud, and a picture (changed only above 150 differing pixels). It stubs the service worker and the microphone: `tools/swtest.mjs` and `tools/tone_lab.mjs` cover those.
 - Add a scenario when you add a screen or a state a device can be in. A random-use scenario finds what a script does not think to try, but only a scripted step proves a particular path.
 
 How to do step 6 from Claude in Chrome, learned the slow way:

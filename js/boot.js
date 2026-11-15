@@ -15,7 +15,7 @@ function bootLoad(){
   try{if(store.getItem(KEY)===null&&store.getItem('shida_b1_fsrs_v1')===null)bootFresh();}catch(e){}
   /* where sync stood when the app was last open */
   (function(){
-    try{const m=JSON.parse(store.getItem(FB_META_KEY)||'{}');SYNC.at=m.at||0;SYNC.dirty=!!m.dirty;SYNC.remoteDev=m.remoteDev||'';}catch(e){}
+    try{const m=JSON.parse(store.getItem(FB_META_KEY)||'{}');SYNC.at=m.at||0;SYNC.dirty=!!m.dirty;SYNC.remoteDev=m.remoteDev||'';SYNC.had=m.had;}catch(e){}
     SYNC.code=(store.getItem(FB_ROOM_KEY)||'').trim();
   })();
 }

@@ -144,7 +144,9 @@ const fakeCloud = cloud => `(() => {
   const read = path => { const [n, k] = at(path); return n && k in n ? JSON.parse(JSON.stringify(n[k])) : null; };
   const snap = path => ({ val: () => path === '.info/connected' ? C.online : read(path), exists: () => read(path) !== null });
   const tell = path => { for (const s of subs.slice()) if (path === s.path || path.startsWith(s.path + '/') || s.path.startsWith(path + '/')) later(() => { if (subs.includes(s)) s.cb(snap(s.path)); }); };
-  const write = (path, v) => { const [n, k] = at(path, true); if (v === null || v === undefined) delete n[k]; else n[k] = JSON.parse(JSON.stringify(v)); tell(path); };
+  /* the cloud outlives a reload of the page, as the real one does */
+  const keep = () => { try { sessionStorage.setItem('__cloud', JSON.stringify(tree)); } catch (e) {} };
+  const write = (path, v) => { const [n, k] = at(path, true); if (v === null || v === undefined) delete n[k]; else n[k] = JSON.parse(JSON.stringify(v)); keep(); tell(path); };
   let pushN = 0, authCb = null;
   const C = window.__cloud = { online: true, writes: [], tree,
     put: write, read,
@@ -165,7 +167,9 @@ const fakeCloud = cloud => `(() => {
       C.writes.push({ path: ref.path, bytes: JSON.stringify(v).length, device: v && v.device }); write(ref.path, v); return new Promise(ok => later(ok)); },
     push: (ref, v) => { write(ref.path + '/-N' + String(++pushN).padStart(6, '0'), v); return Promise.resolve({ key: '-N' + pushN }); },
   };
-  ${cloud.remote ? `C.other(${cloud.remote}, 'iPad', ${cloud.remoteAt || 0} || Date.now() - 3600000);` : ''}
+  const held = (() => { try { return sessionStorage.getItem('__cloud'); } catch (e) { return null; } })();
+  if (held) Object.assign(tree, JSON.parse(held));
+  else { ${cloud.remote ? `C.other(${cloud.remote}, 'iPad', ${cloud.remoteAt || 0} || Date.now() - 3600000);` : ''} }
 })();`;
 
 /* what is read back after every step */
@@ -333,7 +337,7 @@ function pixelsChanged(fa, fb) {
   try { const a = pngPixels(fa), b = pngPixels(fb); if (!a || !b || a.w !== b.w || a.h !== b.h || a.bpp !== b.bpp) return Infinity;
     let n = 0; for (let i = 0; i < a.px.length; i += a.bpp) if (a.px[i] !== b.px[i] || a.px[i + 1] !== b.px[i + 1] || a.px[i + 2] !== b.px[i + 2]) n++; return n; } catch (e) { return Infinity; }
 }
-const SAME_PICTURE = 60;   /* pixels */
+const SAME_PICTURE = 150;   /* pixels: a sheet with rounded corners over a dimmed page flickers by about 70 */
 /* Things that differ between two builds without the app behaving differently. */
 const scrub = (t, loose) => {
   t = t.replace(/^screenshot: .*$/m, '').replace(/^styles-in-head: .*$/m, '');

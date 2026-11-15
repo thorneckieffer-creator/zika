@@ -164,6 +164,19 @@ export const scenarios = [
   { name: 'tap-before-start-linked', fixture: 'deck', sizes: ['phone'], query: '?slow=js/boot.js&ms=900', local: { zika_sync_code: CODE, zika_sync_meta: JSON.stringify({ at: T0 - 2 * DAY, dirty: false, remoteDev: 'Web' }) }, cloud: { code: CODE, remote: 'deck', remoteAt: T0 - 2 * DAY },
     early: { when: GAP, js: `toggleTheme()` }, steps: opened },
 
+  /* Replacing the deck on purpose still works through the guard on empty decks: erase, import (a small deck, then an
+     empty one), and a new learner with no cards yet whose settings must still reach the cloud. */
+  { name: 'erase', fixture: 'deck', sizes: ['phone'], local: linkedIdle, cloud: { code: CODE, remote: 'deck', remoteAt: T0 - 2 * DAY }, steps: [
+    { name: 'erase', js: `go('set'); [...document.querySelectorAll('#vSet button')].find(b => b.textContent.trim() === 'Reset').click(); __tick(3000)`, noShot: true },
+    { name: 'open-again', reload: true }, { name: 'home', js: `go('home')`, noShot: true }] },
+  { name: 'import', fixture: 'deck', sizes: ['phone'], local: unlinked, steps: [
+    { name: 'small-deck', js: `importData({ files: [new File([JSON.stringify({ cards: { 'w10:rec': { st: 'rev', S: 12, D: 5, due: Date.now() - 1000, last: Date.now() - 9 * ${DAY}, reps: 4, lapses: 0, days: 3 }, 'w11:rec': {} }, log: {}, settings: { curLesson: 3 } })], 'deck.json')] }); await new Promise(r => __realSetTimeout(r, 200)); go('home')`, noShot: true },
+    { name: 'empty-deck', js: `importData({ files: [new File([JSON.stringify({ cards: {}, log: {} })], 'empty.json')] }); await new Promise(r => __realSetTimeout(r, 200)); go('home')`, noShot: true },
+    { name: 'open-again', reload: true }] },
+  { name: 'new-learner-linked', sizes: ['phone'], local: { zika_sync_code: CODE }, cloud: { code: CODE }, steps: [
+    { name: 'a-setting', js: `shSetLook('accent', 'blue'); __tick(3000)`, noShot: true }, { name: 'another', js: `shSetLook('zhFont', 'kai'); __tick(3000)`, noShot: true },
+    { name: 'welcome-done', js: `shWelcome(); shWelcomeDone(); __tick(3000)`, noShot: true }, { name: 'open-again', reload: true }] },
+
   /* a device in dark mode with the theme left on "auto"; a chosen look */
   { name: 'dark-auto', fixture: 'deck', scheme: 'dark', steps: [{ name: 'settings', js: `go('set')` }, { name: 'review', js: `go('rev'); reveal()` }] },
   { name: 'dark-fresh', scheme: 'dark', sizes: ['phone'], steps: [{ name: 'settings', js: `go('set')` }] },

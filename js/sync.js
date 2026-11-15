@@ -51,7 +51,10 @@ const DEVICE={
 /* ---- 3. sync state ---- */
 const SYNC={status:'off',code:'',at:0,remoteAt:0,remoteDev:'',dirty:false,timer:null,fb:null,unsub:null,uid:null,
   online:navigator.onLine,lastErr:'',pushing:false,again:false,revert:null,applying:false,first:true,retry:0,log:[],okTimer:null,quietTimer:null};
-function syncMetaSave(){try{store.setItem(FB_META_KEY,JSON.stringify({at:SYNC.at,dirty:SYNC.dirty,remoteDev:SYNC.remoteDev}));}catch(e){}}
+function syncMetaSave(){try{store.setItem(FB_META_KEY,JSON.stringify({at:SYNC.at,dirty:SYNC.dirty,remoteDev:SYNC.remoteDev,had:SYNC.had}));}catch(e){}}
+/* SYNC.had remembers whether the deck this device last sent or took had cards in it: true, false (a new learner who has
+   none yet, or a deck erased on purpose), or undefined on a device linked before this was kept, which counts as true. */
+function syncSaw(){if(Object.keys(S.cards||{}).length)SYNC.had=true;else if(DECK_EMPTY_OK||SYNC.had===undefined)SYNC.had=false;}
 function normCode(c){return String(c||'').toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,40);}
 function fbPath(){return 'rooms/'+SYNC.code+'/study_state';}
 /* nothing has been studied here: no started card, no hard list, no day with a review in it */
@@ -166,7 +169,7 @@ function fbAdopt(r,how){
     DECK_EMPTY_OK=true;   /* the cloud's copy was chosen, by this device being empty or by the learner: it is stored whatever it holds */
     deckStore();
     try{bkQueue();}catch(e){}
-    SYNC.at=r.synced_at; SYNC.remoteAt=r.synced_at; SYNC.remoteDev=r.device; SYNC.dirty=false; SYNC.clash=null; syncMetaSave();
+    SYNC.at=r.synced_at; SYNC.remoteAt=r.synced_at; SYNC.remoteDev=r.device; SYNC.dirty=false; SYNC.clash=null; syncSaw(); syncMetaSave();
   }finally{SYNC.applying=false;}
   fbLogLocal('pull',r.device+' @ '+fmtT(r.synced_at));
   syncUI('ok');
@@ -224,7 +227,7 @@ async function fbPush(){
   /* a page that has not started, or whose empty deck was refused, sends nothing; nor does an empty deck from a device
      that has synced before, unless the learner erased or replaced the deck here */
   if(!DECK_READY||DECK_HELD)return;
-  if(!DECK_EMPTY_OK&&(SYNC.at||SYNC.remoteAt)&&!Object.keys(S.cards||{}).length)return;
+  if(!DECK_EMPTY_OK&&SYNC.had!==false&&(SYNC.at||SYNC.remoteAt)&&!Object.keys(S.cards||{}).length)return;
   clearTimeout(SYNC.timer);
   if(!SYNC.fb||!SYNC.code||!SYNC.uid)return;
   if(SYNC.pushing){SYNC.again=true;return;}
@@ -233,7 +236,7 @@ async function fbPush(){
   const f=SYNC.fb, p=fbPayload(at), gen0=SYNC.gen||0;
   try{
     await f.set(f.ref(f.db,fbPath()),p);
-    SYNC.at=at; SYNC.remoteAt=at; SYNC.remoteDev=DEVICE.name; SYNC.dirty=(SYNC.gen||0)!==gen0; SYNC.retry=0; syncMetaSave(); if(SYNC.dirty)SYNC.again=true;
+    SYNC.at=at; SYNC.remoteAt=at; SYNC.remoteDev=DEVICE.name; SYNC.dirty=(SYNC.gen||0)!==gen0; SYNC.retry=0; syncSaw(); syncMetaSave(); if(SYNC.dirty)SYNC.again=true;
     fbLogLocal('push',Math.round(p.bytes/1024)+' KB');
     try{f.push(f.ref(f.db,'rooms/'+SYNC.code+'/sync_log'),{device:DEVICE.name,device_id:DEVICE.id,at,bytes:p.bytes,due:p.summary.due});}catch(e){}
     fbPruneLog();
