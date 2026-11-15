@@ -49,6 +49,7 @@ How it should look and why is in [design.md](design.md). The pieces:
 - `shHome()` runs after every `renderHome` layer: it adds the greeting, the course chip and the two deck tiles, and moves every card below the lanes into one `<details class="fold">` (open or closed is remembered per device in `zika_home_more`).
 - `shCourse()` is the *Where you are* sheet: `shSetLesson()` sets `S.settings.curLesson`; the name is `S.settings.userName`.
 - Tabs created after start-up get their icon from `TAB_ICON` through `shTabIcons()`.
+- A sheet (`.modal-card`) is never taller than the screen: it scrolls inside itself (v60). Toasts sit above sheets, so an Undo offered while a sheet is open can be tapped.
 
 - Phones (≤700 px): the tab bar is fixed to the bottom — Today, Review, Drill, 大考試, More. The other tabs carry class `t2` and sit behind More. Tablets and desktop keep the top bar. In Review the grade buttons are sticky just above that bar (`#vRev .grades`), so a long answer never pushes them off the screen.
 - The page never zooms (`maximum-scale=1`, `touch-action: pan-x pan-y`): it is an app, not a document.
@@ -58,10 +59,12 @@ How it should look and why is in [design.md](design.md). The pieces:
 
 A personal deck for words outside class, deliberately separate from the course: it never appears in `S.cards`, the lanes, the Library or the Brain, and it does not count toward the course's daily numbers.
 
-- State: `S.my = {n, w:{u1:{t,p,m,at}}, c:{'u1:rec':card,'u1:prod':card}, intro:{day:n}, log:{day:n}, perDay, both}`. It is part of `S`, so it syncs and backs up with the deck. Always reach it through `myDeck()`, which creates what is missing (a deck adopted from an older device has no `S.my`).
+- State: `S.my = {n, w:{u1:{t,p,m,at,g?}}, c:{'u1:rec':card,'u1:prod':card}, intro:{day:n}, log:{day:n}, perDay, both, tp:[{id,n}], tn}`. It is part of `S`, so it syncs and backs up with the deck. Always reach it through `myDeck()`, which creates what is missing (a deck adopted from an older device has no `S.my`).
 - Ids are `u` + a counter that only goes up; a deleted word's id is never reused.
 - `myQueue()` → `{learn, rev, fresh, ahead, waiting}`; `myRate(cid, grade)` is the same FSRS-5 arithmetic as `rate()` without the early-drill cap and without touching `S.log` or `S.intro`.
 - `myGuessPy()` fills pinyin from the course word if there is one, otherwise character by character from `COMPONENTS`. `myParse()` reads a pasted list.
+- **Topics** (v60) sort the deck by part of life (Food & drink, Getting around, …). `d.tp` is the ordered list `[{id:'t1', n:'Food & drink'}]`; ids are `t` + a counter (`d.tn`) that only goes up, and a word names its topics in `w.g` (absent when it has none; a word can have several). `myDeck()` seeds the twelve starting topics (`MY_TOPICS`) the first time, with the same ids on every device. Read a word's topics through `myTopicsOf(w)`, which drops ids of deleted topics; write them with `myTag(w, ids)`.
+- The list's filter is `MY.tp` (null, a topic id, or `'-'` for words with no topic) and `myQueue(filter)` builds the queue for it, so *Study* studies the topic on screen (`MY.scope` while the session runs). The daily allowance of new cards stays the deck's. The filter row shows only topics that hold a word; the chips in the add / edit sheet (`myChips`, selection in `MY.sel`) show all of them and change without repainting the sheet, so nothing typed is lost. `myTopicsSheet()` renames, deletes (with Undo) and adds.
 
 ## Scheduler
 

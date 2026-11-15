@@ -413,7 +413,7 @@ select.vsel{max-width:230px;padding:7px 9px;border:1px solid var(--line);border-
 @keyframes tick{0%{transform:scale(.6)}60%{transform:scale(1.35)}100%{transform:scale(1)}}
 @keyframes tickIn{from{opacity:0;transform:rotate(45deg) scale(.4)}to{opacity:1;transform:rotate(45deg) scale(1)}}
 @media(max-width:560px){.syncpill{right:42px;padding:0 9px}.syncpill .stxt{display:none}}
-#toastHost{position:fixed;left:0;right:0;bottom:22px;display:none;justify-content:center;z-index:1200;pointer-events:none;text-align:center}
+#toastHost{position:fixed;left:0;right:0;bottom:22px;display:none;justify-content:center;z-index:1400;pointer-events:none;text-align:center}
 .toast{display:inline-flex;align-items:center;gap:12px;background:var(--ink);color:var(--bg);font-size:13px;font-weight:600;padding:10px 16px;border-radius:99px;box-shadow:0 8px 28px rgba(0,0,0,.22);pointer-events:auto;animation:toastIn .3s cubic-bezier(.2,1.2,.4,1);max-width:min(92vw,560px)}
 .toast.out{animation:toastOut .25s ease-in forwards}
 .toast .tact{border:1px solid var(--mut);background:transparent;color:var(--bg);border-radius:99px;padding:3px 11px;font-size:12px;font-weight:700;cursor:pointer}
@@ -788,7 +788,7 @@ body{font-family:var(--ui);font-size:15px;line-height:1.5;letter-spacing:-.003em
 .chip.hot{animation:none}
 .sbar i{background:var(--brandInk)}
 .modal{background:rgba(9,11,15,.5)}
-.modal-card{border:0;border-radius:20px;box-shadow:0 24px 70px rgba(0,0,0,.28)}
+.modal-card{border:0;border-radius:20px;box-shadow:0 24px 70px rgba(0,0,0,.28);max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);overflow-y:auto;overscroll-behavior:contain}
 .tgl.on,.filters button.on,.segbar button.on,.wbtn.on{background:var(--brand);border-color:var(--brand);color:var(--brandFg)}
 input[type=range],.tl-scrub{accent-color:var(--brand)}
 .search,select.vsel,input[type=number],.qsel{border-color:var(--line2);border-radius:10px}
@@ -857,10 +857,26 @@ textarea.myin{min-height:120px;resize:vertical;line-height:1.5}
 .my-row .info{flex:1;min-width:0}
 .my-row .py{font-size:13px;font-weight:500}
 .my-row .mn{font-size:12.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.my-chips{display:flex;flex-wrap:wrap;gap:6px}
+.my-chips button{border:1px solid var(--line2);background:transparent;color:var(--mut);border-radius:99px;padding:6px 12px;min-height:34px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.my-chips button.on{background:var(--brand);border-color:var(--brand);color:var(--brandFg)}
+.my-chips button.add{border-style:dashed}
+.my-chips button .n{font-weight:500;opacity:.65;margin-left:6px;font-variant-numeric:tabular-nums}
+.my-chips input.myin{width:170px;padding:5px 13px;border-radius:99px}
+.my-chips.bar{margin:8px 0 12px}
+.my-row .tp,.stage .tp{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.my-row .tp{flex-wrap:nowrap;overflow:hidden}
+.my-row .tp span,.stage .tp span{font-size:11px;font-weight:600;color:var(--mut);background:var(--tint);border-radius:99px;padding:1px 8px;white-space:nowrap}
+.stage .tp{justify-content:center;margin:10px 0 2px}
+.my-tlist{max-height:46vh;overflow-y:auto;margin:0 -4px;padding:0 4px}
+.my-trow{display:flex;align-items:center;gap:8px;padding:4px 0}
+.my-trow .myin{padding:8px 12px}
+.my-trow .n{font-size:12.5px;color:var(--mut);min-width:22px;text-align:right;font-variant-numeric:tabular-nums}
 .my-hint{font-size:12.5px;color:var(--mut);background:var(--tint);border-radius:10px;padding:8px 11px;margin:-4px 0 12px}
 .my-top{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--mut);margin-bottom:10px}
 @media(max-width:560px){.decks{gap:10px}.deck{padding:14px}.hello h1,.my-head h1{font-size:22px}.card{padding:18px 16px}
-  .my-row .tr{min-width:60px;font-size:20px}.my-row{gap:9px}}
+  .my-row .tr{min-width:60px;font-size:20px}.my-row{gap:9px}
+  .my-chips.bar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:8px -16px 12px;padding:0 16px}.my-chips.bar::-webkit-scrollbar{display:none}.my-chips.bar button{flex:none}}
 /* ---- nothing may scroll the page sideways ---- */
 .wrap{overflow-x:clip}
 .mtag{letter-spacing:.04em}
@@ -913,7 +929,7 @@ textarea.myin{min-height:120px;resize:vertical;line-height:1.5}
 <div id="printSheet"></div>
 <script>
 /* ============ VERSION ============ */
-const APP_VERSION=59;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
+const APP_VERSION=60;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
 
 /* ============ THEME ============ */
 function curTheme(){return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';}
@@ -6257,22 +6273,48 @@ renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
    Kept apart from the course on purpose: its own words (ids u1,
    u2 … never reused), its own cards and daily intake, the same
    FSRS-5 maths. Lives in S.my, so it syncs and backs up with
-   everything else.  S.my = {n, w:{id:{t,p,m,at}}, c:{'id:rec':card}, intro:{day:n}, log:{day:n}, perDay, both}
+   everything else.  S.my = {n, w:{id:{t,p,m,at,g?}}, c:{'id:rec':card}, intro:{day:n}, log:{day:n}, perDay, both, tp:[{id,n}], tn}
+   Topics (v60): d.tp lists them in order, ids t1, t2 … never reused (d.tn counts up); a word names its topics in w.g.
    ============================================================ */
-const MY={mode:'list',cur:null,shown:false,done:0,q:'',edit:null,tab:'one'};
+const MY={mode:'list',cur:null,shown:false,done:0,q:'',edit:null,tab:'one',
+  tp:null,      /* the list's topic filter: null = all, a topic id, or '-' = words with no topic */
+  sel:[],       /* topics ticked in the add / edit sheet */
+  scope:null};  /* the filter the running study session was started with */
+/* The topics a deck starts with: parts of life, not parts of speech. Every device seeds the same ids in the same order, so two that seed apart still agree. */
+const MY_TOPICS=['Food & drink','Getting around','Shopping & money','Home & daily life','School & study','Work','People & family','Health & body','Feelings & opinions','Free time','Travel & places','Slang & set phrases'];
 function myDeck(){
   if(!S.my||typeof S.my!=='object')S.my={n:1,w:{},c:{},intro:{},log:{}};
-  const d=S.my; d.w=d.w||{}; d.c=d.c||{}; d.intro=d.intro||{}; d.log=d.log||{}; d.n=d.n||1; return d;
+  const d=S.my; d.w=d.w||{}; d.c=d.c||{}; d.intro=d.intro||{}; d.log=d.log||{}; d.n=d.n||1;
+  if(!Array.isArray(d.tp))d.tp=MY_TOPICS.map((n,i)=>({id:'t'+(i+1),n}));
+  if(!d.tn)d.tn=1+d.tp.reduce((m,t)=>Math.max(m,+String(t.id).slice(1)||0),MY_TOPICS.length);
+  return d;
 }
 const myIds=()=>Object.keys(myDeck().w);
 const myModes=()=>myDeck().both?['rec','prod']:['rec'];
 const myWord=cid=>myDeck().w[cid.split(':')[0]];
-function myAdd(t,p,m){
+function myAdd(t,p,m,g){
   t=String(t||'').trim(); if(!t)return null;
   const d=myDeck(); for(const id in d.w)if(d.w[id].t===t)return {id,dup:true};
-  const id='u'+(d.n++); d.w[id]={t,p:String(p||'').trim(),m:String(m||'').trim(),at:Date.now()};
+  const id='u'+(d.n++); d.w[id]={t,p:String(p||'').trim(),m:String(m||'').trim(),at:Date.now()}; myTag(d.w[id],g);
   return {id};
 }
+/* ---- topics ---- */
+const myTopic=id=>myDeck().tp.find(t=>t.id===id)||null;
+function myTopicsOf(w){const d=myDeck();return ((w&&w.g)||[]).map(id=>d.tp.find(t=>t.id===id)).filter(Boolean);}
+function myInTopic(w,f){if(!f)return true;const ts=myTopicsOf(w);return f==='-'?!ts.length:ts.some(t=>t.id===f);}
+function myTag(w,ids){if(ids&&ids.length)w.g=[...new Set(ids)];else delete w.g;}
+const myScopeName=f=>f==='-'?'No topic':f?(myTopic(f)||{}).n||'':'';
+function myTopicAdd(name){
+  name=String(name||'').replace(/\s+/g,' ').trim().slice(0,30); if(!name)return null;
+  const d=myDeck(), had=d.tp.find(t=>t.n.toLowerCase()===name.toLowerCase()); if(had)return had.id;
+  const id='t'+(d.tn++); d.tp.push({id,n:name}); return id;
+}
+function myTopicCounts(){
+  const d=myDeck(), c={'-':0};
+  for(const id in d.w){const ts=myTopicsOf(d.w[id]); if(!ts.length)c['-']++; ts.forEach(t=>{c[t.id]=(c[t.id]||0)+1;});}
+  return c;
+}
+function myTopicPills(w,skip){const ts=myTopicsOf(w).filter(t=>t.id!==skip);return ts.length?'<div class="tp">'+ts.map(t=>'<span>'+esc(t.n)+'</span>').join('')+'</div>':'';}   /* skip: the topic the list is already filtered to */
 /* a first guess at the pinyin: the course's own reading if the word is in a lesson, otherwise character by character */
 function myCourseWord(t){return WORDS.find(w=>w.t===t||String(w.t).split('（')[0]===t)||null;}
 function myGuessPy(t){
@@ -6280,13 +6322,13 @@ function myGuessPy(t){
   const out=[]; for(const ch of String(t)){ if(!/\p{Script=Han}/u.test(ch))continue; const c=COMPONENTS[ch]; if(!c||!c.p)return ''; out.push(String(c.p).split(/[,;/ ]/)[0]); }
   return out.join('');
 }
-function myQueue(){
+function myQueue(f){   /* f: a topic filter as in MY.tp; the daily allowance of new cards is the deck's, whatever the filter */
   const d=myDeck(), now=Date.now(), learn=[], rev=[], fresh=[], ahead=[];
-  for(const id in d.w)for(const m of myModes()){
+  for(const id in d.w){ if(f&&!myInTopic(d.w[id],f))continue; for(const m of myModes()){
     const cid=id+':'+m, c=d.c[cid];
     if(!c||c.st===undefined){fresh.push(cid);continue;}
     if(c.due<=now)(c.st==='rev'?rev:learn).push(cid); else if(c.st!=='rev')ahead.push(cid);
-  }
+  }}
   const by=(a,b)=>d.c[a].due-d.c[b].due; learn.sort(by); rev.sort(by); ahead.sort(by);
   const left=Math.max(0,(d.perDay??10)-(d.intro[dkey(new Date())]||0));
   return {learn,rev,fresh:fresh.slice(0,left),waiting:fresh.length,ahead};
@@ -6327,59 +6369,96 @@ function mySay(id){const w=myDeck().w[id];if(w)playAudio(w.t,w.p||undefined);}
 function renderMy(){
   const host=document.getElementById('vMy'); if(!host)return;
   if(MY.mode==='study'){myStudyRender();return;}
-  const d=myDeck(), ids=myIds().sort((a,b)=>d.w[b].at-d.w[a].at), q=myQueue();
+  const d=myDeck(), all=myIds();
+  if(MY.tp&&!all.some(id=>myInTopic(d.w[id],MY.tp)))MY.tp=null;      /* the last word left that topic */
+  const q=myQueue(MY.tp), name=myScopeName(MY.tp), inTopic=MY.tp?all.filter(id=>myInTopic(d.w[id],MY.tp)).length:all.length;
   const ready=q.learn.length+q.rev.length+q.fresh.length;
   myBadge();
   const head=`<div class="my-head"><div><h1>My words</h1><div class="sub">Your own deck for words outside class. It is scheduled like the course, and kept separate from it.</div></div>
     <button class="btn" onclick="myOpenAdd()">Add words</button></div>`;
-  if(!ids.length){
+  if(!all.length){
     host.innerHTML=head+`<div class="card my-empty"><div class="big">生詞</div><div style="font-weight:600;font-size:16px">Nothing here yet</div>
       <div class="small muted" style="max-width:380px;margin:6px auto 16px">A word from a menu, a sign, a show or a friend: add it here and it comes back on the same schedule as your class words, without touching the course deck.</div>
       <button class="btn" onclick="myOpenAdd()">Add your first word</button></div>`;
     return;
   }
-  const f=MY.q.trim().toLowerCase();
-  const shown=f?ids.filter(id=>{const w=d.w[id];return (w.t+' '+w.p+' '+w.m).toLowerCase().includes(f)||(w.p||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().includes(f);}):ids;
   host.innerHTML=head+`<div class="card">
-      <div class="row spread" style="margin-bottom:12px"><div><div class="lab" style="margin-bottom:2px">Ready now</div>
+      <div class="row spread" style="margin-bottom:12px"><div><div class="lab" style="margin-bottom:2px">Ready now${name?' · '+esc(name):''}</div>
         <div class="small muted">${q.rev.length} due · ${q.learn.length} learning · ${q.fresh.length} new${q.waiting>q.fresh.length?' ('+(q.waiting-q.fresh.length)+' more waiting)':''}</div></div>
         <div style="font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em">${ready}</div></div>
-      <button class="btn big" ${ready||q.ahead.length?'':'disabled'} onclick="myStart()">${ready?'Study my words':q.ahead.length?'Keep going · '+q.ahead.length+' still learning':'All caught up'}</button>
+      <button class="btn big" ${ready||q.ahead.length?'':'disabled'} onclick="myStart(MY.tp)">${ready?'Study '+(name?esc(name):'my words'):q.ahead.length?'Keep going · '+q.ahead.length+' still learning':'All caught up'}</button>
       <div class="set-row" style="margin-top:8px"><div><b>New cards a day</b><div class="d">how many new cards this deck starts each day</div></div>
         <input type="number" min="0" max="100" value="${d.perDay??10}" onchange="const v=parseInt(this.value);myDeck().perDay=Math.max(0,isNaN(v)?10:v);save();renderMy()"></div>
       <div class="set-row"><div><b>Both directions</b><div class="d">also ask from the meaning back to the characters, to write on paper</div></div>
         <button class="tgl${d.both?' on':''}" aria-label="both directions" onclick="myDeck().both=!myDeck().both;save();renderMy()"><i></i></button></div>
     </div>
-    <div class="card"><div class="lab">${ids.length} word${ids.length===1?'':'s'}</div>
-      ${ids.length>6?`<input class="search" id="myQ" placeholder="Search characters, pinyin or meaning" value="${esc(MY.q).replace(/"/g,'&quot;')}" oninput="MY.q=this.value;myListOnly()">`:''}
-      <div id="myList">${myRows(shown)}</div></div>`;
+    <div class="card"><div class="lab">${MY.tp?inTopic+' of ':''}${all.length} word${all.length===1?'':'s'}</div>
+      ${myTopicBar()}
+      ${all.length>6?`<input class="search" id="myQ" placeholder="Search characters, pinyin, meaning or topic" value="${esc(MY.q).replace(/"/g,'&quot;')}" oninput="MY.q=this.value;myListOnly()">`:''}
+      <div id="myList">${myRows(myShown())}</div></div>`;
 }
+/* the words the list shows: the topic filter, then the search box; newest first */
+function myShown(){
+  const d=myDeck(), f=MY.q.trim().toLowerCase(), plain=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+  return myIds().filter(id=>myInTopic(d.w[id],MY.tp)).sort((a,b)=>d.w[b].at-d.w[a].at).filter(id=>{
+    if(!f)return true; const w=d.w[id];
+    return (w.t+' '+w.p+' '+w.m+' '+myTopicsOf(w).map(t=>t.n).join(' ')).toLowerCase().includes(f)||plain(w.p).includes(f);});
+}
+/* the row of topic filters above the list: only topics that hold a word, then the door to the topic editor */
+function myTopicBar(){
+  const d=myDeck(), c=myTopicCounts(), used=d.tp.filter(t=>c[t.id]);
+  const b=(f,label,n)=>`<button class="${(MY.tp||'')===f?'on':''}" onclick="mySetTopic('${f}')">${esc(label)}<span class="n">${n}</span></button>`;
+  if(!used.length)return `<div class="my-chips bar"><button class="add" onclick="myTopicsSheet()">Topics</button><span class="small muted" style="align-self:center">Sort words by the part of life they belong to: tap a word’s ✎.</span></div>`;
+  return `<div class="my-chips bar">${b('','All',myIds().length)}${used.map(t=>b(t.id,t.n,c[t.id])).join('')}${c['-']?b('-','No topic',c['-']):''}<button class="add" onclick="myTopicsSheet()">Edit topics</button></div>`;
+}
+function mySetTopic(f){MY.tp=f||null;renderMy();}
 function myRows(ids){
   const d=myDeck();
   if(!ids.length)return '<div class="small muted" style="padding:10px 0">No match.</div>';
   return ids.map(id=>{const w=d.w[id];return `<div class="my-row"><div class="tr">${esc(w.t)}</div>
-    <div class="info"><div class="py">${w.p?tonePinyin(esc(w.p)):'<span class="muted">no pinyin</span>'}</div><div class="mn">${esc(w.m)||'<span class="muted">no meaning yet</span>'}</div></div>
+    <div class="info"><div class="py">${w.p?tonePinyin(esc(w.p)):'<span class="muted">no pinyin</span>'}</div><div class="mn">${esc(w.m)||'<span class="muted">no meaning yet</span>'}</div>${myTopicPills(w,MY.tp)}</div>
     ${myState(id)}${mySpk(id)}<button class="wbtn" title="edit" aria-label="edit" onclick="myOpenAdd('${id}')">✎</button></div>`;}).join('');
 }
-function myListOnly(){
-  const d=myDeck(), f=MY.q.trim().toLowerCase(), ids=myIds().sort((a,b)=>d.w[b].at-d.w[a].at);
-  const el=document.getElementById('myList'); if(!el)return;
-  el.innerHTML=myRows(f?ids.filter(id=>{const w=d.w[id];return (w.t+' '+w.p+' '+w.m).toLowerCase().includes(f)||(w.p||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().includes(f);}):ids);
-}
+function myListOnly(){const el=document.getElementById('myList'); if(el)el.innerHTML=myRows(myShown());}
 
 /* ---- add / edit ---- */
-function myOpenAdd(id){MY.edit=id||null;if(id)MY.tab='one';myAddRender();}
+function myOpenAdd(id){
+  MY.edit=id||null; if(id)MY.tab='one';
+  const w=id?myDeck().w[id]:null;
+  MY.sel=w?myTopicsOf(w).map(t=>t.id):(MY.tp&&MY.tp!=='-'?[MY.tp]:[]);   /* a new word starts in the topic being looked at */
+  myAddRender();
+}
+/* the topic chips of the add / edit sheet. Ticking one changes MY.sel and the chip, never the sheet, so nothing typed is lost. */
+function myChips(){
+  return myDeck().tp.map(t=>`<button type="button" class="${MY.sel.includes(t.id)?'on':''}" aria-pressed="${MY.sel.includes(t.id)}" onclick="myPick(this,'${t.id}')">${esc(t.n)}</button>`).join('')
+    +'<button type="button" class="add" onclick="myNewTopic(this)">+ New topic</button>';
+}
+function myPick(el,id){const i=MY.sel.indexOf(id); if(i<0)MY.sel.push(id); else MY.sel.splice(i,1); el.classList.toggle('on',i<0); el.setAttribute('aria-pressed',i<0);}
+function myNewTopic(btn){
+  const inp=document.createElement('input'); inp.className='myin'; inp.maxLength=30; inp.placeholder='Topic name'; inp.autocomplete='off'; inp.setAttribute('aria-label','new topic');
+  const done=()=>{
+    const id=myTopicAdd(inp.value); if(id){if(!MY.sel.includes(id))MY.sel.push(id);save();}
+    const box=document.getElementById('myChips'); if(box)box.innerHTML=myChips();
+  };
+  inp.onkeydown=e=>{
+    if(e.key==='Enter'){e.preventDefault();inp.onblur=null;done();}
+    else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();inp.value='';inp.blur();}
+  };
+  inp.onblur=done; btn.replaceWith(inp); inp.focus();
+}
 function myAddRender(){
   const m=shHost(), d=myDeck(), w=MY.edit?d.w[MY.edit]:null, q=s=>esc(s||'').replace(/"/g,'&quot;');
   const one=`<div class="frow"><label for="myT">Characters</label><input id="myT" class="myin zh" lang="zh-Hant" autocomplete="off" autocapitalize="off" value="${w?q(w.t):''}" placeholder="珍珠奶茶" oninput="myHint()" onblur="myAutoPy()"></div>
     <div id="myHintBox"></div>
     <div class="frow"><label for="myP">Pinyin</label><input id="myP" class="myin" autocomplete="off" autocapitalize="off" spellcheck="false" value="${w?q(w.p):''}" placeholder="zhēnzhū nǎichá"></div>
     <div class="frow"><label for="myM">Meaning</label><input id="myM" class="myin" autocomplete="off" value="${w?q(w.m):''}" placeholder="bubble tea" onkeydown="if(event.key==='Enter'){event.preventDefault();mySaveOne();}"></div>
+    <div class="frow"><label>Topics</label><div class="my-chips" id="myChips">${myChips()}</div></div>
     <div class="row" style="gap:8px"><button class="btn" style="flex:1" onclick="mySaveOne()">${w?'Save':'Add'}</button>
       ${w?`<button class="btn ghost" style="color:var(--red)" onclick="myDelete('${MY.edit}')">Delete</button>`:''}</div>`;
   const many=`<div class="frow"><label for="myBulk">One word per line: characters, pinyin, meaning</label>
       <textarea id="myBulk" class="myin" lang="zh-Hant" spellcheck="false" placeholder="珍珠奶茶, zhēnzhū nǎichá, bubble tea&#10;悠遊卡, EasyCard&#10;夜市"></textarea></div>
     <div class="small muted" style="margin:-4px 0 12px">Commas, tabs or semicolons all work. Pinyin and meaning are optional: pinyin is filled in when the characters are known.</div>
+    <div class="frow"><label>Topics for every word in the list</label><div class="my-chips" id="myChips">${myChips()}</div></div>
     <button class="btn" style="width:100%" onclick="mySaveMany()">Add all</button>`;
   m.innerHTML=`<div class="modal-card">
     <div class="sheet-h"><b>${w?'Edit word':'Add to My words'}</b><button class="xbtn" onclick="shClose();renderMy()" aria-label="close">✕</button></div>
@@ -6406,9 +6485,9 @@ function mySaveOne(){
   if(!p)p=myGuessPy(t);
   const d=myDeck();
   if(MY.edit&&d.w[MY.edit]){
-    Object.assign(d.w[MY.edit],{t,p,m}); save(); shClose(); renderMy(); toast('Saved'); return;
+    Object.assign(d.w[MY.edit],{t,p,m}); myTag(d.w[MY.edit],MY.sel); save(); shClose(); renderMy(); toast('Saved'); return;
   }
-  const r=myAdd(t,p,m);
+  const r=myAdd(t,p,m,MY.sel);
   if(r&&r.dup){toast('“'+esc(t)+'” is already in My words');return;}
   save(); myBadge(); toast('Added '+esc(t));
   ['myT','myP','myM'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); myHint();
@@ -6433,7 +6512,12 @@ function myParse(text){
 }
 function mySaveMany(){
   const rows=myParse((document.getElementById('myBulk')||{}).value); if(!rows.length){toast('Nothing to add yet: one word per line, characters first');return;}
-  let added=0, dup=0; rows.forEach(r=>{const x=myAdd(r.t,r.p,r.m);if(x&&x.dup)dup++;else if(x)added++;});
+  const d=myDeck(); let added=0, dup=0;
+  rows.forEach(r=>{
+    const x=myAdd(r.t,r.p,r.m,MY.sel); if(!x)return;
+    if(x.dup){dup++; if(MY.sel.length)myTag(d.w[x.id],(d.w[x.id].g||[]).concat(MY.sel));}   /* a word already in the deck joins the topics too */
+    else added++;
+  });
   save(); shClose(); if(view==='my')renderMy(); else myBadge();
   toast('Added '+added+' word'+(added===1?'':'s')+(dup?' · '+dup+' already there':''));
 }
@@ -6444,12 +6528,57 @@ function myDelete(id){
   toast('Deleted '+esc(w.t),{action:'Undo',ms:7000,onAction:()=>{const dd=myDeck();dd.w[id]=w;Object.assign(dd.c,cards);save();renderMy();}});
 }
 
+/* ---- the topic editor: rename, delete, add ---- */
+function myTopicsSheet(){
+  const m=shHost(), d=myDeck(), c=myTopicCounts(), q=s=>esc(s||'').replace(/"/g,'&quot;');
+  m.innerHTML=`<div class="modal-card">
+    <div class="sheet-h"><b>Topics</b><button class="xbtn" onclick="shClose()" aria-label="close">✕</button></div>
+    <div class="small muted" style="margin:-6px 0 12px">The parts of life your words belong to. A word can sit in more than one: choose them when you add a word, or from its ✎.</div>
+    <div class="my-tlist">${d.tp.map(t=>`<div class="my-trow"><input class="myin" maxlength="30" value="${q(t.n)}" aria-label="topic name" autocomplete="off" onchange="myTopicRename('${t.id}',this.value)">
+      <span class="n">${c[t.id]||0}</span><button class="wbtn" title="delete topic" aria-label="delete topic" onclick="myTopicDelete('${t.id}')">✕</button></div>`).join('')||'<div class="small muted" style="padding:4px 0 8px">No topics yet.</div>'}</div>
+    <div class="row" style="gap:8px;margin-top:12px;flex-wrap:nowrap"><input id="myNewT" class="myin" maxlength="30" placeholder="New topic" autocomplete="off" aria-label="new topic" onkeydown="if(event.key==='Enter'){event.preventDefault();myTopicNew();}"><button class="btn" style="flex:none" onclick="myTopicNew()">Add</button></div></div>`;
+  m.style.display='flex';
+}
+/* after a change to the topics: repaint the list behind the sheet, and the sheet if it is the one open */
+function myTopicsRefresh(){
+  if(view==='my'&&MY.mode!=='study')renderMy();
+  const s=document.getElementById('shSheet'); if(s&&s.style.display==='flex'&&s.querySelector('.my-tlist'))myTopicsSheet();
+}
+function myTopicRename(id,v){
+  const d=myDeck(), t=myTopic(id); if(!t)return;
+  v=String(v||'').replace(/\s+/g,' ').trim().slice(0,30);
+  const clash=v&&d.tp.find(x=>x.id!==id&&x.n.toLowerCase()===v.toLowerCase());
+  if(clash)toast('There is already a topic called “'+esc(clash.n)+'”');
+  else if(v&&v!==t.n){t.n=v;save();}
+  myTopicsRefresh();
+}
+function myTopicNew(){
+  const el=document.getElementById('myNewT'), v=el?el.value:'', n=myDeck().tp.length, id=myTopicAdd(v);
+  if(!id){if(el)el.focus();return;}
+  if(myDeck().tp.length===n)toast('“'+esc(myTopic(id).n)+'” is already a topic'); else save();
+  myTopicsRefresh();
+  const again=document.getElementById('myNewT'), list=document.querySelector('#shSheet .my-tlist');
+  if(list)list.scrollTop=list.scrollHeight; if(again)again.focus();
+}
+function myTopicDelete(id){
+  const d=myDeck(), at=d.tp.findIndex(t=>t.id===id); if(at<0)return;
+  const t=d.tp[at], had=[];
+  d.tp.splice(at,1);
+  for(const k in d.w){const w=d.w[k]; if(w.g&&w.g.includes(id)){had.push(k);myTag(w,w.g.filter(x=>x!==id));}}
+  if(MY.tp===id)MY.tp=null;
+  save(); myTopicsRefresh();
+  toast('Deleted “'+esc(t.n)+'”'+(had.length?' · its '+(had.length===1?'word stays':had.length+' words stay')+' in My words':''),{action:'Undo',ms:7000,onAction:()=>{
+    const dd=myDeck(); if(!dd.tp.some(x=>x.id===id))dd.tp.splice(Math.min(at,dd.tp.length),0,t);
+    had.forEach(k=>{const w=dd.w[k]; if(w)myTag(w,(w.g||[]).concat(id));});
+    save(); myTopicsRefresh();}});
+}
+
 /* ---- study ---- */
 function myNext(){
-  const q=myQueue();
+  const q=myQueue(MY.scope);
   MY.cur=q.learn[0]||q.rev[0]||q.fresh[0]||q.ahead[0]||null; MY.shown=false;
 }
-function myStart(){MY.mode='study';MY.done=0;myNext();renderMy();}
+function myStart(f){MY.mode='study';MY.done=0;MY.scope=f||null;myNext();renderMy();}
 function myStop(){MY.mode='list';MY.cur=null;renderMy();if(view==='home')renderHome();}
 function myReveal(){
   if(!MY.cur||MY.shown)return; MY.shown=true; myStudyRender();
@@ -6461,12 +6590,15 @@ function myGrade(g){
 }
 function myStudyRender(){
   const host=document.getElementById('vMy'); if(!host)return;
-  const q=myQueue(), left=q.learn.length+q.rev.length+q.fresh.length;
-  const top=`<div class="my-top"><span class="link" onclick="myStop()">← My words</span><span>${MY.done} done · ${left} left</span></div>`;
+  const q=myQueue(MY.scope), left=q.learn.length+q.rev.length+q.fresh.length, name=myScopeName(MY.scope);
+  const top=`<div class="my-top"><span class="link" onclick="myStop()">← My words</span><span>${name?esc(name)+' · ':''}${MY.done} done · ${left} left</span></div>`;
   if(!MY.cur||!myWord(MY.cur)){
-    host.innerHTML=top+`<div class="stage"><div class="done"><div class="zhd zh">做完了</div><div style="font-weight:600;font-size:17px">My words are done for now</div>
+    /* a topic that is finished is not a dead end: the rest of the deck is one button away */
+    const rest=name?(r=>r.learn.length+r.rev.length+r.fresh.length)(myQueue()):0;
+    host.innerHTML=top+`<div class="stage"><div class="done"><div class="zhd zh">做完了</div><div style="font-weight:600;font-size:17px">${name?esc(name)+' is':'My words are'} done for now</div>
       <div class="small muted" style="margin-top:6px">${MY.done} card${MY.done===1?'':'s'} this session${q.waiting?' · '+q.waiting+' new card'+(q.waiting===1?'':'s')+' waiting for tomorrow':''}</div></div></div>
-      <div class="row" style="gap:8px;margin-top:14px"><button class="btn" style="flex:1" onclick="myStop()">Back to My words</button><button class="btn ghost" onclick="go('home')">Today</button></div>`;
+      <div class="row" style="gap:8px;margin-top:14px">${rest?`<button class="btn" style="flex:1" onclick="myStart()">Study the rest · ${rest}</button><button class="btn ghost" onclick="myStop()">My words</button>`
+        :`<button class="btn" style="flex:1" onclick="myStop()">Back to My words</button><button class="btn ghost" onclick="go('home')">Today</button>`}</div>`;
     return;
   }
   const w=myWord(MY.cur), id=MY.cur.split(':')[0], prod=MY.cur.endsWith(':prod'), c=myDeck().c[MY.cur];
@@ -6477,7 +6609,7 @@ function myStudyRender(){
   const front=prod?`${mean}${py}<div class="hint">write it on paper, then check</div>`:`${zh}<div class="hint">say it and recall the meaning</div>`;
   const back=prod?`${zh}${py}${mean}`:`${zh}${py}${mean}`;
   const tag=`<div class="mtag ${prod?'prod':'rec'}" style="margin-bottom:6px">${prod?'Write':'Recognise'} · My words${!c||c.st===undefined?' · new':''}</div>`;
-  host.innerHTML=top+`<div class="stage" ${MY.shown?'':'onclick="myReveal()" style="cursor:pointer"'}>${tag}${MY.shown?back:front}
+  host.innerHTML=top+`<div class="stage" ${MY.shown?'':'onclick="myReveal()" style="cursor:pointer"'}>${tag}${MY.shown?back+myTopicPills(w):front}
       ${MY.shown?`<div class="row" style="justify-content:center;gap:8px">${mySpk(id)}<button class="btn sm ghost" onclick="event.stopPropagation();myStrokes('${id}')">Strokes</button><button class="btn sm ghost" onclick="event.stopPropagation();MY.mode='list';myOpenAdd('${id}')">Edit</button></div><div id="myStrokeHost" class="strokerow"></div>`:''}</div>
     ${MY.shown?`<div class="grades">${[[1,'Again'],[2,'Hard'],[3,'Good'],[4,'Easy']].map(([g,l])=>`<button class="g${g}" onclick="myGrade(${g})">${l}<span class="iv">${previewIv(c,'x:rec',g)}</span></button>`).join('')}</div>`
       :`<button class="btn big" style="margin-top:14px" onclick="myReveal()">Show answer</button>`}
