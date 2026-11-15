@@ -913,7 +913,7 @@ textarea.myin{min-height:120px;resize:vertical;line-height:1.5}
 <div id="printSheet"></div>
 <script>
 /* ============ VERSION ============ */
-const APP_VERSION=55;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
+const APP_VERSION=56;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
 
 /* ============ THEME ============ */
 function curTheme(){return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';}
@@ -5704,7 +5704,7 @@ function tcLearn(voiced){
 }
 
 /* ---------- the drill ---------- */
-const TC={list:[],i:0,state:'ask',stream:null,rec:null,timer:0,res:null,ref:null,url:null,busy:false,err:''};
+const TC={list:[],items:{},kind:null,i:0,state:'ask',stream:null,rec:null,timer:0,res:null,ref:null,url:null,busy:false,err:''};
 const TC_NAME={1:'high and level',2:'rising',3:'low',4:'falling'};
 /* what to change, by the tone it should be and the tone it sounded like */
 const TC_TIP={
@@ -5731,7 +5731,7 @@ function tcMicBtn(wid){
   return '<button class="spk" title="check my tones" aria-label="check my tones" onclick="event.stopPropagation();tcQuick(\''+wid+'\')">'+TC_MIC_SVG+'</button>';
 }
 function tcQuick(wid){
-  tcRelease(); TC.list=[wid]; TC.i=0; TC.res=null; TC.err=''; TC.done=0; TC.right=0; TC.total=0; TC.focus=null; TC.cal=false;
+  tcRelease(); TC.list=[wid]; TC.items={}; TC.kind=null; TC.i=0; TC.res=null; TC.err=''; TC.done=0; TC.right=0; TC.total=0; TC.focus=null; TC.cal=false;
   tcState(); TC.state=S.vp.n<300?'cal':'ask';
   const m=shHost();
   if(!m._tc){m._tc=1;m.addEventListener('click',e=>{if(e.target===m&&TC.host)tcQuickClose();});}      /* a tap outside the sheet lets go of the microphone too */
@@ -5741,7 +5741,27 @@ function tcQuick(wid){
 function tcQuickClose(){ tcRelease(); TC.host=null; TC.list=[]; TC.res=null; shClose(); }
 /* a round of ten words. With a tone pair ("24") the round is ten two-syllable words of that pair, taken from the
    chosen scope or, when it holds too few, from every lesson up to the learner's own. */
+/* what is on the card: a course word, or a short phrase made for this round (TC.items, ids "p:w12:0") */
+function tcItem(id){return byId[id]||TC.items[id];}
+/* short phrases from the usage lines of the words in scope: two to four characters, nothing but characters, more
+   than the headword alone. They have no clip of their own, so there is no native curve and the system voice reads them. */
+function tcPhrases(){
+  const seen=new Set(), out=[];
+  for(const w of drillWords())(typeof usOf==='function'?usOf(w.id):[]).forEach((x,i)=>{
+    const it={id:'p:'+w.id+':'+i,t:x[0],p:x[1],m:x[2],phr:true};
+    if(x[0]===audioKey(x[0])&&x[0]!==audioKey(w.t)&&[...x[0]].length>=2&&!seen.has(x[0])&&tcCan(it)){seen.add(x[0]);out.push(it);}
+  });
+  return out;
+}
+function tcSay(){const w=tcItem(TC.list[TC.i]); if(!w)return; if(w.phr)playAudio(w.t,w.p); else speakWord(w.id);}
 function tcStart(pair){
+  tcRelease(); TC.items={}; TC.kind=null;
+  if(pair==='phr'){
+    const ph=shuf(tcPhrases()).slice(0,10); if(ph.length<2){toast('No short phrases for that scope yet');return;}
+    ph.forEach(x=>{TC.items[x.id]=x;}); TC.kind='phr'; TC.focus=null;
+    TC.list=ph.map(x=>x.id); TC.i=0; TC.res=null; TC.err=''; TC.done=0; TC.right=0; TC.total=0;
+    tcState(); TC.state=S.vp.n<300?'cal':'ask'; drillMode='tcoach'; dq=null; go('drill'); return;
+  }
   const pool=tcPool(), manual=typeof pair==='string'&&/^[1-4]{2}$/.test(pair);
   if(!manual&&pool.length<2){toast('Not enough words in that scope for the tone coach');return;}
   /* otherwise up to six of the ten words practise the weakest tone or tone pair so far */
@@ -5779,7 +5799,7 @@ async function tcCalDone(blob){
 }
 async function tcRecord(){
   if(TC.state==='rec'){tcStopRec();return;}
-  const cal=TC.state==='cal', w=byId[TC.list[TC.i]]; if(!w||TC.busy)return;
+  const cal=TC.state==='cal', w=tcItem(TC.list[TC.i]); if(!w||TC.busy)return;
   try{ if(!TC.stream)TC.stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:false,noiseSuppression:false,autoGainControl:false}}); }
   catch(e){ TC.err='The microphone is blocked. Allow it for this site, then try again.'; tcRender(); return; }
   const chunks=[], rec=new MediaRecorder(TC.stream); TC.rec=rec; TC.err='';
@@ -5791,7 +5811,7 @@ async function tcRecord(){
 function tcStopRec(){ clearTimeout(TC.timer); try{if(TC.rec&&TC.rec.state!=='inactive')TC.rec.stop();}catch(e){} }
 /* grade one take. `input` is the recording (a Blob), or already-decoded audio {x, sr} */
 async function tcGrade(input){
-  const wid=TC.list[TC.i], w=byId[wid]; if(!w)return;
+  const wid=TC.list[TC.i], w=tcItem(wid); if(!w)return;
   TC.busy=true; TC.state='think'; tcRender();
   try{
     const mine=input.x?input:await tcDecode(await input.arrayBuffer());
@@ -5807,7 +5827,7 @@ async function tcGrade(input){
       T.by[e]=T.by[e]||[0,0]; T.by[e][1]++; if(ok)T.by[e][0]++; else {const k=e+'>'+s.tone;T.conf[k]=(T.conf[k]||0)+1;}
       return {e,ok,close,s,wr:written[i]};});
     if(n===2&&graded===2){const pr=T.pair[''+want[0]+want[1]]||[0,0]; pr[1]++; if(right===2)pr[0]++; T.pair[''+want[0]+want[1]]=pr;}
-    T.n++; const rec=T.w[wid]||[0,0]; rec[0]++; rec[1]=Math.max(rec[1],Math.round(right/Math.max(1,graded)*100)); T.w[wid]=rec;
+    T.n++; if(!w.phr){const rec=T.w[wid]||[0,0]; rec[0]++; rec[1]=Math.max(rec[1],Math.round(right/Math.max(1,graded)*100)); T.w[wid]=rec;}
     tcLearn(got.voiced);
     TC.res={syl,ref,right,graded,learning:!!me.learning}; TC.state='done'; TC.err=''; TC.total+=graded; TC.right+=right;
     haptic(right===graded?'good':'again'); save();
@@ -5836,13 +5856,13 @@ function tcRender(){
   if(TC.i>=TC.list.length){
     if(TC.host){tcQuickClose();return;}
     tcRelease();
-    el.innerHTML=`<div class="card done"><div class="zhd zh">練完了</div><div style="font-weight:600;font-size:16px">${TC.total?Math.round(TC.right/TC.total*100):0}% of tones on target · ${TC.list.length} words</div>
+    el.innerHTML=`<div class="card done"><div class="zhd zh">練完了</div><div style="font-weight:600;font-size:16px">${TC.total?Math.round(TC.right/TC.total*100):0}% of tones on target · ${TC.list.length} ${TC.kind==='phr'?'phrases':'words'}</div>
       <div class="small muted" style="margin-top:10px">${tcSummary()}</div>
-      <div class="row" style="justify-content:center;gap:8px;margin-top:16px"><button class="btn" onclick="tcStart()">Another ten</button><button class="btn ghost" onclick="drillMode=null;renderDrill()">Back to drills</button></div></div>`;
+      <div class="row" style="justify-content:center;gap:8px;margin-top:16px"><button class="btn" onclick="tcStart(${TC.kind==='phr'?"'phr'":''})">Another ten</button>${TC.kind==='phr'?'':`<button class="btn ghost" onclick="tcStart('phr')">Short phrases</button>`}<button class="btn ghost" onclick="drillMode=null;renderDrill()">Back to drills</button></div></div>`;
     return;
   }
-  const w=byId[TC.list[TC.i]], chars=[...audioKey(w.t)], want=tcExpected(w.p), res=TC.res, st=TC.state;
-  const head=TC.host?'':`<div class="rev-top"><span class="qtype">聲調教練 · Tone coach <span class="tc-beta">beta</span></span><span class="qprog">${TC.i+1} / ${TC.list.length}</span></div>`;
+  const w=tcItem(TC.list[TC.i]), chars=[...audioKey(w.t)], want=tcExpected(w.p), res=TC.res, st=TC.state;
+  const head=TC.host?'':`<div class="rev-top"><span class="qtype">聲調教練 · Tone coach${TC.kind==='phr'?' · phrases':''} <span class="tc-beta">beta</span></span><span class="qprog">${TC.i+1} / ${TC.list.length}</span></div>`;
   if(st==='cal'||(TC.cal&&(st==='rec'||st==='think'))){
     el.innerHTML=head+`<div class="stage" style="min-height:300px"><div class="hint">first, let the coach hear your voice</div>
       <div class="zh" style="font-size:22px;line-height:1.7;margin:10px 0 6px">${esc(TC_CAL)}</div>
@@ -5854,7 +5874,7 @@ function tcRender(){
   }
   const shown=st==='done'&&res;        /* the result is the tall state: the word shrinks to make room for it */
   const word=`<div class="bigzh zh" style="font-size:${shown?38:54}px${shown?';margin:0 0 2px':''}">${esc(w.t.split('（')[0])}</div>
-    <div class="row" style="justify-content:center;gap:9px"><span class="pyline" style="font-size:${shown?19:23}px">${tonePinyin(esc(w.p))}</span>${spkBtn(w.id)}</div>
+    <div class="row" style="justify-content:center;gap:9px"><span class="pyline" style="font-size:${shown?19:23}px">${tonePinyin(esc(w.p))}</span>${w.phr?`<button class="spk" title="pronounce" onclick="tcSay()">${SPK_SVG}</button>`:spkBtn(w.id)}</div>
     ${shown?'':`<div class="meaning" style="font-size:15px;margin-top:2px">${esc(w.m)}</div>`}`;
   let body;
   if(st==='done'&&res){
@@ -5864,14 +5884,14 @@ function tcRender(){
       <div class="tc-chips">${res.syl.map((s,i)=>`<span class="tc-chip ${cls(s)}"><b class="zh">${esc(chars[i])}</b><i>${s.e?'tone '+s.e+(s.wr&&s.wr!==s.e?' (written '+s.wr+')':''):'neutral'}</i>${s.ok===null?'':s.ok?'✓':s.close?'≈':'✗'}</span>`).join('')}</div>
       <div class="tc-say">${res.right===res.graded?'Every tone on target.':lines}</div>
       <div class="tc-key">grey = the native speaker · colour = you${res.learning?' · still learning your voice range, so these first grades are rough':''}</div>
-      <div class="tc-acts">${TC.url?`<button class="btn ghost sm" onclick="tcPlayMine()">▶ Mine</button>`:''}<button class="btn ghost sm" onclick="speakWord('${w.id}')">▶ Native</button><button class="btn ghost sm" onclick="tcAgain()">Again</button><button class="btn sm" onclick="tcNext()">${TC.host?'Done':'Next →'}</button></div>`;
+      <div class="tc-acts">${TC.url?`<button class="btn ghost sm" onclick="tcPlayMine()">▶ Mine</button>`:''}<button class="btn ghost sm" onclick="tcSay()">▶ Native</button><button class="btn ghost sm" onclick="tcAgain()">Again</button><button class="btn sm" onclick="tcNext()">${TC.host?'Done':'Next →'}</button></div>`;
   }else{
-    body=`<div class="hint" style="margin-top:10px">listen · then record yourself saying it</div>
+    body=`<div class="hint" style="margin-top:10px">listen · then record yourself saying it${w.phr?' · the system voice reads phrases':''}</div>
       ${TC.focus&&TC.i===0?`<div class="small muted" style="text-align:center;margin-top:6px">${TC.focus.manual?`This round: ten words of ${tcFocusName(TC.focus)}.`:`This round leans on ${tcFocusName(TC.focus)} — your hardest so far.`}</div>`:''}
       ${TC.err?`<div class="tc-err">${esc(TC.err)}</div>`:''}
-      <div class="row" style="justify-content:center;gap:10px;margin-top:14px"><button class="btn ghost" onclick="speakWord('${w.id}')">▶ Listen</button>
+      <div class="row" style="justify-content:center;gap:10px;margin-top:14px"><button class="btn ghost" onclick="tcSay()">▶ Listen</button>
         <button class="btn tc-rec ${st==='rec'?'on':''}" onclick="tcRecord()" ${st==='think'?'disabled':''}>${st==='rec'?'■ Stop':st==='think'?'Listening…':'● Record'}</button></div>
-      <div class="small muted" style="text-align:center;margin-top:10px">${st==='rec'?'recording — it stops by itself':TC.host?'':'<span class="link" onclick="tcNext()">skip this word</span>'}</div>`;
+      <div class="small muted" style="text-align:center;margin-top:10px">${st==='rec'?'recording — it stops by itself':TC.host?'':'<span class="link" onclick="tcNext()">skip this '+(w.phr?'phrase':'word')+'</span>'}</div>`;
   }
   el.innerHTML=head+`<div class="stage" style="min-height:300px">${word}${body}</div>`;
 }
@@ -5902,6 +5922,7 @@ function tcPanel(){
   const T=tcState();
   return `<div class="card"><div class="lab">Your tones${T.n?` · ${T.n} recordings`:''}</div>
     <div class="small muted">${T.n?tcSummary():'Record a few words in the tone coach and this fills in.'}</div>
+    <div class="row" style="gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn sm" onclick="startDrill('tcoach')">Ten words</button><button class="btn sm ghost" onclick="tcStart('phr')">Ten short phrases</button></div>
     <div class="small muted" style="margin-top:12px">Two-syllable words by tone pair — the first tone down the side, the second across. Tap a pair to practise ten words of it.</div>${tcPairMap()}</div>`;
 }
 DMODES.push(['tcoach','聲調教練 Tone coach','record yourself · see your tones against a native speaker']);
