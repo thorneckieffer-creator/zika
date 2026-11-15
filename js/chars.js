@@ -1,3 +1,6 @@
+/* Characters: components and etymology, the anatomy line on a card's answer side, look-up links and 萌典, and
+   stroke order drawn with Hanzi Writer from assets/strokes.json. */
+
 /* ============ CHARACTER STORIES (components & etymology) ============ */
 const BCHARS=(()=>{const s=new Set();WORDS.forEach(w=>{for(const ch of w.t)if(/\p{Script=Han}/u.test(ch))s.add(ch);});return [...s];})();
 const CIDX=(()=>{const m={};BCHARS.forEach(ch=>{((COMPONENTS[ch]||{}).d||[]).forEach(c=>{(m[c]=m[c]||[]).push(ch);});});return m;})();

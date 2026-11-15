@@ -1,3 +1,6 @@
+/* The Library: search, lesson lists and word rows, triage of a new lesson, confidence levels (hard / learning /
+   know / mastered) and their export, and which dialogue each word belongs to. */
+
 /* ---- LIBRARY ---- */
 function renderLib(){
   if(tri)return renderTriage();

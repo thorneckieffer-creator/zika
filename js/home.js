@@ -1,3 +1,7 @@
+/* Today: the hero with the one button, the lanes, the plan for the weekday, the Up next queue, tonight's paper
+   list, statistics and the heatmap. shHome() in shell.js lays the result out. renderHome still builds the page in the
+   steps the versions added (docs/roadmap.md: build Today directly). */
+
 /* ---- PAPER PRACTICE ---- */
 function paperList(){
   // day 1 = full drilling (×writeTarget), day 2 = a few reps (×5), day 3 = one re-exposure (×1).

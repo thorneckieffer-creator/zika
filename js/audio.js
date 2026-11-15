@@ -1,3 +1,6 @@
+/* Audio: the bundled voice packs (one file of MP3 clips plus an index per voice), playAudio, and the device's own
+   speech voice as the fallback for anything a pack does not hold. The packs and their builders: docs/voice.md. */
+
 /* ============ AUDIO (speechSynthesis, best zh-TW voice) ============ */
 let VOICES=[];
 function loadVoices(){try{VOICES=(window.speechSynthesis?speechSynthesis.getVoices():[]).filter(v=>/^(zh|cmn)/i.test(v.lang)||/中文|國語|粵語|普通话/.test(v.name));}catch(e){VOICES=[];}}

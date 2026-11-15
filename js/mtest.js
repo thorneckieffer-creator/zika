@@ -1,3 +1,6 @@
+/* 寫字測驗, the writing mastery test: English and pinyin in, the character written on paper, marked ★ ~ ✗ by the
+   learner; ✗ and ~ words go to the catch-up lane. */
+
 function mtGet(){S.mtest=S.mtest||{lo:9,hi:21,res:{},order:[],i:0,started:0};return S.mtest;}
 function mtWords(){const T=mtGet();return WORDS.filter(w=>w.l>=T.lo&&w.l<=T.hi&&!isName(w)&&!/[+＋]|number|noun/i.test(w.t)).map(w=>w.id);}
 function mtStart(lo,hi){const T=mtGet();if(lo)T.lo=lo;if(hi)T.hi=hi;T.order=mtWords();T.i=T.order.findIndex(id=>!T.res[id]);if(T.i<0)T.i=0;T.started=T.started||Date.now();save();drillMode='mtest';dq=null;MT.revealed=false;go('drill');}

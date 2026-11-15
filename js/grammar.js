@@ -1,3 +1,6 @@
+/* Grammar: the Grammar tab and its quiz, grammar points as cards in the review queue, families of patterns and
+   the grasp map. */
+
 /* ============ GRAMMAR DRILLS ============ */
 let gramLesson=1, gq=null, gramOpen={};
 const GPOOL=['嗎','呢','吧','的','得','都','也','很','不','沒','了','還是','或是','可以','會','能','想','要','先','再','就','比','跟','給','把','別','最','更','太','常','剛','已經','應該','打算','因為','所以','可是','不過','要是','一樣','每','只','又','從','到','在','離','當然','好像','需要','希望','一直','最好'];

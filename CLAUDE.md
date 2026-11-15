@@ -1,6 +1,6 @@
 # 字卡 Zìkǎ — working notes
 
-A single-file PWA for studying *A Course in Contemporary Chinese* (當代中文課程, NTNU MTC). One user, several devices (Mac, iPad, iPhone). README.md is the public description. This file is what every session needs before changing anything; the detail for each area is in `docs/`.
+A PWA with no build step for studying *A Course in Contemporary Chinese* (當代中文課程, NTNU MTC). One user, several devices (Mac, iPad, iPhone). README.md is the public description. This file is what every session needs before changing anything; the detail for each area is in `docs/`.
 
 ## Ownership
 
@@ -33,9 +33,9 @@ The work divides into four areas. Each has its own notes; read the one you are a
 
 | Area | Notes | Covers |
 |---|---|---|
-| **App** | [docs/architecture.md](docs/architecture.md), [docs/design.md](docs/design.md), [docs/multi-user.md](docs/multi-user.md) | The shell, scheduler, drills, My words, sync and state in `index.html`; `sw.js`; `manifest.webmanifest`. How it should look; what opening it to other users takes. |
-| **Content** | [docs/content.md](docs/content.md) | Books, words, grammar and characters: the data lines in `index.html`, `assets/strokes.json`, the importers, `tools/content/`. |
-| **Voice** | [docs/voice.md](docs/voice.md) | Voice packs and how they are built: `assets/audio-*`, `voice.html`, the pack builders, the audio functions in `index.html`. |
+| **App** | [docs/architecture.md](docs/architecture.md), [docs/design.md](docs/design.md), [docs/multi-user.md](docs/multi-user.md) | The page (`index.html`), the code in `js/`, the styles in `css/app.css`, `sw.js`, `manifest.webmanifest`. How it should look; what opening it to other users takes. |
+| **Content** | [docs/content.md](docs/content.md) | Books, words, grammar and characters: the files in `data/`, `assets/strokes.json`, the importers, `tools/content/`. |
+| **Voice** | [docs/voice.md](docs/voice.md) | Voice packs and how they are built: `assets/audio-*`, `voice.html`, the pack builders, `js/audio.js`, the tone coach (`js/tone-analysis.js`, `js/tone.js`). |
 | **Release and repo** | [docs/releasing.md](docs/releasing.md), [docs/feature-map.md](docs/feature-map.md), [docs/review-checklist.md](docs/review-checklist.md) | The release check, the checker and its gate, GitHub and Pages, these notes, the README. |
 
 Open work for every area is in one list: [docs/roadmap.md](docs/roadmap.md).
@@ -44,19 +44,26 @@ Open work for every area is in one list: [docs/roadmap.md](docs/roadmap.md).
 
 | File | Role | Area |
 |---|---|---|
-| `index.html` | The whole app: CSS, embedded data, all logic. ~5,300 lines. | all |
-| `sw.js` | Service worker. Shell cache is per-version; `zika-assets-v1` holds audio/strokes and survives updates. | App |
+| `index.html` | The page's markup and the list of scripts it loads, in order. No code of its own beyond the three lines that paint the right theme before anything else arrives. | App |
+| `js/` | The app, one file per area, plain scripts that share one global scope: `core` (books, storage, state, FSRS, the queue), `text` (pinyin and tones), `shell` (views, tabs, theme, toasts, releases), `audio`, `chars` (components, strokes, look-ups), `sync`, `backup`, `home`, `review`, `library`, `brain`, `grammar`, `drills`, `listen`, `mtest`, `exam`, `catchup`, `settings`, `tone-analysis`, `tone`, `stories`, `my-words`, `usage`, and `boot`, which runs start-up last. | App, Voice |
+| `css/app.css` | Every style. | App |
+| `data/` | The course: `course.js` (BOOKS, LESSON_TITLES, DLGMAP) and `words.js`, `grammar.js`, `components.js`, `readings.js`, `usage.js`, each one `const NAME = <one line of JSON>;`. Written by the content tools. | Content |
+| `sw.js` | Service worker. Holds the whole app shell per release and serves it from there; `zika-assets-v1` holds audio, strokes and the dictionary and survives releases. Its file list is written by `tools/stamp.mjs`. | App |
 | `manifest.webmanifest` | Install metadata. Do not add an `id` — it would change the identity of already-installed copies. | App |
 | `voice.html` | Stand-alone page that records the reference sentence for a cloned voice. | Voice |
 | `assets/` | Voice packs (`audio-tw.pack` 曉臻; `audio-tw-m` and `audio-me` when built; each with an index), `strokes.json`, `dict.txt` (the dictionary for My words), Hanzi Writer, icons. | Voice, Content |
 | `tools/check.mjs` | Release gate. `node tools/check.mjs` must pass before a push. It includes a self-test of the tone coach on synthetic tones. | Release |
+| `tools/stamp.mjs` | Writes the list of shell files and their hashes into `sw.js`. Run it after any change to the page, `js/`, `css/` or `data/`; the release check fails if it is stale. | Release |
+| `tools/snap.mjs`, `tools/snap/` | The screen-by-screen harness: records every screen, the saved state and a picture for scripted and seeded random use, and compares two recordings. `node tools/snap.mjs record` before a change, `check` after. | Release |
+| `tools/swtest.mjs` | Takes the service worker through a device's life in headless Chrome: first visit, offline, a release, a half-published release, the upgrade from an earlier release (`--from`). | Release |
+| `tools/applib.py`, `tools/lib/browser.mjs` | What the tools share: reading and writing `data/`; a static server and a Chrome driver. | Release |
 | `tools/review.mjs` | The review gate: ties the checker's PASS or FAIL to a fingerprint of the app files (everything but the notes and the tools), and stops a session finishing or a push leaving without a PASS. | Release |
 | `.claude/agents/verify-app.md`, `.claude/settings.json` | The checker subagent, and the hooks that call the gate: when a session tries to finish, and to keep anyone but the checker from recording a verdict. | Release |
 | `tools/import_dangdai.py` | Imports lessons from a downloaded DangDai volume (words, titles, BOOKS, DLGMAP, grammar). | Content |
 | `tools/add_characters.py` | Adds stroke data and component breakdowns for characters new to WORDS. | Content |
 | `tools/build_dict.py` | Builds `assets/dict.txt`, the dictionary My words fills pinyin and meanings from, out of CC-CEDICT, with the pinyin written the course's (Taiwan) way. | Content |
 | `tools/content/` | Original grammar write-ups per book, consumed by the importer; the Stories (`reading_passages.py`) and the usage phrases (`usage/*.txt`); `readings.json`, the publisher's 注音 per word. | Content, Voice |
-| `tools/check_reading.py`, `tools/check_usage.py` | Check the Stories and the usage phrases against the vocabulary learned so far, and install them into `index.html` (`--write`). | Content |
+| `tools/check_reading.py`, `tools/check_usage.py` | Check the Stories and the usage phrases against the vocabulary learned so far, and install them into `data/` (`--write`). | Content |
 | `tools/build_voice_pack.py` | Builds a voice pack from WORDS with edge-tts. | Voice |
 | `tools/tone_lab.mjs` | The tone coach's test bench: runs the app's own tone code on recordings with known tones (`check`, `cv`), and refits the classifier (`fit --write`). | Voice |
 | `tools/build_voice_pack_breezy.py`, `tools/build_voice_staged.sh`, `tools/build_readings.py` | Cloned-voice pack with BreezyVoice, run in stages; the readings file it pins pronunciations with. | Voice |
@@ -69,21 +76,20 @@ Open work for every area is in one list: [docs/roadmap.md](docs/roadmap.md).
 3. **State changes need a migration.** One-time migrations are guarded by a flag in `S.settings` (`_v38`, …). They must be idempotent and must survive a cloud adopt (flags are carried across in `fbAdopt`).
 4. **Device-local settings do not sync.** Add new ones to `LOCAL_SETTINGS` (kept if the device has a value) or `STRICT_LOCAL` (never inherited from another device).
 5. **Never put a sync code in the repo.** It is the only secret; the Firebase web config is public by design.
-6. **The live app is the study tool.** `main` deploys to GitHub Pages in about two minutes and the shell is network-first, so a bad push reaches every device on its next open. Test locally first.
+6. **The live app is the study tool.** `main` deploys to GitHub Pages in about two minutes and every device takes the release the next time it is opened with a connection. Test locally first.
 
-## Before changing `index.html`
+## Before changing the code
 
-- Five lines are enormous single-line JSON blobs (`const WORDS`, `const GRAMMAR`, `const COMPONENTS`, `const READINGS`, `const USAGE`) and one is the minified QR library. Never read them whole; grep with `cut -c1-300` and parse them with a script.
-- The file grew version by version: each version appended a block that wraps or replaces earlier functions, so the first definition of a function is rarely the whole story. Before changing `X`, list every layer:
-
-  ```bash
-  grep -n -E "^\s*X\s*=|\bX=\(function|\bX=function|function X\(" index.html | cut -c1-200
-  ```
-
-  The rest is in [docs/architecture.md](docs/architecture.md).
-- New features do not add another wrapper layer. They go in the second script block (or a block of their own) as prefixed functions, and their styles use the colour variables ([docs/design.md](docs/design.md)).
+- **One definition per function, in the file for its area.** Find it with `grep -n "function X(" js/*.js`. There are no wrapper layers any more and none may be added: to change what a function does, change it where it is.
+- **Files only define; `js/boot.js` runs.** A file's top level holds functions and constants and nothing that reads the deck or touches the page. Anything that must happen at start-up goes in the right step of `js/boot.js` (load, migrate, mount, listen, start). `tools/check.mjs` fails on a name defined at the top of two files.
+- **Scripts share one global scope and load in the order `index.html` lists them.** A function may call anything; a top-level constant may only use what an earlier file defined. A new file is added to `index.html` before `js/boot.js`, then `node tools/stamp.mjs`.
+- **New features are prefixed functions** (`sh*` shell, `my*` My words, `us*` usage, `tc*` tone coach, `rd*` stories, `ex*` exam, `mt*` writing test, `fb*` sync, `bk*` backup) in the file for their area, or a new file. A drill that takes over the Drill tab registers itself in `DRILL_SCREENS` and has a line in `DMODES`. Styles use the colour variables ([docs/design.md](docs/design.md)).
+- **Record before, check after.** `node tools/snap.mjs record`, make the change, `node tools/snap.mjs check`. A change that is not meant to alter behaviour must come back identical; one that is must differ only where intended.
+- The files in `data/` are single enormous lines. Never read them whole; grep with `cut -c1-300`, and read or write them through `tools/applib.py`.
 - Everything on screen is book by book ("Book 2 · Lesson 7"). The internal lesson index (`w.l`) is a private key: never print it.
+
+The rest is in [docs/architecture.md](docs/architecture.md); why it is built this way is in [docs/decisions.md](docs/decisions.md).
 
 ## Releasing
 
-Bump `APP_VERSION` (`index.html`) and `VERSION` (`sw.js`) together, run `node tools/check.mjs`, smoke-test locally at phone and tablet widths, run the `verify-app` subagent until it records a PASS, then commit as `vNN — what changed` and push `main`. When a change adds or moves a feature, update its entry in `docs/feature-map.md` in the same commit. The full steps, and how two sessions share the repository, are in [docs/releasing.md](docs/releasing.md).
+Bump `APP_VERSION` (`js/core.js`) and `VERSION` (`sw.js`) together, run `node tools/stamp.mjs`, `node tools/check.mjs` and `node tools/snap.mjs check`, smoke-test locally at phone and tablet widths, run the `verify-app` subagent until it records a PASS, then commit as `vNN — what changed` and push `main`. When a change adds or moves a feature, update its entry in `docs/feature-map.md` in the same commit. The full steps, and how two sessions share the repository, are in [docs/releasing.md](docs/releasing.md).

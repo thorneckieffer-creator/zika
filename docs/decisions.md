@@ -2,6 +2,22 @@
 
 Decisions with consequences, newest first, each with its reason. Thorne asked on 15 November 2026 that Claude decide without asking and write the decisions down ([CLAUDE.md](../CLAUDE.md#the-commitment)); this is where they are written. A decision here can be changed, but change it here, with the new reason, in the same commit as the code.
 
+## 2026-11-15 — a release is stored whole on the device and served from there
+
+Before: the page was fetched from the network on every open (with a 3.5-second fallback to the last copy), and everything else was cached as it was first seen. With the app in thirty files that would have run a new page against old scripts after every release. Now `sw.js` stores the whole shell per release, lists it with a hash of each file (`tools/stamp.mjs`), and serves only from that store. A device takes a release whole or keeps the one it has; opening never waits for the network; an unchanged file is not downloaded again.
+
+The cost is that a release arrives one open later than before: the open that finds it runs the old one while the new one is stored, then reloads into it at once if nothing has been touched, or offers Refresh. That is the price of never mixing versions, and it is what makes splitting the app into files safe.
+
+File names carry no version stamp (`js/core.js`, not `js/core.js?v=63`): the worker checks content against its hashes, which is stronger, and a stamp in `index.html` would be one more generated edit per release. `tools/swtest.mjs` holds all of this in place, including the upgrade from the v62 worker.
+
+## 2026-11-15 — plain scripts in one shared scope, not modules, for now
+
+The split kept every function a global and every inline `onclick="fn()"` working, which is why it could be proven identical to v62. ES modules would let each file declare what it uses, but need the inline handlers replaced first. It is on the roadmap, after the release.
+
+## 2026-11-15 — a second session works beside this one, by agreement
+
+Thorne opened a second window and asked for more agents. The split agreed between the two sessions: this one owns the restructure on `next` and applies and verifies everything with the harness; the other one's agents read the layers and wrote the single definitions (each checked against its original before delivery), reviewed every push independently, and are drafting the multi-user design (accounts, storage per person, sync by record) on branches of their own, as new files that touch no existing function. Their review found real things: the service worker's version skew, the tools broken by the data move, and start-up saves that would have marked an idle device as holding unsent work.
+
 ## 2026-11-15 — the restructure lives on `next`, not on `main`
 
 `main` is the app on Thorne's devices and he has an exam coming. The restructure (files split out of `index.html`, one definition per function, the foundations for other users) is developed on the branch `next` in `.claude/worktrees/next` and is merged only when he says he is ready to launch, or after the exam. `main` still takes small fixes; `next` is rebased on them before the merge and takes the next version number then.

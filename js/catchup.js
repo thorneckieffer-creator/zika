@@ -1,3 +1,5 @@
+/* The Catch-up tab: the shaky words from older lessons, lesson by lesson. */
+
 function catchLessonCounts(ln){
   const now=Date.now(), T=mtGet(); const words=WORDS.filter(w=>w.l===ln&&!isName(w)&&!/[+＋]|number|noun/i.test(w.t));
   const n={n:words.length,m:0,l:0,h:0,todo:0,due:0,fresh:0,day:[0,0,0,0]};

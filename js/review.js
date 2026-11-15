@@ -1,3 +1,6 @@
+/* The review sitting: the session's queue, the card front and back, grading, undo, the progress line and the
+   summary at the end. */
+
 /* ---- REVIEW ---- */
 let rq=null, cur=null, revealed=false, undoStack=[], sessionN=0, hintShown=false;
 /* A review sitting. REV_FILTER and REV_CAP are set by whoever starts it (a lane, one catch-up lesson, a quick 20) and used once. */

@@ -1,3 +1,6 @@
+/* The Brain: every word and character as a tile by how well it is known, the time-lapse of the deck, word types,
+   and phonetic series. */
+
 /* ============ TIME-LAPSE SNAPSHOTS ============ */
 function stageString(){return WORDS.map(w=>wordStage(w.id)).join('');}
 /* `quiet` is for the entry start-up adds by itself: it is stored on this device without the cloud push, so that

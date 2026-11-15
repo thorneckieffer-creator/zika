@@ -23,7 +23,6 @@ One list of what is not done, by area. Take an item off when it ships; add one w
 Next for the product:
 
 - **Other users.** The plan, in order, is in [multi-user.md](multi-user.md): a clean first run, accounts, storage per person, sync by card.
-- **Split `index.html` into files.** Data (`WORDS`, `GRAMMAR`, `COMPONENTS`, `READINGS`) into JSON under `assets/`, styles and each feature into their own file, all fetched with a `?v=` that matches the version and pre-cached by the service worker. Do it after an exam, never before one, and move one piece per release.
 - **My words:** share a deck with someone else; count its reviews toward the streak; meanings for what the dictionary does not hold (slang such as 沒差 and whole phrases get pinyin from their parts and no meaning; a language model could write one, which needs a small server to keep its key, so it belongs with the accounts work in [multi-user.md](multi-user.md)); looking a word up by its simplified form. Topics shipped in v60 and the dictionary in v62; still open there: sorting many words at once (today it is one word at a time, from its ✎), and topics for course words.
 - **A new app icon.** The Home Screen icon is still the red seal; the app itself now uses the plain mark.
 
@@ -33,18 +32,15 @@ Behaviour gaps, not yet fixed:
 - The Up-next panel's "will start now" count ignores the per-lane intake.
 - Turning a card type on in Settings does not create that card for words already in the deck.
 
-Structure:
+Structure (the restructure of November 2026 is on the branch `next`; see [decisions.md](decisions.md)):
 
-- **One layer.** Fold the version-by-version wrappers into a single definition of each function, one function at a time with the smoke test, never as one rewrite ([architecture.md](architecture.md#layers)).
-- **Leaner sync.** Send changes rather than the whole deck.
-
-Verified dead or superseded code that is still in the file, to be removed one piece at a time with the smoke test:
-
-- `TIERS`, `RECUR_TGT`, `CATCHUP_SCHED`, `tierWords`, `recurPoints`, `drillTier` and the `drillScope==='tier'` branch (the tier card was stubbed out in v33).
-- The first `renderLib` body, the first `buildQueue` body and the first `compLines` body (each replaced wholesale by a later layer).
-- The `dict` branch of the first `renderDrill`, and the write-card front in the first `renderRev`.
-- The first `anatomyHtml` body (the layer after it replaces it without calling it).
-- `NOTION.hub/.catchup/.prep/.book1/.chars`, CSS `.complines`, `.gres`, `.serif-en`, `.kai`.
+- **Release `next`.** It is the app split into files with one definition per function and the new service worker, verified against v62 by the harness. Merge it into `main` when Thorne is ready (after the exam): merge `main` into it first, take the next version number, run the whole release procedure, and run `node tools/swtest.mjs --from <a v62 folder>` once more.
+- **Build Today and Settings directly.** `renderHome` and `renderSet` still build a page and then insert, move and remove parts of it, in the order the versions added those steps (Settings builds rows it then deletes; Today builds a card it then replaces). Rewrite each as one pass that builds the final page; the harness says when it is the same page. `renderRev` and `renderDrill` next.
+- **Remove what is dead.** `TIERS`, `RECUR_TGT`, `CATCHUP_SCHED`, `tierWords`, `recurPoints`, `drillTier` and the `drillScope==='tier'` branch; `tierPanel` and `mtPanel` (both return an empty string) and the loops in `renderHome` that remove their cards; the `dict` branch of `drillRenderBase` that the dictation card replaces; `NOTION.hub/.catchup/.prep/.book1/.chars`; CSS `.complines`, `.gres`, `.serif-en`, `.kai`. Run `node tools/snap.mjs check --coverage` and go through `never-called.txt`.
+- **Scenarios for what the harness never reaches** (about a fifth of the functions): export and import, snapshot restore, the backup file, My words study, the exam's marking and undo, the tone coach with a recorded take.
+- **Load the course on demand.** `data/usage.js` is half a megabyte and is only needed on a card's answer side; a learner on Book 1 does not need Book 3. Split `data/` by book and fetch what the learner's position needs.
+- **Modules.** The scripts share one global scope and inline `onclick` handlers call functions by name. Moving to ES modules would let a file say what it uses; it means replacing the inline handlers first.
+- **Leaner sync.** Send changes rather than the whole deck ([multi-user.md](multi-user.md)).
 
 ## Release and repo
 

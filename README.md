@@ -45,8 +45,11 @@ The sync code is the only secret: anyone who has it can read and write that deck
 ## How it works
 
 ```
-index.html            the whole app: styles, data, logic
-sw.js                 service worker (offline shell + asset cache)
+index.html            the page: its markup and the list of scripts it loads
+js/                   the app, one plain script per area (review, drills, sync, My words, …); boot.js starts it
+css/app.css           the styles
+data/                 the course: books and lesson titles, words, grammar, character components, stories, usage phrases
+sw.js                 service worker: holds each release whole and serves it offline; assets are cached separately
 manifest.webmanifest  install metadata
 voice.html            records a reference sentence for a cloned voice pack
 assets/
@@ -57,7 +60,10 @@ assets/
   hanzi-writer.min.js stroke animation engine
   icon-*.png
 tools/
-  check.mjs                  release check: syntax, versions, data integrity
+  check.mjs                  release check: every file loads and parses, versions, data integrity
+  stamp.mjs                  writes the list of app files and their hashes into sw.js
+  snap.mjs                   records every screen and the saved state for scripted and random use; compares two recordings
+  swtest.mjs                 takes the service worker through first visit, offline, a release and an upgrade
   review.mjs                 review gate: no change to the app is finished or pushed without the checker's PASS
   import_dangdai.py          imports lessons from a downloaded DangDai volume
   add_characters.py          adds stroke data and component breakdowns for new characters
@@ -80,7 +86,7 @@ docs/                 working notes by area: architecture, content, voice, relea
 ### Firebase setup (only if you fork this)
 
 1. Create a Firebase project, add a Realtime Database, and enable **Anonymous** sign-in.
-2. Register a web app and paste its config into `FIREBASE_CONFIG` in `index.html`.
+2. Register a web app and paste its config into `FIREBASE_CONFIG` in `js/sync.js`.
 3. Publish these database rules:
 
 ```json
@@ -102,17 +108,20 @@ docs/                 working notes by area: architecture, content, voice, relea
 ## Development
 
 ```bash
-python3 -m http.server 8791 --bind 127.0.0.1   # then open http://127.0.0.1:8791/
-node tools/check.mjs                           # run before every release
+python3 -m http.server 8791 --bind 127.0.0.1   # then open http://127.0.0.1:8791/ (the service worker stays off here)
+node tools/snap.mjs record                     # before a change: record the app as it is
+node tools/stamp.mjs && node tools/check.mjs   # after it: restamp the service worker, run the release check
+node tools/snap.mjs check                      # and compare every screen with the recording
 ```
 
-A release is a commit on `main`; GitHub Pages deploys it within a couple of minutes. Each release bumps the version in two places that the check keeps in step: `APP_VERSION` in `index.html` and `VERSION` in `sw.js`.
+A release is a commit on `main`; GitHub Pages deploys it within a couple of minutes. There is no build step: the browser loads the files as they are. Each release bumps the version in two places that the check keeps in step: `APP_VERSION` in `js/core.js` and `VERSION` in `sw.js`.
 
 `CLAUDE.md` is the starting point for anyone (or any assistant) changing the code: who owns what, and the rules that protect existing progress. The detail is split by area under `docs/`:
 
 | Notes | What is in them |
 |---|---|
-| [docs/architecture.md](docs/architecture.md) | How `index.html` is layered, the data schemas, scheduler, sync, audio playback. |
+| [docs/architecture.md](docs/architecture.md) | How the app loads and starts, what each file holds, the data schemas, scheduler, sync, the service worker. |
+| [docs/decisions.md](docs/decisions.md) | Decisions with consequences, and why each was made. |
 | [docs/design.md](docs/design.md) | How the app should look and feel, and what those choices rest on. |
 | [docs/multi-user.md](docs/multi-user.md) | What it takes to open the app to other learners. |
 | [docs/content.md](docs/content.md) | Adding a book: where the word lists come from and what may be copied. |
@@ -126,8 +135,7 @@ A release is a commit on `main`; GitHub Pages deploys it within a couple of minu
 
 - **Books 3 and 4.** Book 3 is being added volume by volume from the publisher's 當代中文 app (`tools/import_dangdai.py`, `tools/add_characters.py`); Lessons 5–12 and Book 4 follow. Grammar explanations, example sentences and reading passages for the new lessons are written for this app rather than copied from the textbook.
 - **Your own voice.** A voice pack cloned from a short recording of the learner, built with the open-source BreezyVoice model.
-- **Leaner sync.** Send changes rather than the whole deck.
-- **One layer.** Fold the version-by-version patches in `index.html` into a single definition of each function.
+- **Other learners.** A clean first run, accounts, a deck per person, and sync that sends changes rather than the whole deck.
 
 The full list, including known gaps, is in [docs/roadmap.md](docs/roadmap.md).
 

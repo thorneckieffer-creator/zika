@@ -1,3 +1,6 @@
+/* Settings and its panels, export and import. renderSet still builds the page in the steps the versions added
+   (docs/roadmap.md: build Settings directly). */
+
 /* ---- SETTINGS ---- */
 function renderSet(){
     const s=S.settings;

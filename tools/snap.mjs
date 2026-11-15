@@ -78,6 +78,11 @@ const prelude = (t0, storage) => `(() => {
   try { navigator.clipboard.writeText = () => Promise.resolve(); navigator.clipboard.readText = () => Promise.resolve(''); } catch (e) {}
   try { delete window.showSaveFilePicker; delete window.showOpenFilePicker; } catch (e) {}
   /* requests in flight, so a recording waits for what the page is still loading */
+  /* IndexedDB requests in flight (the backup handle is read from there at start-up) */
+  window.__idb = 0;
+  try { const track = (proto, name) => { const real = proto[name]; proto[name] = function () { const r = real.apply(this, arguments); window.__idb++; let open = true; const fin = () => { if (open) { open = false; window.__idb--; } };
+      r.addEventListener('success', fin); r.addEventListener('error', fin); r.addEventListener('blocked', fin); return r; }; };
+    track(IDBFactory.prototype, 'open'); for (const n of ['get', 'put', 'delete']) track(IDBObjectStore.prototype, n); } catch (e) {}
   window.__pending = new Set();
   const realFetch = window.fetch; window.fetch = function (u) { const tag = String(u && u.url || u).slice(0, 80); window.__pending.add(tag); window.__busy++; const done = () => { window.__busy--; window.__pending.delete(tag); }; return realFetch.apply(this, arguments).then(r => {
       for (const m of ['text', 'json', 'arrayBuffer', 'blob']) { const read = r[m].bind(r); r[m] = () => { window.__busy++; return read().finally(() => { window.__busy--; }); }; }   /* busy until the body has been read too */
@@ -133,7 +138,8 @@ const prelude = (t0, storage) => `(() => {
 const fakeCloud = cloud => `(() => {
   const tree = {}, subs = [];
   /* answers arrive the way the real SDK's do: never before the page has finished loading, never in the middle of a script */
-  const later = fn => { const go = () => setTimeout(fn, 40);   /* long enough for what start-up reads from IndexedDB to arrive first, as it does against a real network */ if (document.readyState === 'complete') go(); else window.addEventListener('load', go, { once: true }); };
+  /* …and never before what start-up reads from IndexedDB has arrived, which a real network never beats */
+  const later = fn => { const go = () => { const wait = () => { if (window.__idb) window.__realSetTimeout(wait, 3); else setTimeout(fn, 1); }; window.__busy++; window.__realSetTimeout(() => { window.__busy--; wait(); }, 3); }; if (document.readyState === 'complete') go(); else window.addEventListener('load', go, { once: true }); };
   const at = (path, make) => { let n = tree; const ks = path.split('/').filter(Boolean); for (const k of ks.slice(0, -1)) { if (!n[k]) { if (!make) return [null, null]; n[k] = {}; } n = n[k]; } return [n, ks[ks.length - 1]]; };
   const read = path => { const [n, k] = at(path); return n && k in n ? JSON.parse(JSON.stringify(n[k])) : null; };
   const snap = path => ({ val: () => path === '.info/connected' ? C.online : read(path), exists: () => read(path) !== null });
@@ -172,7 +178,7 @@ const CAPTURE = quiet => `(async () => {
   const who = []; let last = performance.now();
   const mo = new MutationObserver(ms => { last = performance.now(); for (const m of ms) { const t = m.target.nodeType === 1 ? m.target : m.target.parentElement; if (t && who.length < 400) who.push(t.tagName + (t.id ? '#' + t.id : '') + (t.className && t.className.baseVal === undefined ? '.' + String(t.className).split(' ')[0] : '')); } });
   mo.observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true });
-  const still = async () => { const t0 = performance.now(); last = t0; while (true) { await sleep(15); const n = performance.now(); if ((n - last > QUIET && !window.__busy) || n - t0 > 8000) return; } };
+  const still = async () => { const t0 = performance.now(); last = t0; while (true) { await sleep(15); const n = performance.now(); if ((n - last > QUIET && !window.__busy && !window.__idb) || n - t0 > 8000) return; } };
   await still(); window.__run(window.__now() + 1000); await still(); if (window.__run(window.__now() + 250)) await still();
   mo.disconnect(); window.__who = who;
   const stable = v => v && typeof v === 'object' ? (Array.isArray(v) ? v.map(stable) : Object.fromEntries(Object.keys(v).sort().map(k => [k, stable(v[k])]))) : v;

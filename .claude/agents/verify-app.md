@@ -23,10 +23,11 @@ You work alone and nobody is watching: do not ask questions. Decide, and put wha
 
 2. **Hard checks.** Run `node tools/check.mjs`. If it fails, that is a FAIL: put its output in the report and skip to step 7.
 
-3. **What changed.** `node tools/review.mjs changes` prints the last release this folder is built on (the base) and every app file that differs from it. Read each one. Five lines of `index.html` are huge, so always cut:
+3. **What changed.** `node tools/review.mjs changes` prints the last release this folder is built on (the base) and every app file that differs from it. Read each one. The code is in `js/`, one file per area; the files in `data/` are single huge lines, so always cut:
 
    ```bash
-   git diff <base> -- index.html | cut -c1-300 | head -400
+   git diff <base> -- index.html js/ css/ sw.js | cut -c1-300 | head -600
+   git diff --stat <base> -- data/
    ```
 
    Read `docs/feature-map.md` and pick every feature the change touches or could have disturbed. A change to a shared function (`renderHome`, `renderRev`, `rate`, `save`, `go`, `buildQueue`) touches every screen that uses it. A changed file under `assets/` touches the features that load it. If you were told what the change was meant to do, test that it does it.

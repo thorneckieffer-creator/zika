@@ -1,6 +1,6 @@
 # Adding a book
 
-The content area: `WORDS`, `GRAMMAR`, `COMPONENTS`, `BOOKS`, `LESSON_TITLES` and `DLGMAP` in `index.html`, `assets/strokes.json`, `tools/import_dangdai.py`, `tools/add_characters.py`, `tools/content/`. The schemas are in [architecture.md](architecture.md#key-structures); what is still to import is in [roadmap.md](roadmap.md).
+The content area: the files in `data/` (`words.js`, `grammar.js`, `components.js`, `readings.js`, `usage.js`, each one `const NAME = <one line of JSON>;`, and `course.js` with `BOOKS`, `LESSON_TITLES` and `DLGMAP`), `tools/applib.py` (how every tool reads and writes them), `assets/strokes.json`, `tools/import_dangdai.py`, `tools/add_characters.py`, `tools/content/`. The schemas are in [architecture.md](architecture.md#key-structures); what is still to import is in [roadmap.md](roadmap.md).
 
 ## The dictionary
 
@@ -8,7 +8,7 @@ The content area: `WORDS`, `GRAMMAR`, `COMPONENTS`, `BOOKS`, `LESSON_TITLES` and
 
 ```bash
 # download cedict_1_0_ts_utf-8_mdbg.txt.gz from the page above and unpack it, then
-python3 tools/build_dict.py /path/to/cedict.txt     # writes assets/dict.txt; then bump ?v= in DC.url (index.html)
+python3 tools/build_dict.py /path/to/cedict.txt     # writes assets/dict.txt; then bump ?v= in DC.url (js/my-words.js)
 ```
 
 - One line per traditional headword of up to eight characters: the everyday reading first, up to three other readings after it. A gloss is at most four short items.
@@ -44,7 +44,7 @@ V="…/SoyongMebook/MBLCECC009"
 # 1. write tools/content/book3_grammar.py entries for the new lessons (original explanations and sentences)
 python3 tools/import_dangdai.py --book 3 --volume "$V"     # words, titles, BOOKS, DLGMAP, grammar
 python3 tools/add_characters.py --volume "$V"               # strokes.json + COMPONENTS
-# 2. bump ?v= on strokes.json (index.html ×2, sw.js), APP_VERSION and VERSION
+# 2. bump ?v= on strokes.json (js/chars.js, sw.js), APP_VERSION and VERSION; then node tools/stamp.mjs
 node tools/check.mjs
 ```
 
@@ -71,10 +71,10 @@ Short original reading passages per lesson, shown by the `story` drill mode (fun
 For each word, a few short collocations and then one or two short sentences, so a word is learned with the company it keeps (搬 → 搬東西, 搬到台北, 搬出去, 我下個月要搬到學校附近。). Thorne asked for these in November 2026: first Book 2 Lessons 6–15 (v50), then every lesson, a lesson picker for practising them, and a sentence on every write card (v51).
 
 - **Source of truth:** the `.txt` files in `tools/content/usage/`, one per run of lessons (`b1-l01-03.txt` …), read in name order. One line per word: `詞: 中文 = English | 中文 = English`; sections are `== 2.6` (book.lesson). `00-format.txt` there describes the format. Written for the app, never copied from the textbook.
-- **The rules,** enforced by `python3 tools/check_usage.py`: a phrase uses only characters met by the end of its word's lesson (numerals allowed); it contains its headword (for a separable verb, the characters in order: 潛過水); every word of a covered lesson has at least two phrases and at least one full sentence (ending 。？！), people's names excepted. `--write` installs them into the `const USAGE = …;` line of `index.html`. `--words 2.6` lists a lesson's words and the characters it may use; `--file PATH` checks one file; `--show 2.6` prints a lesson with its pinyin for proofreading; `--review` lists every place a reading had to be chosen.
+- **The rules,** enforced by `python3 tools/check_usage.py`: a phrase uses only characters met by the end of its word's lesson (numerals allowed); it contains its headword (for a separable verb, the characters in order: 潛過水); every word of a covered lesson has at least two phrases and at least one full sentence (ending 。？！), people's names excepted. `--write` installs them into the `const USAGE = …;` line of `data/usage.js`. `--words 2.6` lists a lesson's words and the characters it may use; `--file PATH` checks one file; `--show 2.6` prints a lesson with its pinyin for proofreading; `--review` lists every place a reading had to be chosen.
 - **Pinyin is generated, not typed.** A phrase is cut into the longest words `WORDS` knows and each keeps the publisher's reading and spacing; a character standing alone takes the reading it has in `WORDS`; standalone 一 and 不 get their tone change; 了 after 不 or 得 is liǎo. Where a character has several readings the default is in `DEFAULT` in the tool, and the phrase can force one in place: `你得(děi)去`, `長(zhǎng)大`, `睡不著(zháo)`, `熱情地(de)`, `陳(Chén)先生`. Everyday words the course never lists (台灣, 電腦, 醫院) are in `EXTRA` so they are written as one word; add to it when `--show` prints a common word as separate syllables. After adding phrases, read the `--review` list.
 - **Writing them:** three to five per word (two or three in the first lessons of Book 1, where few characters exist); collocations first, shortest first; sentences last and short. Use the word in the sense the lesson teaches (the gloss in `WORDS`), plus a second very common sense where there is one (酸: 我的腿很酸). The checker's list of unknown characters is the guide to rewording. Several lessons can be written at once, one writer per file, each checking with `--file`.
-- **In the app** (the third script block, `us*`):
+- **In the app** (`js/usage.js`, `us*`):
   - `usBlock(w)` puts a sentence and two phrases on the answer side of a review card (sentence first; the rest one tap away), and all of them in the Brain's word detail. A phrase is spoken by the system voice when tapped (the packs hold words, not phrases). `S.settings.usageCards === false` turns the list off.
   - `usHint(w)` (off unless `S.settings.usageHint === true`) shows the sentence with the word left blank on the question side of a write card.
   - The 用法 drill opens on a start screen: pick the book and lesson, then a 12-phrase quiz, the whole lesson, or *Browse the phrases* (every word of the lesson with all its phrases). The hard list and the words due now can be quizzed too. A question gives the English and the phrase with the word blanked. `S.us[wordId] = [right, missed, last answer 1/0]` orders the quiz (never asked first, then missed last time) and draws the lesson's progress bar; a miss changes nothing else, and the finish screen offers to put the missed words on the hard list.

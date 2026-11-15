@@ -1,3 +1,6 @@
+/* My words: a personal deck for words outside the course, kept apart from it, with topics, a bundled dictionary
+   that fills in pinyin and meaning, and its own study sitting. Always reach the deck through myDeck(). */
+
 const MY={mode:'list',cur:null,shown:false,done:0,q:'',edit:null,tab:'one',
   tp:null,      /* the list's topic filter: null = all, a topic id, or '-' = words with no topic */
   sel:[],       /* topics ticked in the add / edit sheet */

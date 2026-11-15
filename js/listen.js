@@ -1,3 +1,5 @@
+/* The listening player: a lesson's dialogue lines or grammar sentences read aloud, with the text hidden until asked for. */
+
 /* ---- 3. Listening player ---- */
 const DIALOGUES={
  23:{t:'B2 L8 學功夫 · 對話 fragments (full dialogue pending)',lines:[

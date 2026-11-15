@@ -1,3 +1,6 @@
+/* 用法, usage phrases: the short phrases and sentences each word lives in (data/usage.js), shown on card backs and
+   drilled lesson by lesson. */
+
 function usOf(wid){return USAGE[wid]||[];}
 function usHeads(w){const m=w.t.match(/（([^）]+)）/);return [w.t.split('（')[0].replace(/\s*\+\s*[a-z]+|[a-z]+\s*\+\s*/g,'').trim()].concat(m?[m[1]]:[]);}
 /* the phrase with its headword marked, or (cloze) replaced by a blank of the same length; null if the word is split up inside it */

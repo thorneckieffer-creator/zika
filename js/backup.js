@@ -1,3 +1,6 @@
+/* Backups: a file on disk the app keeps up to date (File System Access, where the browser has it), and a copy of
+   the deck in the browser for each of the last three days. */
+
 let bkHandle=null, bkTimer=null, bkNeedPerm=false, bkBusy=false;
 const SNAPKEY='zika_snap_v1';
 

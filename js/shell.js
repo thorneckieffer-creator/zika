@@ -1,3 +1,6 @@
+/* The shell: which view is showing (go), the tab badges, theme and look, toasts, the sheet for where you are in the
+   course, icons, the keyboard map, the service worker and releases, the install hint, and the links out to Notion. */
+
 /* ============ THEME ============ */
 function curTheme(){return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';}
 function applyTheme(t){

@@ -1,3 +1,6 @@
+/* 聲調教練, the tone coach: who is speaking (the native voice and the learner's), the rounds, recording a take,
+   the chart against the native speaker, and the quick check on a review card. */
+
 /* ---------- who is speaking ---------- */
 /* The native voice: mid pitch and spread measured once per voice pack from a hundred clips. */
 const TC_NATIVE={};

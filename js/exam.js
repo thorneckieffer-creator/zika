@@ -1,3 +1,5 @@
+/* 大考試: the exam tab. A range of lessons and a date, a pass through every word marked ✓ ~ ✗, and piles to drill or print. */
+
 const EXAM_NOTION='https://app.notion.com/p/40d6bf9d399581b39b59dc3bd855a189';
 function exGet(){S.exam=S.exam||{lo:21,hi:28,date:'2026-11-18',name:'大考試',run:null};return S.exam;}
 function exRes(wid){return (mtGet().res||{})[wid];}

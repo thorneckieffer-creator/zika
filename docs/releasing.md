@@ -1,24 +1,36 @@
 # Releasing and the repository
 
-The release area: `tools/check.mjs`, `tools/review.mjs`, `.claude/agents/`, `.claude/settings.json`, `README.md`, `CLAUDE.md`, `docs/`, `.gitignore`, and the GitHub side of the project.
+The release area: `tools/check.mjs`, `tools/stamp.mjs`, `tools/snap.mjs`, `tools/swtest.mjs`, `tools/review.mjs`, `.claude/agents/`, `.claude/settings.json`, `README.md`, `CLAUDE.md`, `docs/`, `.gitignore`, and the GitHub side of the project.
 
 ## The repository
 
-- GitHub: `thorneckieffer-creator/zika`, public, one branch (`main`). No Actions, no issues in use.
+- GitHub: `thorneckieffer-creator/zika`, public. `main` is what the devices run; `next` (November 2026) carries the restructure until it is released ([decisions.md](decisions.md)). No Actions, no issues in use.
 - GitHub Pages publishes `main` from the repository root (the classic branch build, no workflow file). A push is live at https://thorneckieffer-creator.github.io/zika/ in about two minutes.
-- Because Pages runs the classic Jekyll build over every file, never write a doubled curly brace or a curly-brace-percent pair in a Markdown file: Jekyll reads them as template tags and the deploy fails.
-- The shell is network-first, so a bad push reaches every device on its next open. Everything is tested locally first.
+- The repository has a `.nojekyll` file, so Pages serves the files as they are. (Before it, the classic Jekyll build read a doubled curly brace or a curly-brace-percent pair in a Markdown file as a template tag and failed the deploy; avoid them anyway until `.nojekyll` has been live for a while.)
+- Every device takes a release the next time it is opened with a connection: the service worker stores it whole in the background and the page reloads into it ([architecture.md](architecture.md#the-service-worker-and-releases)). A bad push reaches every device; everything is tested locally first.
 - The sync code never goes in the repo. The Firebase web config is public by design.
 
 ## A release
 
-1. Make the change. Bump `APP_VERSION` in `index.html` and `VERSION` in `sw.js` to the same number. Bump `ASSETS` in `sw.js` only if a file under `assets/` changed.
-2. `node tools/check.mjs` — syntax of every script block, versions, the storage key, the data, the voice packs, and a self-test of the tone coach on synthetic tones.
-3. Serve locally (`python3 -m http.server 8791 --bind 127.0.0.1`; port 8765 is taken by another project on this Mac) and smoke-test: open every tab, start a review, grade a card, run one drill, check the console. Check a 390-px-wide frame for iPhone, ~820 px for iPad upright, and 1180 × 796 for Thorne's iPad (10th generation) on its side: there the answer side of a review card and its grade buttons must fit without scrolling. Load the page with a throw-away query (`index.html?t=1`) so the service worker does not hand back the previous build.
-4. Run the `verify-app` subagent and tell it in a sentence what the change was meant to do. Fix what it fails and run it again until it records a PASS ([The checker](#the-checker)). Do this last: any edit to an app file after a PASS, the version bump included, voids it.
-5. Commit as `vNN — what changed` and push `main`. Two minutes later, confirm the live copy is the one you pushed: `sw.js` on the site carries the new `VERSION`, and `index.html` there has the same `shasum` as the local file.
+1. Before the change: `node tools/snap.mjs record` (about three minutes; it records the app as it is).
+2. Make the change. Bump `APP_VERSION` in `js/core.js` and `VERSION` in `sw.js` to the same number. Bump `ASSETS` in `sw.js` only if a file under `assets/` changed.
+3. `node tools/stamp.mjs` — rewrites the service worker's list of shell files. Needed after any change to the page, `js/`, `css/` or `data/`.
+4. `node tools/check.mjs` — every script parses and is loaded, no name is defined twice, the versions agree, the stamp is current, the storage key, the data, the voice packs, and a self-test of the tone coach on synthetic tones.
+5. `node tools/snap.mjs check` — every screen, the saved state and a picture, for scripted and seeded random use at phone and tablet size, compared with the recording from step 1. A change that should not alter behaviour comes back identical; otherwise read every difference and be able to say why it is there. If the service worker or how the page loads changed: `node tools/swtest.mjs --from <a folder holding the previous release>`.
+6. Look at it yourself. Serve locally (`python3 -m http.server 8791 --bind 127.0.0.1`; port 8765 is taken by another project on this Mac) and open what the change touched at 390 px wide for iPhone, ~820 px for iPad upright, and 1180 × 796 for Thorne's iPad (10th generation) on its side: there the answer side of a review card and its grade buttons must fit without scrolling. The service worker is off on this address, so a reload shows the edit.
+7. Run the `verify-app` subagent and tell it in a sentence what the change was meant to do. Fix what it fails and run it again until it records a PASS ([The checker](#the-checker)). Do this last: any edit to an app file after a PASS, the version bump included, voids it.
+8. Commit as `vNN — what changed` and push `main`. Two minutes later, confirm the live copy is the one you pushed: `sw.js` on the site is byte for byte the local one (`curl -s <site>/sw.js | shasum` against `shasum sw.js`).
 
-How to do step 3 from Claude in Chrome, learned the slow way:
+### The harness
+
+`tools/snap.mjs` opens the app in headless Chrome with a fixed clock, a seeded `Math.random`, the app's timers on that clock, and no network: Chrome is started so that it can resolve no host but this machine, and a stand-in for the Firebase SDK lives in memory. The scenarios are in `tools/snap/scenarios.mjs`; the deck they start from is `tools/snap/fixtures/deck.json` (a month of study made by using the app; rebuild it with `node tools/snap.mjs fixture --dir <a known-good copy>` only when the deck's shape changes). Recordings are kept in `~/.cache/zika-snap/<folder name>/`, outside the repository.
+
+- `record` / `check` for the usual before and after; `run --dir D --out O` and `diff A B` to compare any two copies of the app (for example a `git archive` of the last release against the working folder).
+- `--only <text>` runs the scenarios whose name contains it; `--coverage` lists the functions no scenario reached; `--detail <scenario>:<step>` dumps the page and state at one step of a random run.
+- It compares the page's HTML, the deck in memory, whether the stored deck matches it, what is in `localStorage`, what was sent to the stand-in cloud, and a picture (changed only above 60 differing pixels). It stubs the service worker and the microphone: `tools/swtest.mjs` and `tools/tone_lab.mjs` cover those.
+- Add a scenario when you add a screen or a state a device can be in. A random-use scenario finds what a script does not think to try, but only a scripted step proves a particular path.
+
+How to do step 6 from Claude in Chrome, learned the slow way:
 
 - **Resizing the window does not resize the page.** Open any file on the local origin (the manifest will do), replace the document with same-origin iframes of 390 × 844, 820 × 1180 and 1180 × 796 pointing at `index.html?t=…`, and screenshot those. (The iPad's screen is 1180 × 820; the test size is a little shorter, so what fits at 796 fits on the tablet.)
 - **Reach into a frame with `frame.contentWindow.eval('…')`.** The app's state lives in top-level `let` and `const`, which are not properties of `window`; assigning `frame.contentWindow.drillScope = …` changes nothing.
@@ -74,7 +86,7 @@ Thorne sometimes runs two Claude windows on this project, split by the areas in 
   ```
 
   Never edit, stage, stash or reset in the other session's folder.
-- **Stay in your area.** The area table says which files belong to which area. `index.html` is shared by all of them, so keep a change inside your area's functions and data, and tell the other session before reaching outside it.
+- **Stay in your area.** The area table says which files belong to which area; most areas now have files of their own under `js/` and `data/`. `js/core.js`, `js/shell.js`, `js/boot.js` and `css/app.css` are shared, so tell the other session before changing them.
 - **Take the version number last.** Do not reserve one. When the work is ready: `git fetch`, `git rebase origin/main`, then bump to one more than what `origin/main` holds, run the check and then the checker (a rebase changes the files, so an earlier PASS no longer counts), and push.
 - **Pushing from a worktree:** `git push origin dev:main`. Then tell the other session that `main` moved, so it runs `git pull --rebase --autostash` before its next commit.
 - **Each folder has its own verdict.** The checker's report and PASS live in that folder's `.claude/review/`, and it serves the folder on its own port (8793, then 8794), so two sessions never check each other's build.

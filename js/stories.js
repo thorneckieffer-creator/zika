@@ -1,3 +1,5 @@
+/* 短文, Stories: short readings written from the words learned so far (data/readings.js), with tap-for-meaning. */
+
 const RD={ln:0,i:-1,segs:[],unk:new Set(),sel:-1,en:false};
 function rdLessons(){return Object.keys(READINGS).map(Number).sort((a,b)=>a-b);}
 function rdState(){S.read=S.read||{};return S.read;}

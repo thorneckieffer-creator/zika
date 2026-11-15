@@ -1,36 +1,64 @@
 # How the app is built
 
-The app area: `index.html`, `sw.js`, `manifest.webmanifest`. Read this before changing code. The rules that protect saved progress are in [CLAUDE.md](../CLAUDE.md) and apply to every change.
+The app area: `index.html`, `js/`, `css/app.css`, `sw.js`, `manifest.webmanifest`. Read this before changing code. The rules that protect saved progress are in [CLAUDE.md](../CLAUDE.md) and apply to every change; why things are built this way is in [decisions.md](decisions.md).
 
-## Reading `index.html`
+## How it loads
 
-Five lines of `index.html` are enormous single-line JSON blobs (`const WORDS`, `const GRAMMAR`, `const COMPONENTS`, `const READINGS`, `const USAGE`) and one is the minified QR library. Never read them whole; grep with `cut -c1-300` and parse them with a script.
+There is no build step. `index.html` is the page's markup and a list of plain scripts, loaded in order into one shared global scope:
 
-## Script blocks
+1. `data/*.js` — the course (see [content.md](content.md)); each file is one or a few `const` lines.
+2. `assets/qrcode.min.js` — the QR library for the sync link.
+3. `js/<area>.js` — the app. Every file only defines: functions, constants, tables. Nothing at the top level reads the deck or touches the page.
+4. `js/boot.js` — start-up, the one file that runs.
 
-`index.html` holds two inline scripts that share one global scope. The first is everything up to v43, layer on layer. The second, added in v44, holds the shell (`sh*`: top bar, tab icons, the look, *Where you are*, the Today layout) and My words (`my*`). The third, added in v50, holds the usage phrases (`us*`), their `USAGE` data line and the wide-and-short layout for the answer side of a card. New features go in the second block, or in a new block of their own, as plain functions with a prefix. `tools/check.mjs` syntax-checks every block.
+Because the scope is shared, a function in any file can call a function in any other; only a top-level constant is limited to what earlier files defined. `tools/check.mjs` checks that every file under `js/` is loaded, that `boot.js` is last, and that no name is defined at the top of two files.
 
-A function in a later block is not defined while the first block paints the opening view, so the first block calls it guarded: `window.usBlock?usBlock(w):''`.
+| File | Holds |
+|---|---|
+| `core.js` | Version, books and lessons, storage, the state `S`, `save`, FSRS-5 (`rate`), cards and modes, the queue (`buildQueue` and its steps), the hard list, lanes, leeches, `normalizeState`. |
+| `text.js` | Pinyin: tone marks, syllable splitting, tone colouring, tone sequences. No page, no deck: the tools load it as it is. |
+| `shell.js` | The view switch `go`, tab badges, theme and look (`sh*`), toasts, the *Where you are* sheet, icons, the keyboard map, the service worker and releases, the install hint, Notion links. |
+| `audio.js` | Voice packs, `playAudio`, the system voice as fallback. |
+| `chars.js` | Character components and etymology, the anatomy line on card backs, look-up links, 萌典, stroke order (Hanzi Writer). |
+| `sync.js` | Cloud sync: config, device identity, connect, reconcile, push, the sync code and link, the Settings panel. |
+| `backup.js` | The backup file (File System Access) and the in-browser snapshots. |
+| `home.js` | Today: the hero, lanes panel, plan, Up next queue, paper list, statistics, heatmap. |
+| `review.js` | The review sitting: queue for the session, the card, grading, undo, the session summary. |
+| `library.js` | Library search and lesson lists, triage, word rows, confidence levels, the dialogue map. |
+| `brain.js` | The Brain views, the time-lapse, word-type categories, phonetic series. |
+| `grammar.js` | Grammar tab and quiz, grammar cards in the queue, families and the grasp map. |
+| `drills.js` | The Drill tab: `DMODES`, `DRILL_SCREENS`, recognition, tones, dictation, sentences, speaking, which-one, reading sprint, sentence dictation, 口試. |
+| `listen.js`, `mtest.js`, `exam.js`, `catchup.js`, `stories.js`, `usage.js` | The listening player, the writing mastery test, 大考試, the Catch-up tab, Stories, usage phrases. |
+| `settings.js` | Settings and its panels, export and import. |
+| `tone-analysis.js`, `tone.js` | The tone coach: pitch tracking and tone classification (pure, loaded by the tools as it is), then the coach itself. |
+| `my-words.js` | My words and the dictionary. |
+| `boot.js` | Start-up. |
 
-**A drill that takes over the Drill tab** (Stories, 用法) does not wrap `startDrill` / `renderDrill` again. It registers once: `DRILL_SCREENS[mode] = {start, render}` (defined beside the Stories code), plus a `DMODES.push` for its tile. `start()` sets `drillMode` and calls `go('drill')`; `render()` paints `#vDrill` while `dq` is null.
+## Start-up
 
-## Layers
+`js/boot.js` runs five steps in order: `bootLoad` (the saved deck, where sync stood), `bootMigrate` (one-time changes to older decks, each behind a flag in `S.settings`), `bootMount` (the parts of the page built by script: sync pill, the Catch-up, 大考試 and My words tabs, More, icons), `bootListen` (keyboard, touch, page lifecycle), `bootStart` (theme, the first paint, sync, the service worker, audio warm-up).
 
-`index.html` grew version by version. Each version appended a block that wraps or replaces earlier functions:
+- A new one-time migration goes at the end of `bootMigrate` with a new flag ([CLAUDE.md](../CLAUDE.md), rule 3).
+- **What start-up writes by itself must not look like work the learner did.** The day's time-lapse entry and the three oldest migrations store the deck with `saveLocal()`, which writes to the device and queues the backup but does not mark the device as holding unsent changes. A start-up `save()` on an idle linked device raises a sync conflict when another device is ahead; the harness's `open-*` scenarios hold this in place.
 
-```js
-renderHome = (function (orig) { return function () { orig.apply(this, arguments); /* add a card */ }; })(renderHome);
-```
+## Saving
 
-So the first definition of a function is rarely the whole story. Before changing `X`, list every layer:
+Every change to `S` ends in `save()`. Many changes in one tick make one write (`saveNow`): the cached queue is dropped, the confidence snapshot refreshed, the deck stored, the backup file queued, and the device marked dirty with a cloud push scheduled (unless the change is the cloud's own copy being adopted).
 
-```bash
-grep -n -E "^\s*X\s*=|\bX=\(function|\bX=function|function X\(" index.html | cut -c1-200
-```
+## One definition per function
 
-The most-wrapped functions are `renderHome`, `renderSet`, `renderDrill`, `renderRev`, `buildQueue`, `go`, `save` and `rate`. The order of the `save` wrappers matters: confidence snapshot → backup → sync push → queue-cache invalidation → coalescing (one write per tick).
+Until November 2026 the app was version blocks, each wrapping or replacing earlier functions; fifty functions carried 129 layers. Every function now has one definition. `renderHome`, `renderSet`, `renderRev` and `renderDrill` still read as steps in the order the versions added them (build the page, then insert, move or remove parts of it); rewriting each as one direct build is on the [roadmap](roadmap.md). Do not add a wrapper again: change the function, or add a step to it.
 
-New work should edit a function where it is defined when that is practical, and only add a wrapper when the change is genuinely a separate concern. Folding the old layers together is on the roadmap; do it one function at a time with the smoke test below, never as a big-bang rewrite.
+**A drill that takes over the Drill tab** (Stories, 用法) registers once: `DRILL_SCREENS[mode] = {start, render}` at the end of its file, plus its line in `DMODES` (`js/drills.js`). `start()` sets `drillMode` and calls `go('drill')`; `render()` paints `#vDrill` while `dq` is null.
+
+## The service worker and releases
+
+`sw.js` stores the whole app shell (the page, `js/`, `css/`, `data/`, the manifest; 34 files) once per release and serves it from that store, so opening never waits for the network and a page never runs with scripts from two versions.
+
+- `node tools/stamp.mjs` writes the file list and a hash of each file into `sw.js`. A device installing a release copies unchanged files from the release it already holds and downloads the rest, checking each against its hash; any mismatch (the host still serving part of the previous release) refuses the install, and the device keeps what it has.
+- The page hears when a new release has taken over (`swUpdated` in `js/shell.js`): it reloads at once if nothing has been touched since the app opened, otherwise it offers **Refresh**. The ↻ button and pull-to-refresh (`appRefresh`) push unsent work, ask for the newest release, wait for it to finish storing, and reload. `checkForUpdate()` runs when the app returns to the foreground.
+- Audio packs, stroke data, the dictionary and the pinned Firebase SDK are in `zika-assets-v1`, cache-first, kept across releases. Bump `ASSETS` only when a file under `assets/` changes.
+- On `localhost` and `127.0.0.1` the worker stays off, so an edit shows on reload; add `?sw` to the address to try it. `node tools/swtest.mjs` tests it for real.
 
 ## Key structures
 
@@ -53,7 +81,7 @@ How it should look and why is in [design.md](design.md). The pieces:
 
 - Phones (≤700 px): the tab bar is fixed to the bottom — Today, Review, Drill, 大考試, More. The other tabs carry class `t2` and sit behind More. Tablets and desktop keep the top bar. In Review the grade buttons are sticky just above that bar (`#vRev .grades`), so a long answer never pushes them off the screen.
 - The page never zooms (`maximum-scale=1`, `touch-action: pan-x pan-y`): it is an app, not a document.
-- Refresh: the ↻ button, pull-down inside the Home Screen app, and `checkForUpdate()` when the app returns to the foreground (it compares `sw.js` on the server with `APP_VERSION`).
+- Refresh: the ↻ button, pull-down inside the Home Screen app, and `checkForUpdate()` when the app returns to the foreground (it compares `sw.js` on the server with `APP_VERSION`); see *The service worker and releases* above.
 
 ## My words
 

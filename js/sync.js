@@ -1,3 +1,7 @@
+/* Cloud sync (Firebase Realtime Database). Devices that share a sync code share one deck: every save writes the
+   whole state to rooms/<code>/study_state, the newest write wins, and a device with unsent work is asked before it is
+   replaced. localStorage stays the working copy, so the app is the same offline. What other users need: docs/multi-user.md. */
+
 /* ---- 1. config ---- */
 /* Paste the web-app config from Firebase console → Project settings → Your apps here.
    Leave null to paste it in Settings → Cloud sync instead (stored in this browser). */

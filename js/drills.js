@@ -1,3 +1,7 @@
+/* The Drill tab: the list of drills (DMODES), the full-screen ones that paint the tab themselves (DRILL_SCREENS),
+   and the drills that live here: recognition, tones, dictation, sentences, speaking and recording, 口試, which-one,
+   the reading sprint and sentence dictation. */
+
 /* penalise a miss without inflating schedules on a hit */
 function drillMiss(wid,mode){
   addHard(wid);

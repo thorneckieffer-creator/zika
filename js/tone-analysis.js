@@ -1,3 +1,7 @@
+/* The tone coach's ears: pitch tracking, cleaning the track, finding syllables, and naming the tone of each.
+   Touches neither the page nor the deck, so tools/check.mjs and tools/tone_lab.mjs load this file as it is; TC_NET is
+   fitted by `node tools/tone_lab.mjs fit --write`. How well it hears and why: docs/voice.md. */
+
 const TC_SR=16000, TC_HOP=0.01, TC_FRAME=0.025, TC_FMIN=70, TC_FMAX=420;
 /* mono Float32 at any rate → 16 kHz (box-filter decimation is plenty for pitch) */
 function tcResample(x,sr){

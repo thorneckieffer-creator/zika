@@ -1,3 +1,6 @@
+/* The core: the app's version, books and lessons, storage, the state S and how it is saved, FSRS-5, cards and
+   modes, the queue of what is ready to study, the hard list, lanes and leeches. No screen is painted here. */
+
 const APP_VERSION=62;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
 /* ============ DATA ============ */
 const byId = {}; WORDS.forEach(w=>byId[w.id]=w);
