@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Check the reading passages against the vocabulary learned so far, and install them into index.html.
+"""Check the reading passages against the vocabulary learned so far, and install them into data/readings.js.
 
     python3 tools/check_reading.py            # report only
-    python3 tools/check_reading.py --write    # also (re)write the READINGS line in index.html
+    python3 tools/check_reading.py --write    # also (re)write the READINGS line of data/readings.js
 
 A passage for Book B Lesson L may use only characters that appear in some word up to that lesson.
 Anything else is listed so the passage can be reworded. The report also shows how many of the lesson's
@@ -11,6 +11,8 @@ own new words each passage exercises.
 """
 import argparse, importlib.util, json, re, sys
 from pathlib import Path
+
+import applib
 
 ROOT = Path(__file__).resolve().parent.parent
 NUMERALS = '零一二三四五六七八九十百千萬兩'   # counting is taught early, but the numbers are not all listed as words
@@ -21,10 +23,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--write', action='store_true')
     a = ap.parse_args()
-    path = ROOT / 'index.html'
-    lines = path.read_text(encoding='utf-8').split('\n')
-    WORDS = json.loads(next(l for l in lines if l.startswith('const WORDS = '))[len('const WORDS = '):].rstrip().rstrip(';'))
-    books = {int(n): int(f) for n, f, c in re.findall(r"\{n:(\d+),zh:'.',first:(\d+),count:(\d+)\}", next(l for l in lines if l.startswith('const BOOKS=')))}
+    WORDS = applib.read_data('WORDS')
+    books = {b['n']: b['first'] for b in applib.books()}
     spec = importlib.util.spec_from_file_location('r', ROOT / 'tools' / 'content' / 'reading_passages.py')
     mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
 
@@ -45,12 +45,8 @@ def main():
         print(f'\n{bad} passage(s) use characters from later lessons — reword them.')
         sys.exit(1)
     if a.write:
-        i = next((k for k, l in enumerate(lines) if l.startswith('const READINGS = ')), None)
-        if i is None:
-            sys.exit('index.html has no "const READINGS = " line to replace')
-        lines[i] = 'const READINGS = ' + json.dumps(out, ensure_ascii=False, separators=(',', ':')) + ';'
-        path.write_text('\n'.join(lines), encoding='utf-8')
-        print(f'\nwrote {sum(len(v) for v in out.values())} passages to index.html')
+        applib.write_data('READINGS', out)
+        print(f'\nwrote {sum(len(v) for v in out.values())} passages to data/readings.js')
 
 
 if __name__ == '__main__':

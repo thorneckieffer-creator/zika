@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-/* The tone coach's test bench. It runs the app's own pitch and tone code (lifted out of index.html, never copied)
+/* The tone coach's test bench. It runs the app's own pitch and tone code (read from js/text.js and js/tone-analysis.js, never copied)
    over recordings whose tones are known, so a change to the analysis can be measured instead of guessed at.
 
      node tools/tone_lab.mjs prepare   build the recordings under ~/.cache/zika-voice/tone-lab (macOS: afconvert, say, git)
-     node tools/tone_lab.mjs check     score index.html as it stands on every voice
+     node tools/tone_lab.mjs check     score the app as it stands on every voice
      node tools/tone_lab.mjs cv        refit with each voice held out in turn: the honest number for a new speaker
-     node tools/tone_lab.mjs fit       fit on every voice and print TC_NET; add --write to install it in index.html
+     node tools/tone_lab.mjs fit       fit on every voice and print TC_NET; add --write to install it in js/tone-analysis.js
 
    Voices: pack (the bundled 曉臻 clips), syl and hsk (two people, github.com/hugolpz/audio-cmn, CC-BY-SA; the audio is
    only measured here, never shipped), say-* (macOS voices), yunjhe (雲哲 clips, if a pack build left them in the cache).
@@ -23,18 +23,17 @@ const DATA = process.env.TONE_LAB || join(homedir(), '.cache/zika-voice/tone-lab
 const cmd = process.argv[2] || 'check', WRITE = process.argv.includes('--write');
 
 /* ---- the app's code ---- */
-const html = readFileSync(join(ROOT, 'index.html'), 'utf8'), lines = html.split('\n');
-const at = re => { const i = lines.findIndex(l => re.test(l)); if (i < 0) throw new Error('index.html: marker not found ' + re); return i; };
-const tcSrc = lines.slice(at(/^const TC_SR=/), at(/^\/\* -+ who is speaking/)).join('\n');
+const TONE_FILE = join(ROOT, 'js/tone-analysis.js');
+const tcSrc = readFileSync(TONE_FILE, 'utf8');
 const app = (() => {
-  const src = lines.slice(at(/^const toneMarks=/), at(/^const PY_RUN=/)).join('\n') + '\n' + lines.slice(at(/^function toneSeq\(/), at(/^function esc\(/)).join('\n') + '\n' + tcSrc
+  const src = readFileSync(join(ROOT, 'js/text.js'), 'utf8') + '\n' + tcSrc
     + '\nthis.api={toneSeq,tcTrack,tcSyllables,tcShape,tcClassify,tcJudge,tcExpected,tcAnalyse,TC_NET};';
   const ctx = vm.createContext({ Math, Float32Array, Int8Array, Array, Object, Map, Set, String, Number, isNaN, Infinity, NaN });
   vm.runInContext(src, ctx); return ctx.api;
 })();
 /* everything before the classifier decides what a pitch track looks like: cached tracks are keyed on it */
 const trackKey = createHash('sha1').update(tcSrc.split('const TC_NET=')[0]).digest('hex').slice(0, 10);
-const WORDS = JSON.parse(lines.find(l => l.startsWith('const WORDS = ')).slice(14).replace(/;\s*$/, ''));
+const WORDS = JSON.parse(readFileSync(join(ROOT, 'data/words.js'), 'utf8').split('\n').find(l => l.startsWith('const WORDS = ')).slice(14).replace(/;\s*$/, ''));
 const hanKey = t => (String(t).split('（')[0].match(/[㐀-鿿]/g) || []).join('');
 const byId = Object.fromEntries(WORDS.map(w => [w.id, w]));
 const wordList = (() => { const seen = new Set(), out = []; for (const w of WORDS) { const k = hanKey(w.t); if (!k || [...k].length > 4 || seen.has(k)) continue; seen.add(k); out.push([w.id, k]); } return out; })();
@@ -153,7 +152,7 @@ const V = voices(), names = Object.keys(V).filter(n => V[n].length);
 if (!names.length) { console.error(`No recordings under ${DATA}. Run:  node tools/tone_lab.mjs prepare`); process.exit(1); }
 const data = Object.fromEntries(names.map(n => [n, load(n, V[n])]));
 if (cmd === 'check') {
-  console.log('index.html as it stands, on each voice (these voices were all used to fit it; `cv` gives the number for a new speaker):');
+  console.log('the app as it stands, on each voice (these voices were all used to fit it; `cv` gives the number for a new speaker):');
   for (const n of names) console.log(n.padEnd(13), score(app.TC_NET, data[n]));
 } else if (cmd === 'cv') {
   console.log('each voice scored by a classifier fitted on the others:');
@@ -164,6 +163,6 @@ if (cmd === 'check') {
   for (const n of names) console.log(n.padEnd(13), score(out, data[n]));
   const rows = m => '[\n' + m.map(r => '  [' + r.join(',') + ']').join(',\n') + ']';
   const js = `const TC_NET={\n W1:${rows(out.W1)},\n b1:[${out.b1.join(',')}],\n W2:${rows(out.W2)},\n b2:[${out.b2.join(',')}]};`;
-  if (WRITE) { const a = html.indexOf('const TC_NET={'), b = html.indexOf('};', a) + 2; writeFileSync(join(ROOT, 'index.html'), html.slice(0, a) + js + html.slice(b)); console.log('TC_NET written to index.html — run `check`, and bump the version before releasing'); }
+  if (WRITE) { const a = tcSrc.indexOf('const TC_NET={'), b = tcSrc.indexOf('};', a) + 2; writeFileSync(TONE_FILE, tcSrc.slice(0, a) + js + tcSrc.slice(b)); console.log('TC_NET written to index.html — run `check`, and bump the version before releasing'); }
   else console.log('\n' + js + '\n\n(not written; add --write to install it)');
 } else { console.error('usage: node tools/tone_lab.mjs prepare | check | cv | fit [--write]'); process.exit(1); }

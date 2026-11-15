@@ -8,7 +8,7 @@ index of {key: [offset, length]}. The app fetches the pack once and slices clips
     ~/.cache/zika-voice/venv/bin/pip install edge-tts
     ~/.cache/zika-voice/venv/bin/python tools/build_voice_pack.py --voice zh-TW-YunJheNeural --out audio-tw-m
 
-Keys are derived from WORDS in index.html exactly as the app derives them (audioKey), so a
+Keys are derived from WORDS (data/words.js) exactly as the app derives them (audioKey), so a
 pack rebuilt after new lessons are added covers them automatically. Clips are cached on disk,
 so an interrupted or repeated run only synthesises what is missing.
 
@@ -22,24 +22,21 @@ import re
 import sys
 from pathlib import Path
 
+import applib
+
 ROOT = Path(__file__).resolve().parent.parent
 HAN = re.compile(r'[㐀-鿿]')
 
 
 def audio_key(text):
-    """Mirror of audioKey() in index.html: Han characters only, else letters and digits."""
+    """Mirror of audioKey() in js/audio.js: Han characters only, else letters and digits."""
     text = str(text).split('（')[0]
     han = ''.join(HAN.findall(text))
     return han or re.sub(r'[^A-Za-z0-9]', '', text)
 
 
 def load_keys():
-    for line in (ROOT / 'index.html').read_text(encoding='utf-8').split('\n'):
-        if line.startswith('const WORDS = '):
-            words = json.loads(line[len('const WORDS = '):].rstrip().rstrip(';'))
-            break
-    else:
-        sys.exit('WORDS not found in index.html')
+    words = applib.read_data('WORDS')
     keys = set()
     for w in words:
         k = audio_key(w['t'])

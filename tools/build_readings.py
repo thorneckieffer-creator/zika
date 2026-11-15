@@ -10,6 +10,8 @@ Syllables are written the way the model expects them: bopomofo plus a tone digit
 import argparse, collections, glob, json, re, sqlite3, sys
 from pathlib import Path
 
+import applib
+
 ROOT = Path(__file__).resolve().parent.parent
 HAN = re.compile(r'[㐀-鿿]')
 TONE = {'ˊ': '2', 'ˇ': '3', 'ˋ': '4', '˙': '5'}
@@ -39,8 +41,7 @@ def main():
     if not pub:
         sys.exit('no volumes found')
 
-    line = next(l for l in (ROOT / 'index.html').read_text(encoding='utf-8').split('\n') if l.startswith('const WORDS = '))
-    WORDS = json.loads(line[len('const WORDS = '):].rstrip().rstrip(';'))
+    WORDS = applib.read_data('WORDS')
     words, votes, skipped = {}, collections.defaultdict(collections.Counter), []
     for w in WORDS:
         text = str(w['t']).split('（')[0]

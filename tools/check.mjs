@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 /* Release check for 字卡. Run from the repo root before every push:  node tools/check.mjs
    Fails (exit 1) on anything that would break the live app or strand existing progress. */
-import { readFileSync, writeFileSync, existsSync, statSync, mkdtempSync } from 'node:fs';
+import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
-import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -13,27 +12,35 @@ const problems = [], notes = [];
 const fail = m => problems.push(m), note = m => notes.push(m);
 
 const html = read('index.html');
-const lines = html.split('\n');
 
-/* 1. every inline script block parses (the app is several blocks that share one global scope) */
-const blocks = [...html.matchAll(/<script>\n([\s\S]*?)<\/script>/g)].map(x => x[1]);
-if (!blocks.length) fail('index.html: could not find the inline <script>');
-blocks.forEach((src, i) => {
-  const tmp = join(mkdtempSync(join(tmpdir(), 'zika-')), `app${i}.js`);
-  writeFileSync(tmp, src);
-  try { execFileSync(process.execPath, ['--check', tmp], { stdio: 'pipe' }); }
-  catch (e) { fail(`index.html: script block ${i + 1} does not parse\n` + String(e.stderr || e.message).split('\n').slice(0, 6).join('\n')); }
-});
+/* 1. the page loads plain files in a fixed order: every one it names exists and parses, and every file under js/ is named */
+const srcs = [...html.matchAll(/<script src="([^"?]+)(?:\?[^"]*)?"><\/script>/g)].map(x => x[1]);
+const code = srcs.filter(f => f.startsWith('js/')), onDisk = readdirSync(join(root, 'js')).filter(f => f.endsWith('.js')).map(f => 'js/' + f);
+if (!code.length) fail('index.html: no <script src="js/…"> tags found');
+for (const f of srcs) if (!existsSync(join(root, f))) fail(`index.html loads ${f}, which does not exist`);
+for (const f of onDisk) if (!code.includes(f)) fail(`${f} is not loaded by index.html`);
+if (code[code.length - 1] !== 'js/boot.js') fail('index.html: js/boot.js must be the last script (it starts the app once everything is defined)');
+for (const f of [...code, 'data/course.js', 'sw.js'].filter(f => existsSync(join(root, f)))) {
+  try { execFileSync(process.execPath, ['--check', join(root, f)], { stdio: 'pipe' }); }
+  catch (e) { fail(`${f} does not parse\n` + String(e.stderr || e.message).split('\n').slice(0, 6).join('\n')); }
+}
+/* the same name defined twice at the top of two files would stop the second file from loading */
+const tops = new Map();
+for (const f of code) for (const m of read(f).matchAll(/^(?:async )?(?:function\s+|const\s+|let\s+|var\s+|class\s+)([A-Za-z_$][\w$]*)/gm)) {
+  if (tops.has(m[1]) && tops.get(m[1]) !== f) fail(`${m[1]} is defined at the top of both ${tops.get(m[1])} and ${f}`);
+  tops.set(m[1], f);
+}
 
 /* 2. versions agree */
-const appV = (html.match(/const APP_VERSION\s*=\s*(\d+)/) || [])[1];
+const core = read('js/core.js'), course = read('data/course.js');
+const appV = (core.match(/const APP_VERSION\s*=\s*(\d+)/) || [])[1];
 const swV = (read('sw.js').match(/const VERSION\s*=\s*'zika-v(\d+)'/) || [])[1];
-if (!appV) fail('index.html: APP_VERSION not found');
+if (!appV) fail('js/core.js: APP_VERSION not found');
 if (!swV) fail('sw.js: VERSION not found');
-if (appV && swV && appV !== swV) fail(`version mismatch: index.html APP_VERSION=${appV}, sw.js VERSION=zika-v${swV}`);
+if (appV && swV && appV !== swV) fail(`version mismatch: js/core.js APP_VERSION=${appV}, sw.js VERSION=zika-v${swV}`);
 
 /* 3. the storage key that holds everyone's progress has not moved */
-if (!/const KEY='shida_b1_fsrs_v2'/.test(html)) fail("index.html: storage KEY must stay 'shida_b1_fsrs_v2' — changing it orphans all saved progress");
+if (!/const KEY='shida_b1_fsrs_v2'/.test(core)) fail("js/core.js: storage KEY must stay 'shida_b1_fsrs_v2' — changing it orphans all saved progress");
 
 /* 4. embedded data */
 const data = name => {
@@ -46,10 +53,10 @@ const data = name => {
 };
 const WORDS = data('WORDS'), GRAMMAR = data('GRAMMAR'), COMPONENTS = data('COMPONENTS');
 
-const booksSrc = (html.match(/const BOOKS\s*=\s*(\[[^\n]*\]);/) || [])[1];
+const booksSrc = (course.match(/const BOOKS\s*=\s*(\[[^\n]*\]);/) || [])[1];
 let BOOKS = null;
 try { BOOKS = booksSrc ? Function('"use strict";return (' + booksSrc + ')')() : null; } catch (e) { /* reported below */ }
-if (!BOOKS) fail('index.html: BOOKS table not found or unreadable');
+if (!BOOKS) fail('data/course.js: BOOKS table not found or unreadable');
 
 const HAN = /[㐀-鿿]/g;
 const audioKey = t => { t = String(t).split('（')[0]; const h = (t.match(HAN) || []).join(''); return h || t.replace(/[^A-Za-z0-9]/g, ''); };
@@ -70,7 +77,7 @@ if (WORDS && BOOKS) {
     perLesson[w.l] = (perLesson[w.l] || 0) + 1;
   }
   for (let l = 1; l <= maxLn; l++) if (!perLesson[l]) fail(`WORDS: lesson ${l} has no words`);
-  const titles = (html.match(/const LESSON_TITLES\s*=\s*\{([^\n]*)\};/) || [])[1] || '';
+  const titles = (course.match(/const LESSON_TITLES\s*=\s*\{([^\n]*)\};/) || [])[1] || '';
   for (let l = 1; l <= maxLn; l++) if (!new RegExp(`(^|[,{])${l}:"`).test(titles)) fail(`LESSON_TITLES: lesson ${l} has no title`);
 
   const chars = new Set();
@@ -142,13 +149,11 @@ try { const mf = JSON.parse(read('manifest.webmanifest')); for (const i of mf.ic
 catch (e) { fail('manifest.webmanifest is not valid JSON'); }
 
 /* 6. the tone coach still hears tones. Glides with the textbook shape of each tone are synthesised at a low, a middle
-      and a high voice and put through the app's own analysis (the code between `const TC_SR=` and the "who is speaking"
-      comment). It needs no recordings, so it runs on every release; tools/tone_lab.mjs is the real measurement. */
+      and a high voice and put through the app's own analysis (js/text.js and js/tone-analysis.js, which touch neither
+      the page nor the deck). It needs no recordings, so it runs on every release; tools/tone_lab.mjs is the real measurement. */
 try {
   const vm = await import('node:vm');
-  const at = re => { const i = lines.findIndex(l => re.test(l)); if (i < 0) throw new Error('marker not found: ' + re); return i; };
-  const src = lines.slice(at(/^const toneMarks=/), at(/^const PY_RUN=/)).join('\n') + '\n' + lines.slice(at(/^function toneSeq\(/), at(/^function esc\(/)).join('\n') + '\n'
-    + lines.slice(at(/^const TC_SR=/), at(/^\/\* -+ who is speaking/)).join('\n') + '\nthis.api={tcTrack,tcClean,tcLoud,TC_QUIET,tcAnalyse,tcJudge,tcExpected};';
+  const src = read('js/text.js') + '\n' + read('js/tone-analysis.js') + '\nthis.api={tcTrack,tcClean,tcLoud,TC_QUIET,tcAnalyse,tcJudge,tcExpected};';
   const ctx = vm.createContext({ Math, Float32Array, Int8Array, Array, Object, Map, Set, String, Number, isNaN, Infinity, NaN });
   vm.runInContext(src, ctx); const tc = ctx.api;
   /* a tone as [time 0–1, height 0–1 of the voice's range] */

@@ -7,20 +7,20 @@
    Two recordings of the same scenarios are then compared. A change that is meant to leave the app
    behaving exactly as before (folding layers, moving code between files) must compare as identical.
 
-     node tools/snap.mjs record                 record the working copy into .snap/golden
-     node tools/snap.mjs check                  record into .snap/now and compare with .snap/golden
+     node tools/snap.mjs record                 record the working copy as the golden recording
+     node tools/snap.mjs check                  record it again and compare with the golden recording
      node tools/snap.mjs run --dir D --out O    record the app in folder D into folder O
      node tools/snap.mjs diff A B               compare two recordings
      node tools/snap.mjs fixture --dir D        rebuild tools/snap/fixtures/deck.json by studying in D
 
    Options: --only <text> (scenarios whose name contains it), --size phone|tablet, --no-shots, --jobs N,
    --coverage (lists the functions no scenario reached), --detail <scenario>:<step> (dump one monkey step).
-   .snap/ is git-ignored. Nothing here touches a real deck: Chrome runs with a throw-away profile. */
+   Recordings are kept in ~/.cache/zika-snap/. Nothing here touches a real deck: Chrome runs with a throw-away profile. */
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync, mkdirSync, rmSync, readdirSync, statSync, mkdtempSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join, dirname, extname, resolve, normalize, sep } from 'node:path';
+import { tmpdir, homedir } from 'node:os';
+import { join, dirname, extname, resolve, normalize, sep, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 
@@ -171,7 +171,7 @@ const prelude = (t0, storage) => `(() => {
 const fakeCloud = cloud => `(() => {
   const tree = {}, subs = [];
   /* answers arrive the way the real SDK's do: never before the page has finished loading, never in the middle of a script */
-  const later = fn => { const go = () => setTimeout(fn, 1); if (document.readyState === 'complete') go(); else window.addEventListener('load', go, { once: true }); };
+  const later = fn => { const go = () => setTimeout(fn, 40);   /* long enough for what start-up reads from IndexedDB to arrive first, as it does against a real network */ if (document.readyState === 'complete') go(); else window.addEventListener('load', go, { once: true }); };
   const at = (path, make) => { let n = tree; const ks = path.split('/').filter(Boolean); for (const k of ks.slice(0, -1)) { if (!n[k]) { if (!make) return [null, null]; n[k] = {}; } n = n[k]; } return [n, ks[ks.length - 1]]; };
   const read = path => { const [n, k] = at(path); return n && k in n ? JSON.parse(JSON.stringify(n[k])) : null; };
   const snap = path => ({ val: () => path === '.info/connected' ? C.online : read(path), exists: () => read(path) !== null });
@@ -370,7 +370,9 @@ function diff(a, b, { loose = false, max = 12 } = {}) {
   return bad.length + shotsDiff.length;
 }
 
-const snapDir = join(root, '.snap');
+/* recordings are thousands of files that change on every run: they live outside the repository (which sits in a
+   folder iCloud syncs), in ~/.cache/zika-snap/<name of the working copy>, or wherever ZIKA_SNAP points */
+const snapDir = process.env.ZIKA_SNAP || join(homedir(), '.cache', 'zika-snap', basename(root));
 const detailOpt = opt('detail');   /* --detail <scenario>:<step> writes the whole page and state for one monkey step */
 const common = { only: opt('only'), size: opt('size'), shots: !opt('no-shots'), coverage: !!opt('coverage'), jobs: +opt('jobs', 8),
   detail: typeof detailOpt === 'string' ? { name: detailOpt.split(':')[0], step: +detailOpt.split(':')[1] } : null };

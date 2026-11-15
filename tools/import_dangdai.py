@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Import lessons from a downloaded volume of the publisher's 當代中文 (DangDai) app into index.html.
+"""Import lessons from a downloaded volume of the publisher's 當代中文 (DangDai) app into the app's data files (data/).
 
     python3 tools/import_dangdai.py --book 3 --volume "<…/SoyongMebook/MBLCECC008>" [--dry-run]
 
@@ -15,6 +15,8 @@ Find a volume folder with:  mdfind -name ".syd" | grep SoyongMebook
 """
 import argparse, glob, importlib.util, json, re, sqlite3, sys
 from pathlib import Path
+
+import applib
 
 ROOT = Path(__file__).resolve().parent.parent
 ZH = '一二三四五六'
@@ -67,14 +69,8 @@ def main():
         t, l = read_volume(v, a.book)
         titles.update(t); lessons.update(l)
 
-    path = ROOT / 'index.html'
-    lines = path.read_text(encoding='utf-8').split('\n')
-    at = lambda prefix: next(i for i, l in enumerate(lines) if l.startswith(prefix))
-    iw, ig, ib, it, idm = at('const WORDS = '), at('const GRAMMAR = '), at('const BOOKS='), at('const LESSON_TITLES = '), at('var DLGMAP=')
-    WORDS = json.loads(lines[iw][len('const WORDS = '):].rstrip().rstrip(';'))
-    GRAMMAR = json.loads(lines[ig][len('const GRAMMAR = '):].rstrip().rstrip(';'))
-    books = [dict(n=int(n), first=int(f), count=int(c)) for n, f, c in
-             re.findall(r"\{n:(\d+),zh:'.',first:(\d+),count:(\d+)\}", lines[ib])]
+    WORDS, GRAMMAR, books = applib.read_data('WORDS'), applib.read_data('GRAMMAR'), applib.books()
+    titles_line, dlg_line = applib.course_line('const LESSON_TITLES = '), applib.course_line('const DLGMAP=')
 
     book = next((b for b in books if b['n'] == a.book), None)
     if not book:
@@ -103,8 +99,8 @@ def main():
         marks = ''
         for d, _, _, w in lessons[u]:
             WORDS.append(dict(id=f'w{next_id}', l=ln, **w)); next_id += 1; marks += str(d)
-        lines[it] = re.sub(r'\};\s*$', f',{ln}:{json.dumps(titles.get(u, ""), ensure_ascii=False)}' + '};', lines[it])
-        lines[idm] = re.sub(r'\};\s*$', f",{ln}:'{marks}'" + '};', lines[idm])
+        titles_line = re.sub(r'\};\s*$', f',{ln}:{json.dumps(titles.get(u, ""), ensure_ascii=False)}' + '};', titles_line)
+        dlg_line = re.sub(r'\};\s*$', f",{ln}:'{marks}'" + '};', dlg_line)
         if u in gram:
             GRAMMAR[str(ln)] = [dict(id=f'g{ln}-{i + 1}', t=p['t'], e=p['e'], pat=p['pat'], tgt=p['tgt'], alt=p.get('alt', []), s=p['s'],
                                      cy=f'Write your own sentence using 「{p["tgt"][0]}」.') for i, p in enumerate(gram[u])]
@@ -118,12 +114,12 @@ def main():
     if a.dry_run:
         print('dry run: nothing written'); return
 
-    dump = lambda o: json.dumps(o, ensure_ascii=False, separators=(',', ':'))
-    lines[iw] = 'const WORDS = ' + dump(WORDS) + ';'
-    lines[ig] = 'const GRAMMAR = ' + dump(GRAMMAR) + ';'
-    lines[ib] = 'const BOOKS=[' + ','.join(f"{{n:{b['n']},zh:'{ZH[b['n'] - 1]}',first:{b['first']},count:{b['count']}}}" for b in books) + '];'
-    path.write_text('\n'.join(lines), encoding='utf-8')
-    print(f'wrote index.html — {len(WORDS)} words, {len(books)} books. Next: stroke data, COMPONENTS, voice clips, then node tools/check.mjs')
+    applib.write_data('WORDS', WORDS)
+    applib.write_data('GRAMMAR', GRAMMAR)
+    applib.set_course_line('const LESSON_TITLES = ', titles_line)
+    applib.set_course_line('const DLGMAP=', dlg_line)
+    applib.set_course_line('const BOOKS=', 'const BOOKS=[' + ','.join(f"{{n:{b['n']},zh:'{ZH[b['n'] - 1]}',first:{b['first']},count:{b['count']}}}" for b in books) + '];')
+    print(f'wrote data/ — {len(WORDS)} words, {len(books)} books. Next: stroke data, COMPONENTS, voice clips, then node tools/check.mjs')
 
 
 if __name__ == '__main__':

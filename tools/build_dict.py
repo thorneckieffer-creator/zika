@@ -26,13 +26,15 @@ learner in Taiwan who wants a short card, not a dictionary article:
   reading in the app's own COMPONENTS table, and surnames, variants, "used in"
   entries and literary senses after the rest.
 
-After a rebuild, bump the ?v= of DC.url in index.html so devices fetch the new file.
+After a rebuild, bump the ?v= of DC.url in js/my-words.js so devices fetch the new file.
 """
 import json
 import re
 import sys
 import unicodedata
 from pathlib import Path
+
+import applib
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / 'assets' / 'dict.txt'
@@ -211,8 +213,7 @@ def main():
     if len(sys.argv) != 2:
         sys.exit(__doc__)
     src = Path(sys.argv[1]).read_text(encoding='utf-8')
-    html = (ROOT / 'index.html').read_text(encoding='utf-8')
-    comp = json.loads(re.search(r'^const COMPONENTS\s*=\s*(\{.*\});?\s*$', html, re.M).group(1))
+    comp = applib.read_data('COMPONENTS')
     usual = {ch: str(c.get('p', '')).split(',')[0].strip().lower() for ch, c in comp.items() if c.get('p')}
 
     def rank(head, p, g, senses):

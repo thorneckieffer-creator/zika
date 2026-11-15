@@ -38,6 +38,8 @@ import time
 import unicodedata
 from pathlib import Path
 
+import applib
+
 os.environ.setdefault('PYTORCH_ENABLE_MPS_FALLBACK', '1')
 # Keep the GPU allocator on a short leash: without a cap it grows until macOS starts swapping.
 os.environ.setdefault('PYTORCH_MPS_HIGH_WATERMARK_RATIO', '0.2')
@@ -54,7 +56,7 @@ SAMPLE_WORDS = ['你好', '謝謝', '老師', '學生', '臺灣', '垃圾', '便
 
 
 def py_id(p):
-    """Pinyin as a key suffix; index.html's pyKey() must produce the same string."""
+    """Pinyin as a key suffix; pyKey() in js/audio.js must produce the same string."""
     return unicodedata.normalize('NFC', re.sub(r"[\s'’\-·,，!！]", '', str(p).split('/')[0].lower()))
 
 
@@ -97,8 +99,7 @@ def main():
     # ---- what to say: every key, plus one clip per reading where words share characters but not sound
     rfile = ROOT / 'tools' / 'content' / 'readings.json'
     readings = json.loads(rfile.read_text(encoding='utf-8')) if rfile.exists() else {'words': {}, 'chars': {}}
-    WORDS = json.loads(next(l for l in (ROOT / 'index.html').read_text(encoding='utf-8').split('\n')
-                            if l.startswith('const WORDS = '))[len('const WORDS = '):].rstrip().rstrip(';'))
+    WORDS = applib.read_data('WORDS')
     by_key = {}                                        # key -> [(pinyin id, syllables)], in textbook order
     for w in WORDS:
         k = audio_key(w['t']); syl = readings['words'].get(w['id'])

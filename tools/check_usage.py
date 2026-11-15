@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Check the usage phrases against the vocabulary learned so far, and install them into index.html.
+"""Check the usage phrases against the vocabulary learned so far, and install them into data/usage.js.
 
     python3 tools/check_usage.py                 # report only
     python3 tools/check_usage.py --review        # also list every reading the tool had to choose
     python3 tools/check_usage.py --show 2.6      # print one lesson's phrases with their pinyin
-    python3 tools/check_usage.py --write         # also (re)write the USAGE line in index.html
+    python3 tools/check_usage.py --write         # also (re)write the USAGE line of data/usage.js
     python3 tools/check_usage.py --words 2.6     # a lesson's words, and the characters it may use
     python3 tools/check_usage.py --file tools/content/usage/b1-l01-03.txt   # check one file only
 
@@ -25,6 +25,8 @@ WORDS. Standalone 一 and 不 get their tone change. Where one character has sev
 import argparse, json, re, sys, unicodedata
 from collections import Counter, defaultdict
 from pathlib import Path
+
+import applib
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / 'tools' / 'content' / 'usage'          # every .txt file in it, in name order
@@ -355,10 +357,8 @@ def main():
     ap.add_argument('--words', metavar='B.L')
     ap.add_argument('--file', metavar='PATH')
     a = ap.parse_args()
-    path = ROOT / 'index.html'
-    lines = path.read_text(encoding='utf-8').split('\n')
-    WORDS = json.loads(next(l for l in lines if l.startswith('const WORDS = '))[len('const WORDS = '):].rstrip().rstrip(';'))
-    books = {int(n): int(f) for n, f, c in re.findall(r"\{n:(\d+),zh:'.',first:(\d+),count:(\d+)\}", next(l for l in lines if l.startswith('const BOOKS=')))}
+    WORDS = applib.read_data('WORDS')
+    books = {b['n']: b['first'] for b in applib.books()}
     reader = Reader(WORDS)
 
     if a.words:
@@ -447,12 +447,8 @@ def main():
     if a.write and a.file:
         sys.exit('--write installs every file: run it without --file')
     if a.write:
-        i = next((k for k, l in enumerate(lines) if l.startswith('const USAGE = ')), None)
-        if i is None:
-            sys.exit('index.html has no "const USAGE = " line to replace')
-        lines[i] = 'const USAGE = ' + json.dumps(out, ensure_ascii=False, separators=(',', ':')) + ';'
-        path.write_text('\n'.join(lines), encoding='utf-8')
-        print(f'\nwrote {n_phr} phrases for {len(out)} words to index.html')
+        applib.write_data('USAGE', out)
+        print(f'\nwrote {n_phr} phrases for {len(out)} words to data/usage.js')
 
 
 if __name__ == '__main__':

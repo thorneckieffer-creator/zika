@@ -7,12 +7,14 @@
   • COMPONENTS           ← Make Me a Hanzi dictionary (decomposition, etymology, gloss)
 
 Run after tools/import_dangdai.py. With --volume, readings come from the publisher's character
-table (Taiwan readings) instead of the dictionary's. Bump the ?v= on strokes.json in index.html
+table (Taiwan readings) instead of the dictionary's. Bump the ?v= on strokes.json in js/chars.js
 and sw.js afterwards so devices fetch the new file.
 """
 import argparse, glob, json, re, sqlite3, sys, urllib.parse, urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+
+import applib
 
 ROOT = Path(__file__).resolve().parent.parent
 HAN = re.compile(r'[㐀-鿿]')
@@ -32,12 +34,7 @@ def main():
     a = ap.parse_args()
     CACHE.mkdir(parents=True, exist_ok=True)
 
-    path = ROOT / 'index.html'
-    lines = path.read_text(encoding='utf-8').split('\n')
-    iw = next(i for i, l in enumerate(lines) if l.startswith('const WORDS = '))
-    ic = next(i for i, l in enumerate(lines) if l.startswith('const COMPONENTS = '))
-    WORDS = json.loads(lines[iw][len('const WORDS = '):].rstrip().rstrip(';'))
-    COMP = json.loads(lines[ic][len('const COMPONENTS = '):].rstrip().rstrip(';'))
+    WORDS, COMP = applib.read_data('WORDS'), applib.read_data('COMPONENTS')
     chars = sorted({c for w in WORDS for c in HAN.findall(str(w['t']).split('（')[0])})
 
     # ---- strokes
