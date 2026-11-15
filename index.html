@@ -96,47 +96,25 @@ const KEY='shida_b1_fsrs_v2';
 
 /* ============ STATE ============ */
 let S = {cards:{}, settings:{retention:0.9, newPerDay:9, maxRev:200, modes:{rec:true,prod:true}, includeNames:false, ghost:true, earlyDrill:true, writeTarget:20, autoplayAudio:true, speechRate:0.85, voiceName:'', strokeAnim:true}, log:{}, intro:{}, hist:{d:[],s:[]} };
-// cards: "wid:mode" -> {st:'learn'|'rev'|'relearn', S,D, due, last, reps, lapses, days, known, susp}
-try{
-  const raw=store.getItem(KEY);
-  if(raw){const p=JSON.parse(raw); S={...S,...p, settings:{...S.settings,...(p.settings||{}), modes:{rec:true,prod:true,...((p.settings||{}).modes||{})}}};}
-  else{
-    const old=store.getItem('shida_b1_fsrs_v1');
-    if(old){ // migrate v1 (hw/mean/pin) -> v2 (rec/prod)
-      const p=JSON.parse(old);
-      const cards={};
-      for(const cid in (p.cards||{})){
-        const parts=cid.split(':'), wid=parts[0], m=parts[1], c=p.cards[cid];
-        if(m==='mean')cards[wid+':rec']=c;
-        else if(m==='hw')cards[wid+':prod']=c;
-        else if(m==='pin'){const k=wid+':prod'; if(!cards[k]||cards[k].st===undefined)cards[k]=(cards[k]&&cards[k].st!==undefined)?cards[k]:c;}
-      }
-      S.cards=cards; S.log=p.log||{}; S.intro={};
-      const os=p.settings||{};
-      S.settings.retention=os.retention||0.9;
-      S.settings.maxRev=os.maxRev||200;
-      S.settings.includeNames=!!os.includeNames;
-      S.settings.ghost=os.ghost!==false;
-      save();
-    }
-  }
-}catch(e){}
-// one-time audio tune-up migrations
-if(!S.settings._a2){S.settings._a2=1;}
-if(!S.settings._a3){S.settings._a3=1;S.settings.audioSpeed=0.9;S.pick=S.pick||[];}
-S.pick=S.pick||[];
-// _a4: known/mastered cards must never join the paper-practice list, and ★-mastered rests ~3 months
-if(!S.settings._a4){
-  S.settings._a4=1;
-  try{for(const k in S.cards){const c=S.cards[k];
-    if(c&&c.known){c.days=99;
-      if(c.mastAt&&c.st==='rev'&&c.S<90){c.S=90;c.due=Math.max(c.due||0,(c.last||Date.now())+90*86400000);}
-    }}}catch(e){}
-}
 const MASTER_S=45; // days of stability = "mastered"
-// backfill mastery timestamps for cards from before this feature
-try{for(const k in S.cards){const c=S.cards[k];if(c&&c.st==='rev'&&c.S>=MASTER_S&&!c.mastAt)c.mastAt=c.last||Date.now();}}catch(e){}
-function save(){try{store.setItem(KEY,JSON.stringify(S))}catch(e){}}
+/* Every change to S ends in save(). Many changes in one tick make one write (saveNow): the state is stored, the
+   backup file and the cloud push are queued, and whatever cached a view of the deck is told it is stale. */
+let savePending=false;
+function save(){
+  SYNC.gen=(SYNC.gen||0)+1;                  /* a push that began before this change must not clear the dirty mark */
+  if(savePending)return; savePending=true;
+  queueMicrotask(()=>{savePending=false;try{saveNow();}catch(e){}});
+}
+/* store the deck on this device and queue the backup file; nothing else */
+function saveLocal(){try{store.setItem(KEY,JSON.stringify(S))}catch(e){} bkQueue();}
+function saveNow(){
+  QV++;                                       /* the cached queue is out of date */
+  try{S.conf=confSnapshot();}catch(e){}       /* the confidence snapshot travels with every copy of the deck */
+  try{store.setItem(KEY,JSON.stringify(S))}catch(e){}
+  bkQueue();
+  if(SYNC.applying)return;                    /* taking the cloud's copy is not a change made here */
+  SYNC.dirty=true;syncMetaSave();fbSchedulePush();
+}
 
 /* ============ FSRS-5 ============ */
 const W=[0.40255,1.18385,3.173,15.69105,7.1949,0.5345,1.4604,0.0046,1.54575,0.1192,1.01925,1.9395,0.11,0.29605,2.2698,0.2315,2.9898,0.51655,0.6621];
@@ -176,12 +154,18 @@ function previewIv(c,cid,g){
   return fmt(capEarly(c,cid,nextIntervalDays(stabRecall(c.S,c.D,r,g))));
 }
 function wordStartedBefore(wid){return MODES.some(m=>{const c=S.cards[cardId(wid,m)];return c&&c.st!==undefined;});}
+/* One answer on one card: `g` is 1 Again, 2 Hard, 3 Good, 4 Easy. Updates the card (FSRS-5), the day's counts,
+   and which daily allowance a newly started word was taken from. */
 function rate(cid,g){
-  const now=Date.now(); let c=S.cards[cid];
-  const today=dkey(new Date());
+  const now=Date.now(), today=dkey(new Date()), gram=isGram(cid);
+  const fresh=!S.cards[cid]||S.cards[cid].st===undefined, introBefore=S.intro[today]||0;
+  /* a word started for the first time counts against its lane's allowance; worked out before the card changes */
+  const lane=!gram&&fresh&&!wordStartedBefore(cid.split(':')[0])?laneOf(cid):null;
+
+  let c=S.cards[cid];
   S.log[today]=S.log[today]||{rev:0,new:0};
   const schedule=(days)=>{days=capEarly(c,cid,days);c.due=now+fuzz(days)*DAY;c.days=(c.days||0)+1;};
-  if(!c||c.st===undefined){
+  if(fresh){
     const wid=cid.split(':')[0];
     if(!wordStartedBefore(wid)){S.intro[today]=(S.intro[today]||0)+1;if(S.pick)S.pick=S.pick.filter(x=>x!==wid);}
     c={st:'learn',S:initS(g),D:initD(g),due:0,last:now,reps:1,lapses:0,days:0};
@@ -202,10 +186,22 @@ function rate(cid,g){
     if(g===1){c.lapses++;c.S=stabForget(c.S,d0,r);c.st='relearn';c.due=now+5*MIN;}
     else {c.S=stabRecall(c.S,d0,r,g);schedule(nextIntervalDays(c.S));}
   }
-  // mastery timestamps for the Brain view
+  /* mastery timestamps for the Brain view */
   if(c.st==='rev'&&c.S>=MASTER_S){if(!c.mastAt)c.mastAt=now;}
   else if(c.mastAt){delete c.mastAt;}
   save();
+
+  sibClaim(cid);                                   /* the word is this card's for today: its sibling waits */
+  /* a grammar card is not a word: it counts against the grammar allowance, never the word one */
+  if(gram){S.intro[today]=introBefore;if(fresh){S.gintro=S.gintro||{};S.gintro[today]=(S.gintro[today]||0)+1;}save();}
+  /* leeches: the 4th miss puts the word on the hard list, the 7th parks the card until it is un-parked in Settings */
+  if(!gram&&g===1)try{
+    const wid=cid.split(':')[0];
+    if(c.lapses===LEECH_TAG){addHard(wid);toast('4th miss on '+esc(byId[wid].t)+' — on the hard list and tonight’s paper');}
+    if(c.lapses>=LEECH_PARK&&!c.susp){c.susp=1;c.leech=1;save();addHard(wid);toast('Leech parked: '+esc(byId[wid].t)+' · un-park it in Settings → Card strategy',{ms:6000});
+      if(rq){['learn','rev','fresh'].forEach(k=>{rq[k]=rq[k].filter(x=>x!==cid);});}}
+  }catch(e){}
+  if(lane==='catch'){S.intro[today]=introBefore;S.cintro=S.cintro||{};S.cintro[today]=(S.cintro[today]||0)+1;save();}
 }
 
 /* ============ CARDS / MODES ============ */
@@ -218,6 +214,7 @@ function tracked(wid){return MODES.some(m=>S.cards[cardId(wid,m)]);}
 function trackWord(wid){MODES.forEach(m=>{if(S.settings.modes[m]&&!S.cards[cardId(wid,m)])S.cards[cardId(wid,m)]={};});save();}
 function untrackWord(wid){MODES.forEach(m=>{delete S.cards[cardId(wid,m)];});save();}
 function markKnown(wid){ // "I already know this" — skip learning, verify in ~3 weeks
+  if(isHard(wid))S.hard=S.hard.filter(x=>x!==wid);
   if(S.pick)S.pick=S.pick.filter(x=>x!==wid);
   MODES.forEach(m=>{
     if(!S.settings.modes[m])return;
@@ -228,6 +225,7 @@ function markKnown(wid){ // "I already know this" — skip learning, verify in ~
   save();
 }
 function markMastered(wid){ // "I've mastered this" — straight onto the shelf, resurface in ~3 months, NO paper reps
+  if(isHard(wid))S.hard=S.hard.filter(x=>x!==wid);
   if(S.pick)S.pick=S.pick.filter(x=>x!==wid);
   MODES.forEach(m=>{
     if(!S.settings.modes[m])return;
@@ -248,7 +246,20 @@ function wordStatus(wid){
 function dkey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 
 /* ============ QUEUE ============ */
+/* What is ready to study now: {learn, rev, fresh}, each a list of card ids in the order they are served.
+   Built in steps (words, grammar cards, write cards out of scope, the backlog after days away, the per-lane
+   allowance of new words) and kept for 400 ms, because one paint asks for it several times. `QV` moves on
+   every save, which drops the kept copy. */
+let QV=0, QCACHE=null;
 function buildQueue(){
+  const now=Date.now();
+  if(QCACHE&&QCACHE.v===QV&&now-QCACHE.t<400){const q=QCACHE.q;return {learn:q.learn.slice(),rev:q.rev.slice(),fresh:q.fresh.slice()};}
+  const q=queueLanes(queueBacklog(queueScope(queueGrammar(queueWords()))));
+  QCACHE={v:QV,t:now,q:{learn:q.learn.slice(),rev:q.rev.slice(),fresh:q.fresh.slice()}};
+  return q;
+}
+/* word cards: learning steps, due reviews (siblings kept apart), and the new ones the day still allows */
+function queueWords(){
   const now=Date.now(), today=dkey(new Date());
   const introToday=S.intro[today]||0;
   const learn=[],rev=[],freshAll=[];
@@ -257,23 +268,105 @@ function buildQueue(){
     if(c.susp)continue;
     if(!S.settings.includeNames&&isName(w))continue;
     if(!S.settings.modes[modeOf(cid)])continue;
-    if(c.st===undefined){freshAll.push(cid);continue;}
+    if(c.st===undefined){freshAll.push(cid);continue;}   /* new pairs are never buried */
+    /* a write card that is out of scope is never served, so it must not hold the word ahead of its sibling */
+    if(modeOf(cid)==='prod'&&typeof prodInScope==='function'&&!prodInScope(w.id))continue;
+    if(c.st==='rev'&&sibBuried(cid))continue;            /* sibling already done today; learning steps always finish */
     if(c.due<=now){(c.st==='rev'?rev:learn).push(cid);}
   }
   learn.sort((a,b)=>S.cards[a].due-S.cards[b].due);
   rev.sort((a,b)=>S.cards[a].due-S.cards[b].due);
+
+  /* both siblings due and neither claimed yet → keep the earlier one, defer the other */
+  if(S.settings.burySib){
+    const seen={};
+    const thin=list=>list.filter(cid=>{
+      const wid=cid.split(':')[0];
+      if(seen[wid])return false;
+      seen[wid]=cid; return true;
+    });
+    const L=thin(learn), R=thin(rev);
+    learn.length=0; learn.push(...L);
+    rev.length=0;   rev.push(...R);
+  }
+
   const mOrd={rec:0,prod:1};
   const pickIdx=wid=>{const i=(S.pick||[]).indexOf(wid);return i===-1?9999:i;};
   freshAll.sort((a,b)=>{const wa=wordOf(a),wb=wordOf(b);return pickIdx(wa.id)-pickIdx(wb.id)||wa.l-wb.l||parseInt(wa.id.slice(1))-parseInt(wb.id.slice(1))||mOrd[modeOf(a)]-mOrd[modeOf(b)];});
-  // newPerDay counts WORDS, not cards: both cards of an introduced word may start the same day
-  const allowance=Math.max(0,S.settings.newPerDay-introToday);
+
+  const allowance = S.settings.newUnlimited ? Infinity : Math.max(0,S.settings.newPerDay-introToday);
   const planned=new Set(); const fresh=[];
   for(const cid of freshAll){
     const wid=cid.split(':')[0];
     if(wordStartedBefore(wid)||planned.has(wid)){fresh.push(cid);continue;}
     if(planned.size<allowance){planned.add(wid);fresh.push(cid);}
   }
-  return {learn,rev:rev.slice(0,S.settings.maxRev),fresh};
+  const revCap = S.settings.revUnlimited ? rev.length : S.settings.maxRev;
+  return {learn,rev:rev.slice(0,revCap),fresh};
+}
+/* grammar cards ride along with the word cards */
+function queueGrammar(q){
+  if(S.settings.gramCards===false)return q;
+  const now=Date.now(), today=dkey(new Date());
+  const fresh=[],learn=[],rev=[];
+  for(const cid in S.cards){
+    if(!isGram(cid))continue; const c=S.cards[cid]; if(!c||c.susp||!GP[cid.slice(2)])continue;
+    if(c.st===undefined){fresh.push(cid);continue;}
+    if(c.due<=now)(c.st==='rev'?rev:learn).push(cid);
+  }
+  const _cl=S.settings.curLesson||26; fresh.sort((a,b)=>((GP[b.slice(2)].l>=_cl-1)-(GP[a.slice(2)].l>=_cl-1))||(GP[b.slice(2)].l-GP[a.slice(2)].l));
+  const allow=Math.max(0,(S.settings.newGramPerDay??4)-((S.gintro||{})[today]||0));
+  q.learn=q.learn.concat(learn).sort((a,b)=>S.cards[a].due-S.cards[b].due);
+  q.rev=q.rev.concat(rev.sort((a,b)=>S.cards[a].due-S.cards[b].due));
+  q.fresh=q.fresh.concat(fresh.slice(0,allow));
+  return q;
+}
+/* write cards are only served for words in scope (Settings → Card strategy) */
+function queueScope(q){
+  if((S.settings.prodScope||'current')==='all')return q;
+  const keep=cid=>!(modeOf(cid)==='prod'&&!prodInScope(cid.split(':')[0]));
+  q.learn=q.learn.filter(keep); q.rev=q.rev.filter(keep); q.fresh=q.fresh.filter(keep);
+  return q;
+}
+/* after days away the pile of due reviews is served a quarter at a time, the live lesson and the cards most
+   likely still remembered first, and new words wait; BACKLOG tells Today that this is happening */
+function queueBacklog(q){
+  BACKLOG=null;
+  try{
+    const now=Date.now(), maxRev=S.settings.revUnlimited?9999:(S.settings.maxRev||200), cl=S.settings.curLesson||23;
+    const due=[];
+    for(const cid in S.cards){const c=S.cards[cid],w=wordOf(cid);if(!w||!c||c.susp||c.st!=='rev'||c.due>now)continue;if(!S.settings.includeNames&&isName(w))continue;if(!S.settings.modes[modeOf(cid)])continue;if(modeOf(cid)==='prod'&&!prodInScope(w.id))continue;if(sibBuried(cid))continue;due.push(cid);}
+    const gap=lastStudyGap();
+    if(!(due.length>maxRev*1.25||(gap>=5&&due.length>40)))return q;
+    const live=cid=>{const w=wordOf(cid);return w.l>=cl-1||isHard(w.id);};
+    const R=cid=>{const c=S.cards[cid];return retrievability(Math.max(0.01,(now-c.last)/DAY),c.S);};
+    due.sort((a,b)=>(live(b)-live(a))||(R(b)-R(a)));
+    if(S.settings.burySib){const seen=new Set();for(let i=0;i<due.length;i++){const wid=due[i].split(':')[0];if(seen.has(wid))due.splice(i--,1);else seen.add(wid);}}
+    const today=Math.min(maxRev,Math.max(60,Math.ceil(due.length/4)));
+    const gram=q.rev.filter(isGram);
+    q.rev=due.slice(0,today).concat(gram);
+    q.fresh=q.fresh.filter(isGram);
+    BACKLOG={due:due.length,today,gap,live:due.filter(live).length};
+  }catch(e){}
+  return q;
+}
+/* new words are let in lane by lane: this week's lessons and the catch-up lane each have their own daily allowance */
+function queueLanes(q){
+  try{
+    const today=dkey(new Date()), now=Date.now();
+    const allow={live:Math.max(0,(S.settings.newUnlimited?9999:(S.settings.newPerDay??8))-((S.intro||{})[today]||0)),catch:Math.max(0,(S.settings.newCatchPerDay??5)-((S.cintro||{})[today]||0)),maint:0};
+    const all=[];
+    for(const cid in S.cards){const c=S.cards[cid];if(!c||c.susp||c.st!==undefined||isGram(cid))continue;const w=wordOf(cid);if(!w)continue;if(!S.settings.includeNames&&isName(w))continue;if(!S.settings.modes[modeOf(cid)])continue;if(modeOf(cid)==='prod'&&!prodInScope(w.id))continue;all.push(cid);}
+    const mOrd={rec:0,prod:1}, pickIdx=wid=>{const i=(S.pick||[]).indexOf(wid);return i===-1?9999:i;};
+    all.sort((a,b)=>{const wa=wordOf(a),wb=wordOf(b);return pickIdx(wa.id)-pickIdx(wb.id)||wa.l-wb.l||parseInt(wa.id.slice(1))-parseInt(wb.id.slice(1))||mOrd[modeOf(a)]-mOrd[modeOf(b)];});
+    const planned={live:new Set(),catch:new Set(),maint:new Set()}, fresh=[];
+    for(const cid of all){const wid=cid.split(':')[0], k=laneOf(cid);
+      if(wordStartedBefore(wid)||planned[k].has(wid)){fresh.push(cid);continue;}
+      if(planned[k].size<allow[k]){planned[k].add(wid);fresh.push(cid);}}
+    const gf=q.fresh.filter(isGram).sort((a,b)=>((laneOf(b)==='live')-(laneOf(a)==='live'))||(GP[b.slice(2)].l-GP[a.slice(2)].l));
+    q.fresh=BACKLOG?gf:fresh.concat(gf);
+  }catch(e){}
+  return q;
 }
 function dueCount(){const q=buildQueue();return q.learn.length+q.rev.length+q.fresh.length;}
 
@@ -358,10 +451,35 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 
 /* ============ VIEWS ============ */
 let view='home', openLessons={}, libFilter='all', libSearch='', libBook=1;
-function go(v){view=v;['Home','Rev','Drill','Gram','Brain','Lib','Set'].forEach(x=>{document.getElementById('tab'+x).classList.toggle('on',v===x.toLowerCase());document.getElementById('v'+x).style.display=v===x.toLowerCase()?'':'none';});
+/* Show a view: stop what the view being left was doing (recording, the listening player), mark its tab, paint it. */
+function go(v){
+  if(v!=='my'&&typeof MY!=='undefined'){MY.mode='list';}
+  const from=view;
+  if(v!=='drill'){tcRelease();recKill();}
+  if(v!=='rev')document.body.classList.remove('focus');
+  if(view==='drill'&&v!=='drill'&&drillMode==='listen')lpStop();
+  view=v;
+  ['Home','Rev','Drill','Gram','Brain','Lib','Set'].forEach(x=>{document.getElementById('tab'+x).classList.toggle('on',v===x.toLowerCase());document.getElementById('v'+x).style.display=v===x.toLowerCase()?'':'none';});
   if(v==='home')renderHome(); if(v==='drill')renderDrill(); if(v==='gram')renderGram(); if(v==='brain')renderBrain(); if(v==='lib')renderLib(); if(v==='rev')startReview(); if(v==='set')renderSet();
+  try{if(animOn()){const el=document.getElementById('v'+v.charAt(0).toUpperCase()+v.slice(1));if(el){el.classList.remove('view-in');void el.offsetWidth;el.classList.add('view-in');}}}catch(e){}
+  /* the tabs added after the first seven: catch-up, the exam, My words */
+  {const t=document.getElementById('tabCatch'), c=document.getElementById('vCatch');
+   if(t)t.classList.toggle('on',v==='catch'); if(c)c.style.display=v==='catch'?'':'none';
+   if(v==='catch')renderCatch();}
+  {const t=document.getElementById('tabExam'),c=document.getElementById('vExam');if(t)t.classList.toggle('on',v==='exam');if(c)c.style.display=v==='exam'?'':'none';if(v==='exam')renderExam();}
+  try{tabsSync();tabIntoView();}catch(e){}
+  {const t=document.getElementById('tabMy'), c=document.getElementById('vMy');
+   if(t)t.classList.toggle('on',v==='my'); if(c)c.style.display=v==='my'?'':'none';
+   const sb=document.getElementById('setBtn'); if(sb)sb.classList.toggle('on',v==='set');
+   if(v==='my'){renderMy(); try{if(animOn()){c.classList.remove('view-in');void c.offsetWidth;c.classList.add('view-in');}}catch(e){}}}
+  try{tabsSync();if(from!==v)window.scrollTo(0,0);}catch(e){}   /* a new place starts at its top; re-rendering the same one keeps your position */
 }
-function badge(){const n=dueCount();const b=document.getElementById('bDue');b.textContent=n;b.classList.toggle('zero',n===0);}
+/* the counts on the tabs: cards ready now, catch-up cards, exam words still marked ✗ */
+function badge(){
+  {const n=dueCount();const b=document.getElementById('bDue');b.textContent=n;b.classList.toggle('zero',n===0);}
+  try{const L=laneCounts();const n=L.catch.due+L.catch.fresh;const b=document.getElementById('bCatch');if(b){b.textContent=n;b.classList.toggle('zero',n===0);}}catch(e){}
+  try{const n=exIds('no').length;const b=document.getElementById('bExam');if(b){b.textContent=n;b.classList.toggle('zero',n===0);}}catch(e){}
+}
 
 /* ---- PAPER PRACTICE ---- */
 function paperList(){
@@ -458,7 +576,6 @@ function renderHome(){
 /* ============ AUDIO (speechSynthesis, best zh-TW voice) ============ */
 let VOICES=[];
 function loadVoices(){try{VOICES=(window.speechSynthesis?speechSynthesis.getVoices():[]).filter(v=>/^(zh|cmn)/i.test(v.lang)||/中文|國語|粵語|普通话/.test(v.name));}catch(e){VOICES=[];}}
-if(window.speechSynthesis){loadVoices();try{speechSynthesis.onvoiceschanged=loadVoices;}catch(e){}}
 function rankVoice(v){
   let s=0; const nm=v.name+' '+v.lang;
   if(/國語|臺灣|Taiwan/i.test(nm))s+=50;
@@ -478,10 +595,6 @@ const VOICE_PACKS={f:{file:'audio-tw',name:'曉臻',who:'female'},m:{file:'audio
 function voiceId(){return VOICE_PACKS[S.settings.voicePack]?S.settings.voicePack:'f';}
 /* which packs this deployment actually carries — Settings only offers voices that exist */
 const VOICE_OK={f:true};
-Object.keys(VOICE_PACKS).filter(v=>v!=='f').forEach(v=>{
-  fetch('assets/'+VOICE_PACKS[v].file+'-index.json').then(r=>{VOICE_OK[v]=r.ok;}).catch(()=>{VOICE_OK[v]=false;})
-    .then(()=>{try{if(VOICE_OK[v]&&view==='set')renderSet();}catch(e){}});
-});
 const AUDIO_MISS={};
 let curAudio=null;
 function audioKey(t){t=String(t).split('（')[0];const h=t.replace(/[^㐀-鿿]/g,'');return h||t.replace(/[^A-Za-z0-9]/g,'');}
@@ -862,15 +975,18 @@ function playStrokes(){
 
 /* ============ TIME-LAPSE SNAPSHOTS ============ */
 function stageString(){return WORDS.map(w=>wordStage(w.id)).join('');}
-function takeSnapshot(){
+/* `quiet` is for the entry start-up adds by itself: it is stored on this device without the cloud push, so that
+   merely opening the app never makes a device look as if it held unsent work */
+function takeSnapshot(quiet){
+  const write=quiet?saveLocal:save;
   try{
     if(!S.hist)S.hist={d:[],s:[]};
     const today=dkey(new Date()), s=stageString();
     const n=S.hist.d.length;
-    if(n&&S.hist.d[n-1]===today){if(S.hist.s[n-1]!==s){S.hist.s[n-1]=s;save();}return;}
+    if(n&&S.hist.d[n-1]===today){if(S.hist.s[n-1]!==s){S.hist.s[n-1]=s;write();}return;}
     S.hist.d.push(today);S.hist.s.push(s);
     if(S.hist.d.length>180){S.hist.d.shift();S.hist.s.shift();}
-    save();
+    write();
   }catch(e){}
 }
 
@@ -898,7 +1014,10 @@ function wordMastAt(wid){
   if(!cards.every(c=>c.mastAt))return null;
   return Math.max(...cards.map(c=>c.mastAt));
 }
-function studyWords(){return WORDS.filter(w=>!isName(w)||S.settings.includeNames);}
+function studyWords(){
+  const ws=WORDS.filter(w=>!isName(w)||S.settings.includeNames);
+  return (brainCat&&renderBrain._in)?ws.filter(w=>wordCat(w)===brainCat):ws;   /* inside the Brain, a chosen word type narrows everything */
+}
 const SIMP_CHAR={}; WORDS.forEach(w=>{if(w.s&&w.s.length===w.t.length){for(let i=0;i<w.t.length;i++){if(w.t[i]!==w.s[i])SIMP_CHAR[w.t[i]]=w.s[i];}}});
 function charModel(){
   const map=new Map();
@@ -1199,7 +1318,13 @@ function wrowHtml(w,showLn){
 
 /* ---- REVIEW ---- */
 let rq=null, cur=null, revealed=false, undoStack=[], sessionN=0, hintShown=false;
-function startReview(){rq=buildQueue();sessionN=0;nextCard();}
+/* A review sitting. REV_FILTER and REV_CAP are set by whoever starts it (a lane, one catch-up lesson, a quick 20) and used once. */
+function startReview(){
+  sesReset(); undoStack.length=0; rq=buildQueue(); sessionN=0;
+  if(REV_FILTER){['learn','rev','fresh'].forEach(k=>{rq[k]=rq[k].filter(REV_FILTER);});}
+  if(REV_CAP){let left=REV_CAP-rq.learn.length;rq.learn=rq.learn.slice(0,REV_CAP);rq.rev=rq.rev.slice(0,Math.max(0,left));left-=rq.rev.length;rq.fresh=rq.fresh.slice(0,Math.max(0,left));}
+  REV_FILTER=null; REV_CAP=0; nextCard();
+}
 function pickNext(){
   const now=Date.now();
   const learnDue=rq.learn.filter(cid=>S.cards[cid]&&S.cards[cid].st!==undefined&&S.cards[cid].due<=now);
@@ -1275,6 +1400,8 @@ function reveal(){revealed=true;renderRev();}
 function skipKnown(level){if(!cur)return;const wid=cur.split(':')[0];(level==='m'?markMastered:markKnown)(wid);['learn','rev','fresh'].forEach(k=>{rq[k]=rq[k].filter(cid=>cid.split(':')[0]!==wid);});nextCard();}
 /* One grade = one undo step. The snapshot holds everything a grade can touch, so undo is exact. */
 function grade(g){
+  lastGrade=g;haptic(g===1?'again':'good');
+  if(animOn()){const st=document.querySelector('#vRev .stage');if(st){st.classList.add(g===1?'swipe-left':'swipe-right');}}
   if(!cur)return;
   const snap=o=>JSON.parse(JSON.stringify(o||{}));
   undoStack.push({cid:cur,card:snap(S.cards[cur]),log:snap(S.log),intro:snap(S.intro),cintro:snap(S.cintro),gintro:snap(S.gintro),sib:snap(S.sib),hard:(S.hard||[]).slice(),pick:(S.pick||[]).slice(),ses:snap(SES)});
@@ -1382,19 +1509,8 @@ function importData(inp){
   r.readAsText(f);
 }
 
-document.addEventListener('keydown',e=>{
-  if(view!=='rev'||!cur||TC.host)return; if(e.repeat||e.metaKey||e.ctrlKey||e.altKey)return;
-  if(e.code==='Space'&&!revealed){e.preventDefault();reveal();}
-  else if(revealed&&['1','2','3','4'].includes(e.key)){grade(parseInt(e.key));}
-});
 
 
-/* ============================================================
-   v11 — MTC mode: Triage, Drill (認字/聲調/聽寫/造句/口說)
-   ============================================================ */
-S.hard = S.hard || [];
-if(!S.settings.curLesson) S.settings.curLesson = 22; /* B2 L7 */
-if(!S.settings._v11){ S.settings._v11=1; save(); }
 
 function isHard(wid){return (S.hard||[]).includes(wid);}
 function addHard(wid){S.hard=S.hard||[];if(!S.hard.includes(wid))S.hard.push(wid);if(!tracked(wid))trackWord(wid);save();}
@@ -1422,7 +1538,10 @@ function endTriage(){tri=null;renderLib();badge();}
 function triageBack(){if(tri&&tri.i>0){tri.i--;renderLib();}}
 function triageAct(a){
   if(!tri)return;
-  const wid=tri.list[tri.i]; if(!wid)return;
+  const wid=tri.list[tri.i];
+  /* 'learn' on a word already marked known or hard starts it over as a new card */
+  if(wid&&a==='learn'){ if(isHard(wid))S.hard=S.hard.filter(x=>x!==wid); if(confOf(wid)>=3)MODES.forEach(m=>{if(S.settings.modes[m])S.cards[cardId(wid,m)]={};}); }
+  if(!wid)return;
   tri.acts=tri.acts||{}; if(tri.acts[wid])tri.n[tri.acts[wid]]--; tri.acts[wid]=['hard','learn','know','mast'].includes(a)?a:'skip';
   if(a==='hard'){trackWord(wid);addHard(wid);S.pick=S.pick||[];if(!S.pick.includes(wid))S.pick.push(wid);tri.n.hard++;}
   else if(a==='learn'){trackWord(wid);tri.n.learn++;}
@@ -1537,6 +1656,8 @@ function startDrill(mode){
   renderDrill();
 }
 function drillAnswer(ok){
+  /* a miss comes back once at the end of the round */
+  try{const q=dq&&dq.qs[dq.i];if(q&&!ok&&!q._requeued&&q.w){const c=Object.assign({},q,{_requeued:true,_played:0});dq.qs.push(c);}}catch(e){}
   const q=dq.qs[dq.i];
   if(ok)dq.ok++;
   if(!ok&&q.w)drillMiss(q.w.id,q.mode==='dict'?'prod':'rec');
@@ -1548,7 +1669,7 @@ function drillPick(i){
   const ok=q.mode==='tone'?q.opts[i]===q.correct:q.opts[i].id===q.w.id;
   drillAnswer(ok);
 }
-function drillNext(){dq.i++;dq.state='ask';dq.chosen=null;recState=null;renderDrill();}
+function drillNext(){recKill();dq.i++;dq.state='ask';dq.chosen=null;recState=null;renderDrill();}
 
 /* recording */
 let REC_ACTIVE=null;   /* the one live MediaRecorder, tracked apart from recState so it can always be stopped */
@@ -1727,23 +1848,6 @@ function examCard(){
   </div>`;
 }
 
-/* ---------- keyboard ---------- */
-document.addEventListener('keydown',e=>{
-  if(e.target&&/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;
-  if(tri&&view==='lib'){
-    const map={'1':'hard','2':'learn','3':'know','4':'mast','5':'skip'};
-    if(map[e.key]){e.preventDefault();triageAct(map[e.key]);}
-    else if(e.code==='Space'){e.preventDefault();const w=byId[tri.list[tri.i]];if(w)speakWord(w.id);}
-    return;
-  }
-  if(view==='drill'&&dq&&dq.i<dq.qs.length){
-    const q=dq.qs[dq.i];
-    if(dq.state==='ask'&&q.opts&&['1','2','3','4'].includes(e.key)){e.preventDefault();drillPick(+e.key-1);}
-    else if(dq.state==='ask'&&q.mode==='dict'&&e.code==='Space'){e.preventDefault();dq.state='reveal';renderDrill();}
-    else if(dq.state==='done'&&(e.code==='Space'||e.key==='Enter')){e.preventDefault();drillNext();}
-    else if(e.key==='r'&&q.w){e.preventDefault();speakWord(q.w.id);}
-  }
-});
 
 
 /* ============================================================
@@ -1761,7 +1865,10 @@ async function bkGet(){try{const db=await bkIDB();return new Promise(res=>{const
 async function bkDel(){try{const db=await bkIDB();return new Promise(res=>{const t=db.transaction('h','readwrite');t.objectStore('h').delete('file');t.oncomplete=()=>res(1);t.onerror=()=>res(0);});}catch(e){return 0;}}
 
 /* rolling in-browser snapshots — cheap insurance against a bad import or a glitch */
+/* a copy of the deck in the browser, one per day for three days, written at most every ten minutes */
+let snapLast=0;
 function snapshot(){
+  const n=Date.now();if(n-snapLast<600000)return;snapLast=n;
   try{
     const k=dkey(new Date());
     let snaps={}; try{snaps=JSON.parse(store.getItem(SNAPKEY)||'{}');}catch(e){}
@@ -1841,27 +1948,8 @@ function bkStale(){
   return (Date.now()-t)>7*86400000 && Object.values(S.cards).some(c=>c.st!==undefined);
 }
 
-/* every save schedules a backup */
-save=(function(orig){return function(){orig.apply(this,arguments);bkQueue();};})(save);
 
-/* flush on the way out */
-['pagehide','beforeunload'].forEach(ev=>window.addEventListener(ev,()=>{clearTimeout(bkTimer);bkWrite();}));
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){clearTimeout(bkTimer);bkWrite();}});
-/* first real click of the session re-arms the file permission if Chrome dropped it */
-document.addEventListener('click',function armOnce(){
-  if(bkHandle&&bkNeedPerm&&S.settings.autoBackup)bkGrant();
-},{capture:true,once:true});
 
-/* restore the handle on load */
-(async()=>{
-  const h=await bkGet();
-  if(h){ bkHandle=h;
-    try{ const p=h.queryPermission?await h.queryPermission({mode:'readwrite'}):'granted';
-         if(p==='granted'){bkWrite();} else {bkNeedPerm=true;} }catch(e){bkNeedPerm=true;}
-  }
-  snapshot();
-  if(bkStale()){const b=document.getElementById('bkBanner');if(b){b.style.display='block';}}
-})();
 
 function bkPanel(){
   const on=S.settings.autoBackup&&bkHandle;
@@ -1883,11 +1971,6 @@ function bkPanel(){
   </div>`;
 }
 
-takeSnapshot();
-applyTheme(S.settings.theme||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
-(()=>{const h=new Date().getHours();const g=h<5?'夜深了，加油':h<11?'早安':h<14?'午安':h<18?'下午好':'晚上好';const el=document.getElementById('greet');if(el)el.textContent=g+'，Thorne';})();
-renderHome();badge();
-if('serviceWorker' in navigator&&/^https?:/.test(location.protocol)){try{navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}}
 
 
 /* ============================================================
@@ -1913,17 +1996,7 @@ function hasDlg(ln){return !!(typeof DLGSPLIT!=='undefined'&&DLGSPLIT&&DLGSPLIT[
 function dlgWords(ln,d){if(!hasDlg(ln))return [];return WORDS.filter(w=>w.l===ln&&(S.settings.includeNames||!isName(w))&&dlgOf(w.id)===d);}
 function dlgTag(wid){const d=dlgOf(wid);return d?`<span class="dtag d${d}">聽寫${d===1?'一':'二'}</span>`:'';}
 var qOpen=false;
-S.sib = S.sib || {};                              /* {dayKey:{wid:cid}} — who owns the word today */
-if(S.settings.burySib===undefined) S.settings.burySib = true;
-if(S.settings.newUnlimited===undefined) S.settings.newUnlimited = false;
-if(S.settings.revUnlimited===undefined) S.settings.revUnlimited = false;
-S.pick = S.pick || [];
 
-/* keep S.sib from growing forever — only today and yesterday matter */
-(function pruneSib(){
-  const keep=[dkey(new Date()), dkey(new Date(Date.now()-864e5))];
-  for(const k in S.sib) if(!keep.includes(k)) delete S.sib[k];
-})();
 
 function sibToday(){const t=dkey(new Date());S.sib[t]=S.sib[t]||{};return S.sib[t];}
 /* claim a word for one card — called on every grade */
@@ -1939,55 +2012,7 @@ function sibBuried(cid){
   return !!owner && owner!==cid;
 }
 
-/* ---------- queue: burying + uncapped intake ---------- */
-buildQueue=function(){
-  const now=Date.now(), today=dkey(new Date());
-  const introToday=S.intro[today]||0;
-  const learn=[],rev=[],freshAll=[];
-  for(const cid in S.cards){
-    const c=S.cards[cid], w=wordOf(cid); if(!w)continue;
-    if(c.susp)continue;
-    if(!S.settings.includeNames&&isName(w))continue;
-    if(!S.settings.modes[modeOf(cid)])continue;
-    if(c.st===undefined){freshAll.push(cid);continue;}   /* new pairs are never buried */
-    /* a write card that is out of scope is never served, so it must not hold the word ahead of its sibling */
-    if(modeOf(cid)==='prod'&&typeof prodInScope==='function'&&!prodInScope(w.id))continue;
-    if(c.st==='rev'&&sibBuried(cid))continue;            /* sibling already done today; learning steps always finish */
-    if(c.due<=now){(c.st==='rev'?rev:learn).push(cid);}
-  }
-  learn.sort((a,b)=>S.cards[a].due-S.cards[b].due);
-  rev.sort((a,b)=>S.cards[a].due-S.cards[b].due);
 
-  /* both siblings due and neither claimed yet → keep the earlier one, defer the other */
-  if(S.settings.burySib){
-    const seen={};
-    const thin=list=>list.filter(cid=>{
-      const wid=cid.split(':')[0];
-      if(seen[wid])return false;
-      seen[wid]=cid; return true;
-    });
-    const L=thin(learn), R=thin(rev);
-    learn.length=0; learn.push(...L);
-    rev.length=0;   rev.push(...R);
-  }
-
-  const mOrd={rec:0,prod:1};
-  const pickIdx=wid=>{const i=(S.pick||[]).indexOf(wid);return i===-1?9999:i;};
-  freshAll.sort((a,b)=>{const wa=wordOf(a),wb=wordOf(b);return pickIdx(wa.id)-pickIdx(wb.id)||wa.l-wb.l||parseInt(wa.id.slice(1))-parseInt(wb.id.slice(1))||mOrd[modeOf(a)]-mOrd[modeOf(b)];});
-
-  const allowance = S.settings.newUnlimited ? Infinity : Math.max(0,S.settings.newPerDay-introToday);
-  const planned=new Set(); const fresh=[];
-  for(const cid of freshAll){
-    const wid=cid.split(':')[0];
-    if(wordStartedBefore(wid)||planned.has(wid)){fresh.push(cid);continue;}
-    if(planned.size<allowance){planned.add(wid);fresh.push(cid);}
-  }
-  const revCap = S.settings.revUnlimited ? rev.length : S.settings.maxRev;
-  return {learn,rev:rev.slice(0,revCap),fresh};
-};
-
-/* claim the word the moment it's graded */
-rate=(function(orig){return function(cid,g){orig.apply(this,arguments);sibClaim(cid);};})(rate);
 
 /* ---------- the Up-next queue panel ---------- */
 function qToggle(){qOpen=!qOpen;renderHome();}
@@ -2303,8 +2328,6 @@ renderLib=function(){
   libEnsureChrome(); libSyncChrome(); renderLibResults();
 };
 
-/* everything above is defined now — redo the initial paint */
-try{ go((typeof view!=='undefined'&&view)?view:'home'); badge(); }catch(e){}
 
 /* ============================================================
    v17 — Confidence levels, one scale shared with Notion.
@@ -2339,21 +2362,6 @@ function confSnapshot(){
   for(const w of WORDS){ const l=confOf(w.id); if(l) words[w.t+'|'+lnLabel(w.l)]=l; }
   return {v:1, at:new Date().toISOString(), scale:{1:'Hard',2:'Learning',3:'Know',4:'Mastered'}, words};
 }
-/* every save refreshes the snapshot, so the backup file and Export always carry it */
-const _save17=save;
-save=function(){ try{ S.conf=confSnapshot(); }catch(e){} _save17(); };
-/* saying "I know it" / "mastered" takes a word off the hard list — otherwise Hard would keep winning */
-const _markKnown17=markKnown, _markMastered17=markMastered;
-markKnown=function(wid){ if(isHard(wid))S.hard=S.hard.filter(x=>x!==wid); _markKnown17(wid); };
-markMastered=function(wid){ if(isHard(wid))S.hard=S.hard.filter(x=>x!==wid); _markMastered17(wid); };
-/* Triage: "Learning" on a word already Know/Mastered resets its cards so the level really drops */
-const _triageAct17=triageAct;
-triageAct=function(a){
-  if(tri){ const wid=tri.list[tri.i];
-    if(wid&&a==='learn'){ if(isHard(wid))S.hard=S.hard.filter(x=>x!==wid); if(confOf(wid)>=3)MODES.forEach(m=>{if(S.settings.modes[m])S.cards[cardId(wid,m)]={};}); }
-  }
-  _triageAct17(a);
-};
 /* Library rows show the level instead of the old queued/learning/solid tag */
 const _wrow17=wrowHtml;
 wrowHtml=function(w,showLn){
@@ -2385,8 +2393,6 @@ function confPanel(){
 }
 const _renderSet17=renderSet;
 renderSet=function(){ _renderSet17(); try{ document.getElementById('vSet').insertAdjacentHTML('afterbegin',confPanel()); }catch(e){} };
-if(!S.conf){ try{ save(); }catch(e){} }
-try{ if(typeof view!=='undefined'&&view==='set')renderSet(); if(typeof view!=='undefined'&&view==='lib')renderLib(); }catch(e){}
 
 /* ============================================================
    v18 — Cloud sync (Firebase Realtime Database) + polish.
@@ -2446,14 +2452,15 @@ const DEVICE={
 /* ---- 3. sync state ---- */
 const SYNC={status:'off',code:'',at:0,remoteAt:0,remoteDev:'',dirty:false,timer:null,fb:null,unsub:null,uid:null,
   online:navigator.onLine,lastErr:'',pushing:false,again:false,revert:null,applying:false,first:true,retry:0,log:[],okTimer:null,quietTimer:null};
-(function(){
-  try{const m=JSON.parse(store.getItem(FB_META_KEY)||'{}');SYNC.at=m.at||0;SYNC.dirty=!!m.dirty;SYNC.remoteDev=m.remoteDev||'';}catch(e){}
-  SYNC.code=(store.getItem(FB_ROOM_KEY)||'').trim();
-})();
 function syncMetaSave(){try{store.setItem(FB_META_KEY,JSON.stringify({at:SYNC.at,dirty:SYNC.dirty,remoteDev:SYNC.remoteDev}));}catch(e){}}
 function normCode(c){return String(c||'').toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,40);}
 function fbPath(){return 'rooms/'+SYNC.code+'/study_state';}
-function localEmpty(){return !Object.keys(S.cards||{}).length&&!(S.hard||[]).length;}
+/* nothing has been studied here: no started card, no hard list, no day with a review in it */
+function localEmpty(){
+  if(Object.values(S.cards||{}).some(c=>c&&c.st!==undefined))return false;
+  if((S.hard||[]).length)return false;
+  return !Object.keys(S.log||{}).some(k=>((S.log[k]||{}).rev||0)+((S.log[k]||{}).new||0)>0);
+}
 function fmtT(t){if(!t)return '—';const d=new Date(t);const today=dkey(new Date())===dkey(d);return (today?'':dkey(d)+' ')+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 function ago(t){if(!t)return 'never';const s=Math.floor((Date.now()-t)/1000);if(s<8)return 'just now';if(s<60)return s+' s ago';if(s<3600)return Math.round(s/60)+' min ago';if(s<86400)return Math.round(s/3600)+' h ago';return Math.round(s/86400)+' d ago';}
 function fbLogLocal(kind,extra){SYNC.log.unshift({at:Date.now(),kind,extra:extra||''});if(SYNC.log.length>40)SYNC.log.pop();}
@@ -2485,8 +2492,6 @@ window.fbBoot();`;
   /* a module import failure does not fire onerror on the tag — poll instead */
   setTimeout(()=>{if(!window.__fbSDK&&fbLoading){fbLoading=false;SYNC.lastErr='Firebase SDK did not load (offline?)';syncUI(navigator.onLine?'error':'offline');}},8000);
 }
-window.addEventListener('online',()=>{SYNC.online=true;if(!SYNC.fb)fbLoad();else if(SYNC.dirty)fbSchedulePush();});
-window.addEventListener('offline',()=>{SYNC.online=false;if(SYNC.status!=='off')syncUI('offline');});
 
 window.fbBoot=async function(){
   fbLoading=false;
@@ -2550,7 +2555,7 @@ function strictLocalGet(){const own={};STRICT_LOCAL.forEach(k=>{if(S.settings&&k
 function strictLocalPut(own){STRICT_LOCAL.forEach(k=>{if(k in own)S.settings[k]=own[k];else delete S.settings[k];});}
 function fbAdopt(r,how){
   let p=null; try{p=JSON.parse(r.json);}catch(e){}
-  if(!p||!p.cards){SYNC.lastErr='Cloud state unreadable';syncUI('error');return;}
+  if(!p||!p.cards){SYNC.lastErr='Cloud state unreadable';syncUI('error');try{shLook();}catch(e){}return;}
   const before=JSON.stringify(S), keep={}, prevFlags={}; for(const k in (S.settings||{}))if(/^_/.test(k))prevFlags[k]=S.settings[k];
   LOCAL_SETTINGS.forEach(k=>{if(S.settings&&k in S.settings)keep[k]=S.settings[k];});
   const own=strictLocalGet();
@@ -2568,6 +2573,7 @@ function fbAdopt(r,how){
   rerenderAfterSync();
   if(how!=='quiet')toast(`↓ synced from ${esc(r.device)} · ${fmtT(r.synced_at)}`,{action:'Undo',onAction:fbRevert,ms:6000});
   else toast(`↓ synced from ${esc(r.device)}`,{ms:2500});
+  try{shLook();}catch(e){}   /* the adopted deck may carry another palette, accent or character face */
 }
 function fbRevert(){
   const rv=SYNC.revert; if(!rv)return;
@@ -2577,6 +2583,7 @@ function fbRevert(){
   save(); rerenderAfterSync(); toast('Reverted — this device\'s version is now the cloud version');
 }
 function rerenderAfterSync(){
+  QV++;   /* the deck was replaced: the kept queue is out of date */
   try{
     undoStack.length=0;
     badge();
@@ -2607,10 +2614,12 @@ function fbConflict(r,why){
 
 /* ---- 6. push ---- */
 function fbSchedulePush(){
+  if(SYNC.blocked)return;   /* no cloud writes while the conflict dialog is open */
   if(!SYNC.fb||!SYNC.code||!SYNC.uid)return;
   clearTimeout(SYNC.timer); SYNC.timer=setTimeout(fbPush,700); syncUI('syncing');
 }
 async function fbPush(){
+  if(SYNC.blocked)return;
   clearTimeout(SYNC.timer);
   if(!SYNC.fb||!SYNC.code||!SYNC.uid)return;
   if(SYNC.pushing){SYNC.again=true;return;}
@@ -2649,12 +2658,6 @@ async function fbPruneLog(){
     await f.set(ref,keep); fbLogLocal('trim',(keys.length-50)+' old log entries');
   }catch(e){}
 }
-/* every save marks the state dirty and schedules a push; adopting cloud state never does */
-save=(function(orig){return function(){orig.apply(this,arguments);if(SYNC.applying)return;SYNC.dirty=true;syncMetaSave();fbSchedulePush();};})(save);
-/* periodic safety net: anything still dirty goes up every 30 s */
-setInterval(()=>{if(SYNC.dirty&&SYNC.fb&&SYNC.code&&!SYNC.pushing)fbSchedulePush();},30000);
-['pagehide','beforeunload'].forEach(ev=>window.addEventListener(ev,()=>{if(SYNC.dirty&&SYNC.fb&&SYNC.code&&SYNC.uid&&!SYNC.pushing){clearTimeout(SYNC.timer);fbPush();}}));
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&SYNC.dirty){clearTimeout(SYNC.timer);fbPush();}});
 
 /* ---- 7. sync code (the "room" both devices share) ---- */
 function fbSetCode(c){
@@ -2715,18 +2718,6 @@ function toast(msg,o){
   host.style.display='block'; clearTimeout(toastTimer);
   toastTimer=setTimeout(()=>{const t=host.querySelector('.toast');if(t){t.classList.add('out');setTimeout(()=>{host.innerHTML='';host.style.display='none';},260);}},o.ms||3500);
 }
-(function mountSyncUI(){
-  const mast=document.querySelector('.mast');
-  if(mast&&!document.getElementById('syncPill')){
-    const b=document.createElement('button'); b.id='syncPill'; b.className='syncpill'; b.dataset.state='off'; b.type='button';
-    b.innerHTML='<i class="sdot"></i><span class="stxt"></span>'; b.title='Cloud sync';
-    b.onclick=()=>{go('set');setTimeout(()=>{const c=document.getElementById('syncCard');if(c)c.scrollIntoView({behavior:'smooth',block:'start'});},30);};
-    mast.appendChild(b);
-  }
-  if(!document.getElementById('toastHost')){const t=document.createElement('div');t.id='toastHost';document.body.appendChild(t);}
-  if(!document.getElementById('syncModal')){const m=document.createElement('div');m.id='syncModal';m.className='modal';document.body.appendChild(m);}
-  syncUI(fbConfig()?'connecting':'off');
-})();
 
 /* ---- 9. settings card ---- */
 function syncPanel(){
@@ -2768,15 +2759,8 @@ function polishPanel(){
 }
 renderSet=(function(orig){return function(){orig.apply(this,arguments);try{const v=document.getElementById('vSet');v.insertAdjacentHTML('afterbegin',syncPanel());v.insertAdjacentHTML('beforeend',polishPanel());}catch(e){}};})(renderSet);
 
-/* ============================================================
-   v18 polish — theme auto, haptics, animations, confetti,
-   confidence badges, heatmap, exam clock fade
-   ============================================================ */
-if(!S.settings._v18){S.settings._v18=1; if(S.settings.haptics===undefined)S.settings.haptics=true; if(!S.settings.theme)S.settings.theme='auto'; try{save();}catch(e){}}
 function sysDark(){return !!(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);}
 applyTheme=(function(orig){return function(t){if(!t||t==='auto')t=sysDark()?'dark':'light';orig(t);const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',cssVar('--bg')||'#faf9f7');};})(applyTheme);
-try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if((S.settings.theme||'auto')==='auto'){applyTheme('auto');if(view==='brain')renderBrain();}});}catch(e){}
-applyTheme(S.settings.theme||'auto');
 
 function haptic(kind){
   if(S.settings.haptics===false)return;
@@ -2792,15 +2776,10 @@ renderRev=(function(orig){return function(){orig.apply(this,arguments);
   st.classList.add(revealed?'flip-in':'slide-in'); if(lastGrade&&!revealed){st.classList.add(lastGrade===1?'from-again':lastGrade===2?'from-hard':'from-good');lastGrade=0;}
   st.addEventListener('animationend',()=>st.classList.remove('slide-in','flip-in'),{once:true});
 };})(renderRev);
-grade=(function(orig){return function(g){lastGrade=g;haptic(g===1?'again':'good');
-  if(animOn()){const st=document.querySelector('#vRev .stage');if(st){st.classList.add(g===1?'swipe-left':'swipe-right');}}
-  orig.apply(this,arguments);};})(grade);
 /* drills and grammar: confetti on a finished set */
 function partyIfDone(host){const d=document.querySelector(host+' .card.done');if(d&&!d.dataset.party){d.dataset.party=1;if(animOn())confetti();haptic('done');}}
 renderDrill=(function(orig){return function(){orig.apply(this,arguments);partyIfDone('#vDrill');};})(renderDrill);
 renderGram=(function(orig){return function(){orig.apply(this,arguments);partyIfDone('#vGram');};})(renderGram);
-/* drill answers: green/red flash on the chosen option */
-document.addEventListener('click',e=>{const b=e.target.closest('.opts button');if(!b||!animOn())return;setTimeout(()=>{if(b.classList.contains('right')){b.classList.add('pop');haptic('good');}else if(b.classList.contains('wrong')){b.classList.add('shake');haptic('again');}},0);},true);
 
 function confetti(){
   if(!animOn())return;
@@ -2845,15 +2824,7 @@ function heatmapHtml(){
 }
 renderHome=(function(orig){return function(){orig.apply(this,arguments);try{const fc=document.querySelector('#vHome .fc');if(fc){const cap=fc.nextElementSibling;(cap||fc).insertAdjacentHTML('afterend',heatmapHtml());}}catch(e){}};})(renderHome);
 
-/* 口試 exam clock fades green → amber → red as the three minutes run out */
-setInterval(()=>{const el=document.getElementById('examClock');if(!el||!examP)return;const f=Math.max(0,Math.min(1,examP.left/180));
-  const hue=Math.round(f*120); el.style.color=`hsl(${hue} 60% ${curTheme()==='dark'?'62%':'36%'})`; el.classList.toggle('urgent',examP.started&&examP.left<=15&&examP.left>0);},250);
 
-/* v25: class frontier moved to B2 L8 on 9/21; L8 grammar now the eight textbook points */
-if(!S.settings._v25){S.settings._v25=1;if((S.settings.curLesson||0)<23)S.settings.curLesson=23;if(S.settings.examDay===5)S.settings.examDay=4;try{trackGram(23);}catch(e){}try{save();}catch(e){}}
-/* boot */
-fbLoad();
-try{ if(view==='home')renderHome(); else if(view==='set')renderSet(); }catch(e){}
 
 /* ============================================================
    v20 — engagement layer: Today hero with progress ring, live
@@ -2953,9 +2924,6 @@ renderRev=(function(orig){return function(){orig.apply(this,arguments);try{
   }
 }catch(e){}};})(renderRev);
 
-/* ---- motion: views fade in, tabs feel alive ---- */
-go=(function(orig){return function(v){orig.apply(this,arguments);try{if(!animOn())return;const el=document.getElementById('v'+v.charAt(0).toUpperCase()+v.slice(1));if(el){el.classList.remove('view-in');void el.offsetWidth;el.classList.add('view-in');}}catch(e){}};})(go);
-try{ if(view==='home')renderHome(); }catch(e){}
 
 /* ============================================================
    v21 — lesson mastery rings (character level) + book overview
@@ -3034,7 +3002,6 @@ const WCATS=[
   ['name','Names & places','專有名詞',p=>true]];
 function wordCat(w){ if(isName(w)||!w.pos)return 'name'; for(const c of WCATS){if(c[3](w.pos))return c[0];} return 'name'; }
 let brainCat=null;
-studyWords=(function(orig){return function(){const ws=orig.apply(this,arguments);return (brainCat&&renderBrain._in)?ws.filter(w=>wordCat(w)===brainCat):ws;};})(studyWords);
 function catPanel(){
   const [lo,hi]=brainScope==='all'?[1,MAX_LN]:bookRange(brainScope);
   const ws=WORDS.filter(w=>(!isName(w)||S.settings.includeNames)&&w.l>=lo&&w.l<=hi);
@@ -3055,7 +3022,6 @@ renderBrain=(function(orig){return function(){renderBrain._in=true;try{orig.appl
     if(brainCat){const c=WCATS.find(x=>x[0]===brainCat); const h=el.querySelector('.segbar'); if(h&&c)h.insertAdjacentHTML('beforebegin',`<div class="catnote">Showing <b>${esc(c[1])}</b> ${c[2]} only</div>`);}
   }catch(e){}
 };})(renderBrain);
-try{ if(view==='lib')renderLib(); if(view==='brain')renderBrain(); }catch(e){}
 
 /* ============================================================
    v22 data — Notion links, confusable families, catch-up tiers,
@@ -3231,36 +3197,7 @@ function gramGrasp(id){
   const p=GP[id]&&GP[id].p; if(p){const f=famOf(p), cf=(S.cf||{})[f]; if(cf&&cf.n>=4&&cf.ok/cf.n<0.6)lv=Math.min(lv,1);}
   return lv;
 }
-/* migration: the current lesson and the one before it get cloze cards on first run */
-if(!S.settings._v22){S.settings._v22=1;if(S.settings.gramCards===undefined)S.settings.gramCards=true;if(!S.settings.newGramPerDay)S.settings.newGramPerDay=4;if(!S.settings.examDay)S.settings.examDay=4;
-  try{const cl=S.settings.curLesson||22;trackGram(cl);if(cl>1)trackGram(cl-1);}catch(e){} try{save();}catch(e){}}
 
-/* ---- queue: grammar cards ride along with word cards ---- */
-buildQueue=(function(orig){return function(){
-  const q=orig.apply(this,arguments);
-  if(S.settings.gramCards===false)return q;
-  const now=Date.now(), today=dkey(new Date());
-  const fresh=[],learn=[],rev=[];
-  for(const cid in S.cards){
-    if(!isGram(cid))continue; const c=S.cards[cid]; if(!c||c.susp||!GP[cid.slice(2)])continue;
-    if(c.st===undefined){fresh.push(cid);continue;}
-    if(c.due<=now)(c.st==='rev'?rev:learn).push(cid);
-  }
-  const _cl=S.settings.curLesson||26; fresh.sort((a,b)=>((GP[b.slice(2)].l>=_cl-1)-(GP[a.slice(2)].l>=_cl-1))||(GP[b.slice(2)].l-GP[a.slice(2)].l));
-  const allow=Math.max(0,(S.settings.newGramPerDay??4)-((S.gintro||{})[today]||0));
-  q.learn=q.learn.concat(learn).sort((a,b)=>S.cards[a].due-S.cards[b].due);
-  q.rev=q.rev.concat(rev.sort((a,b)=>S.cards[a].due-S.cards[b].due));
-  q.fresh=q.fresh.concat(fresh.slice(0,allow));
-  return q;
-};})(buildQueue);
-/* a new grammar card must not eat the daily word allowance */
-rate=(function(orig){return function(cid,g){
-  if(!isGram(cid))return orig.apply(this,arguments);
-  const today=dkey(new Date()), before=S.intro[today]||0, wasNew=!S.cards[cid]||S.cards[cid].st===undefined;
-  orig.apply(this,arguments);
-  S.intro[today]=before; if(wasNew){S.gintro=S.gintro||{};S.gintro[today]=(S.gintro[today]||0)+1;}
-  save();
-};})(rate);
 function gramSentence(p,c){const sents=p.s.filter(x=>tgtIn(p,x.zh));const i=((c&&c.reps)||0)%Math.max(1,sents.length);return sents[i]||p.s[0];}
 function gramBlank(p,s){const t=tgtIn(p,s.zh)||p.tgt[0];return {t,html:esc(s.zh).split(esc(t)).join('<span class="blank">'+'&nbsp;'.repeat(Math.max(2,t.length*2))+'</span>')};}
 function renderGramCard(){
@@ -3318,7 +3255,10 @@ function buildConfuse(fams,n){
   return out;
 }
 function startConfuse(fams){drillMode='confuse';dq={qs:buildConfuse(fams,fams&&fams.length===1?Math.min(8,CONFUSE.find(f=>f.k===fams[0]).q.length):12),i:0,ok:0,state:'ask',chosen:null,fams};go('drill');}
-function cfPick(i){const q=dq.qs[dq.i];if(dq.state!=='ask')return;dq.chosen=i;const opts=q.q.opts||q.f.opts;const ok=opts[i]===q.q.a;cfMark(q.f.k,ok);if(ok)dq.ok++;dq.state='done';haptic(ok?'good':'again');renderDrill();}
+function cfPick(i){
+  /* a miss comes back once at the end of the round */
+  try{const q=dq&&dq.qs[dq.i];if(q&&dq.state==='ask'){const opts=q.q.opts||q.f.opts;if(opts[i]!==q.q.a&&!q._requeued)dq.qs.push(Object.assign({},q,{_requeued:true}));}}catch(e){}
+  const q=dq.qs[dq.i];if(dq.state!=='ask')return;dq.chosen=i;const opts=q.q.opts||q.f.opts;const ok=opts[i]===q.q.a;cfMark(q.f.k,ok);if(ok)dq.ok++;dq.state='done';haptic(ok?'good':'again');renderDrill();}
 function renderConfuse(el){
   const q=dq.qs[dq.i], f=q.f, it=q.q, done=dq.state==='done', opts=it.opts||f.opts, pick=!!f.pick;
   const zh=pick?'':esc(it.zh).replace('⬚','<span class="blank">'+(done?esc(it.a):'&nbsp;&nbsp;&nbsp;')+'</span>');
@@ -3455,7 +3395,6 @@ function phoneticPanel(){
 }
 renderBrain=(function(orig){return function(){orig.apply(this,arguments);try{const el=document.getElementById('vBrain');const cards=el.querySelectorAll(':scope > .card');const anchor=cards[1]||cards[0];if(anchor)anchor.insertAdjacentHTML('afterend',phoneticPanel());}catch(e){}};})(renderBrain);
 
-try{ badge(); if(view==='home')renderHome(); else if(view==='gram')renderGram(); else if(view==='drill')renderDrill(); }catch(e){}
 
 /* ============================================================
    v26 — writing practice fixed (character comes LAST), the
@@ -3479,13 +3418,6 @@ renderDrill=(function(orig){return function(){
     if(st==='ask'&&!q._played){q._played=1;setTimeout(()=>speakWord(w.id),150);}
   }catch(e){}
 };})(renderDrill);
-/* space: ask → hint → reveal */
-document.addEventListener('keydown',e=>{
-  if(view!=='drill'||!dq||dq.i>=dq.qs.length)return; const q=dq.qs[dq.i]; if(q.mode!=='dict')return;
-  if(e.code==='Space'){e.preventDefault();e.stopImmediatePropagation();
-    if(dq.state==='ask')dq.state=(S.settings.dictHint!=='late')?'reveal':'hint'; else if(dq.state==='hint')dq.state='reveal'; else return;
-    renderDrill();}
-},true);
 
 /* ---- 2. the production card: audio-first 聽寫 card, scoped to the live lesson + hard list ---- */
 function prodInScope(wid){
@@ -3493,13 +3425,6 @@ function prodInScope(wid){
   const w=byId[wid]; if(!w)return false; const cl=S.settings.curLesson||23;
   return w.l>=cl-1||isHard(wid);
 }
-buildQueue=(function(orig){return function(){
-  const q=orig.apply(this,arguments);
-  if((S.settings.prodScope||'current')==='all')return q;
-  const keep=cid=>!(modeOf(cid)==='prod'&&!prodInScope(cid.split(':')[0]));
-  q.learn=q.learn.filter(keep); q.rev=q.rev.filter(keep); q.fresh=q.fresh.filter(keep);
-  return q;
-};})(buildQueue);
 renderRev=(function(orig){return function(){
   orig.apply(this,arguments);
   try{
@@ -3605,11 +3530,8 @@ function lpRender(){
 DMODES.push(['listen','聽力 Listening','dialogue lines read aloud · hide text · shadow']);
 startDrill=(function(orig){return function(mode){if(mode==='listen'){LP.ln=drillScope==='lesson'?drillLesson:(S.settings.curLesson||23);LP.src=DIALOGUES[LP.ln]?'dlg':'sent';return startListen();}return orig.apply(this,arguments);};})(startDrill);
 renderDrill=(function(orig){return function(){if(drillMode==='listen'&&!dq){lpRender();return;}orig.apply(this,arguments);};})(renderDrill);
-go=(function(orig){return function(v){if(view==='drill'&&v!=='drill'&&drillMode==='listen')lpStop();return orig.apply(this,arguments);};})(go);
 /* the weekday plan gets a listening action */
 planAct=(function(orig){return function(k,arg){if(k==='listen'){drillScope='lesson';drillLesson=S.settings.curLesson||23;go('drill');startDrill('listen');return;}return orig.apply(this,arguments);};})(planAct);
-if(!S.settings._v26){S.settings._v26=1;if(!S.settings.prodScope)S.settings.prodScope='current';try{save();}catch(e){}}
-try{badge();if(view==='set')renderSet();}catch(e){}
 
 /* ============================================================
    v27 — around-the-engine optimisation (engine verified numerically)
@@ -3621,42 +3543,12 @@ try{badge();if(view==='set')renderSet();}catch(e){}
    ============================================================ */
 /* ---- 1. leeches ---- */
 const LEECH_TAG=4, LEECH_PARK=7;
-rate=(function(orig){return function(cid,g){
-  orig.apply(this,arguments);
-  try{
-    if(isGram(cid)||g!==1)return; const c=S.cards[cid]; if(!c)return; const wid=cid.split(':')[0];
-    if(c.lapses===LEECH_TAG){addHard(wid);toast('4th miss on '+esc(byId[wid].t)+' — on the hard list and tonight’s paper');}
-    if(c.lapses>=LEECH_PARK&&!c.susp){c.susp=1;c.leech=1;save();addHard(wid);toast('Leech parked: '+esc(byId[wid].t)+' · un-park it in Settings → Card strategy',{ms:6000});
-      if(rq){['learn','rev','fresh'].forEach(k=>{rq[k]=rq[k].filter(x=>x!==cid);});}}
-  }catch(e){}
-};})(rate);
 function leechList(){return Object.keys(S.cards).filter(c=>S.cards[c]&&S.cards[c].leech&&S.cards[c].susp);}
 function leechUnpark(cid){const c=S.cards[cid];if(!c)return;delete c.susp;delete c.leech;c.lapses=Math.min(c.lapses||0,2);save();badge();renderSet();}
 
 /* ---- 2. backlog mode ---- */
 let BACKLOG=null;
 function lastStudyGap(){const ks=Object.keys(S.log||{}).filter(k=>(S.log[k].rev||0)+(S.log[k].new||0)>0).sort();if(!ks.length)return 0;const d=new Date(ks[ks.length-1]);d.setHours(0,0,0,0);return Math.floor((Date.now()-d.getTime())/DAY);}
-buildQueue=(function(orig){return function(){
-  const q=orig.apply(this,arguments);
-  BACKLOG=null;
-  try{
-    const now=Date.now(), maxRev=S.settings.revUnlimited?9999:(S.settings.maxRev||200), cl=S.settings.curLesson||23;
-    const due=[];
-    for(const cid in S.cards){const c=S.cards[cid],w=wordOf(cid);if(!w||!c||c.susp||c.st!=='rev'||c.due>now)continue;if(!S.settings.includeNames&&isName(w))continue;if(!S.settings.modes[modeOf(cid)])continue;if(modeOf(cid)==='prod'&&!prodInScope(w.id))continue;if(sibBuried(cid))continue;due.push(cid);}
-    const gap=lastStudyGap();
-    if(!(due.length>maxRev*1.25||(gap>=5&&due.length>40)))return q;
-    const live=cid=>{const w=wordOf(cid);return w.l>=cl-1||isHard(w.id);};
-    const R=cid=>{const c=S.cards[cid];return retrievability(Math.max(0.01,(now-c.last)/DAY),c.S);};
-    due.sort((a,b)=>(live(b)-live(a))||(R(b)-R(a)));
-    if(S.settings.burySib){const seen=new Set();for(let i=0;i<due.length;i++){const wid=due[i].split(':')[0];if(seen.has(wid))due.splice(i--,1);else seen.add(wid);}}
-    const today=Math.min(maxRev,Math.max(60,Math.ceil(due.length/4)));
-    const gram=q.rev.filter(isGram);
-    q.rev=due.slice(0,today).concat(gram);
-    q.fresh=q.fresh.filter(isGram);
-    BACKLOG={due:due.length,today,gap,live:due.filter(live).length};
-  }catch(e){}
-  return q;
-};})(buildQueue);
 renderHome=(function(orig){return function(){orig.apply(this,arguments);try{
   buildQueue(); if(!BACKLOG)return; const hero=document.querySelector('#vHome .card.hero'); if(!hero)return;
   hero.insertAdjacentHTML('afterend',`<div class="card backlog"><div class="lab">Easing back in</div>
@@ -3688,10 +3580,9 @@ function renderSdict(el){
 DMODES.push(['sdict','句子聽寫 Sentence dictation','hear a sentence · write all of it']);
 startDrill=(function(orig){return function(mode){if(mode==='sdict')return startSdict();return orig.apply(this,arguments);};})(startDrill);
 renderDrill=(function(orig){return function(){const el=document.getElementById('vDrill');if(dq&&dq.i<dq.qs.length&&dq.qs[dq.i].mode==='sdict'){renderSdict(el);return;}orig.apply(this,arguments);};})(renderDrill);
-document.addEventListener('keydown',e=>{if(view!=='drill'||!dq||dq.i>=dq.qs.length)return;const q=dq.qs[dq.i];if(q.mode!=='sdict')return;if(e.code==='Space'&&dq.state==='ask'){e.preventDefault();e.stopImmediatePropagation();dq.state='reveal';renderDrill();}},true);
 
 /* ---- 4. quick session ---- */
-function startQuick(n){go('rev');if(!rq)return;let left=n-rq.learn.length;rq.rev=rq.rev.slice(0,Math.max(0,left));left-=rq.rev.length;rq.fresh=rq.fresh.slice(0,Math.max(0,left));nextCard();}
+function startQuick(n){REV_CAP=n;go('rev');}
 renderHome=(function(orig){return function(){orig.apply(this,arguments);try{const b=document.querySelector('#vHome .card.hero .btn.big');if(b&&!b.classList.contains('ghost'))b.insertAdjacentHTML('afterend',`<div class="row" style="justify-content:center;margin-top:8px"><span class="link small" onclick="startQuick(20)">or a quick 20 · about 5 minutes</span></div>`);}catch(e){}};})(renderHome);
 
 /* settings: leeches + retention guidance */
@@ -3702,7 +3593,6 @@ renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
     <div class="row" style="gap:4px;flex-wrap:wrap;justify-content:flex-end">${L.map(c=>`<button class="btn ghost sm zh" onclick="leechUnpark('${c}')" title="un-park">${esc(byId[c.split(':')[0]].t)} ↩</button>`).join('')}</div></div>`);
   const ret=[...v.querySelectorAll('.set-row')].find(r=>/Desired retention/.test(r.textContent)); if(ret){const d=ret.querySelector('.d');if(d)d.textContent='85–90% is the sweet spot: going to 95% roughly doubles the daily load for a few points of recall.';}
 }catch(e){}};})(renderSet);
-try{badge();if(view==='home')renderHome();}catch(e){}
 
 
 /* =====================================================   v28 — one-scan device linking (Mac ⇄ iPad)
@@ -3718,11 +3608,6 @@ try{badge();if(view==='home')renderHome();}catch(e){}
 /* a device that has never reviewed anything counts as empty, even though the
    app seeds a few unstarted cards on first open — so a fresh iPad adopts the
    Mac's deck quietly instead of asking which copy should win */
-localEmpty=function(){
-  if(Object.values(S.cards||{}).some(c=>c&&c.st!==undefined))return false;
-  if((S.hard||[]).length)return false;
-  return !Object.keys(S.log||{}).some(k=>((S.log[k]||{}).rev||0)+((S.log[k]||{}).new||0)>0);
-};
 function syncLink(code){return location.origin+location.pathname.replace(/index\.html$/,'')+'#sync='+encodeURIComponent(code||SYNC.code);}
 function isIOS(){return /iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);}
 function isStandalone(){return !!(navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches));}
@@ -3742,19 +3627,6 @@ function fbPasteCode(id){
   else el.focus();
 }
 
-/* ---- 1. #sync=<code> on load ---- */
-(function linkFromHash(){
-  const m=(location.hash||'').match(/sync=([A-Za-z0-9-]+)/); if(!m)return;
-  const c=normCode(decodeURIComponent(m[1]));
-  try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
-  if(!c||c.length<6)return;
-  if(SYNC.code===c){toast('Already linked to '+esc(c));return;}
-  fbSetCode(c);
-  setTimeout(()=>{
-    toast('☁️ Linked to '+esc(c)+' — pulling your progress…',{ms:4500});
-    if(isIOS()&&!isStandalone())setTimeout(showInstallHint,1800);
-  },300);
-})();
 
 /* ---- 2. QR block in Settings → Cloud sync ---- */
 syncPanel=(function(orig){return function(){
@@ -3809,15 +3681,6 @@ function showInstallHint(force){
   document.getElementById('a2hsOk').onclick=()=>{host.style.display='none';};
 }
 
-/* styles */
-(function(){const st=document.createElement('style');st.textContent=`
-.linkrow{align-items:flex-start;gap:14px}
-.qrbox{flex:none;background:#fff;border-radius:10px;padding:6px;border:1px solid var(--line2);line-height:0}
-.qrbox .qrsvg{width:148px;height:148px;display:block}
-.linkcard{border-left:3px solid var(--amber)}
-@media (max-width:560px){.linkrow{flex-direction:column}.qrbox{align-self:center}}
-`;document.head.appendChild(st);})();
-try{if(view==='home')renderHome();if(view==='set')renderSet();}catch(e){}
 /* ============================================================
    v28 — fresh start: the writing mastery test.
    English + pinyin (+ audio) → write the character on paper →
@@ -3826,7 +3689,7 @@ try{if(view==='home')renderHome();if(view==='set')renderSet();}catch(e){}
    state: ★ parks it, ~ puts it in learning, ✗ learning + hard list
    + tonight's paper. Live lesson moved to B2 L11.
    ============================================================ */
-if(!S.settings._v28){S.settings._v28=1;if((S.settings.curLesson||0)<26)S.settings.curLesson=26;try{trackGram(26);}catch(e){}try{save();}catch(e){}}
+
 function mtGet(){S.mtest=S.mtest||{lo:9,hi:21,res:{},order:[],i:0,started:0};return S.mtest;}
 function mtWords(){const T=mtGet();return WORDS.filter(w=>w.l>=T.lo&&w.l<=T.hi&&!isName(w)&&!/[+＋]|number|noun/i.test(w.t)).map(w=>w.id);}
 function mtStart(lo,hi){const T=mtGet();if(lo)T.lo=lo;if(hi)T.hi=hi;T.order=mtWords();T.i=T.order.findIndex(id=>!T.res[id]);if(T.i<0)T.i=0;T.started=T.started||Date.now();save();drillMode='mtest';dq=null;MT.revealed=false;go('drill');}
@@ -3872,10 +3735,6 @@ function mtRender(){
   if(r&&S.settings.strokeAnim&&document.getElementById('strokeHost'))try{renderStrokes('strokeHost',w.t.split('（')[0],{});}catch(e){}
   if(!r&&S.settings.autoplayAudio&&MT.lastSpoken!==wid){MT.lastSpoken=wid;setTimeout(()=>speakWord(wid),200);}
 }
-document.addEventListener('keydown',e=>{if(view!=='drill'||drillMode!=='mtest'||dq)return;const T=mtGet();if(!T.order[T.i])return;
-  if(e.code==='Space'&&!MT.revealed){e.preventDefault();e.stopImmediatePropagation();MT.revealed=true;mtRender();}
-  else if(MT.revealed&&['1','2','3'].includes(e.key)){e.preventDefault();e.stopImmediatePropagation();mtMark(e.key==='1'?'h':e.key==='2'?'l':'m');}
-},true);
 renderDrill=(function(orig){return function(){if(drillMode==='mtest'&&!dq){mtRender();return;}orig.apply(this,arguments);};})(renderDrill);
 DMODES.push(['mtest','寫字測驗 Mastery test','English + pinyin → write it · ★ ~ ✗']);
 startDrill=(function(orig){return function(mode){if(mode==='mtest')return mtResume();return orig.apply(this,arguments);};})(startDrill);
@@ -3898,7 +3757,6 @@ function mtPanel(){
     <div class="small muted" style="margin-top:6px">One lesson at a time is fine — progress is saved after every word. Shaky and ✗ words get write cards and paper reps; ★ words go to the shelf.</div></div>`;
 }
 renderHome=(function(orig){return function(){orig.apply(this,arguments);try{const hero=document.querySelector('#vHome .card.hero');const bl=document.querySelector('#vHome .card.backlog');(bl||hero).insertAdjacentHTML('afterend',mtPanel());ringArm(document.getElementById('vHome'));}catch(e){}};})(renderHome);
-try{badge();if(view==='home')renderHome();}catch(e){}
 
 /* ============================================================
    v30 — three lanes, one queue, visible dates.
@@ -3915,38 +3773,12 @@ function laneOf(cid){
   if(r==='l'||r==='h'||isHard(w.id))return 'catch';
   return 'maint';
 }
-if(!S.settings._v30){S.settings._v30=1;if(!S.settings.newCatchPerDay)S.settings.newCatchPerDay=5;if(S.settings.newPerDay===9)S.settings.newPerDay=8;try{save();}catch(e){}}
-/* each lane has its own new-card intake: this week's words never wait behind catch-up words */
-buildQueue=(function(orig){return function(){
-  const q=orig.apply(this,arguments);
-  try{
-    const today=dkey(new Date()), now=Date.now();
-    const allow={live:Math.max(0,(S.settings.newUnlimited?9999:(S.settings.newPerDay??8))-((S.intro||{})[today]||0)),catch:Math.max(0,(S.settings.newCatchPerDay??5)-((S.cintro||{})[today]||0)),maint:0};
-    const all=[];
-    for(const cid in S.cards){const c=S.cards[cid];if(!c||c.susp||c.st!==undefined||isGram(cid))continue;const w=wordOf(cid);if(!w)continue;if(!S.settings.includeNames&&isName(w))continue;if(!S.settings.modes[modeOf(cid)])continue;if(modeOf(cid)==='prod'&&!prodInScope(w.id))continue;all.push(cid);}
-    const mOrd={rec:0,prod:1}, pickIdx=wid=>{const i=(S.pick||[]).indexOf(wid);return i===-1?9999:i;};
-    all.sort((a,b)=>{const wa=wordOf(a),wb=wordOf(b);return pickIdx(wa.id)-pickIdx(wb.id)||wa.l-wb.l||parseInt(wa.id.slice(1))-parseInt(wb.id.slice(1))||mOrd[modeOf(a)]-mOrd[modeOf(b)];});
-    const planned={live:new Set(),catch:new Set(),maint:new Set()}, fresh=[];
-    for(const cid of all){const wid=cid.split(':')[0], k=laneOf(cid);
-      if(wordStartedBefore(wid)||planned[k].has(wid)){fresh.push(cid);continue;}
-      if(planned[k].size<allow[k]){planned[k].add(wid);fresh.push(cid);}}
-    const gf=q.fresh.filter(isGram).sort((a,b)=>((laneOf(b)==='live')-(laneOf(a)==='live'))||(GP[b.slice(2)].l-GP[a.slice(2)].l));
-    q.fresh=BACKLOG?gf:fresh.concat(gf);
-  }catch(e){}
-  return q;
-};})(buildQueue);
-rate=(function(orig){return function(cid,g){
-  const today=dkey(new Date()); const wasNew=!isGram(cid)&&(!S.cards[cid]||S.cards[cid].st===undefined)&&!wordStartedBefore(cid.split(':')[0]);
-  const lane=wasNew?laneOf(cid):null, before=S.intro[today]||0;
-  orig.apply(this,arguments);
-  if(lane==='catch'){S.intro[today]=before;S.cintro=S.cintro||{};S.cintro[today]=(S.cintro[today]||0)+1;save();}
-};})(rate);
 function laneCounts(){
   const q=buildQueue(), out={live:{due:0,fresh:0},catch:{due:0,fresh:0},maint:{due:0,fresh:0}};
   q.learn.concat(q.rev).forEach(c=>out[laneOf(c)].due++); q.fresh.forEach(c=>out[laneOf(c)].fresh++);
   return out;
 }
-function startLane(k){go('rev');if(!rq)return;['learn','rev','fresh'].forEach(x=>{rq[x]=rq[x].filter(c=>laneOf(c)===k);});nextCard();}
+function startLane(k){REV_FILTER=c=>laneOf(c)===k;go('rev');}
 function fmtDay(ms){const d=new Date(ms),t=new Date();t.setHours(0,0,0,0);const dd=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-t)/DAY);const wd=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];return dd<=0?'today':dd===1?'tomorrow':dd<7?wd:(wd+' '+(d.getMonth()+1)+'/'+d.getDate());}
 function lanePanel(){
   const L=laneCounts(), cl=S.settings.curLesson||26, sec=c=>Math.max(1,Math.round(c*8/60));
@@ -3981,27 +3813,7 @@ renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
   const v=document.getElementById('vSet'); const strat=[...v.querySelectorAll('.card')].find(c=>/Card strategy/.test(c.textContent)); if(!strat)return;
   strat.insertAdjacentHTML('beforeend',`<div class="set-row"><div><b>Catch-up words per day</b><div class="d">how many shaky / ✗ words from old lessons may start each day, separate from this week’s new words</div></div><input type="number" min="0" max="30" value="${S.settings.newCatchPerDay??5}" onchange="S.settings.newCatchPerDay=Math.max(0,parseInt(this.value)||0);save();badge()"></div>`);
 }catch(e){}};})(renderSet);
-try{badge();if(view==='home')renderHome();}catch(e){}
 
-/* ============================================================
-   v31 — Catch-up gets its own tab. Today is the live week only.
-   ============================================================ */
-if(!S.settings._v31){S.settings._v31=1;S.settings.newCatchPerDay=Math.max(S.settings.newCatchPerDay??0,12);if((S.settings.maxRev||0)<300)S.settings.maxRev=300;try{save();}catch(e){}}
-/* tab + container */
-(function(){
-  const tabs=document.querySelector('.tabs'); if(tabs&&!document.getElementById('tabCatch')){
-    const b=document.createElement('button'); b.id='tabCatch'; b.innerHTML='Catch-up<span id="bCatch" class="b zero">0</span>'; b.onclick=()=>go('catch');
-    const drill=document.getElementById('tabDrill'); drill.insertAdjacentElement('afterend',b);
-  }
-  if(!document.getElementById('vCatch')){const d=document.createElement('div');d.id='vCatch';d.style.display='none';document.getElementById('vDrill').insertAdjacentElement('afterend',d);}
-})();
-go=(function(orig){return function(v){
-  orig.apply(this,arguments);
-  const t=document.getElementById('tabCatch'), c=document.getElementById('vCatch');
-  if(t)t.classList.toggle('on',v==='catch'); if(c)c.style.display=v==='catch'?'':'none';
-  if(v==='catch')renderCatch();
-};})(go);
-badge=(function(orig){return function(){orig.apply(this,arguments);try{const L=laneCounts();const n=L.catch.due+L.catch.fresh;const b=document.getElementById('bCatch');if(b){b.textContent=n;b.classList.toggle('zero',n===0);}}catch(e){}};})(badge);
 function catchLessonCounts(ln){
   const now=Date.now(), T=mtGet(); const words=WORDS.filter(w=>w.l===ln&&!isName(w)&&!/[+＋]|number|noun/i.test(w.t));
   const n={n:words.length,m:0,l:0,h:0,todo:0,due:0,fresh:0,day:[0,0,0,0]};
@@ -4010,7 +3822,7 @@ function catchLessonCounts(ln){
       if(mm==='prod'&&c.st!==undefined&&!c.known&&(c.days||0)<=3&&c.last>new Date().setHours(0,0,0,0))n.day[c.days||0]++;});});
   return n;
 }
-function startCatchLesson(ln){startLane('catch');if(!rq)return;['learn','rev','fresh'].forEach(x=>{rq[x]=rq[x].filter(c=>wordOf(c).l===ln);});if(!(rq.learn.length+rq.rev.length+rq.fresh.length)){toast('Nothing due in '+lnLabel(ln)+' right now');go('catch');return;}nextCard();}
+function startCatchLesson(ln){REV_FILTER=c=>laneOf(c)==='catch'&&wordOf(c)&&wordOf(c).l===ln;go('rev');if(!cur){toast('Nothing due in '+lnLabel(ln)+' right now');go('catch');}}
 function renderCatch(){
   const el=document.getElementById('vCatch'), T=mtGet(), L=laneCounts(), tot=mtStats();
   const lessons=[];for(let l=T.lo;l<=T.hi;l++)lessons.push(l);
@@ -4041,23 +3853,12 @@ function renderCatch(){
 renderHome=(function(orig){return function(){orig.apply(this,arguments);try{[...document.querySelectorAll('#vHome .card')].forEach(c=>{if(/寫字測驗 · Writing mastery test/.test(c.textContent))c.remove();});
   const lane=[...document.querySelectorAll('#vHome .lane')].find(x=>/Catch-up/.test(x.textContent)); if(lane){const b=lane.querySelector('.btn');if(b){b.textContent='Open';b.disabled=false;b.className='btn sm ghost';b.onclick=()=>go('catch');}}
 }catch(e){}};})(renderHome);
-/* lane start from the Today card keeps working for live + maintenance; refresh badges */
-try{badge();if(view==='home')renderHome();}catch(e){}
 
 /* ============================================================
    v32 — deep pass: queue cache, character anatomy, external
    lookups (萌典 · MDBG · Pleco · Skritter), keyboard navigation,
    focus mode, week-over-week stat.
    ============================================================ */
-/* ---- A. one queue build per paint ---- */
-let QV=0, QCACHE=null;
-save=(function(orig){return function(){QV++;return orig.apply(this,arguments);};})(save);
-buildQueue=(function(orig){return function(){
-  const now=Date.now();
-  if(QCACHE&&QCACHE.v===QV&&now-QCACHE.t<400){const q=QCACHE.q;return {learn:q.learn.slice(),rev:q.rev.slice(),fresh:q.fresh.slice()};}
-  const q=orig.apply(this,arguments); QCACHE={v:QV,t:now,q:{learn:q.learn.slice(),rev:q.rev.slice(),fresh:q.fresh.slice()}};
-  return q;
-};})(buildQueue);
 /* ---- B. lookups ---- */
 function isAndroidUA(){return /Android/.test(navigator.userAgent);}
 function lookupRow(text){
@@ -4092,13 +3893,6 @@ mtRender=(function(orig){return function(){orig.apply(this,arguments);try{if(!MT
 renderBrain=(function(orig){return function(){orig.apply(this,arguments);try{const d=document.querySelector('#vBrain .detail .body');if(d&&brainSel&&!d.querySelector('.lookup')){const t=brainSel.type==='word'?(byId[brainSel.id]||{}).t:brainSel.id;if(t)d.insertAdjacentHTML('beforeend',lookupRow(t));}}catch(e){}};})(renderBrain);
 /* ---- D. keyboard: letters jump tabs, ? shows the map ---- */
 const KEYMAP={t:'home',r:'rev',d:'drill',c:'catch',g:'gram',b:'brain',l:'lib',s:'set'};
-document.addEventListener('keydown',e=>{
-  if(e.metaKey||e.ctrlKey||e.altKey)return; const tg=e.target; if(tg&&(/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)||tg.isContentEditable))return;
-  if(e.key==='?'){e.preventDefault();toggleKeyHelp();return;}
-  if(e.key==='Escape'){const h=document.getElementById('keyHelp');if(h&&h.style.display!=='none'){h.style.display='none';return;}if(document.body.classList.contains('focus')){document.body.classList.remove('focus');return;}}
-  if(e.key==='f'&&view==='rev'){e.preventDefault();document.body.classList.toggle('focus');return;}
-  const v=KEYMAP[e.key]; if(v&&!e.shiftKey){e.preventDefault();go(v);}
-});
 function toggleKeyHelp(){
   let h=document.getElementById('keyHelp');
   if(!h){h=document.createElement('div');h.id='keyHelp';h.className='modal';h.onclick=ev=>{if(ev.target===h)h.style.display='none';};document.body.appendChild(h);}
@@ -4112,17 +3906,13 @@ function toggleKeyHelp(){
     </div></div>`;
   h.style.display='flex';
 }
-go=(function(orig){return function(v){if(v!=='rev')document.body.classList.remove('focus');return orig.apply(this,arguments);};})(go);
 renderRev=(function(orig){return function(){orig.apply(this,arguments);try{const row=document.querySelector('#vRev .srow');if(row&&!row.querySelector('.focuslink'))row.insertAdjacentHTML('beforeend',`<span class="link small focuslink" onclick="document.body.classList.toggle('focus')" title="hide the header and tabs (f)">${document.body.classList.contains('focus')?'exit focus':'focus'}</span>`);}catch(e){}};})(renderRev);
 /* ---- E. this week vs last week ---- */
 function weekCards(offset){const d=new Date();d.setHours(0,0,0,0);const dow=(d.getDay()+6)%7;const start=new Date(d);start.setDate(d.getDate()-dow-7*offset);let n=0;for(let i=0;i<7;i++){const k=dkey(new Date(start.getTime()+i*DAY));const l=S.log[k];if(l)n+=(l.rev||0)+(l.new||0);}return n;}
 renderHome=(function(orig){return function(){orig.apply(this,arguments);try{const st=document.querySelector('#vHome .stats');if(st&&!st.querySelector('.wk')){const a=weekCards(0),b=weekCards(1);st.insertAdjacentHTML('beforeend',`<div class="stat wk"><div class="n">${a}<span class="d"> / ${b}</span></div><div class="l">this week / last</div></div>`);}}catch(e){}};})(renderHome);
 /* ---- F. settings: a keyboard hint ---- */
 renderSet=(function(orig){return function(){orig.apply(this,arguments);try{document.getElementById('vSet').insertAdjacentHTML('beforeend',`<div class="small muted" style="text-align:center;margin:4px 0 10px">Press <kbd>?</kbd> anywhere for keyboard shortcuts · look-up links on every card back: 萌典 · MDBG · Pleco · Skritter</div>`);}catch(e){}};})(renderSet);
-try{badge();if(view==='home')renderHome();}catch(e){}
 
-/* a11y micro-pass: icon-only buttons announce their title; Han text is tagged zh-Hant for screen readers and font selection */
-(function(){const mo=new MutationObserver(()=>{document.querySelectorAll('button[title]:not([aria-label]),a[title]:not([aria-label])').forEach(b=>{if(!b.textContent.trim()||/^[☾☀▶↻‹›←→✓✗★!＋−]+$/.test(b.textContent.trim()))b.setAttribute('aria-label',b.title);});document.querySelectorAll('.zh:not([lang])').forEach(el=>el.setAttribute('lang','zh-Hant'));});mo.observe(document.body,{childList:true,subtree:true});})();
 
 /* ============================================================
    v33 — audit fixes that are cleaner as a layer
@@ -4133,28 +3923,8 @@ function normalizeState(){
   if(!S.settings.retention)S.settings.retention=0.9; if(S.settings.newPerDay==null)S.settings.newPerDay=8; if(!S.settings.maxRev)S.settings.maxRev=300; if(!S.settings.writeTarget)S.settings.writeTarget=20;
   S.cards=S.cards||{}; S.pick=S.pick||[]; S.hard=S.hard||[]; S.log=S.log||{}; S.intro=S.intro||{}; S.hist=S.hist||{d:[],s:[]}; S.sib=S.sib||{}; S.cf=S.cf||{}; S.gram=S.gram||{};
 }
-normalizeState();
-/* saves coalesce: many mutations in one tick → one stringify, one backup, one sync push */
-save=(function(orig){let pending=false;return function(){if(pending)return;pending=true;queueMicrotask(()=>{pending=false;try{orig();}catch(e){}});};})(save);
-SYNC.gen=0; save=(function(orig){return function(){SYNC.gen=(SYNC.gen||0)+1;return orig.apply(this,arguments);};})(save);
-/* in-browser snapshots at most every 10 minutes instead of every save */
-snapshot=(function(orig){let last=0;return function(){const n=Date.now();if(n-last<600000)return;last=n;return orig.apply(this,arguments);};})(snapshot);
-/* no cloud writes while the conflict dialog is open */
-fbSchedulePush=(function(orig){return function(){if(SYNC.blocked)return;return orig.apply(this,arguments);};})(fbSchedulePush);
-fbPush=(function(orig){return function(){if(SYNC.blocked)return;return orig.apply(this,arguments);};})(fbPush);
-/* adopting a cloud copy invalidates the queue cache */
-rerenderAfterSync=(function(orig){return function(){QV++;return orig.apply(this,arguments);};})(rerenderAfterSync);
 /* review sessions can start filtered and capped without a stray first card */
 let REV_FILTER=null, REV_CAP=0;
-startReview=function(){
-  sesReset(); undoStack.length=0; rq=buildQueue(); sessionN=0;
-  if(REV_FILTER){['learn','rev','fresh'].forEach(k=>{rq[k]=rq[k].filter(REV_FILTER);});}
-  if(REV_CAP){let left=REV_CAP-rq.learn.length;rq.learn=rq.learn.slice(0,REV_CAP);rq.rev=rq.rev.slice(0,Math.max(0,left));left-=rq.rev.length;rq.fresh=rq.fresh.slice(0,Math.max(0,left));}
-  REV_FILTER=null; REV_CAP=0; nextCard();
-};
-startLane=function(k){REV_FILTER=c=>laneOf(c)===k;go('rev');};
-startCatchLesson=function(ln){REV_FILTER=c=>laneOf(c)==='catch'&&wordOf(c)&&wordOf(c).l===ln;go('rev');if(!cur){toast('Nothing due in '+lnLabel(ln)+' right now');go('catch');}};
-startQuick=function(n){REV_CAP=n;go('rev');};
 /* mastery test: a real undo stack */
 MT.stack=[];
 mtMark=(function(orig){return function(r){const T=mtGet(),wid=T.order[T.i];if(wid){MT.stack.push({wid,i:T.i,cards:JSON.parse(JSON.stringify(MODES.map(m=>S.cards[cardId(wid,m)]||null))),hard:isHard(wid),pick:(S.pick||[]).includes(wid),prev:T.res[wid]||null});if(MT.stack.length>50)MT.stack.shift();}return orig.apply(this,arguments);};})(mtMark);
@@ -4178,32 +3948,14 @@ mtOwnEarly=(function(orig){return function(){orig.apply(this,arguments);try{if(v
 tierPanel=function(){return '';}; mtPanel=function(){return '';};
 /* plan actions: test a lesson, open the tab */
 planAct=(function(orig){return function(k,arg){if(k==='test'){mtResume();if(arg&&arg.ln)mtJump(arg.ln);return;}if(k==='catchtab'){go('catch');return;}return orig.apply(this,arguments);};})(planAct);
-/* keyboard map: never while a drill is running, never a no-op restart of the same view */
-document.addEventListener('keydown',e=>{ if(e.defaultPrevented)return; if(KEYMAP[e.key]&&!e.metaKey&&!e.ctrlKey&&!e.altKey){const tg=e.target;if(tg&&(/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)||tg.isContentEditable))return; if((view==='drill'&&dq)||(KEYMAP[e.key]===view)||(view==='drill'&&drillMode==='mtest'))e.stopImmediatePropagation();} },true);
 /* speech + microphone never outlive the screen that started them */
 startDrill=(function(orig){return function(mode){recKill();if(mode!=='listen')try{lpStop();}catch(e){}return orig.apply(this,arguments);};})(startDrill);
 function recKill(){try{if(REC_ACTIVE&&REC_ACTIVE.state!=='inactive')REC_ACTIVE.stop();}catch(e){}}
-drillNext=(function(orig){return function(){recKill();return orig.apply(this,arguments);};})(drillNext);
-go=(function(orig){return function(v){if(v!=='drill')recKill();return orig.apply(this,arguments);};})(go);
 /* answer flash now applied after the re-render, where the buttons actually are */
 renderDrill=(function(orig){return function(){orig.apply(this,arguments);try{if(!dq||dq.state!=='done'||!animOn())return;const r=document.querySelector('#vDrill .opts button.right');const w=document.querySelector('#vDrill .opts button.wrong');if(r)r.classList.add('pop');if(w)w.classList.add('shake');}catch(e){}};})(renderDrill);
 /* audio handle table stays bounded */
 renderGram=(function(orig){return function(){if(window.AUDS&&AUDS.length>1500)window.AUDS=[];return orig.apply(this,arguments);};})(renderGram);
-try{badge();if(view==='home')renderHome();}catch(e){}
 
-/* ============================================================
-   v34 — characters first.
-   1. Taiwan neural voice pack (zh-TW HsiaoChen) for every word AND
-      every character; bundled voice is now the default.
-   2. 寫字 Write quiz: draw each stroke on screen (Hanzi Writer quiz),
-      mistakes tracked per character → "hardest to write".
-   3. 萌典 panel per character: 部首 · 筆畫 · 注音 · 釋義 (MoE dictionary).
-   4. More look-ups (字源 etymology); character-first drill order and
-      weekday plan. Grammar stays in Notion.
-   ============================================================ */
-/* ---- 1. audio ---- */
-/* warm the pack early so the first card doesn't wait */
-setTimeout(()=>{try{loadPack();}catch(e){}},1500);
 renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
   const sel=document.querySelector('#vSet select[onchange*="audioSrc"]'); if(!sel)return;
   sel.options[0].textContent='Auto — bundled Taiwan voice, system voice as fallback';
@@ -4282,7 +4034,6 @@ planAct=(function(orig){return function(k,arg){
   if(k==='mtest'){mtResume();return;}
   return orig.apply(this,arguments);
 };})(planAct);
-try{badge();if(view==='home')renderHome();}catch(e){}
 
 /* ============================================================
    v35 — system tidy + the iPad in one card.
@@ -4378,33 +4129,10 @@ renderDrill=(function(orig){return function(){orig.apply(this,arguments);try{
   if(!dem.length)return;
   const det=document.createElement('details'); det.className='guide'; det.open=moreDrills; det.innerHTML='<summary>More drills · sentences, listening, grammar ›</summary>'; const g2=document.createElement('div'); g2.className='dgrid'; g2.style.marginTop='10px'; dem.forEach(c=>g2.appendChild(c)); det.appendChild(g2); grid.insertAdjacentElement('afterend',det); det.addEventListener('toggle',()=>{moreDrills=det.open;});
 }catch(e){}};})(renderDrill);
-try{badge();if(view==='set')renderSet();if(view==='home')renderHome();}catch(e){}
 
-/* ============================================================
-   v36 — top-app patterns, character-focused
-   1. Draw it ✍ inside the SRS write card: verify the strokes on
-      screen before you grade (Skritter pattern)
-   2. Swipe grading on touch: left = Again, right = Good, tap = reveal
-   3. Mistakes come back: a missed drill item re-enters the set once
-   4. Write quiz: completed character animates once + speaks
-   5. u = undo in review · lesson page chip on the Today hero
-   ============================================================ */
-/* ---- 2. swipe grading (touch only) ---- */
-(function(){
-  let sx=0,sy=0,t0=0,active=false;
-  document.addEventListener('touchstart',e=>{if(view!=='rev'||!cur||e.touches.length!==1)return;const st=e.target.closest('#vRev .stage');if(!st||e.target.closest('.wqbox,button,a,input'))return;sx=e.touches[0].clientX;sy=e.touches[0].clientY;t0=Date.now();active=true;},{passive:true});
-  document.addEventListener('touchend',e=>{if(!active)return;active=false;const t=e.changedTouches[0];const dx=t.clientX-sx,dy=t.clientY-sy,dt=Date.now()-t0;
-    if(Math.abs(dx)<12&&Math.abs(dy)<12&&dt<400){if(!revealed){reveal();}return;}
-    if(!revealed||Math.abs(dx)<70||Math.abs(dy)>60||dt>900)return;
-    if(dx<0)grade(1); else grade(3);},{passive:true});
-})();
-/* ---- 3. mistakes come back once ---- */
-drillAnswer=(function(orig){return function(ok){try{const q=dq&&dq.qs[dq.i];if(q&&!ok&&!q._requeued&&q.w){const c=Object.assign({},q,{_requeued:true,_played:0});dq.qs.push(c);}}catch(e){}return orig.apply(this,arguments);};})(drillAnswer);
-cfPick=(function(orig){return function(i){try{const q=dq&&dq.qs[dq.i];if(q&&dq.state==='ask'){const opts=q.q.opts||q.f.opts;if(opts[i]!==q.q.a&&!q._requeued)dq.qs.push(Object.assign({},q,{_requeued:true}));}}catch(e){}return orig.apply(this,arguments);};})(cfPick);
 /* ---- 5. small efficiencies ---- */
-document.addEventListener('keydown',e=>{if(view!=='rev'||!cur||e.repeat||e.metaKey||e.ctrlKey||e.altKey)return;const tg=e.target;if(tg&&/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName))return;if(e.key==='u'){e.preventDefault();doUndo();}});
+
 renderHome=(function(orig){return function(){orig.apply(this,arguments);try{const meta=document.querySelector('#vHome .hero .hero-meta');if(meta&&!meta.querySelector('.nl')){const cl=S.settings.curLesson||26;meta.insertAdjacentHTML('beforeend',`<a class="chip nl" href="${notionLesson(cl)}" target="_blank" rel="noopener" style="color:var(--blue);text-decoration:none">lesson page ↗</a>`);}}catch(e){}};})(renderHome);
-try{badge();if(view==='home')renderHome();}catch(e){}
 
 /* v37: drawing on screen removed — writing lives on paper and in Skritter. Character drills first. */
 (function(){const order=['dict','rec','tone','mtest','listen','sdict','confuse','read','sent','speak'];DMODES.sort((a,b)=>order.indexOf(a[0])-order.indexOf(b[0]));})();
@@ -4483,10 +4211,6 @@ function exRender(){
   if(r&&S.settings.strokeAnim&&document.getElementById('strokeHost'))try{renderStrokes('strokeHost',w.t.split('（')[0],{});}catch(e){}
   if(!r&&S.settings.autoplayAudio&&EX.lastSpoken!==wid){EX.lastSpoken=wid;setTimeout(()=>speakWord(wid),200);}
 }
-document.addEventListener('keydown',e=>{if(view!=='drill'||drillMode!=='extest'||dq)return;const R=exGet().run;if(!R||!R.ids[R.i])return;
-  if(e.code==='Space'&&!EX.revealed){e.preventDefault();e.stopImmediatePropagation();EX.revealed=true;exRender();}
-  else if(EX.revealed&&['1','2','3'].includes(e.key)){e.preventDefault();e.stopImmediatePropagation();exMark(e.key==='1'?'h':e.key==='2'?'l':'m');}
-},true);
 renderDrill=(function(orig){return function(){if(drillMode==='extest'&&!dq){exRender();return;}orig.apply(this,arguments);};})(renderDrill);
 /* ---- drilling and reviewing a pile ---- */
 let EXAM_POOL=[];
@@ -4503,14 +4227,7 @@ function exPrint(kind,reps){
   host.innerHTML=html;window.print();
 }
 /* ---- tab + container ---- */
-(function(){
-  const tabs=document.querySelector('.tabs');if(tabs&&!document.getElementById('tabExam')){
-    const b=document.createElement('button');b.id='tabExam';b.innerHTML='大考試<span id="bExam" class="b zero">0</span>';b.style.whiteSpace='nowrap';b.onclick=()=>go('exam');
-    const after=document.getElementById('tabCatch')||document.getElementById('tabDrill');after.insertAdjacentElement('afterend',b);}
-  if(!document.getElementById('vExam')){const d=document.createElement('div');d.id='vExam';d.style.display='none';document.getElementById('vDrill').insertAdjacentElement('afterend',d);}
-})();
-go=(function(orig){return function(v){orig.apply(this,arguments);const t=document.getElementById('tabExam'),c=document.getElementById('vExam');if(t)t.classList.toggle('on',v==='exam');if(c)c.style.display=v==='exam'?'':'none';if(v==='exam')renderExam();};})(go);
-badge=(function(orig){return function(){orig.apply(this,arguments);try{const n=exIds('no').length;const b=document.getElementById('bExam');if(b){b.textContent=n;b.classList.toggle('zero',n===0);}}catch(e){}};})(badge);
+
 function exPile(kind){
   const X=exGet(),ids=exIds(kind);if(!ids.length)return '';
   const byLn={};ids.forEach(id=>{const w=byId[id];(byLn[w.l]=byLn[w.l]||[]).push(w);});
@@ -4567,30 +4284,11 @@ renderHome=(function(orig){return function(){orig.apply(this,arguments);try{
 }catch(e){}};})(renderHome);
 /* ---- the original 寫字測驗 uses the same words ---- */
 mtRender=(function(orig){return function(){orig.apply(this,arguments);try{const g=document.querySelectorAll('#vDrill .grades button');g.forEach(b=>{const s=b.querySelector('.g1,.g2,.g4');if(!s)return;if(/Couldn/.test(s.textContent))s.textContent='✗ Hell no';else if(/Shaky/.test(s.textContent))s.textContent='~ Sorta';else if(/Wrote/.test(s.textContent))s.textContent='★ Yes';});}catch(e){}};})(mtRender);
-if(!S.settings._v38){S.settings._v38=1;exGet();try{save();}catch(e){}}
-try{badge();if(view==='home')renderHome();}catch(e){}
 
-/* ============================================================
-   v39 — refresh. Most of this release is in place above: the
-   BOOKS table, per-syllable tones, FSRS-5 update order, exact
-   undo, selectable bundled voice, device-local offline state,
-   sync-log trimming. What follows is the glue that has no other
-   natural home.
-   ============================================================ */
-/* version stamp */
-(function(){const el=document.getElementById('appVer');if(el)el.textContent='v'+APP_VERSION;})();
-/* drills open on the live lesson */
-drillLesson=S.settings.curLesson||drillLesson;
 /* e = 大考試 */
 KEYMAP.e='exam';
 /* ---- phones: bottom bar with More ---- */
-(function(){
-  const bar=document.querySelector('.tabs'); if(!bar||document.getElementById('tabMore'))return;
-  ['tabCatch','tabGram','tabBrain','tabLib','tabSet'].forEach(id=>{const b=document.getElementById(id);if(b)b.classList.add('t2');});
-  const m=document.createElement('button'); m.id='tabMore'; m.type='button'; m.textContent='More'; m.setAttribute('aria-label','more tabs');
-  m.onclick=()=>bar.classList.toggle('more'); bar.appendChild(m);
-  document.addEventListener('click',e=>{if(bar.classList.contains('more')&&!bar.contains(e.target))bar.classList.remove('more');});
-})();
+
 function tabsSync(){
   const bar=document.querySelector('.tabs'), m=document.getElementById('tabMore'); if(!bar||!m)return;
   bar.classList.remove('more'); m.classList.toggle('on',!!bar.querySelector('button.t2.on'));
@@ -4612,30 +4310,16 @@ async function checkForUpdate(){
     if(view==='rev'&&cur)toast('A newer version of 字卡 is ready',{action:'Refresh',onAction:appRefresh,ms:20000}); else appRefresh();
   }catch(e){}
 }
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkForUpdate();});
-/* pull down to refresh inside the Home Screen app, which has no reload button of its own */
-(function(){
-  if(!isStandalone())return;
-  const tip=document.createElement('div'); tip.id='ptr'; document.body.appendChild(tip);
-  let y0=null,pull=0;
-  const rest=()=>{tip.style.opacity=0;tip.style.transform='translate(-50%,0)';};
-  document.addEventListener('touchstart',e=>{pull=0;y0=(window.scrollY<=0&&e.touches.length===1&&!e.target.closest('.modal,.tabs'))?e.touches[0].clientY:null;},{passive:true});
-  document.addEventListener('touchmove',e=>{if(y0===null)return;pull=e.touches[0].clientY-y0;if(pull<=0||window.scrollY>0){rest();return;}
-    tip.textContent=pull>110?'↻ release to refresh':'↓ pull to refresh';tip.style.opacity=Math.min(1,pull/110);tip.style.transform='translate(-50%,'+Math.min(56,pull/2.2)+'px)';},{passive:true});
-  document.addEventListener('touchend',()=>{if(y0!==null&&pull>110&&window.scrollY<=0){tip.textContent='Refreshing…';appRefresh();}else rest();y0=null;},{passive:true});
-})();
 /* the active tab is always in view on a narrow screen (scrolls the bar only, never the page) */
 function tabIntoView(){
   const t=document.querySelector('.tabs button.on'), bar=t&&t.parentElement; if(!bar||bar.scrollWidth<=bar.clientWidth)return;
   const left=bar.scrollLeft+t.getBoundingClientRect().left-bar.getBoundingClientRect().left-(bar.clientWidth-t.offsetWidth)/2;
   try{bar.scrollTo({left:Math.max(0,left),behavior:animOn()?'smooth':'auto'});}catch(e){bar.scrollLeft=Math.max(0,left);}
 }
-go=(function(orig){return function(v){const r=orig.apply(this,arguments);try{tabsSync();tabIntoView();}catch(e){}return r;};})(go);
 /* Settings: say which version this device is running */
 renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
   document.getElementById('vSet').insertAdjacentHTML('beforeend',`<div class="small muted" style="text-align:center;margin:0 0 10px">字卡 v${APP_VERSION} · ${WORDS.length} words · ${BOOKS.length} books · this device: ${esc(DEVICE.name)}</div>`);
 }catch(e){}};})(renderSet);
-try{tabsSync();tabIntoView();if(view==='set')renderSet();}catch(e){}
 
 /* ============================================================
    v43 — 聲調教練 Tone coach (beta). Record a word, see your pitch
@@ -4881,19 +4565,6 @@ function tcQuick(wid){
   m.style.display='flex'; TC.host='tcQuick'; tcRender();
 }
 function tcQuickClose(){ tcRelease(); TC.host=null; TC.list=[]; TC.res=null; shClose(); }
-/* keyboard, for the Mac: Space records (and stops), Enter moves on, A tries again, L listens, Esc closes the sheet */
-document.addEventListener('keydown',e=>{
-  const on=TC.host||(view==='drill'&&drillMode==='tcoach'&&!dq&&TC.list.length&&TC.i<TC.list.length);
-  if(!on||e.repeat||e.metaKey||e.ctrlKey||e.altKey||/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||''))return;
-  const st=TC.state;
-  if(e.code==='Space'&&(st==='ask'||st==='rec'||st==='cal')){e.preventDefault();tcRecord();}
-  else if(e.key==='Enter'&&st==='done'){e.preventDefault();tcNext();}
-  else if((e.key==='a'||e.key==='A')&&st==='done'){tcAgain();}
-  else if((e.key==='l'||e.key==='L')&&(st==='ask'||st==='done')){tcSay();}
-  else if(e.key==='Escape'&&TC.host){tcQuickClose();}
-  else return;
-  e.stopImmediatePropagation();
-},true);
 /* a round of ten words. With a tone pair ("24") the round is ten two-syllable words of that pair, taken from the
    chosen scope or, when it holds too few, from every lesson up to the learner's own. */
 /* what is on the card: a course word, or a short phrase made for this round (TC.items, ids "p:w12:0") */
@@ -5093,35 +4764,6 @@ renderDrill=(function(orig){return function(){
   /* the drill menu (and only the menu) ends with the tone summary and the tone-pair map */
   try{const el=document.getElementById('vDrill');if(!dq&&el&&el.querySelector('.dgrid')&&!el.querySelector('.tc-panel'))el.insertAdjacentHTML('beforeend','<div class="tc-panel">'+tcPanel()+'</div>');}catch(e){}
 };})(renderDrill);
-go=(function(orig){return function(v){if(v!=='drill')tcRelease();return orig.apply(this,arguments);};})(go);
-(function(){const st=document.createElement('style');st.textContent=`
-.tc-beta{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line2);border-radius:99px;padding:1px 6px;color:var(--mut);margin-left:4px}
-.tc-chart{display:block;width:100%;margin:10px auto 4px}
-.tc-key{font-size:11.5px;color:var(--mut);text-align:center;margin-top:6px}
-.tc-acts{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:nowrap}
-.tc-acts .btn{white-space:nowrap}
-.tc-cell{fill:var(--panel);stroke:var(--line)}
-.tc-mid{stroke:var(--line2);stroke-dasharray:3 4}
-.tc-ref{fill:none;stroke:var(--mut2);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;opacity:.75}
-.tc-me{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
-.tc-me.ok{stroke:var(--acc)}.tc-me.no{stroke:var(--red)}.tc-me.close{stroke:var(--amber)}.tc-me.na{stroke:var(--mut)}
-.tc-chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px}
-.tc-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:99px;padding:4px 11px;font-size:12.5px;font-weight:700}
-.tc-chip b{font-size:17px}.tc-chip i{font-style:normal;font-weight:500;color:var(--mut)}
-.tc-chip.ok{color:var(--acc)}.tc-chip.no{color:var(--red)}.tc-chip.close{color:var(--amber)}.tc-chip.na{color:var(--mut)}
-.tc-tip{color:var(--mut)}
-.tc-sheet{max-width:520px;padding:18px 18px 14px;max-height:calc(100vh - 40px);overflow:auto}
-.tc-sheet .stage{border:0;background:transparent;padding:4px 0 0;min-height:0!important}
-.tc-map{display:grid;grid-template-columns:auto repeat(4,1fr);gap:6px;margin-top:10px;max-width:560px;align-items:stretch}
-.tc-mh{font-size:11.5px;color:var(--mut);display:flex;align-items:center;justify-content:center;white-space:nowrap;padding:0 4px}
-.tc-mc{min-height:46px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);font:inherit;font-size:14px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:4px 2px}
-.tc-mc i{font-style:normal;font-weight:500;font-size:10.5px;color:var(--mut)}
-.tc-mc.ok{color:var(--acc);background:var(--accT);border-color:transparent}.tc-mc.mid{color:var(--amber)}.tc-mc.no{color:var(--red)}
-.tc-mc.na{font-size:10.5px;font-weight:500;color:var(--mut2);cursor:default;border-style:dashed;text-align:center}
-.tc-say{font-size:13.5px;margin-top:8px;text-align:center;line-height:1.5}
-.tc-err{font-size:13.5px;color:var(--red);text-align:center;margin-top:10px}
-.tc-rec.on{background:var(--red);color:#fff}
-`;document.head.appendChild(st);})();
 
 /* ============================================================
    v43 — 短文 Stories. Short original passages, one or more per
@@ -5191,28 +4833,7 @@ DMODES.push(['story','短文 Stories','short readings from the words you know ·
 const DRILL_SCREENS={story:{start:rdStart,render:rdRender}};
 startDrill=(function(orig){return function(mode){const x=DRILL_SCREENS[mode];if(x)return x.start();return orig.apply(this,arguments);};})(startDrill);
 renderDrill=(function(orig){return function(){const x=DRILL_SCREENS[drillMode];if(x&&!dq){x.render();return;}orig.apply(this,arguments);};})(renderDrill);
-(function(){const st=document.createElement('style');st.textContent=`
-.rd-lessons{display:flex;gap:6px;flex-wrap:wrap}
-.rd-lessons button{border:1px solid var(--line);background:var(--panel);color:var(--mut);border-radius:99px;padding:6px 12px;font-size:12.5px;font-weight:600;cursor:pointer}
-.rd-lessons button.on{background:var(--brand,var(--ink));color:var(--brandFg,var(--bg));border-color:var(--brand,var(--ink))}
-.rd-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 2px;border-top:1px solid var(--line);cursor:pointer}
-.rd-item:first-of-type{border-top:0}
-.rd-item b{font-size:19px}
-.rd-go{font-size:12.5px;font-weight:700;color:var(--brandInk,var(--acc));white-space:nowrap}
-.rd-stage{text-align:left;min-height:300px}
-.rd-title{font-size:26px;text-align:center}
-.rd-stage>.small{text-align:center}
-.rd-text{font-size:23px;line-height:2.05;letter-spacing:.02em;text-align:justify}
-.rd-w{cursor:pointer;border-radius:6px;padding:1px 0;transition:background .12s}
-.rd-w.new{text-decoration:underline;text-decoration-color:var(--line2);text-decoration-thickness:2px;text-underline-offset:6px}
-.rd-w.unk{background:var(--tint);color:var(--red)}
-.rd-w.sel{outline:2px solid var(--brandInk,var(--acc));outline-offset:1px}
-.rd-gloss{margin-top:14px;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);font-size:14px;min-height:54px}
-.rd-en{margin-top:12px;font-size:14.5px;line-height:1.65;color:var(--mut)}
-@media(max-width:560px){.rd-text{font-size:21px;line-height:1.95}}
-`;document.head.appendChild(st);})();
-</script>
-<script>
+
 /* ============================================================
    v44 — clean shell, "where I am", and My words.
    This block is self-contained: it runs after everything above,
@@ -5255,13 +4876,8 @@ function shLook(){
   const mc=document.querySelector('meta[name="theme-color"]'); if(mc)mc.setAttribute('content',cssVar('--bg')||'#f3edde');
 }
 applyTheme=(function(orig){return function(){const r=orig.apply(this,arguments);try{shLook();}catch(e){}return r;};})(applyTheme);
-fbAdopt=(function(orig){return function(){const r=orig.apply(this,arguments);try{shLook();}catch(e){}return r;};})(fbAdopt);
 function shSetLook(k,v){S.settings[k]=v;save();shLook();if(view==='set')renderSet();if(view==='brain')renderBrain();}
 
-/* ---------- who and where: name, book and lesson ---------- */
-/* Decks that existed before names were a setting belong to Thorne. Runs on every start (not behind a flag),
-   so a deck adopted from a device that has not updated yet is named too. */
-if(S.settings.userName===undefined&&Object.keys(S.cards||{}).length){S.settings.userName='Thorne';}
 function shName(){return (S.settings.userName||'').trim();}
 function shGreeting(){
   const h=new Date().getHours(), g=h<5?'夜深了':h<11?'早安':h<14?'午安':h<18?'下午好':'晚上好', n=shName();
@@ -5308,31 +4924,6 @@ function shTabIcons(){
     b.insertAdjacentHTML('afterbegin',SVG(ICON[TAB_ICON[b.id]]||ICON.more,'ti'));
   });
 }
-(function(){
-  const rb=document.getElementById('refreshBtn'); if(rb)rb.innerHTML=SVG(ICON.refresh);
-  const sb=document.getElementById('setBtn'); if(sb)sb.innerHTML=SVG(ICON.set);
-  /* My words: its own tab (behind More on phones) and its own view */
-  const tabs=document.querySelector('.tabs');
-  if(tabs&&!document.getElementById('tabMy')){
-    const b=document.createElement('button'); b.id='tabMy'; b.type='button'; b.className='t2';
-    b.innerHTML='My words<span id="bMy" class="b zero">0</span>'; b.onclick=()=>go('my');
-    (document.getElementById('tabLib')||tabs.lastElementChild).insertAdjacentElement('afterend',b);
-    const v=document.createElement('div'); v.id='vMy'; v.style.display='none';
-    document.getElementById('vSet').insertAdjacentElement('afterend',v);
-  }
-  shTabIcons();
-  KEYMAP.m='my';
-})();
-go=(function(orig){return function(v){
-  if(v!=='my'&&typeof MY!=='undefined'){MY.mode='list';}
-  const from=view, r=orig.apply(this,arguments);
-  const t=document.getElementById('tabMy'), c=document.getElementById('vMy');
-  if(t)t.classList.toggle('on',v==='my'); if(c)c.style.display=v==='my'?'':'none';
-  const sb=document.getElementById('setBtn'); if(sb)sb.classList.toggle('on',v==='set');
-  if(v==='my'){renderMy(); try{if(animOn()){c.classList.remove('view-in');void c.offsetWidth;c.classList.add('view-in');}}catch(e){}}
-  try{tabsSync();if(from!==v)window.scrollTo(0,0);}catch(e){}   /* a new place starts at its top; re-rendering the same one keeps your position */
-  return r;
-};})(go);
 
 /* ---------- Today: greeting, two decks, and the rest behind one fold ---------- */
 function shOpenLesson(ln){try{libBook=bookOf(ln);openLessons[ln]=true;}catch(e){}go('lib');}
@@ -5824,21 +5415,7 @@ function myStudyRender(){
     <div class="small muted kbh" style="text-align:center;margin-top:10px"><kbd>space</kbd> show · <kbd>1</kbd>–<kbd>4</kbd> grade · <kbd>esc</kbd> stop</div>`;
 }
 function myStrokes(id){const w=myDeck().w[id];if(!w)return;try{renderStrokes('myStrokeHost',w.t,{});}catch(e){}}
-document.addEventListener('keydown',e=>{
-  if(view!=='my'||MY.mode!=='study'||e.metaKey||e.ctrlKey||e.altKey||e.repeat)return;
-  const tg=e.target; if(tg&&/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName))return;
-  const sheet=document.getElementById('shSheet'); if(sheet&&sheet.style.display==='flex')return;
-  if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();myStop();return;}
-  if(!MY.cur)return;
-  if(e.code==='Space'||e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();if(MY.shown)myGrade(3);else myReveal();return;}
-  if(MY.shown&&/^[1-4]$/.test(e.key)){e.preventDefault();e.stopImmediatePropagation();myGrade(+e.key);}
-},true);
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){const s=document.getElementById('shSheet');if(s&&s.style.display==='flex'){shClose();if(view==='my')renderMy();}}});
 
-/* ---------- start ---------- */
-try{shLook();myBadge();if(view==='home')renderHome();else if(view==='set')renderSet();}catch(e){console.error(e);}
-</script>
-<script>
 /* ============================================================
    用法 — usage phrases (functions prefixed us*).
    USAGE[wordId] = [[中文, pinyin, English], …]: short collocations first, then a sentence or two.
@@ -5993,6 +5570,386 @@ function usRender(){
 }
 DMODES.push(['usage','用法 Phrases','pick a lesson · say the phrase each word lives in']);
 DRILL_SCREENS.usage={start:usStart,render:usRender};
+
+
+/* ============================================================
+   START-UP. Everything above this line only defines; from here down it runs, in the order the
+   versions added it: load the saved state, migrate it, mount the screen, listen, paint.
+   ============================================================ */
+// cards: "wid:mode" -> {st:'learn'|'rev'|'relearn', S,D, due, last, reps, lapses, days, known, susp}
+try{
+  const raw=store.getItem(KEY);
+  if(raw){const p=JSON.parse(raw); S={...S,...p, settings:{...S.settings,...(p.settings||{}), modes:{rec:true,prod:true,...((p.settings||{}).modes||{})}}};}
+  else{
+    const old=store.getItem('shida_b1_fsrs_v1');
+    if(old){ // migrate v1 (hw/mean/pin) -> v2 (rec/prod)
+      const p=JSON.parse(old);
+      const cards={};
+      for(const cid in (p.cards||{})){
+        const parts=cid.split(':'), wid=parts[0], m=parts[1], c=p.cards[cid];
+        if(m==='mean')cards[wid+':rec']=c;
+        else if(m==='hw')cards[wid+':prod']=c;
+        else if(m==='pin'){const k=wid+':prod'; if(!cards[k]||cards[k].st===undefined)cards[k]=(cards[k]&&cards[k].st!==undefined)?cards[k]:c;}
+      }
+      S.cards=cards; S.log=p.log||{}; S.intro={};
+      const os=p.settings||{};
+      S.settings.retention=os.retention||0.9;
+      S.settings.maxRev=os.maxRev||200;
+      S.settings.includeNames=!!os.includeNames;
+      S.settings.ghost=os.ghost!==false;
+      save();
+    }
+  }
+}catch(e){}
+// one-time audio tune-up migrations
+if(!S.settings._a2){S.settings._a2=1;}
+if(!S.settings._a3){S.settings._a3=1;S.settings.audioSpeed=0.9;S.pick=S.pick||[];}
+S.pick=S.pick||[];
+// _a4: known/mastered cards must never join the paper-practice list, and ★-mastered rests ~3 months
+if(!S.settings._a4){
+  S.settings._a4=1;
+  try{for(const k in S.cards){const c=S.cards[k];
+    if(c&&c.known){c.days=99;
+      if(c.mastAt&&c.st==='rev'&&c.S<90){c.S=90;c.due=Math.max(c.due||0,(c.last||Date.now())+90*86400000);}
+    }}}catch(e){}
+}
+// backfill mastery timestamps for cards from before this feature
+try{for(const k in S.cards){const c=S.cards[k];if(c&&c.st==='rev'&&c.S>=MASTER_S&&!c.mastAt)c.mastAt=c.last||Date.now();}}catch(e){}
+if(window.speechSynthesis){loadVoices();try{speechSynthesis.onvoiceschanged=loadVoices;}catch(e){}}
+Object.keys(VOICE_PACKS).filter(v=>v!=='f').forEach(v=>{
+  fetch('assets/'+VOICE_PACKS[v].file+'-index.json').then(r=>{VOICE_OK[v]=r.ok;}).catch(()=>{VOICE_OK[v]=false;})
+    .then(()=>{try{if(VOICE_OK[v]&&view==='set')renderSet();}catch(e){}});
+});
+document.addEventListener('keydown',e=>{
+  if(view!=='rev'||!cur||TC.host)return; if(e.repeat||e.metaKey||e.ctrlKey||e.altKey)return;
+  if(e.code==='Space'&&!revealed){e.preventDefault();reveal();}
+  else if(revealed&&['1','2','3','4'].includes(e.key)){grade(parseInt(e.key));}
+});
+/* ============================================================
+   v11 — MTC mode: Triage, Drill (認字/聲調/聽寫/造句/口說)
+   ============================================================ */
+S.hard = S.hard || [];
+if(!S.settings.curLesson) S.settings.curLesson = 22; /* B2 L7 */
+if(!S.settings._v11){ S.settings._v11=1; save(); }
+/* ---------- keyboard ---------- */
+document.addEventListener('keydown',e=>{
+  if(e.target&&/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;
+  if(tri&&view==='lib'){
+    const map={'1':'hard','2':'learn','3':'know','4':'mast','5':'skip'};
+    if(map[e.key]){e.preventDefault();triageAct(map[e.key]);}
+    else if(e.code==='Space'){e.preventDefault();const w=byId[tri.list[tri.i]];if(w)speakWord(w.id);}
+    return;
+  }
+  if(view==='drill'&&dq&&dq.i<dq.qs.length){
+    const q=dq.qs[dq.i];
+    if(dq.state==='ask'&&q.opts&&['1','2','3','4'].includes(e.key)){e.preventDefault();drillPick(+e.key-1);}
+    else if(dq.state==='ask'&&q.mode==='dict'&&e.code==='Space'){e.preventDefault();dq.state='reveal';renderDrill();}
+    else if(dq.state==='done'&&(e.code==='Space'||e.key==='Enter')){e.preventDefault();drillNext();}
+    else if(e.key==='r'&&q.w){e.preventDefault();speakWord(q.w.id);}
+  }
+});
+/* flush on the way out */
+['pagehide','beforeunload'].forEach(ev=>window.addEventListener(ev,()=>{clearTimeout(bkTimer);bkWrite();}));
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){clearTimeout(bkTimer);bkWrite();}});
+/* first real click of the session re-arms the file permission if Chrome dropped it */
+document.addEventListener('click',function armOnce(){
+  if(bkHandle&&bkNeedPerm&&S.settings.autoBackup)bkGrant();
+},{capture:true,once:true});
+/* restore the handle on load */
+(async()=>{
+  const h=await bkGet();
+  if(h){ bkHandle=h;
+    try{ const p=h.queryPermission?await h.queryPermission({mode:'readwrite'}):'granted';
+         if(p==='granted'){bkWrite();} else {bkNeedPerm=true;} }catch(e){bkNeedPerm=true;}
+  }
+  snapshot();
+  if(bkStale()){const b=document.getElementById('bkBanner');if(b){b.style.display='block';}}
+})();
+takeSnapshot(true);
+applyTheme(S.settings.theme||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
+(()=>{const h=new Date().getHours();const g=h<5?'夜深了，加油':h<11?'早安':h<14?'午安':h<18?'下午好':'晚上好';const el=document.getElementById('greet');if(el)el.textContent=g+'，Thorne';})();
+if('serviceWorker' in navigator&&/^https?:/.test(location.protocol)){try{navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}}
+S.sib = S.sib || {};                              /* {dayKey:{wid:cid}} — who owns the word today */
+if(S.settings.burySib===undefined) S.settings.burySib = true;
+if(S.settings.newUnlimited===undefined) S.settings.newUnlimited = false;
+if(S.settings.revUnlimited===undefined) S.settings.revUnlimited = false;
+S.pick = S.pick || [];
+/* keep S.sib from growing forever — only today and yesterday matter */
+(function pruneSib(){
+  const keep=[dkey(new Date()), dkey(new Date(Date.now()-864e5))];
+  for(const k in S.sib) if(!keep.includes(k)) delete S.sib[k];
+})();
+if(!S.conf){ try{ save(); }catch(e){} }
+(function(){
+  try{const m=JSON.parse(store.getItem(FB_META_KEY)||'{}');SYNC.at=m.at||0;SYNC.dirty=!!m.dirty;SYNC.remoteDev=m.remoteDev||'';}catch(e){}
+  SYNC.code=(store.getItem(FB_ROOM_KEY)||'').trim();
+})();
+window.addEventListener('online',()=>{SYNC.online=true;if(!SYNC.fb)fbLoad();else if(SYNC.dirty)fbSchedulePush();});
+window.addEventListener('offline',()=>{SYNC.online=false;if(SYNC.status!=='off')syncUI('offline');});
+/* periodic safety net: anything still dirty goes up every 30 s */
+setInterval(()=>{if(SYNC.dirty&&SYNC.fb&&SYNC.code&&!SYNC.pushing)fbSchedulePush();},30000);
+['pagehide','beforeunload'].forEach(ev=>window.addEventListener(ev,()=>{if(SYNC.dirty&&SYNC.fb&&SYNC.code&&SYNC.uid&&!SYNC.pushing){clearTimeout(SYNC.timer);fbPush();}}));
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&SYNC.dirty){clearTimeout(SYNC.timer);fbPush();}});
+(function mountSyncUI(){
+  const mast=document.querySelector('.mast');
+  if(mast&&!document.getElementById('syncPill')){
+    const b=document.createElement('button'); b.id='syncPill'; b.className='syncpill'; b.dataset.state='off'; b.type='button';
+    b.innerHTML='<i class="sdot"></i><span class="stxt"></span>'; b.title='Cloud sync';
+    b.onclick=()=>{go('set');setTimeout(()=>{const c=document.getElementById('syncCard');if(c)c.scrollIntoView({behavior:'smooth',block:'start'});},30);};
+    mast.appendChild(b);
+  }
+  if(!document.getElementById('toastHost')){const t=document.createElement('div');t.id='toastHost';document.body.appendChild(t);}
+  if(!document.getElementById('syncModal')){const m=document.createElement('div');m.id='syncModal';m.className='modal';document.body.appendChild(m);}
+  syncUI(fbConfig()?'connecting':'off');
+})();
+/* ============================================================
+   v18 polish — theme auto, haptics, animations, confetti,
+   confidence badges, heatmap, exam clock fade
+   ============================================================ */
+if(!S.settings._v18){S.settings._v18=1; if(S.settings.haptics===undefined)S.settings.haptics=true; if(!S.settings.theme)S.settings.theme='auto'; try{save();}catch(e){}}
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if((S.settings.theme||'auto')==='auto'){applyTheme('auto');if(view==='brain')renderBrain();}});}catch(e){}
+applyTheme(S.settings.theme||'auto');
+/* drill answers: green/red flash on the chosen option */
+document.addEventListener('click',e=>{const b=e.target.closest('.opts button');if(!b||!animOn())return;setTimeout(()=>{if(b.classList.contains('right')){b.classList.add('pop');haptic('good');}else if(b.classList.contains('wrong')){b.classList.add('shake');haptic('again');}},0);},true);
+/* 口試 exam clock fades green → amber → red as the three minutes run out */
+setInterval(()=>{const el=document.getElementById('examClock');if(!el||!examP)return;const f=Math.max(0,Math.min(1,examP.left/180));
+  const hue=Math.round(f*120); el.style.color=`hsl(${hue} 60% ${curTheme()==='dark'?'62%':'36%'})`; el.classList.toggle('urgent',examP.started&&examP.left<=15&&examP.left>0);},250);
+/* v25: class frontier moved to B2 L8 on 9/21; L8 grammar now the eight textbook points */
+if(!S.settings._v25){S.settings._v25=1;if((S.settings.curLesson||0)<23)S.settings.curLesson=23;if(S.settings.examDay===5)S.settings.examDay=4;try{trackGram(23);}catch(e){}try{save();}catch(e){}}
+/* boot */
+fbLoad();
+/* migration: the current lesson and the one before it get cloze cards on first run */
+if(!S.settings._v22){S.settings._v22=1;if(S.settings.gramCards===undefined)S.settings.gramCards=true;if(!S.settings.newGramPerDay)S.settings.newGramPerDay=4;if(!S.settings.examDay)S.settings.examDay=4;
+  try{const cl=S.settings.curLesson||22;trackGram(cl);if(cl>1)trackGram(cl-1);}catch(e){} try{save();}catch(e){}}
+/* space: ask → hint → reveal */
+document.addEventListener('keydown',e=>{
+  if(view!=='drill'||!dq||dq.i>=dq.qs.length)return; const q=dq.qs[dq.i]; if(q.mode!=='dict')return;
+  if(e.code==='Space'){e.preventDefault();e.stopImmediatePropagation();
+    if(dq.state==='ask')dq.state=(S.settings.dictHint!=='late')?'reveal':'hint'; else if(dq.state==='hint')dq.state='reveal'; else return;
+    renderDrill();}
+},true);
+if(!S.settings._v26){S.settings._v26=1;if(!S.settings.prodScope)S.settings.prodScope='current';try{save();}catch(e){}}
+document.addEventListener('keydown',e=>{if(view!=='drill'||!dq||dq.i>=dq.qs.length)return;const q=dq.qs[dq.i];if(q.mode!=='sdict')return;if(e.code==='Space'&&dq.state==='ask'){e.preventDefault();e.stopImmediatePropagation();dq.state='reveal';renderDrill();}},true);
+/* ---- 1. #sync=<code> on load ---- */
+(function linkFromHash(){
+  const m=(location.hash||'').match(/sync=([A-Za-z0-9-]+)/); if(!m)return;
+  const c=normCode(decodeURIComponent(m[1]));
+  try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
+  if(!c||c.length<6)return;
+  if(SYNC.code===c){toast('Already linked to '+esc(c));return;}
+  fbSetCode(c);
+  setTimeout(()=>{
+    toast('☁️ Linked to '+esc(c)+' — pulling your progress…',{ms:4500});
+    if(isIOS()&&!isStandalone())setTimeout(showInstallHint,1800);
+  },300);
+})();
+/* styles */
+(function(){const st=document.createElement('style');st.textContent=`
+.linkrow{align-items:flex-start;gap:14px}
+.qrbox{flex:none;background:#fff;border-radius:10px;padding:6px;border:1px solid var(--line2);line-height:0}
+.qrbox .qrsvg{width:148px;height:148px;display:block}
+.linkcard{border-left:3px solid var(--amber)}
+@media (max-width:560px){.linkrow{flex-direction:column}.qrbox{align-self:center}}
+`;document.head.appendChild(st);})();
+if(!S.settings._v28){S.settings._v28=1;if((S.settings.curLesson||0)<26)S.settings.curLesson=26;try{trackGram(26);}catch(e){}try{save();}catch(e){}}
+document.addEventListener('keydown',e=>{if(view!=='drill'||drillMode!=='mtest'||dq)return;const T=mtGet();if(!T.order[T.i])return;
+  if(e.code==='Space'&&!MT.revealed){e.preventDefault();e.stopImmediatePropagation();MT.revealed=true;mtRender();}
+  else if(MT.revealed&&['1','2','3'].includes(e.key)){e.preventDefault();e.stopImmediatePropagation();mtMark(e.key==='1'?'h':e.key==='2'?'l':'m');}
+},true);
+if(!S.settings._v30){S.settings._v30=1;if(!S.settings.newCatchPerDay)S.settings.newCatchPerDay=5;if(S.settings.newPerDay===9)S.settings.newPerDay=8;try{save();}catch(e){}}
+/* ============================================================
+   v31 — Catch-up gets its own tab. Today is the live week only.
+   ============================================================ */
+if(!S.settings._v31){S.settings._v31=1;S.settings.newCatchPerDay=Math.max(S.settings.newCatchPerDay??0,12);if((S.settings.maxRev||0)<300)S.settings.maxRev=300;try{save();}catch(e){}}
+/* tab + container */
+(function(){
+  const tabs=document.querySelector('.tabs'); if(tabs&&!document.getElementById('tabCatch')){
+    const b=document.createElement('button'); b.id='tabCatch'; b.innerHTML='Catch-up<span id="bCatch" class="b zero">0</span>'; b.onclick=()=>go('catch');
+    const drill=document.getElementById('tabDrill'); drill.insertAdjacentElement('afterend',b);
+  }
+  if(!document.getElementById('vCatch')){const d=document.createElement('div');d.id='vCatch';d.style.display='none';document.getElementById('vDrill').insertAdjacentElement('afterend',d);}
+})();
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey)return; const tg=e.target; if(tg&&(/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)||tg.isContentEditable))return;
+  if(e.key==='?'){e.preventDefault();toggleKeyHelp();return;}
+  if(e.key==='Escape'){const h=document.getElementById('keyHelp');if(h&&h.style.display!=='none'){h.style.display='none';return;}if(document.body.classList.contains('focus')){document.body.classList.remove('focus');return;}}
+  if(e.key==='f'&&view==='rev'){e.preventDefault();document.body.classList.toggle('focus');return;}
+  const v=KEYMAP[e.key]; if(v&&!e.shiftKey){e.preventDefault();go(v);}
+});
+/* a11y micro-pass: icon-only buttons announce their title; Han text is tagged zh-Hant for screen readers and font selection */
+(function(){const mo=new MutationObserver(()=>{document.querySelectorAll('button[title]:not([aria-label]),a[title]:not([aria-label])').forEach(b=>{if(!b.textContent.trim()||/^[☾☀▶↻‹›←→✓✗★!＋−]+$/.test(b.textContent.trim()))b.setAttribute('aria-label',b.title);});document.querySelectorAll('.zh:not([lang])').forEach(el=>el.setAttribute('lang','zh-Hant'));});mo.observe(document.body,{childList:true,subtree:true});})();
+normalizeState();
+/* keyboard map: never while a drill is running, never a no-op restart of the same view */
+document.addEventListener('keydown',e=>{ if(e.defaultPrevented)return; if(KEYMAP[e.key]&&!e.metaKey&&!e.ctrlKey&&!e.altKey){const tg=e.target;if(tg&&(/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)||tg.isContentEditable))return; if((view==='drill'&&dq)||(KEYMAP[e.key]===view)||(view==='drill'&&drillMode==='mtest'))e.stopImmediatePropagation();} },true);
+/* ============================================================
+   v34 — characters first.
+   1. Taiwan neural voice pack (zh-TW HsiaoChen) for every word AND
+      every character; bundled voice is now the default.
+   2. 寫字 Write quiz: draw each stroke on screen (Hanzi Writer quiz),
+      mistakes tracked per character → "hardest to write".
+   3. 萌典 panel per character: 部首 · 筆畫 · 注音 · 釋義 (MoE dictionary).
+   4. More look-ups (字源 etymology); character-first drill order and
+      weekday plan. Grammar stays in Notion.
+   ============================================================ */
+/* ---- 1. audio ---- */
+/* warm the pack early so the first card doesn't wait */
+setTimeout(()=>{try{loadPack();}catch(e){}},1500);
+/* ============================================================
+   v36 — top-app patterns, character-focused
+   1. Draw it ✍ inside the SRS write card: verify the strokes on
+      screen before you grade (Skritter pattern)
+   2. Swipe grading on touch: left = Again, right = Good, tap = reveal
+   3. Mistakes come back: a missed drill item re-enters the set once
+   4. Write quiz: completed character animates once + speaks
+   5. u = undo in review · lesson page chip on the Today hero
+   ============================================================ */
+/* ---- 2. swipe grading (touch only) ---- */
+(function(){
+  let sx=0,sy=0,t0=0,active=false;
+  document.addEventListener('touchstart',e=>{if(view!=='rev'||!cur||e.touches.length!==1)return;const st=e.target.closest('#vRev .stage');if(!st||e.target.closest('.wqbox,button,a,input'))return;sx=e.touches[0].clientX;sy=e.touches[0].clientY;t0=Date.now();active=true;},{passive:true});
+  document.addEventListener('touchend',e=>{if(!active)return;active=false;const t=e.changedTouches[0];const dx=t.clientX-sx,dy=t.clientY-sy,dt=Date.now()-t0;
+    if(Math.abs(dx)<12&&Math.abs(dy)<12&&dt<400){if(!revealed){reveal();}return;}
+    if(!revealed||Math.abs(dx)<70||Math.abs(dy)>60||dt>900)return;
+    if(dx<0)grade(1); else grade(3);},{passive:true});
+})();
+document.addEventListener('keydown',e=>{if(view!=='rev'||!cur||e.repeat||e.metaKey||e.ctrlKey||e.altKey)return;const tg=e.target;if(tg&&/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName))return;if(e.key==='u'){e.preventDefault();doUndo();}});
+document.addEventListener('keydown',e=>{if(view!=='drill'||drillMode!=='extest'||dq)return;const R=exGet().run;if(!R||!R.ids[R.i])return;
+  if(e.code==='Space'&&!EX.revealed){e.preventDefault();e.stopImmediatePropagation();EX.revealed=true;exRender();}
+  else if(EX.revealed&&['1','2','3'].includes(e.key)){e.preventDefault();e.stopImmediatePropagation();exMark(e.key==='1'?'h':e.key==='2'?'l':'m');}
+},true);
+(function(){
+  const tabs=document.querySelector('.tabs');if(tabs&&!document.getElementById('tabExam')){
+    const b=document.createElement('button');b.id='tabExam';b.innerHTML='大考試<span id="bExam" class="b zero">0</span>';b.style.whiteSpace='nowrap';b.onclick=()=>go('exam');
+    const after=document.getElementById('tabCatch')||document.getElementById('tabDrill');after.insertAdjacentElement('afterend',b);}
+  if(!document.getElementById('vExam')){const d=document.createElement('div');d.id='vExam';d.style.display='none';document.getElementById('vDrill').insertAdjacentElement('afterend',d);}
+})();
+if(!S.settings._v38){S.settings._v38=1;exGet();try{save();}catch(e){}}
+try{badge();if(view==='home')renderHome();}catch(e){}
+/* ============================================================
+   v39 — refresh. Most of this release is in place above: the
+   BOOKS table, per-syllable tones, FSRS-5 update order, exact
+   undo, selectable bundled voice, device-local offline state,
+   sync-log trimming. What follows is the glue that has no other
+   natural home.
+   ============================================================ */
+/* version stamp */
+(function(){const el=document.getElementById('appVer');if(el)el.textContent='v'+APP_VERSION;})();
+/* drills open on the live lesson */
+drillLesson=S.settings.curLesson||drillLesson;
+(function(){
+  const bar=document.querySelector('.tabs'); if(!bar||document.getElementById('tabMore'))return;
+  ['tabCatch','tabGram','tabBrain','tabLib','tabSet'].forEach(id=>{const b=document.getElementById(id);if(b)b.classList.add('t2');});
+  const m=document.createElement('button'); m.id='tabMore'; m.type='button'; m.textContent='More'; m.setAttribute('aria-label','more tabs');
+  m.onclick=()=>bar.classList.toggle('more'); bar.appendChild(m);
+  document.addEventListener('click',e=>{if(bar.classList.contains('more')&&!bar.contains(e.target))bar.classList.remove('more');});
+})();
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkForUpdate();});
+/* pull down to refresh inside the Home Screen app, which has no reload button of its own */
+(function(){
+  if(!isStandalone())return;
+  const tip=document.createElement('div'); tip.id='ptr'; document.body.appendChild(tip);
+  let y0=null,pull=0;
+  const rest=()=>{tip.style.opacity=0;tip.style.transform='translate(-50%,0)';};
+  document.addEventListener('touchstart',e=>{pull=0;y0=(window.scrollY<=0&&e.touches.length===1&&!e.target.closest('.modal,.tabs'))?e.touches[0].clientY:null;},{passive:true});
+  document.addEventListener('touchmove',e=>{if(y0===null)return;pull=e.touches[0].clientY-y0;if(pull<=0||window.scrollY>0){rest();return;}
+    tip.textContent=pull>110?'↻ release to refresh':'↓ pull to refresh';tip.style.opacity=Math.min(1,pull/110);tip.style.transform='translate(-50%,'+Math.min(56,pull/2.2)+'px)';},{passive:true});
+  document.addEventListener('touchend',()=>{if(y0!==null&&pull>110&&window.scrollY<=0){tip.textContent='Refreshing…';appRefresh();}else rest();y0=null;},{passive:true});
+})();
+try{tabsSync();tabIntoView();if(view==='set')renderSet();}catch(e){}
+/* keyboard, for the Mac: Space records (and stops), Enter moves on, A tries again, L listens, Esc closes the sheet */
+document.addEventListener('keydown',e=>{
+  const on=TC.host||(view==='drill'&&drillMode==='tcoach'&&!dq&&TC.list.length&&TC.i<TC.list.length);
+  if(!on||e.repeat||e.metaKey||e.ctrlKey||e.altKey||/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||''))return;
+  const st=TC.state;
+  if(e.code==='Space'&&(st==='ask'||st==='rec'||st==='cal')){e.preventDefault();tcRecord();}
+  else if(e.key==='Enter'&&st==='done'){e.preventDefault();tcNext();}
+  else if((e.key==='a'||e.key==='A')&&st==='done'){tcAgain();}
+  else if((e.key==='l'||e.key==='L')&&(st==='ask'||st==='done')){tcSay();}
+  else if(e.key==='Escape'&&TC.host){tcQuickClose();}
+  else return;
+  e.stopImmediatePropagation();
+},true);
+(function(){const st=document.createElement('style');st.textContent=`
+.tc-beta{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line2);border-radius:99px;padding:1px 6px;color:var(--mut);margin-left:4px}
+.tc-chart{display:block;width:100%;margin:10px auto 4px}
+.tc-key{font-size:11.5px;color:var(--mut);text-align:center;margin-top:6px}
+.tc-acts{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:nowrap}
+.tc-acts .btn{white-space:nowrap}
+.tc-cell{fill:var(--panel);stroke:var(--line)}
+.tc-mid{stroke:var(--line2);stroke-dasharray:3 4}
+.tc-ref{fill:none;stroke:var(--mut2);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;opacity:.75}
+.tc-me{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.tc-me.ok{stroke:var(--acc)}.tc-me.no{stroke:var(--red)}.tc-me.close{stroke:var(--amber)}.tc-me.na{stroke:var(--mut)}
+.tc-chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+.tc-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:99px;padding:4px 11px;font-size:12.5px;font-weight:700}
+.tc-chip b{font-size:17px}.tc-chip i{font-style:normal;font-weight:500;color:var(--mut)}
+.tc-chip.ok{color:var(--acc)}.tc-chip.no{color:var(--red)}.tc-chip.close{color:var(--amber)}.tc-chip.na{color:var(--mut)}
+.tc-tip{color:var(--mut)}
+.tc-sheet{max-width:520px;padding:18px 18px 14px;max-height:calc(100vh - 40px);overflow:auto}
+.tc-sheet .stage{border:0;background:transparent;padding:4px 0 0;min-height:0!important}
+.tc-map{display:grid;grid-template-columns:auto repeat(4,1fr);gap:6px;margin-top:10px;max-width:560px;align-items:stretch}
+.tc-mh{font-size:11.5px;color:var(--mut);display:flex;align-items:center;justify-content:center;white-space:nowrap;padding:0 4px}
+.tc-mc{min-height:46px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);font:inherit;font-size:14px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:4px 2px}
+.tc-mc i{font-style:normal;font-weight:500;font-size:10.5px;color:var(--mut)}
+.tc-mc.ok{color:var(--acc);background:var(--accT);border-color:transparent}.tc-mc.mid{color:var(--amber)}.tc-mc.no{color:var(--red)}
+.tc-mc.na{font-size:10.5px;font-weight:500;color:var(--mut2);cursor:default;border-style:dashed;text-align:center}
+.tc-say{font-size:13.5px;margin-top:8px;text-align:center;line-height:1.5}
+.tc-err{font-size:13.5px;color:var(--red);text-align:center;margin-top:10px}
+.tc-rec.on{background:var(--red);color:#fff}
+`;document.head.appendChild(st);})();
+(function(){const st=document.createElement('style');st.textContent=`
+.rd-lessons{display:flex;gap:6px;flex-wrap:wrap}
+.rd-lessons button{border:1px solid var(--line);background:var(--panel);color:var(--mut);border-radius:99px;padding:6px 12px;font-size:12.5px;font-weight:600;cursor:pointer}
+.rd-lessons button.on{background:var(--brand,var(--ink));color:var(--brandFg,var(--bg));border-color:var(--brand,var(--ink))}
+.rd-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 2px;border-top:1px solid var(--line);cursor:pointer}
+.rd-item:first-of-type{border-top:0}
+.rd-item b{font-size:19px}
+.rd-go{font-size:12.5px;font-weight:700;color:var(--brandInk,var(--acc));white-space:nowrap}
+.rd-stage{text-align:left;min-height:300px}
+.rd-title{font-size:26px;text-align:center}
+.rd-stage>.small{text-align:center}
+.rd-text{font-size:23px;line-height:2.05;letter-spacing:.02em;text-align:justify}
+.rd-w{cursor:pointer;border-radius:6px;padding:1px 0;transition:background .12s}
+.rd-w.new{text-decoration:underline;text-decoration-color:var(--line2);text-decoration-thickness:2px;text-underline-offset:6px}
+.rd-w.unk{background:var(--tint);color:var(--red)}
+.rd-w.sel{outline:2px solid var(--brandInk,var(--acc));outline-offset:1px}
+.rd-gloss{margin-top:14px;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);font-size:14px;min-height:54px}
+.rd-en{margin-top:12px;font-size:14.5px;line-height:1.65;color:var(--mut)}
+@media(max-width:560px){.rd-text{font-size:21px;line-height:1.95}}
+`;document.head.appendChild(st);})();
+
+/* ---------- who and where: name, book and lesson ---------- */
+/* Decks that existed before names were a setting belong to Thorne. Runs on every start (not behind a flag),
+   so a deck adopted from a device that has not updated yet is named too. */
+if(S.settings.userName===undefined&&Object.keys(S.cards||{}).length){S.settings.userName='Thorne';}
+(function(){
+  const rb=document.getElementById('refreshBtn'); if(rb)rb.innerHTML=SVG(ICON.refresh);
+  const sb=document.getElementById('setBtn'); if(sb)sb.innerHTML=SVG(ICON.set);
+  /* My words: its own tab (behind More on phones) and its own view */
+  const tabs=document.querySelector('.tabs');
+  if(tabs&&!document.getElementById('tabMy')){
+    const b=document.createElement('button'); b.id='tabMy'; b.type='button'; b.className='t2';
+    b.innerHTML='My words<span id="bMy" class="b zero">0</span>'; b.onclick=()=>go('my');
+    (document.getElementById('tabLib')||tabs.lastElementChild).insertAdjacentElement('afterend',b);
+    const v=document.createElement('div'); v.id='vMy'; v.style.display='none';
+    document.getElementById('vSet').insertAdjacentElement('afterend',v);
+  }
+  shTabIcons();
+  KEYMAP.m='my';
+})();
+document.addEventListener('keydown',e=>{
+  if(view!=='my'||MY.mode!=='study'||e.metaKey||e.ctrlKey||e.altKey||e.repeat)return;
+  const tg=e.target; if(tg&&/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName))return;
+  const sheet=document.getElementById('shSheet'); if(sheet&&sheet.style.display==='flex')return;
+  if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();myStop();return;}
+  if(!MY.cur)return;
+  if(e.code==='Space'||e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();if(MY.shown)myGrade(3);else myReveal();return;}
+  if(MY.shown&&/^[1-4]$/.test(e.key)){e.preventDefault();e.stopImmediatePropagation();myGrade(+e.key);}
+},true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){const s=document.getElementById('shSheet');if(s&&s.style.display==='flex'){shClose();if(view==='my')renderMy();}}});
+/* ---------- start ---------- */
+try{shLook();myBadge();if(view==='home')renderHome();else if(view==='set')renderSet();}catch(e){console.error(e);}
+
 document.addEventListener('keydown',e=>{
   if(view!=='drill'||drillMode!=='usage'||UQ.scr!=='quiz'||!UQ.q||UQ.i>=UQ.q.length||e.metaKey||e.ctrlKey||e.altKey||e.repeat)return;
   const tg=e.target; if(tg&&/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName))return;

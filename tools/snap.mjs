@@ -70,7 +70,7 @@ async function chrome() {
     else if (m.method) for (const l of listeners) l(m); };
   const send = (method, params = {}, sessionId) => new Promise((ok, no) => { const id = ++seq; waiting.set(id, { ok, no }); ws.send(JSON.stringify({ id, method, params, sessionId })); });
   return { send, on: l => { listeners.add(l); return () => listeners.delete(l); },
-    close: async () => { try { await send('Browser.close'); } catch (e) { } try { proc.kill(); } catch (e) { } try { rmSync(profile, { recursive: true, force: true }); } catch (e) { } } };
+    close: async () => { await Promise.race([send('Browser.close').catch(() => { }), new Promise(r => setTimeout(r, 1500))]);   /* Chrome may drop the socket before it answers */ try { ws.close(); } catch (e) { } try { proc.kill('SIGKILL'); } catch (e) { } try { rmSync(profile, { recursive: true, force: true }); } catch (e) { } } };
 }
 
 /* ---------- what runs in the page before the app does ---------- */
@@ -162,7 +162,7 @@ const prelude = (t0, storage) => `(() => {
   try { for (const k in store) localStorage.setItem(k, typeof store[k] === 'string' ? store[k] : JSON.stringify(store[k])); } catch (e) {}
   /* stillness: animations and transitions off, so a screenshot is the same picture every time */
   document.addEventListener('DOMContentLoaded', () => { const st = document.createElement('style'); st.id = '__still';
-    st.textContent = '*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important;scroll-behavior:auto!important} svg:has([clip-path]){visibility:hidden!important}'; document.head.appendChild(st); });
+    st.textContent = '*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important;scroll-behavior:auto!important} svg:has([clip-path]),.qrbox svg{visibility:hidden!important}'; document.head.appendChild(st); });
 })();`;
 
 /* A stand-in for the Firebase SDK, for scenarios with `cloud`. The app finds it as window.__fbSDK and never loads
@@ -170,10 +170,12 @@ const prelude = (t0, storage) => `(() => {
    carry a newer synced_at), and lets a scenario act as another device: __cloud.put(path, value), __cloud.other(state). */
 const fakeCloud = cloud => `(() => {
   const tree = {}, subs = [];
+  /* answers arrive the way the real SDK's do: never before the page has finished loading, never in the middle of a script */
+  const later = fn => { const go = () => setTimeout(fn, 1); if (document.readyState === 'complete') go(); else window.addEventListener('load', go, { once: true }); };
   const at = (path, make) => { let n = tree; const ks = path.split('/').filter(Boolean); for (const k of ks.slice(0, -1)) { if (!n[k]) { if (!make) return [null, null]; n[k] = {}; } n = n[k]; } return [n, ks[ks.length - 1]]; };
   const read = path => { const [n, k] = at(path); return n && k in n ? JSON.parse(JSON.stringify(n[k])) : null; };
   const snap = path => ({ val: () => path === '.info/connected' ? C.online : read(path), exists: () => read(path) !== null });
-  const tell = path => { for (const s of subs.slice()) if (path === s.path || path.startsWith(s.path + '/') || s.path.startsWith(path + '/')) Promise.resolve().then(() => { if (subs.includes(s)) s.cb(snap(s.path)); }); };
+  const tell = path => { for (const s of subs.slice()) if (path === s.path || path.startsWith(s.path + '/') || s.path.startsWith(path + '/')) later(() => { if (subs.includes(s)) s.cb(snap(s.path)); }); };
   const write = (path, v) => { const [n, k] = at(path, true); if (v === null || v === undefined) delete n[k]; else n[k] = JSON.parse(JSON.stringify(v)); tell(path); };
   let pushN = 0, authCb = null;
   const C = window.__cloud = { online: true, writes: [], tree,
@@ -186,13 +188,13 @@ const fakeCloud = cloud => `(() => {
     ref: (db, path) => ({ path }),
     serverTimestamp: () => Date.now(),
     onAuthStateChanged: (auth, cb) => { authCb = cb; },
-    signInAnonymously: () => Promise.resolve().then(() => { if (authCb) authCb({ uid: 'harness-uid-0001', isAnonymous: true }); return { user: { uid: 'harness-uid-0001' } }; }),
-    onValue: (ref, cb, onErr) => { const s = { path: ref.path, cb }; subs.push(s); Promise.resolve().then(() => { if (subs.includes(s)) cb(snap(ref.path)); }); return () => { const i = subs.indexOf(s); if (i > -1) subs.splice(i, 1); }; },
-    get: ref => C.online ? Promise.resolve(snap(ref.path)) : Promise.reject(new Error('Error: Client is offline.')),
+    signInAnonymously: () => new Promise(ok => later(() => { if (authCb) authCb({ uid: 'harness-uid-0001', isAnonymous: true }); ok({ user: { uid: 'harness-uid-0001' } }); })),
+    onValue: (ref, cb, onErr) => { const s = { path: ref.path, cb }; subs.push(s); later(() => { if (subs.includes(s)) cb(snap(ref.path)); }); return () => { const i = subs.indexOf(s); if (i > -1) subs.splice(i, 1); }; },
+    get: ref => C.online ? new Promise(ok => later(() => ok(snap(ref.path)))) : Promise.reject(new Error('Error: Client is offline.')),
     set: (ref, v) => { if (!C.online) return new Promise(() => {});
       const old = read(ref.path);
       if (/\\/study_state$/.test(ref.path) && old && !(v && v.synced_at > old.synced_at)) return Promise.reject(new Error('PERMISSION_DENIED: Permission denied'));
-      C.writes.push({ path: ref.path, bytes: JSON.stringify(v).length, device: v && v.device }); write(ref.path, v); return Promise.resolve(); },
+      C.writes.push({ path: ref.path, bytes: JSON.stringify(v).length, device: v && v.device }); write(ref.path, v); return new Promise(ok => later(ok)); },
     push: (ref, v) => { write(ref.path + '/-N' + String(++pushN).padStart(6, '0'), v); return Promise.resolve({ key: '-N' + pushN }); },
   };
   ${cloud.remote ? `C.other(${cloud.remote}, 'iPad', ${cloud.remoteAt || 0} || Date.now() - 3600000);` : ''}
@@ -203,13 +205,13 @@ const CAPTURE = quiet => `(async () => {
   const QUIET = ${quiet};
   /* wait until the page has stopped changing (count-ups, lists painted in slices) */
   const began = performance.now(), sleep = ms => new Promise(r => window.__realSetTimeout(r, ms));
-  /* let the page finish what the last action started: run the next second of its timers, then wait until nothing
-     is loading and the page has stopped changing (count-ups, lists painted in slices); once more for what that began */
+  /* let the page finish what the last action started: wait until nothing is loading and the page has stopped
+     changing (count-ups, lists painted in slices), run the next second of its timers, and wait again for what they began */
   const who = []; let last = performance.now();
   const mo = new MutationObserver(ms => { last = performance.now(); for (const m of ms) { const t = m.target.nodeType === 1 ? m.target : m.target.parentElement; if (t && who.length < 400) who.push(t.tagName + (t.id ? '#' + t.id : '') + (t.className && t.className.baseVal === undefined ? '.' + String(t.className).split(' ')[0] : '')); } });
   mo.observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true });
   const still = async () => { const t0 = performance.now(); last = t0; while (true) { await sleep(15); const n = performance.now(); if ((n - last > QUIET && !window.__busy) || n - t0 > 8000) return; } };
-  window.__run(window.__now() + 1000); await still(); if (window.__run(window.__now() + 250)) await still();
+  await still(); window.__run(window.__now() + 1000); await still(); if (window.__run(window.__now() + 250)) await still();
   mo.disconnect(); window.__who = who;
   const stable = v => v && typeof v === 'object' ? (Array.isArray(v) ? v.map(stable) : Object.fromEntries(Object.keys(v).sort().map(k => [k, stable(v[k])]))) : v;
   let state = null; try { state = stable(JSON.parse(JSON.stringify(S))); } catch (e) { state = 'unreadable: ' + e.message; }
@@ -217,7 +219,9 @@ const CAPTURE = quiet => `(async () => {
   body.querySelectorAll('script').forEach(n => n.remove());
   /* stroke-order drawings are animated by Hanzi Writer on its own clock: record that they are there, not how far along */
   body.querySelectorAll('svg').forEach(svg => { if (svg.querySelector('[clip-path]')) svg.innerHTML = '<!-- strokes -->'; });
-  const html = body.innerHTML.split(location.origin).join('http://app').replace(/>\\s*</g, '>\\n<');
+  /* the QR code spells out this page's address, and the harness serves from a different port every run */
+  body.querySelectorAll('.qrbox svg').forEach(svg => { svg.innerHTML = '<!-- qr -->'; });
+  const html = body.innerHTML.split(location.origin).join('http://app').replace(/>\\s*</g, '>\\n<').replace(/\\n\\s*\\n/g, '\\n');
   const head = [...document.head.querySelectorAll('style')].filter(s => s.id !== '__still').map(s => s.textContent.length).join(',');
   const extra = { view: typeof view === 'undefined' ? null : view, title: document.title, attrs: [...document.documentElement.attributes].map(a => a.name + '=' + a.value).sort().join(' '),
     scrollH: document.documentElement.scrollHeight, busy: window.__busy, pending: [...window.__pending].join(' '), who: [...new Set((window.__who || []).slice(-60))].join(' '), waited: Math.round(performance.now() - began), errors: window.__errors.splice(0), local: Object.fromEntries(Object.keys(localStorage).sort().filter(k => k !== 'shida_b1_fsrs_v2' && k !== 'zika_snap_v1').map(k => [k, localStorage.getItem(k).length > 400 ? 'len ' + localStorage.getItem(k).length : localStorage.getItem(k)])) };
@@ -370,9 +374,9 @@ const snapDir = join(root, '.snap');
 const detailOpt = opt('detail');   /* --detail <scenario>:<step> writes the whole page and state for one monkey step */
 const common = { only: opt('only'), size: opt('size'), shots: !opt('no-shots'), coverage: !!opt('coverage'), jobs: +opt('jobs', 8),
   detail: typeof detailOpt === 'string' ? { name: detailOpt.split(':')[0], step: +detailOpt.split(':')[1] } : null };
-if (cmd === 'record') await record(opt('dir', root), join(snapDir, 'golden'), common);
+if (cmd === 'record') { await record(opt('dir', root), join(snapDir, 'golden'), common); process.exit(0); }
 else if (cmd === 'check') { await record(opt('dir', root), join(snapDir, 'now'), common); process.exit(diff(join(snapDir, 'golden'), join(snapDir, 'now'), { loose: !!opt('loose') }) ? 1 : 0); }
-else if (cmd === 'run') await record(opt('dir', root), resolve(opt('out', join(snapDir, 'run'))), common);
+else if (cmd === 'run') { await record(opt('dir', root), resolve(opt('out', join(snapDir, 'run'))), common); process.exit(0); }
 else if (cmd === 'diff') process.exit(diff(resolve(argv[1]), resolve(argv[2]), { loose: !!opt('loose'), max: +opt('max', 12) }) ? 1 : 0);
-else if (cmd === 'fixture') await record(opt('dir', root), join(snapDir, 'fixture-run'), { only: '__fixture', size: 'phone', shots: false, jobs: 1 });
+else if (cmd === 'fixture') { await record(opt('dir', root), join(snapDir, 'fixture-run'), { only: '__fixture', size: 'phone', shots: false, jobs: 1 }); process.exit(0); }
 else { console.log(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('*/')[0].replace(/^#!.*\n\/\*\s?/, '')); process.exit(cmd ? 1 : 0); }
