@@ -913,7 +913,7 @@ textarea.myin{min-height:120px;resize:vertical;line-height:1.5}
 <div id="printSheet"></div>
 <script>
 /* ============ VERSION ============ */
-const APP_VERSION=58;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
+const APP_VERSION=59;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
 
 /* ============ THEME ============ */
 function curTheme(){return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';}
@@ -3754,20 +3754,22 @@ function ringArm(root){requestAnimationFrame(()=>requestAnimationFrame(()=>{(roo
 /* ---- Today hero ---- */
 renderHome=(function(orig){return function(){orig.apply(this,arguments);try{
   const first=document.querySelector('#vHome .card'); if(!first)return;
-  const q=buildQueue(), left=[...q.learn,...q.rev,...q.fresh].filter(c=>typeof laneOf!=='function'||laneOf(c)==='live').length, done=todayDone(), total=done+left;
+  /* left = this week's lane; other = what the catch-up and maintenance lanes still hold. The day is only clear when both are empty. */
+  const q=buildQueue(), all=[...q.learn,...q.rev,...q.fresh], left=all.filter(c=>typeof laneOf!=='function'||laneOf(c)==='live').length, other=all.length-left, done=todayDone(), total=done+left, clear=left===0&&other===0&&done>0;
   const frac=total?done/total:0, streak=streakCount(), hard=(S.hard||[]).length;
   const h=new Date().getHours();
   const line=left===0
-    ?(done?`Deck cleared for today · ${nextDueText()||'nothing more due'}`:'Nothing due yet — pick words in the Library or wait for FSRS')
+    ?(other?(done?`This week’s cards are done · ${other} more in catch-up and maintenance`:`${other} waiting in catch-up and maintenance`)
+      :done?`Deck cleared for today · ${nextDueText()||'nothing more due'}`:'Nothing due yet — pick words in the Library or wait for FSRS')
     :done?`${done} done · ${left} to go${left<=8?' · nearly there':''}`
     :h<11?`Fresh start · ${left} waiting`:h<18?`${left} waiting for you`:`Evening set · ${left} to close the day`;
   const ln=S.settings.curLesson||21;
   first.className='card hero';
   first.innerHTML=`
-    <div class="hero-ring">${ringSvg(frac,112,9,left===0&&done?'full':'')}
+    <div class="hero-ring">${ringSvg(frac,112,9,clear?'full':'')}
       <div class="hero-n"><b data-count="${done}">0</b><span>${left===0&&done?'done':'of '+total}</span></div></div>
     <div class="hero-body">
-      <div class="lab" style="margin-bottom:4px">${left===0&&done?'Today · complete':'Today'}</div>
+      <div class="lab" style="margin-bottom:4px">${clear?'Today · complete':'Today'}</div>
       <div class="hero-line">${line}</div>
       <div class="hero-meta">
         <span class="chip ${streak?'hot':''}">${streak?'🔥 '+streak+'-day streak':'start a streak today'}</span>
@@ -3775,7 +3777,7 @@ renderHome=(function(orig){return function(){orig.apply(this,arguments);try{
         ${hard?`<span class="chip warn">${hard} hard</span>`:''}
         ${q.fresh.length?`<span class="chip">${q.fresh.length} new</span>`:''}
       </div>
-      <div style="margin-top:14px"><button class="btn big ${left?'':'ghost'}" onclick="${left?'startLane(\'live\')':'go(\'lib\')'}">${left?(done?'Keep going':'Start today’s cards'):'Browse the Library'}</button></div>
+      <div style="margin-top:14px"><button class="btn big ${left||other?'':'ghost'}" onclick="${left?'startLane(\'live\')':other?'go(\'rev\')':'go(\'lib\')'}">${left?(done?'Keep going':'Start today’s cards'):other?`Do the other ${other}`:'Browse the Library'}</button></div>
     </div>`;
   countUp(first); ringArm(first);
 }catch(e){}};})(renderHome);

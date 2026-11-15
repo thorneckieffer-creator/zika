@@ -30,7 +30,6 @@ Next for the product:
 Behaviour gaps, not yet fixed:
 
 - Heteronyms still share one clip in the 曉臻 pack (得 de/děi, 了 le/liǎo). The app has looked for a per-reading clip (`字@pinyin`) since v42, but only packs from the BreezyVoice builder contain them.
-- The Today hero says "Deck cleared" from the live lane alone, even when catch-up or maintenance cards are due.
 - The Up-next panel's "will start now" count ignores the per-lane intake.
 - Turning a card type on in Settings does not create that card for words already in the deck.
 
