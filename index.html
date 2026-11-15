@@ -58,9 +58,12 @@ const APP_VERSION=62;   /* keep in step with VERSION in sw.js — tools/check.mj
 /* ============ THEME ============ */
 function curTheme(){return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';}
 function applyTheme(t){
+  if(!t||t==='auto')t=sysDark()?'dark':'light';
   if(t==='dark')document.documentElement.setAttribute('data-theme','dark');
   else document.documentElement.removeAttribute('data-theme');
   const b=document.getElementById('themeBtn'); if(b)b.textContent=t==='dark'?'☀':'☾';
+  const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',cssVar('--bg')||'#faf9f7');
+  try{shLook();}catch(e){}
 }
 function toggleTheme(){const t=curTheme()==='dark'?'light':'dark';S.settings.theme=t;save();applyTheme(t);
   if(view==='brain')renderBrain(); if(view==='home')renderHome();}
@@ -518,6 +521,8 @@ function printPaperSheet(){
 }
 /* ---- HOME ---- */
 function renderHome(){
+  /* base */
+  {
   const q=buildQueue();
   const trackedWords=WORDS.filter(w=>tracked(w.id));
   const mature=Object.values(S.cards).filter(c=>c.st==='rev'&&c.S>=21).length;
@@ -571,7 +576,114 @@ function renderHome(){
     </div></details>
   </div>`;
   badge();
+  }
+  /* heatmap */
+  try{const fc=document.querySelector('#vHome .fc');if(fc){const cap=fc.nextElementSibling;(cap||fc).insertAdjacentHTML('afterend',heatmapHtml());}}catch(e){}
+  /* Today hero */
+  homeHero();
+  /* plan and tier panels */
+  try{const hero=document.querySelector('#vHome .card.hero');if(hero){hero.insertAdjacentHTML('afterend',planPanel()+tierPanel());ringArm(document.getElementById('vHome'));}}catch(e){}
+  /* backlog card */
+  homeBacklog();
+  /* quick 20 */
+  try{const b=document.querySelector('#vHome .card.hero .btn.big');if(b&&!b.classList.contains('ghost'))b.insertAdjacentHTML('afterend',`<div class="row" style="justify-content:center;margin-top:8px"><span class="link small" onclick="startQuick(20)">or a quick 20 · about 5 minutes</span></div>`);}catch(e){}
+  /* link card */
+  homeLinkCard();
+  /* mastery-test panel */
+  try{const hero=document.querySelector('#vHome .card.hero');const bl=document.querySelector('#vHome .card.backlog');(bl||hero).insertAdjacentHTML('afterend',mtPanel());ringArm(document.getElementById('vHome'));}catch(e){}
+  /* lanes; drop the tier card */
+  try{
+  const v=document.getElementById('vHome'); const hero=v.querySelector('.card.hero'); if(hero)hero.insertAdjacentHTML('afterend',lanePanel());
+  /* the mastery test supersedes the tier card */
+  [...v.querySelectorAll('.card')].forEach(c=>{if(/追進度 · Catch-up tiers/.test(c.textContent))c.remove();});
+}catch(e){}
+  /* drop the mastery-test card; Catch-up lane button */
+  try{[...document.querySelectorAll('#vHome .card')].forEach(c=>{if(/寫字測驗 · Writing mastery test/.test(c.textContent))c.remove();});
+  const lane=[...document.querySelectorAll('#vHome .lane')].find(x=>/Catch-up/.test(x.textContent)); if(lane){const b=lane.querySelector('.btn');if(b){b.textContent='Open';b.disabled=false;b.className='btn sm ghost';b.onclick=()=>go('catch');}}
+}catch(e){}
+  /* this week / last */
+  try{const st=document.querySelector('#vHome .stats');if(st&&!st.querySelector('.wk')){const a=weekCards(0),b=weekCards(1);st.insertAdjacentHTML('beforeend',`<div class="stat wk"><div class="n">${a}<span class="d"> / ${b}</span></div><div class="l">this week / last</div></div>`);}}catch(e){}
+  /* iPad card */
+  homeIpadCard();
+  /* lesson page chip */
+  try{const meta=document.querySelector('#vHome .hero .hero-meta');if(meta&&!meta.querySelector('.nl')){const cl=S.settings.curLesson||26;meta.insertAdjacentHTML('beforeend',`<a class="chip nl" href="${notionLesson(cl)}" target="_blank" rel="noopener" style="color:var(--blue);text-decoration:none">lesson page ↗</a>`);}}catch(e){}
+  /* exam line */
+  homeExamLine();
+  /* shell: greeting, decks, fold */
+  try{shHome();}catch(e){console.error(e);}
 }
+
+/* Today hero */
+function homeHero(){try{
+  const first=document.querySelector('#vHome .card'); if(!first)return;
+  /* left = this week's lane; other = what the catch-up and maintenance lanes still hold. The day is only clear when both are empty. */
+  const q=buildQueue(), all=[...q.learn,...q.rev,...q.fresh], left=all.filter(c=>typeof laneOf!=='function'||laneOf(c)==='live').length, other=all.length-left, done=todayDone(), total=done+left, clear=left===0&&other===0&&done>0;
+  const frac=total?done/total:0, streak=streakCount(), hard=(S.hard||[]).length;
+  const h=new Date().getHours();
+  const line=left===0
+    ?(other?(done?`This week’s cards are done · ${other} more in catch-up and maintenance`:`${other} waiting in catch-up and maintenance`)
+      :done?`Deck cleared for today · ${nextDueText()||'nothing more due'}`:'Nothing due yet — pick words in the Library or wait for FSRS')
+    :done?`${done} done · ${left} to go${left<=8?' · nearly there':''}`
+    :h<11?`Fresh start · ${left} waiting`:h<18?`${left} waiting for you`:`Evening set · ${left} to close the day`;
+  const ln=S.settings.curLesson||21;
+  first.className='card hero';
+  first.innerHTML=`
+    <div class="hero-ring">${ringSvg(frac,112,9,clear?'full':'')}
+      <div class="hero-n"><b data-count="${done}">0</b><span>${left===0&&done?'done':'of '+total}</span></div></div>
+    <div class="hero-body">
+      <div class="lab" style="margin-bottom:4px">${clear?'Today · complete':'Today'}</div>
+      <div class="hero-line">${line}</div>
+      <div class="hero-meta">
+        <span class="chip ${streak?'hot':''}">${streak?'🔥 '+streak+'-day streak':'start a streak today'}</span>
+        <span class="chip">${esc(lnLabel(ln))}</span>
+        ${hard?`<span class="chip warn">${hard} hard</span>`:''}
+        ${q.fresh.length?`<span class="chip">${q.fresh.length} new</span>`:''}
+      </div>
+      <div style="margin-top:14px"><button class="btn big ${left||other?'':'ghost'}" onclick="${left?'startLane(\'live\')':other?'go(\'rev\')':'go(\'lib\')'}">${left?(done?'Keep going':'Start today’s cards'):other?`Do the other ${other}`:'Browse the Library'}</button></div>
+    </div>`;
+  countUp(first); ringArm(first);
+}catch(e){}}
+
+/* backlog card */
+function homeBacklog(){try{
+  buildQueue(); if(!BACKLOG)return; const hero=document.querySelector('#vHome .card.hero'); if(!hero)return;
+  hero.insertAdjacentHTML('afterend',`<div class="card backlog"><div class="lab">Easing back in</div>
+    <div style="font-size:14px"><b>${BACKLOG.due}</b> reviews piled up${BACKLOG.gap>=2?` over ${BACKLOG.gap} days away`:''}. Today shows <b>${BACKLOG.today}</b>: the live lesson and hard words first, then the cards you most likely still remember. New words pause until the pile is cleared.</div>
+    <div class="small muted" style="margin-top:6px">This is the FSRS backlog order — clearing what you still hold before it slips beats grinding the ones already gone. Keep the pace and the queue is normal again in a few days.</div></div>`);
+}catch(e){}}
+
+/* link card */
+function homeLinkCard(){try{
+  if(!fbConfig()||SYNC.code)return;
+  const host=document.getElementById('vHome'); if(!host||document.getElementById('linkCard'))return;
+  const first=localEmpty();
+  const html=`<div class="card linkcard" id="linkCard"><div class="lab">☁️ Cloud sync is off on this ${esc(DEVICE.name)}</div>
+    <div style="font-size:14px;margin-bottom:10px">${first
+      ?'Nothing has been studied on this device yet. Type the sync code from your Mac (Settings → Cloud sync on the Mac) and tap <b>Link</b> — your whole deck comes across.'
+      :'Your progress lives only on this device. Already linked another device? Type its code and tap <b>Link</b>. First device? Tap <b>Generate</b> — then link the other one from Settings → Cloud sync.'}</div>
+    <div class="row" style="gap:6px;flex-wrap:wrap">
+      <input id="homeCodeInp" class="search" style="margin:0;width:160px;padding:7px 10px;font-size:13px" placeholder="zika-xxxxxx" autocapitalize="off" autocorrect="off" spellcheck="false">
+      <button class="btn sm" onclick="fbSetCode(document.getElementById('homeCodeInp').value);setTimeout(()=>go('home'),50)">Link</button>
+      <button class="btn ghost sm" onclick="fbPasteCode('homeCodeInp')">Paste</button>
+      ${first?'':`<button class="btn ghost sm" onclick="fbNewCode();go('set');setTimeout(()=>{const c=document.getElementById('syncCard');if(c)c.scrollIntoView({behavior:'smooth',block:'start'});},60)">Generate</button>`}
+    </div></div>`;
+  const hero=host.querySelector('.card.hero');
+  if(hero)hero.insertAdjacentHTML(first?'beforebegin':'afterend',html); else host.insertAdjacentHTML('afterbegin',html);
+}catch(e){}}
+
+/* iPad card */
+function homeIpadCard(){try{
+  if(!fbConfig()||SYNC.code)return; const host=document.getElementById('vHome'); const old=document.getElementById('linkCard');
+  if((typeof isIOS==='function')&&isIOS()){const html=ipadPanel(); if(old)old.outerHTML=html; else host.insertAdjacentHTML('afterbegin',html);}
+}catch(e){}}
+
+/* exam line */
+function homeExamLine(){try{
+  const v=document.getElementById('vHome');if(v.querySelector('.card.examline'))return;const X=exGet(),days=exDays();if(days<-1)return;
+  const no=exIds('no').length,so=exIds('sorta').length,un=exStats().todo;
+  const hero=v.querySelector('.card.hero');if(!hero)return;
+  hero.insertAdjacentHTML('afterend',`<div class="card examline" style="border-left:3px solid var(--red)"><div class="row spread" style="flex-wrap:wrap;gap:8px"><div><div class="lab" style="margin:0">🎯 ${esc(X.name)} · ${esc(exDateLabel())} · ${days>1?days+' days':days===1?'tomorrow':'today'}</div><div class="small muted">${esc(lnLabel(X.lo))} → ${esc(lnLabel(X.hi))} · <span style="color:var(--red)">✗ ${no}</span> · ~ ${so} · ${un} untested</div></div><button class="btn sm" onclick="go('exam')">Open</button></div></div>`);
+}catch(e){}}
 
 /* ============ AUDIO (speechSynthesis, best zh-TW voice) ============ */
 let VOICES=[];
@@ -707,16 +819,7 @@ function charStoryHtml(ch){ // full panel for Brain detail
   html+=webs+'</div>';
   return html;
 }
-function compLines(word){ // compact per-char lines for review reveals
-  if(S.settings.showComp===false)return'';
-  const chars=[...word.split('（')[0]].filter(c=>/\p{Script=Han}/u.test(c));
-  const lines=chars.map(ch=>{
-    const e=COMPONENTS[ch]; if(!e||!(e.d||[]).length)return'';
-    const parts=e.d.map(c=>{const i=COMPONENTS[c]||{};return esc(c)+(i.g?'<span> '+esc(i.g.split(',')[0])+'</span>':'');}).join(' ＋ ');
-    return '<div class="compline zh">'+esc(ch)+'<span> ＝ </span>'+parts+'</div>';
-  }).filter(Boolean);
-  return lines.length?'<div class="complines">'+lines.join('')+'</div>':'';
-}
+function compLines(word){return anatomyHtml(word);}
 
 /* ============ GRAMMAR DRILLS ============ */
 let gramLesson=1, gq=null, gramOpen={};
@@ -819,7 +922,7 @@ function gramChunk(i){
 }
 function gramUnchunk(k){const q=gq.qs[gq.i];if(gq.state!=='ask')return;q.picked.splice(k,1);renderGram();}
 function gramNext(){gq.i++;gq.state='ask';gq.chosen=null;renderGram();}
-function renderGram(){
+function gramPaint(){
   const el=document.getElementById('vGram');
   window.AUDS=window.AUDS||[];
   const aud=t=>{const i=AUDS.push(t)-1;return '<button class="spk" title="listen" onclick="event.stopPropagation();playAudio(AUDS['+i+'])">'+SPK_SVG+'</button>';};
@@ -901,6 +1004,20 @@ function renderGram(){
       </div>`:''}
     </div>`;
   }).join('')}`;
+}
+function renderGram(){
+  if(window.AUDS&&AUDS.length>1500)window.AUDS=[];
+  gramPaint();
+  partyIfDone('#vGram');
+  if(gq)return;
+  try{
+  const el=document.getElementById('vGram'); const head=el.querySelector('.card');
+  const n=gramTrackedCount(gramLesson), tot=gramClozableCount(gramLesson);
+  const hrow=head&&head.querySelector('.row'); if(hrow){hrow.insertAdjacentHTML('beforeend',`<div class="row" style="gap:6px;flex-basis:100%;margin-top:8px"><span class="small muted">${n}/${tot} patterns in the review queue as cloze cards</span>${n<tot?`<button class="btn sm ghost" onclick="trackGram(${gramLesson});badge();renderGram()">+ Add ${tot-n} cloze card${tot-n>1?'s':''}</button>`:''}${n?`<button class="btn sm ghost" onclick="if(confirm('Remove this lesson\\'s grammar cards and their progress?')){untrackGram(${gramLesson});badge();renderGram();}">Remove</button>`:''}${notionLink(gramLesson,'Notion page ↗')}</div>`);}
+  el.querySelectorAll('.gpt').forEach((g,i)=>{const p=(GRAMMAR[gramLesson]||[])[i];if(!p)return;const lv=gramGrasp(p.id);const c=S.cards[gramCid(p.id)];const dots=g.querySelector('.gdots');if(dots)dots.insertAdjacentHTML('beforebegin',`<span class="grasp s${lv}" title="${GRASP_T[lv]}${c?(c.susp?' · parked':''):' · no cloze card'}">${c?(c.susp?'parked':GRASP_T[lv]):'no card'}</span>`);
+    if(c&&c.susp){const b=g.querySelector('.gh .btn');if(b)b.insertAdjacentHTML('beforebegin',`<button class="btn sm ghost" style="flex:none" onclick="event.stopPropagation();delete S.cards['${gramCid(p.id)}'].susp;save();badge();renderGram()">Un-park</button>`);}});
+  el.insertAdjacentHTML('afterbegin',graspMap());
+  }catch(e){}
 }
 
 /* ============ STROKE ORDER (Hanzi Writer) ============ */
@@ -1096,6 +1213,7 @@ function tlChart(){
   return '<svg class="tl-chart" viewBox="0 0 '+Wd+' '+Hh+'" preserveAspectRatio="none">'+polys+'</svg>';
 }
 function renderBrain(){
+  renderBrain._in=true;try{
   const el=document.getElementById('vBrain');
   takeSnapshot();
   const nSnap=S.hist.d.length;
@@ -1247,60 +1365,25 @@ function renderBrain(){
     <div class="small muted" style="margin-top:16px">Deeper teal = stronger memory. Tap any tile for its story — red dot means it's waiting in your review queue.</div>
   </div>`;
   if(brainSel&&brainSel.type==='char'&&S.settings.strokeAnim)renderStrokes('bdStrokes',brainSel.id,{});
+  }finally{renderBrain._in=false;}
+  try{const el=document.getElementById('vBrain'); const first=el.querySelector('.card'); if(first)first.insertAdjacentHTML('afterend',catPanel()); ringArm(el);
+    if(brainCat){const c=WCATS.find(x=>x[0]===brainCat); const h=el.querySelector('.segbar'); if(h&&c)h.insertAdjacentHTML('beforebegin',`<div class="catnote">Showing <b>${esc(c[1])}</b> ${c[2]} only</div>`);}
+  }catch(e){}
+  try{const el=document.getElementById('vBrain');const cards=el.querySelectorAll(':scope > .card');const anchor=cards[1]||cards[0];if(anchor)anchor.insertAdjacentHTML('afterend',phoneticPanel());}catch(e){}
+  try{const d=document.querySelector('#vBrain .detail .body');if(d&&brainSel&&!d.querySelector('.lookup')){const t=brainSel.type==='word'?(byId[brainSel.id]||{}).t:brainSel.id;if(t)d.insertAdjacentHTML('beforeend',lookupRow(t));}}catch(e){}
 }
 
 /* ---- LIBRARY ---- */
 function renderLib(){
   if(tri)return renderTriage();
-  const el=document.getElementById('vLib');
-  let html=`<input class="search" placeholder="Search 字 · pinyin · meaning" value="${esc(libSearch)}" oninput="libSearch=this.value;renderLib()">
-  <div class="segbar"><span class="cap">Book</span>
-    ${bookButtons(libBook,b=>'libBook='+b.n+';openLessons={};renderLib()')}
-  </div>
-  <div class="filters">
-    ${[['all','All'],['tracked','In deck'],['due','Due'],['untracked','Not started'],['simp','Trad ≠ Simp']].map(([k,t])=>`<button class="${libFilter===k?'on':''}" onclick="libFilter='${k}';renderLib()">${t}</button>`).join('')}
-  </div>`;
-  const q=libSearch.trim().toLowerCase();
-  const lnStart=q?1:bookRange(libBook)[0], lnEnd=q?MAX_LN:bookRange(libBook)[1];
-  for(let ln=lnStart;ln<=lnEnd;ln++){
-    const ws=WORDS.filter(w=>w.l===ln).filter(w=>{
-      if(q&&!(w.t.includes(q)||w.p.toLowerCase().includes(q)||w.m.toLowerCase().includes(q)))return false;
-      const st=wordStatus(w.id);
-      if(libFilter==='tracked'&&!st)return false;
-      if(libFilter==='untracked'&&st)return false;
-      if(libFilter==='due'&&(!st||st.k!=='due'))return false;
-      if(libFilter==='simp'&&!w.s)return false;
-      return true;
-    });
-    if(!ws.length&&(q||libFilter!=='all'))continue;
-    const all=WORDS.filter(w=>w.l===ln);
-    const nTracked=all.filter(w=>tracked(w.id)).length;
-    const open=!!openLessons[ln]||q||libFilter!=='all';
-    html+=`<div class="lesson ${open?'open':''}">
-      <div class="head" onclick="openLessons[${ln}]=!openLessons[${ln}];renderLib()">
-        <span class="car">▶</span>
-        <div><div class="ttl">${lnLabel(ln)} · ${LESSON_TITLES[ln]}</div><div class="sub">${nTracked} of ${all.length} in deck</div></div>
-        <div class="acts">
-          <button class="btn sm" onclick="event.stopPropagation();startTriage(${ln})" title="step through this lesson word by word and sort it">Triage</button>
-          ${hasDlg(ln)?`<button class="btn sm ghost" onclick="event.stopPropagation();startTriage(${ln},1)" title="only the Dialogue I words — the 聽寫一 set">Triage 聽寫一</button>
-          <button class="btn sm ghost" onclick="event.stopPropagation();startTriage(${ln},2)" title="only the Dialogue II words — the 聽寫二 set">Triage 聽寫二</button>`:''}
-          ${nTracked<all.length?`<button class="btn sm ghost" onclick="event.stopPropagation();WORDS.filter(w=>w.l===${ln}).forEach(w=>trackWord(w.id));renderLib();badge()">Study lesson</button>
-          <button class="btn sm ghost" title="mark whole lesson as already known" onclick="event.stopPropagation();if(confirm('Mark all of Lesson ${ln} as already known? They skip learning and re-check in about 3 weeks.')){WORDS.filter(w=>w.l===${ln}).forEach(w=>markKnown(w.id));renderLib();badge();}">Know it all</button>`
-          :`<button class="btn sm ghost" onclick="event.stopPropagation();if(confirm('Remove all Lesson ${ln} cards and their progress?')){WORDS.filter(w=>w.l===${ln}).forEach(w=>untrackWord(w.id));renderLib();badge();}">Remove</button>`}
-        </div>
-      </div>
-      <div class="prog"><i style="width:${all.length?Math.round(nTracked/all.length*100):0}%"></i></div>
-      ${open?`<div class="wl">${ws.map(w=>wrowHtml(w)).join('')}</div>`:''}
-    </div>`;
-  }
-  el.innerHTML=html;
+  libEnsureChrome(); libSyncChrome(); renderLibResults();
 }
 function togglePick(wid){S.pick=S.pick||[];const i=S.pick.indexOf(wid);if(i>-1)S.pick.splice(i,1);else S.pick.push(wid);save();}
-function wrowHtml(w,showLn){
+function wrowTagged(w,showLn){
   const st=wordStatus(w.id), kn=isKnown(w.id);
   const startable=!st||st.k==='new';
   const pi=(S.pick||[]).indexOf(w.id);
-  return `<div class="wrow">
+  const h=`<div class="wrow">
     <div class="tr zh">${esc(w.t)}</div>
     <div class="info">
       <div class="py">${tonePinyin(esc(w.p))}${w.pos?` <span class="tag">${esc(w.pos)}</span>`:''}${w.s?` <span class="tag simp">简 ${esc(w.s)}</span>`:''}</div>
@@ -1313,7 +1396,20 @@ function wrowHtml(w,showLn){
     <button class="wbtn kn ${wordMastAt(w.id)?'on':''}" title="Mastered — straight onto the shelf, resurfaces in ~3 months, no paper reps" onclick="markMastered('${w.id}');renderLib();badge()">★</button>
     <button class="wbtn kn ${kn?'on':''}" title="I know this — skip learning, verify in ~3 weeks" onclick="markKnown('${w.id}');renderLib();badge()">✓</button>
     <button class="wbtn ${st?'on':''}" title="${st?'remove from deck':'add to deck'}" onclick="${st?`if(confirm('Remove this word\\'s cards and progress?'))untrackWord('${w.id}')`:`trackWord('${w.id}')`};renderLib();badge()">${st?'−':'+'}</button>
-  </div>`;
+  </div>`, l=confOf(w.id);
+  if(!l)return h;
+  return h.replace(/<span class="tag (?:known|new|due|ok|mat)">[^<]*<\/span>/, `<span class="tag ${CONF[l].c}" title="${CONF[l].d}">${CONF[l].t}</span>`);
+}
+function wrowHtml(w,showLn){
+  let h=wrowTagged(w,showLn);const l=confOf(w.id);
+  const prev=confSeen[w.id]; confSeen[w.id]=l;
+  if(l&&prev!==undefined&&prev!==l&&animOn())h=h.replace(`class="tag ${CONF[l].c}"`,`class="tag ${CONF[l].c} pop"`);
+  try{
+  const cs=MODES.map(m=>S.cards[cardId(w.id,m)]).filter(Boolean); if(!cs.length)return h;
+  const started=cs.filter(c=>c.st!==undefined); let txt;
+  if(!started.length)txt='queued · not started'; else {const due=Math.min(...started.map(c=>c.due)); txt=due<=Date.now()?'due now':'back '+fmtDay(due);}
+  h=h.replace(/(<div class="mn">[\s\S]*?<\/div>)/,'$1<div class="small muted" style="font-size:11px">'+txt+'</div>');
+  }catch(e){}return h;
 }
 
 /* ---- REVIEW ---- */
@@ -1336,6 +1432,24 @@ function pickNext(){
 }
 function nextCard(){cur=pickNext();revealed=false;hintShown=false;renderRev();}
 function renderRev(){
+  /* L4 (4180): grammar cards take the whole card; L1–L3 run only for the others */
+  if(cur&&isGram(cur))renderGramCard();
+  else{
+    renderRevBase();      /* L1 */
+    renderRevMotion();    /* L2 (3671) post-code */
+    renderRevSession();   /* L3 (3805) post-code */
+  }
+  renderRevDictation();   /* L5 (4385) post-code */
+  /* L6 (4853) post-code — grade buttons: the actual return date */
+  try{
+  document.querySelectorAll('#vRev .grades button .iv').forEach(el=>{const m=el.textContent.match(/^(\d+)d$/);if(m){el.textContent=m[1]+'d · '+fmtDay(Date.now()+(+m[1])*DAY);}});
+}catch(e){}
+  renderRevLookup();      /* L7 (4974) post-code */
+  /* L8 (5000) post-code — the focus link */
+  try{const row=document.querySelector('#vRev .srow');if(row&&!row.querySelector('.focuslink'))row.insertAdjacentHTML('beforeend',`<span class="link small focuslink" onclick="document.body.classList.toggle('focus')" title="hide the header and tabs (f)">${document.body.classList.contains('focus')?'exit focus':'focus'}</span>`);}catch(e){}
+}
+/* L1 (2095-2155), body verbatim */
+function renderRevBase(){
   const el=document.getElementById('vRev');
   badge();
   if(!cur){
@@ -1396,6 +1510,66 @@ function renderRev(){
     }
   }
 }
+/* L2 (3671-3676) post-code, verbatim — review: card slides in; the grade you just gave colours the edge of the next card for a beat */
+function renderRevMotion(){
+  const done=document.querySelector('#vRev .card.done'); if(done&&sessionN>0&&!done.dataset.party){done.dataset.party=1;if(animOn())confetti();haptic('done');}
+  if(!animOn())return;const st=document.querySelector('#vRev .stage');if(!st)return;
+  st.classList.add(revealed?'flip-in':'slide-in'); if(lastGrade&&!revealed){st.classList.add(lastGrade===1?'from-again':lastGrade===2?'from-hard':'from-good');lastGrade=0;}
+  st.addEventListener('animationend',()=>st.classList.remove('slide-in','flip-in'),{once:true});
+}
+/* L3 (3805-3836) post-code, verbatim, in L3's own try — progress bar + run counter + session summary */
+function renderRevSession(){try{
+  const el=document.getElementById('vRev');
+  if(cur){
+    const remaining=rq.learn.length+rq.rev.length+rq.fresh.length, tot=SES.n+remaining, frac=tot?SES.n/tot:0;
+    const run=SES.run, show=run>=3, pop=show&&run!==SES.lastRun; SES.lastRun=run;
+    el.insertAdjacentHTML('afterbegin',`<div class="sbar"><i style="width:${Math.round(frac*100)}%"></i></div>
+      <div class="srow"><span class="small muted">${SES.n} done · ${remaining} left</span>${show?`<span class="runchip ${pop?'pop':''}">${run} in a row${run>=10?' ✦':''}</span>`:''}</div>`);
+  } else if(SES.n>0){
+    const done=el.querySelector('.card.done'); if(!done)return;
+    const acc=Math.round((SES.g[3]+SES.g[4])/SES.n*100), mins=Math.max(1,Math.round((Date.now()-SES.t0)/60000)), streak=streakCount();
+    const q=buildQueue(), soon=q.learn.length+q.rev.length+q.fresh.length;
+    done.innerHTML=`<div class="zhd zh">${acc>=90?'太棒了':acc>=70?'做得好':'加油'}</div>
+      <div style="font-weight:600;font-size:16px;margin-bottom:14px">${soon?'Session done — '+soon+' more ready':'All caught up'}</div>
+      <div class="sum">
+        <div><b data-count="${SES.n}">0</b><span>cards</span></div>
+        <div><b data-count="${acc}" data-suf="%">0</b><span>recalled</span></div>
+        <div><b data-count="${mins}">0</b><span>min</span></div>
+        <div><b data-count="${SES.best}">0</b><span>best run</span></div>
+        ${SES.newN?`<div><b data-count="${SES.newN}">0</b><span>new words</span></div>`:''}
+      </div>
+      <div class="hero-meta" style="justify-content:center;margin-top:14px">
+        <span class="chip ${streak?'hot':''}">${streak?'🔥 '+streak+'-day streak':'streak starts tomorrow'}</span>
+        ${nextDueText()?`<span class="chip">${esc(nextDueText())}</span>`:''}
+        ${SES.g[1]?`<span class="chip warn">${SES.g[1]} to revisit</span>`:''}
+      </div>
+      <div class="row" style="justify-content:center;gap:8px;margin-top:20px">
+        ${soon?`<button class="btn" onclick="startReview()">Keep going</button>`:''}
+        <button class="btn ghost" onclick="go('home')">Back to Today</button>
+      </div>`;
+    countUp(done);
+  }
+}catch(e){}}
+/* L5 (4385-4400) post-code, verbatim, in L5's own try — the production card: audio-first 聽寫 card */
+function renderRevDictation(){
+  try{
+    if(!cur||isGram(cur)||modeOf(cur)!=='prod'||revealed||S.settings.prodAudio===false)return;
+    const w=wordOf(cur), st=document.querySelector('#vRev .stage'); if(!w||!st)return;
+    st.innerHTML=`<div class="hint">聽寫 · listen, then write it on paper</div>
+      <div style="text-align:center;margin:4px 0"><button class="spk lg" onclick="speakWord('${w.id}')">${SPK_SVG}</button></div>
+      ${w.pos?`<div class="pos">${esc(w.pos)}</div>`:''}
+      <div class="meaning" style="font-size:21px">${esc(w.m)}</div>
+      ${hintShown?`<div class="pyline" style="font-size:24px">${tonePinyin(esc(w.p))}</div>`:`<div class="hint"><span class="link" onclick="hintShown=true;renderRev()">show pinyin</span></div>`}
+      ${window.usHint?usHint(w):''}
+      <div class="hint">which 字? write it, say the tones, then check</div>`;
+    const tag=document.querySelector('#vRev .mtag.prod'); if(tag)tag.textContent='聽寫 · Write';
+    if(!renderRev._spoke||renderRev._spoke!==cur){renderRev._spoke=cur;setTimeout(()=>speakWord(w.id),200);}
+  }catch(e){}
+}
+/* L7 (4974) post-code, verbatim, in L7's own try — card backs get the lookup row */
+function renderRevLookup(){
+  try{if(!cur||isGram(cur)||!revealed)return;const st=document.querySelector('#vRev .stage');if(st&&!st.querySelector('.lookup'))st.insertAdjacentHTML('beforeend',lookupRow(wordOf(cur).t));}catch(e){}
+}
 function reveal(){revealed=true;renderRev();}
 function skipKnown(level){if(!cur)return;const wid=cur.split(':')[0];(level==='m'?markMastered:markKnown)(wid);['learn','rev','fresh'].forEach(k=>{rq[k]=rq[k].filter(cid=>cid.split(':')[0]!==wid);});nextCard();}
 /* One grade = one undo step. The snapshot holds everything a grade can touch, so undo is exact. */
@@ -1429,6 +1603,7 @@ function doUndo(){ // step back through as many cards as the stack holds
 
 /* ---- SETTINGS ---- */
 function renderSet(){
+  /* layer 1 — base */
   const s=S.settings;
   document.getElementById('vSet').innerHTML=`
   ${bkPanel()}
@@ -1486,7 +1661,84 @@ function renderSet(){
       <button class="tgl ${s.usageHint===true?'on':''}" onclick="S.settings.usageHint=S.settings.usageHint!==true;save();renderSet()"><i></i></button></div>
   </div>
   `;
+  /* layer 2 (3269) — Confidence card first */
+  try{ document.getElementById('vSet').insertAdjacentHTML('afterbegin',confPanel()); }catch(e){}
+  /* layer 3 (3651) — Cloud sync card first, Look & feel card last */
+  try{const v=document.getElementById('vSet');v.insertAdjacentHTML('afterbegin',syncPanel());v.insertAdjacentHTML('beforeend',polishPanel());}catch(e){}
+  /* layer 4 (4188) — Grammar in the queue card last */
+  try{document.getElementById('vSet').insertAdjacentHTML('beforeend',gramSetPanel());}catch(e){}
+  /* layer 5 (4419) — Card strategy card after the second .card */
+  try{const v=document.getElementById('vSet');const conf=v.querySelector('.card:nth-of-type(2)');(conf||v.firstElementChild).insertAdjacentHTML('afterend',cardStratPanel());}catch(e){}
+  /* layer 6 (4580) — Leeches row, retention wording (helper: early return) */
+  renderSetLeeches();
+  /* layer 7 (4864) — Catch-up words per day row (helper: early return) */
+  renderSetCatchUp();
+  /* layer 8 (5005) — keyboard hint line last */
+  try{document.getElementById('vSet').insertAdjacentHTML('beforeend',`<div class="small muted" style="text-align:center;margin:4px 0 10px">Press <kbd>?</kbd> anywhere for keyboard shortcuts · look-up links on every card back: 萌典 · MDBG · Pleco · Skritter</div>`);}catch(e){}
+  /* layer 9 (5091) — Audio source wording, Bundled voice row (helper: early return) */
+  renderSetVoices();
+  /* layer 10 (5236) — iPad / Daily intake / Offline cards first, retire rows, drop empty cards, order */
+  try{
+  const v=document.getElementById('vSet');
+  v.insertAdjacentHTML('afterbegin',ipadPanel()+intakePanel()+offlinePanel());
+  /* retire the rows now covered by Daily intake */
+  const kill=['New words per day','Max reviews per day','Desired retention','New grammar cards per day','Catch-up words per day'];
+  [...v.querySelectorAll('.set-row')].forEach(r=>{const b=r.querySelector('b');if(b&&kill.includes(b.textContent.trim())&&!r.closest('#intakeCard'))r.remove();});
+  /* cards with nothing left go too */
+  [...v.querySelectorAll('.card')].forEach(c=>{if(!c.querySelector('.set-row')&&!c.querySelector('.istep')&&!c.querySelector('button')&&!c.querySelector('.confrow'))c.remove();});
+  /* order */
+  const cards=[...v.querySelectorAll(':scope > .card')];
+  const rank=c=>{const l=c.querySelector('.lab');const t=l?l.textContent.trim():'';const i=SET_ORDER.findIndex(k=>t.startsWith(k));return i<0?SET_ORDER.length:i;};
+  cards.sort((a,b)=>rank(a)-rank(b)).forEach(c=>v.appendChild(c));
+  const tail=[...v.children].find(x=>x.className&&/small muted/.test(x.className)&&/keyboard/.test(x.textContent)); if(tail)v.appendChild(tail);
+}catch(e){}
+  /* layer 11 (5519) — version line last */
+  try{
+  document.getElementById('vSet').insertAdjacentHTML('beforeend',`<div class="small muted" style="text-align:center;margin:0 0 10px">字卡 v${APP_VERSION} · ${WORDS.length} words · ${BOOKS.length} books · this device: ${esc(DEVICE.name)}</div>`);
+}catch(e){}
+  /* layer 12 (6257, second script block) — Look rows, You card first */
+  try{
+  const v=document.getElementById('vSet'), ln=shLesson();
+  const cards=[...v.querySelectorAll('.card')], look=cards.find(c=>/^Look & feel/.test(((c.querySelector('.lab')||{}).textContent||'').trim()));
+  const a=ACCENTS[S.settings.accent]?S.settings.accent:'classic', z=S.settings.zhFont||'sans', pal=S.settings.palette==='clean'?'clean':'paper';
+  const rows=`<div class="set-row"><div><b>Palette</b><div class="d">Paper is the warm original; Clean is neutral white and grey. Both have a day and a night side</div></div>
+      <div class="seg">${Object.keys(PALETTES).map(k=>`<button class="${pal===k?'on':''}" onclick="shSetLook('palette','${k}')">${PALETTES[k]}</button>`).join('')}</div></div>
+    <div class="set-row"><div><b>Accent colour</b><div class="d">buttons, links and the active tab. Classic is ink and tea green; follows you to your other devices</div></div>
+      <div class="swatches">${Object.keys(ACCENTS).map(k=>`<button class="swatch${a===k?' on':''}" style="background:${ACCENTS[k]}" title="${k}" aria-label="${k}" onclick="shSetLook('accent','${k}')"></button>`).join('')}</div></div>
+    <div class="set-row"><div><b>Character style</b><div class="d">the face study characters are shown in: a clean sans, the textbook’s 明體, or 楷體, which is closest to handwriting</div></div>
+      <div class="seg">${Object.keys(ZH_FONTS).map(k=>`<button class="${z===k?'on':''}" onclick="shSetLook('zhFont','${k}')">${ZH_FONTS[k]}</button>`).join('')}</div></div>`;
+  if(look)look.insertAdjacentHTML('beforeend',rows);
+  v.insertAdjacentHTML('afterbegin',`<div class="card" id="youCard"><div class="lab">You</div>
+    <div class="set-row"><div><b>${shName()?esc(shName()):'Your name'}</b><div class="d">Book ${bookOf(ln)} · Lesson ${lnInBook(ln)} · ${esc(LESSON_TITLES[ln]||'')}</div></div>
+      <button class="btn sm ghost" onclick="shCourse()">Change</button></div>
+    ${look?'':rows}</div>`);
+}catch(e){console.error(e);}
 }
+/* layer 6 (4580): its own function because of `if(!strat)return;` inside its try */
+function renderSetLeeches(){try{
+  const v=document.getElementById('vSet'); const strat=[...v.querySelectorAll('.card')].find(c=>/Card strategy/.test(c.textContent)); if(!strat)return;
+  const L=leechList();
+  strat.insertAdjacentHTML('beforeend',`<div class="set-row"><div><b>Leeches</b><div class="d">A word missed 4 times goes to the hard list and tonight’s paper; missed 7 times it is parked here until you un-park it. ${L.length?'':'None parked.'}</div></div>
+    <div class="row" style="gap:4px;flex-wrap:wrap;justify-content:flex-end">${L.map(c=>`<button class="btn ghost sm zh" onclick="leechUnpark('${c}')" title="un-park">${esc(byId[c.split(':')[0]].t)} ↩</button>`).join('')}</div></div>`);
+  const ret=[...v.querySelectorAll('.set-row')].find(r=>/Desired retention/.test(r.textContent)); if(ret){const d=ret.querySelector('.d');if(d)d.textContent='85–90% is the sweet spot: going to 95% roughly doubles the daily load for a few points of recall.';}
+}catch(e){}}
+/* layer 7 (4864): its own function because of `if(!strat)return;` inside its try */
+function renderSetCatchUp(){try{
+  const v=document.getElementById('vSet'); const strat=[...v.querySelectorAll('.card')].find(c=>/Card strategy/.test(c.textContent)); if(!strat)return;
+  strat.insertAdjacentHTML('beforeend',`<div class="set-row"><div><b>Catch-up words per day</b><div class="d">how many shaky / ✗ words from old lessons may start each day, separate from this week’s new words</div></div><input type="number" min="0" max="30" value="${S.settings.newCatchPerDay??5}" onchange="S.settings.newCatchPerDay=Math.max(0,parseInt(this.value)||0);save();badge()"></div>`);
+}catch(e){}}
+/* layer 9 (5091): its own function because of `if(!sel)return;` inside its try */
+function renderSetVoices(){try{
+  const sel=document.querySelector('#vSet select[onchange*="audioSrc"]'); if(!sel)return;
+  sel.options[0].textContent='Auto — bundled Taiwan voice, system voice as fallback';
+  sel.options[2].textContent='Bundled Taiwan voice only (offline)';
+  const row=sel.closest('.set-row'), d=row.querySelector('.d');
+  if(d)d.textContent='The bundled voices are Microsoft’s zh-TW neural voices, pre-rendered for every word and every character at a slightly slow pace — full tones, Taiwan readings (垃圾 lèsè). They work offline once stored on the device.';
+  if(d)d.insertAdjacentHTML('beforeend',' <a href="voice.html" style="color:var(--blue);white-space:nowrap">Record your own voice ↗</a>');
+  const voices=Object.keys(VOICE_PACKS).filter(v=>VOICE_OK[v]);
+  if(voices.length>1)row.insertAdjacentHTML('beforebegin',`<div class="set-row"><div><b>Bundled voice</b><div class="d">Tap a voice to switch and hear a sample; the choice follows you to your other devices.</div></div>
+    <div class="row" style="gap:6px;flex-wrap:wrap;justify-content:flex-end">${voices.map(v=>`<button class="btn sm ${voiceId()===v?'':'ghost'}" onclick="setVoice('${v}')">${VOICE_PACKS[v].name} · ${VOICE_PACKS[v].who}</button>`).join('')}</div></div>`);
+}catch(e){}}
 function exportData(){
   const blob=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
@@ -1599,6 +1851,10 @@ const DMODES=[['rec','認字 Recognition','see it · know it'],['tone','聲調 T
 let drillMode=null, drillScope='lesson', drillLesson=21, dq=null, recState=null;
 
 function drillWords(){
+  /* a pile from the exam set */
+  if(drillScope==='examset')return EXAM_POOL.map(id=>byId[id]).filter(Boolean).filter(w=>S.settings.includeNames||!isName(w));
+  /* a frequency tier */
+  if(drillScope==='tier')return tierWords(TIERS[drillTier-1]||TIERS[0]).filter(w=>S.settings.includeNames||!isName(w));
   let pool;
   if(drillScope==='hard') pool=(S.hard||[]).map(id=>byId[id]).filter(Boolean);
   else if(drillScope==='due') pool=WORDS.filter(w=>MODES.some(m=>{const c=S.cards[cardId(w.id,m)];return c&&c.st!==undefined&&c.due<=Date.now();}));
@@ -1615,6 +1871,21 @@ const TONEMARK=['·','ˉ','ˊ','ˇ','ˋ'];
 function toneLabel(seq){return seq.map(t=>TONEMARK[t]).join(' ')+'   ('+seq.join('-')+')';}
 
 function startDrill(mode){
+  /* a full-screen drill mode (DRILL_SCREENS) starts itself */
+  const x=DRILL_SCREENS[mode];if(x)return x.start();
+  /* the tone coach lets go of the microphone; its own mode starts itself */
+  tcRelease();if(mode==='tcoach')return tcStart();
+  /* speech and the microphone never outlive the screen that started them */
+  recKill();if(mode!=='listen')try{lpStop();}catch(e){}
+  /* the mastery test */
+  if(mode==='mtest')return mtResume();
+  /* sentence dictation */
+  if(mode==='sdict')return startSdict();
+  /* the listening player, on the lesson in scope */
+  if(mode==='listen'){LP.ln=drillScope==='lesson'?drillLesson:(S.settings.curLesson||23);LP.src=DIALOGUES[LP.ln]?'dlg':'sent';return startListen();}
+  /* "which one?" and the reading sprint */
+  if(mode==='confuse')return startConfuse(null);if(mode==='read')return startRead();
+  /* rec / tone / dict / sent / speak: build the question list */
   drillMode=mode; dq=null; recState=null;
   const qs=[];
   if(mode==='rec'||mode==='tone'||mode==='dict'){
@@ -1725,6 +1996,42 @@ function examStop(){
 }
 
 function renderDrill(){
+  /* a full-screen drill mode (DRILL_SCREENS) paints the whole tab itself */
+  const x=DRILL_SCREENS[drillMode];if(x&&!dq){x.render();return;}
+  /* so does the tone coach while it has a list */
+  if(drillMode==='tcoach'&&!dq&&TC.list.length){tcRender();return;}
+  drillRenderInner();
+  /* the drill menu (and only the menu) ends with the tone summary and the tone-pair map */
+  try{const el=document.getElementById('vDrill');if(!dq&&el&&el.querySelector('.dgrid')&&!el.querySelector('.tc-panel'))el.insertAdjacentHTML('beforeend','<div class="tc-panel">'+tcPanel()+'</div>');}catch(e){}
+}
+/* renderDrill without the tone coach and the registered full-screen modes: the exam-set test, or the tab itself
+   followed by the answer flash and the "More drills" fold. Its early return comes back to renderDrill's last step. */
+function drillRenderInner(){
+  if(drillMode==='extest'&&!dq){exRender();return;}
+  drillRenderScreens();
+  drillAnswerFlash();
+  drillMenuDemote();
+}
+/* the mastery test, a sentence-dictation question and the listening player paint themselves; anything else is the
+   card below followed by the dictation repaint. Its early returns come back to drillRenderInner's last two steps. */
+function drillRenderScreens(){
+  if(drillMode==='mtest'&&!dq){mtRender();return;}
+  const el=document.getElementById('vDrill');if(dq&&dq.i<dq.qs.length&&dq.qs[dq.i].mode==='sdict'){renderSdict(el);return;}
+  if(drillMode==='listen'&&!dq){lpRender();return;}
+  drillRenderCard();
+  drillDictCard();
+}
+/* a "which one?" or reading-sprint question paints itself; anything else is the base screen, the confetti on a
+   finished set, and the "which one?" panel under the menu. Its early returns come back to drillRenderScreens' last step. */
+function drillRenderCard(){
+  const el=document.getElementById('vDrill');
+  if(dq&&dq.i<dq.qs.length){const q=dq.qs[dq.i];if(q.mode==='confuse'){renderConfuse(el);return;}if(q.mode==='read'){renderRead(el);return;}}
+  drillRenderBase();
+  partyIfDone('#vDrill');
+  try{ if(!dq){el.insertAdjacentHTML('beforeend',confusePanel());} }catch(e){}
+}
+/* the menu, the score card, or one question of a rec / tone / dict / sent / speak drill */
+function drillRenderBase(){
   const el=document.getElementById('vDrill');
   /* the menu's only bar is where the words come from; the drills themselves are the tiles below it */
   const scopeBar=`
@@ -1829,6 +2136,36 @@ function renderDrill(){
   </div>
   <div class="qbox">${body}</div>
   ${done?`<div class="qfoot" style="margin-top:12px"><button class="btn" onclick="drillNext()">Next →</button></div>`:''}`;
+}
+/* dictation question: audio → pinyin + meaning → write → character (repaints the .qbox the base screen just filled) */
+function drillDictCard(){
+  try{
+    if(!dq||dq.i>=dq.qs.length)return; const q=dq.qs[dq.i]; if(q.mode!=='dict')return;
+    const w=q.w, st=dq.state, box=document.querySelector('#vDrill .qbox'); if(!box)return;
+    const hintOn=S.settings.dictHint!=='late'||st==='hint'||st==='reveal'||st==='done';
+    const meta=`<div class="row" style="justify-content:center;gap:9px"><span class="pyline">${tonePinyin(esc(w.p))}</span></div><div class="meaning">${esc(w.m)}</div>`;
+    const charBlock=`<div class="bigzh zh" style="font-size:56px">${esc(w.t)}</div>${w.s?`<div class="simpnote">简体 ${esc(w.s)}</div>`:''}${compLines(w.t)}`;
+    box.innerHTML=`<div class="hint">聽寫 — listen, write it on paper, then check</div>
+      <div style="text-align:center;margin:6px 0"><button class="spk lg" onclick="speakWord('${w.id}')">${SPK_SVG}</button></div>
+      ${hintOn?meta:`<div class="qfoot"><button class="btn ghost" onclick="dq.state='hint';renderDrill()">Show pinyin · meaning</button></div>`}
+      ${(st==='reveal'||st==='done')?charBlock:(hintOn?`<div class="qfoot"><button class="btn" onclick="dq.state='reveal';renderDrill()">Show the character</button></div>`:'')}
+      ${st==='reveal'?`<div class="qfoot"><button class="btn ghost" onclick="drillAnswer(false)">Missed it ✗</button><button class="btn" onclick="drillAnswer(true)">Wrote it right ✓</button></div>`:''}`;
+    if(st==='ask'&&!q._played){q._played=1;setTimeout(()=>speakWord(w.id),150);}
+  }catch(e){}
+}
+/* answer flash, applied after the re-render, where the buttons actually are */
+function drillAnswerFlash(){
+  try{if(!dq||dq.state!=='done'||!animOn())return;const r=document.querySelector('#vDrill .opts button.right');const w=document.querySelector('#vDrill .opts button.wrong');if(r)r.classList.add('pop');if(w)w.classList.add('shake');}catch(e){}
+}
+/* the menu: characters up front, sentences under More */
+function drillMenuDemote(){
+  try{
+  if(dq||drillMode==='listen'||drillMode==='mtest')return; const el=document.getElementById('vDrill');
+  const grid=el.querySelector('.dgrid'); if(!grid)return;
+  const dem=[...grid.querySelectorAll('.dcard')].filter(c=>DEMOTED.some(m=>(c.getAttribute('onclick')||'').includes("'"+m+"'")));
+  if(!dem.length)return;
+  const det=document.createElement('details'); det.className='guide'; det.open=moreDrills; det.innerHTML='<summary>More drills · sentences, listening, grammar ›</summary>'; const g2=document.createElement('div'); g2.className='dgrid'; g2.style.marginTop='10px'; dem.forEach(c=>g2.appendChild(c)); det.appendChild(g2); grid.insertAdjacentElement('afterend',det); det.addEventListener('toggle',()=>{moreDrills=det.open;});
+}catch(e){}
 }
 function examCard(){
   const p=examP;if(!p)return'';
@@ -2245,7 +2582,7 @@ function libQueue(v){
 }
 
 /* ---------- results ---------- */
-function renderLibResults(){
+function libResultsPaint(){
   const box=document.getElementById('libResults'); if(!box)return;
   const keepScroll=window.scrollY;                 /* row buttons re-render; don't jump */
   requestAnimationFrame(()=>{if(Math.abs(window.scrollY-keepScroll)>4)window.scrollTo(0,keepScroll);});
@@ -2318,15 +2655,43 @@ function renderLibResults(){
   }
   box.innerHTML=html;
 }
+function renderLibResults(){
+  libResultsPaint();
+  try{
+  if(libSearch.trim())return;
+  const box=document.getElementById('libResults'); if(!box)return;
+  const csm=charStageMap();
+  const [lnStart,lnEnd]=bookRange(libBook);
+  /* overview strip: one mini ring per lesson, tap to open it */
+  let strip='', bookChars=new Set(), bookKnown=0;
+  for(let ln=lnStart;ln<=lnEnd;ln++){
+    const m=lessonMastery(ln,csm); lessonChars(ln).forEach(ch=>bookChars.add(ch));
+    const cur=(S.settings.curLesson||0)===ln;
+    strip+=`<div class="lmini ${cur?'cur':''} ${m.known?'':'none'}" title="${esc(lnLabel(ln))} · ${LESSON_TITLES[ln]||''} · ${m.known}/${m.n} characters known" onclick="openLessons[${ln}]=true;renderLibResults();setTimeout(()=>{const e=document.querySelector('.lesson[data-ln=&quot;${ln}&quot;]');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});},40)">
+      ${ring2(m,40,4)}<span class="lm-n">${lnInBook(ln)}</span><span class="lm-p">${m.n?Math.round(m.frac*100):0}%</span></div>`;
+  }
+  bookChars.forEach(ch=>{if((csm[ch]||0)>=3)bookKnown++;});
+  const pct=bookChars.size?Math.round(bookKnown/bookChars.size*100):0;
+  box.insertAdjacentHTML('afterbegin',`<div class="card lmap"><div class="row spread" style="margin-bottom:10px"><div class="lab" style="margin:0">Book ${(BOOKS.find(b=>b.n===libBook)||BOOKS[0]).zh} · characters you know</div><div class="small muted"><b data-count="${bookKnown}">0</b> of ${bookChars.size} · ${pct}%</div></div>
+    <div class="lstrip">${strip}</div>
+    <div class="small muted" style="margin-top:8px">Dark arc = characters that hold for 3 weeks or more. Pale arc = met and still learning. A character counts once you know it in any word, so later lessons fill in before you reach them.</div></div>`);
+  /* per-lesson ring in each accordion head */
+  box.querySelectorAll('.lesson').forEach(el=>{
+    const head=el.querySelector('.head'); if(!head)return;
+    const mm=(head.getAttribute('onclick')||'').match(/openLessons\[(\d+)\]/); if(!mm)return;
+    const ln=+mm[1]; el.dataset.ln=ln;
+    const m=lessonMastery(ln,csm);
+    head.insertAdjacentHTML('afterbegin',`<div class="lring" title="${m.known} of ${m.n} characters known">${ring2(m,44,4.5)}<span>${m.n?Math.round(m.frac*100):0}<i>%</i></span></div>`);
+    const sub=el.querySelector('.sub'); if(sub)sub.innerHTML+=` · <b style="color:var(--acc);font-weight:600">${m.known}</b>/${m.n} 字 known${m.learn?` · ${m.learn} learning`:''}`;
+  });
+  countUp(box); ringArm(box);
+  }catch(e){}
+}
 
 /* lesson buckets, built once — replaces 60 full WORDS scans per render */
 var LESSON_WORDS={};
 (function(){for(const w of WORDS){(LESSON_WORDS[w.l]=LESSON_WORDS[w.l]||[]).push(w);}})();
 
-renderLib=function(){
-  if(tri)return renderTriage();
-  libEnsureChrome(); libSyncChrome(); renderLibResults();
-};
 
 
 /* ============================================================
@@ -2363,12 +2728,6 @@ function confSnapshot(){
   return {v:1, at:new Date().toISOString(), scale:{1:'Hard',2:'Learning',3:'Know',4:'Mastered'}, words};
 }
 /* Library rows show the level instead of the old queued/learning/solid tag */
-const _wrow17=wrowHtml;
-wrowHtml=function(w,showLn){
-  const h=_wrow17(w,showLn), l=confOf(w.id);
-  if(!l)return h;
-  return h.replace(/<span class="tag (?:known|new|due|ok|mat)">[^<]*<\/span>/, `<span class="tag ${CONF[l].c}" title="${CONF[l].d}">${CONF[l].t}</span>`);
-};
 /* Settings card: counts + the sync file */
 function confText(){ return JSON.stringify(confSnapshot()); }
 function confCopy(){
@@ -2391,8 +2750,6 @@ function confPanel(){
       <div class="row"><button class="btn ghost sm" onclick="confCopy()">Copy</button><button class="btn ghost sm" onclick="confDownload()">Download</button></div></div>
   </div>`;
 }
-const _renderSet17=renderSet;
-renderSet=function(){ _renderSet17(); try{ document.getElementById('vSet').insertAdjacentHTML('afterbegin',confPanel()); }catch(e){} };
 
 /* ============================================================
    v18 — Cloud sync (Firebase Realtime Database) + polish.
@@ -2723,7 +3080,7 @@ function toast(msg,o){
 function syncPanel(){
   const cfg=fbConfig(), hard=!!(FIREBASE_CONFIG&&FIREBASE_CONFIG.databaseURL);
   const dev=DEVICE.name;
-  return `<div class="card" id="syncCard"><div class="lab">Cloud sync</div>
+  let h=`<div class="card" id="syncCard"><div class="lab">Cloud sync</div>
     <div id="syncStatusLine" class="small" style="margin-bottom:12px">${syncStatusHtml()}</div>
     ${!cfg?`<div class="set-row"><div><b>Firebase config</b><div class="d">Paste the web-app config from the Firebase console (Project settings → Your apps → the <code>firebaseConfig</code> object). It only names your project — the database rules do the protecting.</div></div></div>
       <textarea id="fbCfgInp" class="gtxt" style="max-width:none;font-size:12px;min-height:80px;margin-bottom:8px" placeholder='{ apiKey: "…", authDomain: "…", databaseURL: "…", projectId: "…", appId: "…" }'></textarea>
@@ -2743,6 +3100,19 @@ function syncPanel(){
       ${hard?'':`<div class="set-row"><div><b>Firebase config</b><div class="d">stored in this browser · project <b>${esc(cfg.projectId||'?')}</b></div></div><button class="btn ghost sm" onclick="if(confirm('Forget the Firebase config on this device?'))fbSaveConfig('')">Forget</button></div>`}
       <details class="guide"><summary>Sync log ›</summary><div id="syncLogBox" class="gd small" style="font-variant-numeric:tabular-nums">${syncLogHtml()}</div></details>`}
   </div>`;
+  /* layer 2 (4644-4658), verbatim from its second line on */
+  if(!fbConfig())return h;
+  let add='';
+  if(SYNC.code){
+    add=`<div class="set-row linkrow"><div><b>Link another device</b>
+        <div class="d">On an iPhone or iPad: point the Camera at this code, tap the link, and the app opens already linked.
+        Then <b>Share ↑ → Add to Home Screen</b>. The home-screen app keeps its own storage, so open it once and type <b>${esc(SYNC.code)}</b> when it asks — after that it stays linked.</div>
+        <div class="row" style="gap:6px;margin-top:8px"><button class="btn ghost sm" onclick="fbCopyLink()">Copy link</button></div></div>
+        <div class="qrbox" title="${esc(syncLink())}">${qrSvg(syncLink(),4)}</div></div>`;
+  }else{
+    add=`<div class="set-row"><div><b>Start here</b><div class="d">First device: tap <b>Generate</b>. Every other device: type that same code and tap <b>Link</b> — or open the link the first device shows.</div></div></div>`;
+  }
+  return h.replace(/(<details class="guide"><summary>Sync log)/,add+'$1');
 }
 function polishPanel(){
   const s=S.settings, th=s.theme||'auto';
@@ -2757,10 +3127,8 @@ function polishPanel(){
       <button class="tgl ${s.anim!==false?'on':''}" onclick="S.settings.anim=S.settings.anim===false?true:false;save();renderSet()"><i></i></button></div>
   </div>`;
 }
-renderSet=(function(orig){return function(){orig.apply(this,arguments);try{const v=document.getElementById('vSet');v.insertAdjacentHTML('afterbegin',syncPanel());v.insertAdjacentHTML('beforeend',polishPanel());}catch(e){}};})(renderSet);
 
 function sysDark(){return !!(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);}
-applyTheme=(function(orig){return function(t){if(!t||t==='auto')t=sysDark()?'dark':'light';orig(t);const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',cssVar('--bg')||'#faf9f7');};})(applyTheme);
 
 function haptic(kind){
   if(S.settings.haptics===false)return;
@@ -2770,16 +3138,8 @@ function animOn(){return S.settings.anim!==false&&!(window.matchMedia&&matchMedi
 
 /* review: card slides in; the grade you just gave colours the edge of the next card for a beat */
 let lastGrade=0;
-renderRev=(function(orig){return function(){orig.apply(this,arguments);
-  const done=document.querySelector('#vRev .card.done'); if(done&&sessionN>0&&!done.dataset.party){done.dataset.party=1;if(animOn())confetti();haptic('done');}
-  if(!animOn())return;const st=document.querySelector('#vRev .stage');if(!st)return;
-  st.classList.add(revealed?'flip-in':'slide-in'); if(lastGrade&&!revealed){st.classList.add(lastGrade===1?'from-again':lastGrade===2?'from-hard':'from-good');lastGrade=0;}
-  st.addEventListener('animationend',()=>st.classList.remove('slide-in','flip-in'),{once:true});
-};})(renderRev);
 /* drills and grammar: confetti on a finished set */
 function partyIfDone(host){const d=document.querySelector(host+' .card.done');if(d&&!d.dataset.party){d.dataset.party=1;if(animOn())confetti();haptic('done');}}
-renderDrill=(function(orig){return function(){orig.apply(this,arguments);partyIfDone('#vDrill');};})(renderDrill);
-renderGram=(function(orig){return function(){orig.apply(this,arguments);partyIfDone('#vGram');};})(renderGram);
 
 function confetti(){
   if(!animOn())return;
@@ -2799,10 +3159,6 @@ function confetti(){
 
 /* confidence badges: pills that pop when a word's level changes */
 const confSeen={};
-wrowHtml=(function(orig){return function(w,showLn){let h=orig.apply(this,arguments);const l=confOf(w.id);
-  const prev=confSeen[w.id]; confSeen[w.id]=l;
-  if(l&&prev!==undefined&&prev!==l&&animOn())h=h.replace(`class="tag ${CONF[l].c}"`,`class="tag ${CONF[l].c} pop"`);
-  return h;};})(wrowHtml);
 
 /* study heatmap + streak on the Today screen */
 function streakCount(){let n=0;const d=new Date();if(!S.log[dkey(d)])d.setDate(d.getDate()-1);while(S.log[dkey(d)]&&(S.log[dkey(d)].rev+S.log[dkey(d)].new)>0){n++;d.setDate(d.getDate()-1);}return n;}
@@ -2822,7 +3178,6 @@ function heatmapHtml(){
   return `<div class="heat"><div class="row spread" style="margin-bottom:8px"><div class="lab" style="margin:0">Last ${weeks} weeks</div><div class="small muted">${days} study days · ${total} cards · ${streak?`<span class="flame">🔥 ${streak}-day streak</span>`:'no streak yet'}</div></div>
     <div class="hmgrid">${cells}</div></div>`;
 }
-renderHome=(function(orig){return function(){orig.apply(this,arguments);try{const fc=document.querySelector('#vHome .fc');if(fc){const cap=fc.nextElementSibling;(cap||fc).insertAdjacentHTML('afterend',heatmapHtml());}}catch(e){}};})(renderHome);
 
 
 
@@ -2859,70 +3214,7 @@ function ringSvg(frac,size,stroke,cls){
 }
 function ringArm(root){requestAnimationFrame(()=>requestAnimationFrame(()=>{(root||document).querySelectorAll('.ring .fg').forEach(c=>{c.style.strokeDashoffset=c.dataset.off;});}));}
 
-/* ---- Today hero ---- */
-renderHome=(function(orig){return function(){orig.apply(this,arguments);try{
-  const first=document.querySelector('#vHome .card'); if(!first)return;
-  /* left = this week's lane; other = what the catch-up and maintenance lanes still hold. The day is only clear when both are empty. */
-  const q=buildQueue(), all=[...q.learn,...q.rev,...q.fresh], left=all.filter(c=>typeof laneOf!=='function'||laneOf(c)==='live').length, other=all.length-left, done=todayDone(), total=done+left, clear=left===0&&other===0&&done>0;
-  const frac=total?done/total:0, streak=streakCount(), hard=(S.hard||[]).length;
-  const h=new Date().getHours();
-  const line=left===0
-    ?(other?(done?`This week’s cards are done · ${other} more in catch-up and maintenance`:`${other} waiting in catch-up and maintenance`)
-      :done?`Deck cleared for today · ${nextDueText()||'nothing more due'}`:'Nothing due yet — pick words in the Library or wait for FSRS')
-    :done?`${done} done · ${left} to go${left<=8?' · nearly there':''}`
-    :h<11?`Fresh start · ${left} waiting`:h<18?`${left} waiting for you`:`Evening set · ${left} to close the day`;
-  const ln=S.settings.curLesson||21;
-  first.className='card hero';
-  first.innerHTML=`
-    <div class="hero-ring">${ringSvg(frac,112,9,clear?'full':'')}
-      <div class="hero-n"><b data-count="${done}">0</b><span>${left===0&&done?'done':'of '+total}</span></div></div>
-    <div class="hero-body">
-      <div class="lab" style="margin-bottom:4px">${clear?'Today · complete':'Today'}</div>
-      <div class="hero-line">${line}</div>
-      <div class="hero-meta">
-        <span class="chip ${streak?'hot':''}">${streak?'🔥 '+streak+'-day streak':'start a streak today'}</span>
-        <span class="chip">${esc(lnLabel(ln))}</span>
-        ${hard?`<span class="chip warn">${hard} hard</span>`:''}
-        ${q.fresh.length?`<span class="chip">${q.fresh.length} new</span>`:''}
-      </div>
-      <div style="margin-top:14px"><button class="btn big ${left||other?'':'ghost'}" onclick="${left?'startLane(\'live\')':other?'go(\'rev\')':'go(\'lib\')'}">${left?(done?'Keep going':'Start today’s cards'):other?`Do the other ${other}`:'Browse the Library'}</button></div>
-    </div>`;
-  countUp(first); ringArm(first);
-}catch(e){}};})(renderHome);
 
-/* ---- Review: progress bar + run counter + session summary ---- */
-renderRev=(function(orig){return function(){orig.apply(this,arguments);try{
-  const el=document.getElementById('vRev');
-  if(cur){
-    const remaining=rq.learn.length+rq.rev.length+rq.fresh.length, tot=SES.n+remaining, frac=tot?SES.n/tot:0;
-    const run=SES.run, show=run>=3, pop=show&&run!==SES.lastRun; SES.lastRun=run;
-    el.insertAdjacentHTML('afterbegin',`<div class="sbar"><i style="width:${Math.round(frac*100)}%"></i></div>
-      <div class="srow"><span class="small muted">${SES.n} done · ${remaining} left</span>${show?`<span class="runchip ${pop?'pop':''}">${run} in a row${run>=10?' ✦':''}</span>`:''}</div>`);
-  } else if(SES.n>0){
-    const done=el.querySelector('.card.done'); if(!done)return;
-    const acc=Math.round((SES.g[3]+SES.g[4])/SES.n*100), mins=Math.max(1,Math.round((Date.now()-SES.t0)/60000)), streak=streakCount();
-    const q=buildQueue(), soon=q.learn.length+q.rev.length+q.fresh.length;
-    done.innerHTML=`<div class="zhd zh">${acc>=90?'太棒了':acc>=70?'做得好':'加油'}</div>
-      <div style="font-weight:600;font-size:16px;margin-bottom:14px">${soon?'Session done — '+soon+' more ready':'All caught up'}</div>
-      <div class="sum">
-        <div><b data-count="${SES.n}">0</b><span>cards</span></div>
-        <div><b data-count="${acc}" data-suf="%">0</b><span>recalled</span></div>
-        <div><b data-count="${mins}">0</b><span>min</span></div>
-        <div><b data-count="${SES.best}">0</b><span>best run</span></div>
-        ${SES.newN?`<div><b data-count="${SES.newN}">0</b><span>new words</span></div>`:''}
-      </div>
-      <div class="hero-meta" style="justify-content:center;margin-top:14px">
-        <span class="chip ${streak?'hot':''}">${streak?'🔥 '+streak+'-day streak':'streak starts tomorrow'}</span>
-        ${nextDueText()?`<span class="chip">${esc(nextDueText())}</span>`:''}
-        ${SES.g[1]?`<span class="chip warn">${SES.g[1]} to revisit</span>`:''}
-      </div>
-      <div class="row" style="justify-content:center;gap:8px;margin-top:20px">
-        ${soon?`<button class="btn" onclick="startReview()">Keep going</button>`:''}
-        <button class="btn ghost" onclick="go('home')">Back to Today</button>
-      </div>`;
-    countUp(done);
-  }
-}catch(e){}};})(renderRev);
 
 
 /* ============================================================
@@ -2954,36 +3246,6 @@ function ring2(m,size,stroke){
   const arc=(f,cls)=>`<circle class="${cls}" cx="${size/2}" cy="${size/2}" r="${r}" stroke-width="${stroke}" stroke-dasharray="${C}" stroke-dashoffset="${C}" data-off="${C*(1-Math.max(0,Math.min(1,f)))}"/>`;
   return `<svg class="ring r2 ${m.frac>=0.999&&m.n?'full':''}" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle class="bg" cx="${size/2}" cy="${size/2}" r="${r}" stroke-width="${stroke}"/>${arc(m.lfrac,'fg soft')}${arc(m.frac,'fg')}</svg>`;
 }
-/* ---- Library ---- */
-renderLibResults=(function(orig){return function(){orig.apply(this,arguments);try{
-  if(libSearch.trim())return;
-  const box=document.getElementById('libResults'); if(!box)return;
-  const csm=charStageMap();
-  const [lnStart,lnEnd]=bookRange(libBook);
-  /* overview strip: one mini ring per lesson, tap to open it */
-  let strip='', bookChars=new Set(), bookKnown=0;
-  for(let ln=lnStart;ln<=lnEnd;ln++){
-    const m=lessonMastery(ln,csm); lessonChars(ln).forEach(ch=>bookChars.add(ch));
-    const cur=(S.settings.curLesson||0)===ln;
-    strip+=`<div class="lmini ${cur?'cur':''} ${m.known?'':'none'}" title="${esc(lnLabel(ln))} · ${LESSON_TITLES[ln]||''} · ${m.known}/${m.n} characters known" onclick="openLessons[${ln}]=true;renderLibResults();setTimeout(()=>{const e=document.querySelector('.lesson[data-ln=&quot;${ln}&quot;]');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});},40)">
-      ${ring2(m,40,4)}<span class="lm-n">${lnInBook(ln)}</span><span class="lm-p">${m.n?Math.round(m.frac*100):0}%</span></div>`;
-  }
-  bookChars.forEach(ch=>{if((csm[ch]||0)>=3)bookKnown++;});
-  const pct=bookChars.size?Math.round(bookKnown/bookChars.size*100):0;
-  box.insertAdjacentHTML('afterbegin',`<div class="card lmap"><div class="row spread" style="margin-bottom:10px"><div class="lab" style="margin:0">Book ${(BOOKS.find(b=>b.n===libBook)||BOOKS[0]).zh} · characters you know</div><div class="small muted"><b data-count="${bookKnown}">0</b> of ${bookChars.size} · ${pct}%</div></div>
-    <div class="lstrip">${strip}</div>
-    <div class="small muted" style="margin-top:8px">Dark arc = characters that hold for 3 weeks or more. Pale arc = met and still learning. A character counts once you know it in any word, so later lessons fill in before you reach them.</div></div>`);
-  /* per-lesson ring in each accordion head */
-  box.querySelectorAll('.lesson').forEach(el=>{
-    const head=el.querySelector('.head'); if(!head)return;
-    const mm=(head.getAttribute('onclick')||'').match(/openLessons\[(\d+)\]/); if(!mm)return;
-    const ln=+mm[1]; el.dataset.ln=ln;
-    const m=lessonMastery(ln,csm);
-    head.insertAdjacentHTML('afterbegin',`<div class="lring" title="${m.known} of ${m.n} characters known">${ring2(m,44,4.5)}<span>${m.n?Math.round(m.frac*100):0}<i>%</i></span></div>`);
-    const sub=el.querySelector('.sub'); if(sub)sub.innerHTML+=` · <b style="color:var(--acc);font-weight:600">${m.known}</b>/${m.n} 字 known${m.learn?` · ${m.learn} learning`:''}`;
-  });
-  countUp(box); ringArm(box);
-}catch(e){}};})(renderLibResults);
 
 /* ---- Brain: word-type categories ---- */
 const WCATS=[
@@ -3017,11 +3279,6 @@ function catPanel(){
   return `<div class="card"><div class="row spread" style="margin-bottom:10px"><div class="lab" style="margin:0">By word type${brainCat?' · <span class="link" onclick="brainCat=null;brainSel=null;renderBrain()">show all</span>':''}</div><div class="small muted">tap a type to focus the walls on it</div></div>
     <div class="cgrid">${tiles}</div></div>`;
 }
-renderBrain=(function(orig){return function(){renderBrain._in=true;try{orig.apply(this,arguments);}finally{renderBrain._in=false;}
-  try{const el=document.getElementById('vBrain'); const first=el.querySelector('.card'); if(first)first.insertAdjacentHTML('afterend',catPanel()); ringArm(el);
-    if(brainCat){const c=WCATS.find(x=>x[0]===brainCat); const h=el.querySelector('.segbar'); if(h&&c)h.insertAdjacentHTML('beforebegin',`<div class="catnote">Showing <b>${esc(c[1])}</b> ${c[2]} only</div>`);}
-  }catch(e){}
-};})(renderBrain);
 
 /* ============================================================
    v22 data — Notion links, confusable families, catch-up tiers,
@@ -3232,7 +3489,6 @@ function renderGramCard(){
 }
 function spkBtnText(t){window.AUDS=window.AUDS||[];const i=AUDS.push(t)-1;return '<button class="spk" title="listen" onclick="playAudio(AUDS['+i+'])">'+SPK_SVG+'</button>';}
 function gramSuspend(){if(!cur||!isGram(cur))return;const c=S.cards[cur];if(c)c.susp=1;save();['learn','rev','fresh'].forEach(k=>{rq[k]=rq[k].filter(x=>x!==cur);});toast('Pattern parked — un-park it in the Grammar tab');nextCard();}
-renderRev=(function(orig){return function(){if(cur&&isGram(cur))return renderGramCard();return orig.apply(this,arguments);};})(renderRev);
 /* Settings: grammar cards */
 function gramSetPanel(){const s=S.settings,n=Object.keys(S.cards).filter(isGram).length;
   return `<div class="card"><div class="lab">Grammar in the queue</div>
@@ -3240,7 +3496,6 @@ function gramSetPanel(){const s=S.settings,n=Object.keys(S.cards).filter(isGram)
       <button class="tgl ${s.gramCards!==false?'on':''}" onclick="S.settings.gramCards=S.settings.gramCards===false?true:false;save();renderSet();badge()"><i></i></button></div>
     <div class="set-row"><div><b>New grammar cards per day</b><div class="d">how many fresh patterns may start each day, on top of new words</div></div>
       <input type="number" min="0" max="30" value="${s.newGramPerDay??4}" onchange="S.settings.newGramPerDay=Math.max(0,parseInt(this.value)||0);save();badge()"></div></div>`;}
-renderSet=(function(orig){return function(){orig.apply(this,arguments);try{document.getElementById('vSet').insertAdjacentHTML('beforeend',gramSetPanel());}catch(e){}};})(renderSet);
 
 /* ---- 2. Which one? ---- */
 function cfStat(k){return (S.cf||{})[k]||{n:0,ok:0};}
@@ -3295,13 +3550,6 @@ function renderRead(el){
 }
 /* hook the two new drills into the drill tab */
 DMODES.push(['confuse','辨析 Which one?','不／沒 · 就／才 · 在／到 …'],['read','閱讀 Reading sprint','ten sentences, tap what you don’t know']);
-startDrill=(function(orig){return function(mode){if(mode==='confuse')return startConfuse(null);if(mode==='read')return startRead();return orig.apply(this,arguments);};})(startDrill);
-renderDrill=(function(orig){return function(){
-  const el=document.getElementById('vDrill');
-  if(dq&&dq.i<dq.qs.length){const q=dq.qs[dq.i];if(q.mode==='confuse'){renderConfuse(el);return;}if(q.mode==='read'){renderRead(el);return;}}
-  orig.apply(this,arguments);
-  try{ if(!dq){el.insertAdjacentHTML('beforeend',confusePanel());} }catch(e){}
-};})(renderDrill);
 
 /* ---- 3. Grammar grasp map (Grammar tab) ---- */
 function graspMap(){
@@ -3318,31 +3566,22 @@ function graspMap(){
 }
 function famPoints(k){const cl=S.settings.curLesson||22,out=[];for(let l=1;l<=cl;l++)(GRAMMAR[l]||[]).forEach(p=>{if(famOf(p)===k)out.push(p);});return out;}
 function trackGramIds(ids){let n=0;ids.forEach(id=>{const gp=GP[id];if(gp&&gramClozable(gp.p)&&!S.cards[gramCid(id)]){S.cards[gramCid(id)]={};n++;}});save();badge();toast(n?n+' cloze card'+(n>1?'s':'')+' added':'already in the deck');renderGram();}
-renderGram=(function(orig){return function(){orig.apply(this,arguments);if(gq)return;try{
-  const el=document.getElementById('vGram'); const head=el.querySelector('.card');
-  const n=gramTrackedCount(gramLesson), tot=gramClozableCount(gramLesson);
-  const hrow=head&&head.querySelector('.row'); if(hrow){hrow.insertAdjacentHTML('beforeend',`<div class="row" style="gap:6px;flex-basis:100%;margin-top:8px"><span class="small muted">${n}/${tot} patterns in the review queue as cloze cards</span>${n<tot?`<button class="btn sm ghost" onclick="trackGram(${gramLesson});badge();renderGram()">+ Add ${tot-n} cloze card${tot-n>1?'s':''}</button>`:''}${n?`<button class="btn sm ghost" onclick="if(confirm('Remove this lesson\\'s grammar cards and their progress?')){untrackGram(${gramLesson});badge();renderGram();}">Remove</button>`:''}${notionLink(gramLesson,'Notion page ↗')}</div>`);}
-  el.querySelectorAll('.gpt').forEach((g,i)=>{const p=(GRAMMAR[gramLesson]||[])[i];if(!p)return;const lv=gramGrasp(p.id);const c=S.cards[gramCid(p.id)];const dots=g.querySelector('.gdots');if(dots)dots.insertAdjacentHTML('beforebegin',`<span class="grasp s${lv}" title="${GRASP_T[lv]}${c?(c.susp?' · parked':''):' · no cloze card'}">${c?(c.susp?'parked':GRASP_T[lv]):'no card'}</span>`);
-    if(c&&c.susp){const b=g.querySelector('.gh .btn');if(b)b.insertAdjacentHTML('beforebegin',`<button class="btn sm ghost" style="flex:none" onclick="event.stopPropagation();delete S.cards['${gramCid(p.id)}'].susp;save();badge();renderGram()">Un-park</button>`);}});
-  el.insertAdjacentHTML('afterbegin',graspMap());
-}catch(e){}};})(renderGram);
 
 /* ---- 4. Catch-up tiers ---- */
 function tierWords(t){const out=[];t.w.split(/\s+/).forEach(k=>{let w=WORD_BY_T[k];if(!w){const c=WORDS.filter(x=>x.t.split('（')[0].includes(k)&&!isName(x)).sort((a,b)=>a.t.length-b.t.length);w=c.find(x=>x.l>=10&&x.l<=20)||c[0];}if(w&&!out.includes(w))out.push(w);});return out;}
-function tierPanel(){
-  return `<div class="card"><div class="row spread" style="margin-bottom:6px"><div><div class="lab" style="margin:0">追進度 · Catch-up tiers</div><div class="small muted">B1 L10 → B2 L5, in the order your gameplan says to do them if a week goes badly</div></div><a class="nlink" href="${NOTION.catchup}" target="_blank" rel="noopener">Gameplan ↗</a></div>
-  ${TIERS.map(t=>{const ws=tierWords(t);let known=0,inDeck=0,hard=0;ws.forEach(w=>{const l=confOf(w.id);if(l>=3)known++;if(tracked(w.id))inDeck++;if(l===1)hard++;});const m={n:ws.length,frac:ws.length?known/ws.length:0,lfrac:ws.length?inDeck/ws.length:0};
-    return `<div class="tier"><div class="lring">${ring2(m,44,4.5)}<span>${ws.length?Math.round(m.frac*100):0}<i>%</i></span></div>
-      <div class="tier-b"><b>${esc(t.t)}</b><div class="small muted">${esc(t.d)} · <b style="color:var(--acc)">${known}</b>/${ws.length} known · ${inDeck} in deck${hard?` · <span style="color:var(--red)">${hard} hard</span>`:''}</div>${t.g?`<div class="small muted">grammar: ${esc(t.g)}</div>`:''}</div>
-      <div class="tier-acts">${inDeck<ws.length?`<button class="btn sm ghost" onclick="tierWords(TIERS[${t.k-1}]).forEach(w=>{if(!tracked(w.id))trackWord(w.id);});badge();renderHome()">+ deck</button>`:''}<button class="btn sm ghost" onclick="drillTier=${t.k};drillScope='tier';go('drill');startDrill('rec')">Drill</button>${t.g?`<button class="btn sm ghost" onclick="startGramQuiz(recurPoints())">Patterns</button>`:''}</div></div>`;}).join('')}
-  <div class="small muted" style="margin-top:8px">The ten patterns that keep coming back (就/才, 一…就, QW+都, 一點/有一點, 跟…一樣, V了…了, 把, V著, 起來, 還是…吧): <span class="link" onclick="startGramQuiz(recurPoints())">drill them</span> · <span class="link" onclick="trackGramIds(recurPoints().map(p=>p.id))">add as cloze cards</span></div></div>`;
-}
+function tierPanel(){return '';}
 function recurPoints(){const out=[];const cl=S.settings.curLesson||22;for(let l=1;l<=cl;l++)(GRAMMAR[l]||[]).forEach(p=>{if(p.tgt.some(t=>RECUR_TGT.includes(t)))out.push(p);});return out;}
 let drillTier=1;
-drillWords=(function(orig){return function(){if(drillScope==='tier')return tierWords(TIERS[drillTier-1]||TIERS[0]).filter(w=>S.settings.includeNames||!isName(w));return orig.apply(this,arguments);};})(drillWords);
 
 /* ---- 5. Weekday plan ---- */
 function planAct(k,arg){
+  const cl=S.settings.curLesson||26;
+  if(k==='paper'){go('home');setTimeout(()=>{const c=[...document.querySelectorAll('#vHome .card')].find(x=>/paper list/i.test(x.textContent));if(c)c.scrollIntoView({behavior:'smooth',block:'start'});else toast('Nothing on tonight\u2019s paper list yet');},60);return;}
+  if(k==='dict'&&arg&&arg.hard){drillScope='hard';go('drill');startDrill('dict');return;}
+  if(k==='mtest'){mtResume();return;}
+  if(k==='test'){mtResume();if(arg&&arg.ln)mtJump(arg.ln);return;}if(k==='catchtab'){go('catch');return;}
+  if(k==='listen'){drillScope='lesson';drillLesson=S.settings.curLesson||23;go('drill');startDrill('listen');return;}
+  {
   const cl=S.settings.curLesson||22;
   const acts={
     dict:()=>{drillScope='lesson';drillLesson=cl;go('drill');startDrill('dict');},
@@ -3357,32 +3596,27 @@ function planAct(k,arg){
     lib:()=>{const ln=arg&&arg.ln||cl;libBook=bookOf(ln);openLessons[ln]=true;go('lib');setTimeout(()=>{const e=document.querySelector('.lesson[data-ln="'+ln+'"]');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});},60);}
   };
   if(acts[k])acts[k]();
+  }
 }
 function planPanel(){
-  const d=new Date(), wd=d.getDay(), cl=S.settings.curLesson||22, L=lnLabel(cl), today=dkey(d), E=S.settings.examDay||4;
+  const d=new Date(), wd=d.getDay(), cl=S.settings.curLesson||26, L=lnLabel(cl), E=S.settings.examDay||4;
   const A=(k,label,arg)=>`<button class="pact" onclick='planAct("${k}",${JSON.stringify(arg||null)})'>${label}</button>`;
   const N=(url,label)=>`<a class="pact nl" href="${url}" target="_blank" rel="noopener">${label}</a>`;
   const T={
-    mon:{t:'聽寫一',items:[A('dict','Rehearse 聽寫 · '+L+' 對話一'),A('triage','After class: Triage 對話二',{dlg:2}),A('rev','Clear the queue')]},
-    d2:{t:'對話二 characters',items:[A('dict','聽寫 rehearsal · '+L+' 對話二'),A('listen','聽力 · listen to the lesson'),A('hardrec','Hard list → 認字'),A('gram','Grammar drill · '+L),A('read','Reading sprint')]},
-    t2:{t:'口試 T−2 · build the spiel',items:[A('dict','聽寫 rehearsal · '+L),A('gram','Grammar drill · '+L),A('confuse','Which one? · 10 min'),A('exam','口試: generate the prompt, record once'),N(notionLesson(cl),'Write the five sentences in 我的例句 ↗')]},
-    t1:{t:'聽寫二 · say it with the page face down',items:[A('dict','聽寫二 before class'),A('exam','口試 simulator, no page'),A('sent','造句 on the one pattern that broke'),A('confuse','Which one?')]},
-    exam:{t:'課考試',items:[A('hardrec','Hard list → 認字'),A('hardtone','then 聲調'),A('gram','Grammar drill once'),N(notionLesson(cl),'After: log what it asked in 疑問 ↗')]},
-    fri:{t:'new lesson opens',items:[A('triage','Triage 對話一 of the new lesson',{dlg:1}),A('read','Reading sprint on the new sentences'),N(NOTION.flow,'Intake checklist ↗')]},
-    sat:{t:'對話一 characters',items:[A('rev','Clear the queue'),A('dict','聽寫 drill · '+L),A('listen','聽力 · shadow the dialogue'),A('hardrec','Catch-up hammer: hard words'),A('read','Reading sprint')]},
-    sun:{t:'對話一 grammar',items:[A('gram','Grammar drill · '+L),A('sent','造句 · '+L),A('confuse','Which one? · all families'),N(notionLesson(cl),'Write 我的例句 in Notion ↗')]}
+    mon:{t:'聽寫一',items:[A('dict','聽寫 rehearsal · '+L+' 對話一'),A('paper','田字格 · tonight\u2019s paper'),A('hardrec','Hard list → 認字'),A('triage','After class: Triage 對話二',{dlg:2})]},
+    d2:{t:'對話二 characters',items:[A('dict','聽寫 · '+L+' 對話二'),A('paper','田字格 · tonight\u2019s paper'),A('hardtone','Hard list → 聲調'),A('catchtab','Catch-up: shaky words')]},
+    t2:{t:'two days out',items:[A('dict','聽寫 · hard list',{hard:1}),A('dict','聽寫 · '+L),A('hardrec','Hard list → 認字'),N(notionLesson(cl),'Grammar + 口試 prep in Notion ↗')]},
+    t1:{t:'聽寫二',items:[A('dict','聽寫二 before class'),A('paper','田字格 · tonight\u2019s paper'),A('hardtone','Hard list → 聲調'),N(notionLesson(cl),'口試 spiel in Notion ↗')]},
+    exam:{t:'課考試',items:[A('hardrec','Hard list → 認字'),A('hardtone','then 聲調'),A('dict','聽寫 · hard list',{hard:1}),N(notionLesson(cl),'After: log what it asked in 疑問 ↗')]},
+    fri:{t:'new lesson opens',items:[A('triage','Triage 對話一 of the new lesson',{dlg:1}),A('paper','田字格 · the new characters ×20'),A('rev','Clear the queue')]},
+    sat:{t:'weekend · catch-up',items:[A('rev','Clear the queue'),A('mtest','Mastery test · two lessons'),A('catchtab','Catch-up: review the shaky ones'),A('dict','聽寫 · hard list',{hard:1})]},
+    sun:{t:'weekend · catch-up',items:[A('rev','Clear the queue'),A('mtest','Mastery test · two lessons'),A('paper','田字格 · tonight\u2019s paper'),A('catchtab','Catch-up: review the shaky ones')]}
   };
   const key=wd===0?'sun':wd===6?'sat':wd===1?'mon':wd===E?'exam':wd===E-1?'t1':wd===E-2?'t2':(wd===5&&E===4)?'fri':'d2';
   const p=T[key], names=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
-  let cu='';
-  const sched=CATCHUP_SCHED[today]; const next=Object.keys(CATCHUP_SCHED).filter(k=>k>today).sort()[0];
-  if(sched)cu=`<div class="cu"><b>Catch-up today · ${sched.map(l=>esc(lnLabel(l))).join(' + ')}</b> <span class="small muted">${sched.length>1?'weekend block · ':''}75 min each: notes → sort → hammer → dialogue</span>${sched.map(l=>`<div class="row" style="gap:6px;margin-top:6px"><span class="small" style="min-width:52px"><b>${esc(lnLabel(l))}</b></span>${A('test','Test it',{ln:l})}${A('catchtab','Catch-up tab')}${N(notionLesson(l),'Notion ↗')}</div>`).join('')}</div>`;
-  else if(next)cu=`<div class="cu small muted">No catch-up today · next: <b>${CATCHUP_SCHED[next].map(l=>esc(lnLabel(l))).join(' + ')}</b> on ${next.slice(5).replace('-','/')}</div>`;
-  else cu=`<div class="cu small muted">Slow lane: 5 shaky words a day in 3-day blocks · one old lesson\u2019s 我的例句 per week</div>`;
-  return `<div class="card plan"><div class="row spread" style="margin-bottom:8px"><div><div class="lab" style="margin:0">Today\u2019s plan · ${names[wd]} · ${esc(p.t)}</div><div class="small muted">${L} · 聽寫一 Mon · 聽寫二 ${names[E-1]} · 考試 <select class="vsel" style="padding:1px 4px;font-size:11.5px;max-width:none" onchange="S.settings.examDay=+this.value;save();renderHome()"><option value="4" ${E===4?'selected':''}>星期四</option><option value="5" ${E===5?'selected':''}>星期五</option></select></div></div><a class="nlink" href="${NOTION.flow}" target="_blank" rel="noopener">Workflow ↗</a></div>
-    <div class="pacts">${p.items.join('')}</div>${cu}</div>`;
+  return `<div class="card plan"><div class="row spread" style="margin-bottom:8px"><div><div class="lab" style="margin:0">Today’s plan · ${names[wd]} · ${esc(p.t)}</div><div class="small muted">${L} · 聽寫一 Mon · 聽寫二 ${names[E-1]} · 考試 <select class="vsel" style="padding:1px 4px;font-size:11.5px;max-width:none" onchange="S.settings.examDay=+this.value;save();renderHome()"><option value="4" ${E===4?'selected':''}>星期四</option><option value="5" ${E===5?'selected':''}>星期五</option></select> · grammar lives in Notion</div></div><a class="nlink" href="${NOTION.flow}" target="_blank" rel="noopener">Workflow ↗</a></div>
+    <div class="pacts">${p.items.join('')}</div></div>`;
 }
-renderHome=(function(orig){return function(){orig.apply(this,arguments);try{const hero=document.querySelector('#vHome .card.hero');if(hero){hero.insertAdjacentHTML('afterend',planPanel()+tierPanel());ringArm(document.getElementById('vHome'));}}catch(e){}};})(renderHome);
 
 /* ---- 7. Phonetic series (Brain) ---- */
 function phoneticPanel(){
@@ -3393,7 +3627,6 @@ function phoneticPanel(){
   return `<div class="card"><div class="lab">Sound families · 聲旁</div><div class="small muted" style="margin-bottom:10px">Characters that share a phonetic component usually share a sound. Know one, and the rest come cheap — the grey ones are the ones you haven’t met yet.</div>
     <div class="phgrid">${rows.map(r=>`<div class="ph"><span class="ph-k zh">${esc(r.ph)}</span>${r.chs.map(ch=>`<span class="tile s${csm[ch]||0} zh" style="font-size:16px;width:30px;height:30px;border-radius:7px" title="${esc(ch)}${COMPONENTS[ch]&&COMPONENTS[ch].p?' '+esc(COMPONENTS[ch].p):''}" onclick="brainSel={type:'char',id:'${esc(ch)}'};brainView='chars';renderBrain()">${esc(ch)}</span>`).join('')}</div>`).join('')}</div></div>`;
 }
-renderBrain=(function(orig){return function(){orig.apply(this,arguments);try{const el=document.getElementById('vBrain');const cards=el.querySelectorAll(':scope > .card');const anchor=cards[1]||cards[0];if(anchor)anchor.insertAdjacentHTML('afterend',phoneticPanel());}catch(e){}};})(renderBrain);
 
 
 /* ============================================================
@@ -3401,46 +3634,14 @@ renderBrain=(function(orig){return function(){orig.apply(this,arguments);try{con
    production card becomes an audio-first 聽寫 card scoped to the
    live lesson, and a listening player for dialogues/sentences.
    ============================================================ */
-/* ---- 1. dictation drill: audio → pinyin + meaning → write → character ---- */
-renderDrill=(function(orig){return function(){
-  orig.apply(this,arguments);
-  try{
-    if(!dq||dq.i>=dq.qs.length)return; const q=dq.qs[dq.i]; if(q.mode!=='dict')return;
-    const w=q.w, st=dq.state, box=document.querySelector('#vDrill .qbox'); if(!box)return;
-    const hintOn=S.settings.dictHint!=='late'||st==='hint'||st==='reveal'||st==='done';
-    const meta=`<div class="row" style="justify-content:center;gap:9px"><span class="pyline">${tonePinyin(esc(w.p))}</span></div><div class="meaning">${esc(w.m)}</div>`;
-    const charBlock=`<div class="bigzh zh" style="font-size:56px">${esc(w.t)}</div>${w.s?`<div class="simpnote">简体 ${esc(w.s)}</div>`:''}${compLines(w.t)}`;
-    box.innerHTML=`<div class="hint">聽寫 — listen, write it on paper, then check</div>
-      <div style="text-align:center;margin:6px 0"><button class="spk lg" onclick="speakWord('${w.id}')">${SPK_SVG}</button></div>
-      ${hintOn?meta:`<div class="qfoot"><button class="btn ghost" onclick="dq.state='hint';renderDrill()">Show pinyin · meaning</button></div>`}
-      ${(st==='reveal'||st==='done')?charBlock:(hintOn?`<div class="qfoot"><button class="btn" onclick="dq.state='reveal';renderDrill()">Show the character</button></div>`:'')}
-      ${st==='reveal'?`<div class="qfoot"><button class="btn ghost" onclick="drillAnswer(false)">Missed it ✗</button><button class="btn" onclick="drillAnswer(true)">Wrote it right ✓</button></div>`:''}`;
-    if(st==='ask'&&!q._played){q._played=1;setTimeout(()=>speakWord(w.id),150);}
-  }catch(e){}
-};})(renderDrill);
 
 /* ---- 2. the production card: audio-first 聽寫 card, scoped to the live lesson + hard list ---- */
 function prodInScope(wid){
+  const r=(S.mtest&&S.mtest.res||{})[wid];if(r==='l'||r==='h')return true;
   const sc=S.settings.prodScope||'current'; if(sc==='all')return true; if(sc==='off')return false;
   const w=byId[wid]; if(!w)return false; const cl=S.settings.curLesson||23;
   return w.l>=cl-1||isHard(wid);
 }
-renderRev=(function(orig){return function(){
-  orig.apply(this,arguments);
-  try{
-    if(!cur||isGram(cur)||modeOf(cur)!=='prod'||revealed||S.settings.prodAudio===false)return;
-    const w=wordOf(cur), st=document.querySelector('#vRev .stage'); if(!w||!st)return;
-    st.innerHTML=`<div class="hint">聽寫 · listen, then write it on paper</div>
-      <div style="text-align:center;margin:4px 0"><button class="spk lg" onclick="speakWord('${w.id}')">${SPK_SVG}</button></div>
-      ${w.pos?`<div class="pos">${esc(w.pos)}</div>`:''}
-      <div class="meaning" style="font-size:21px">${esc(w.m)}</div>
-      ${hintShown?`<div class="pyline" style="font-size:24px">${tonePinyin(esc(w.p))}</div>`:`<div class="hint"><span class="link" onclick="hintShown=true;renderRev()">show pinyin</span></div>`}
-      ${window.usHint?usHint(w):''}
-      <div class="hint">which 字? write it, say the tones, then check</div>`;
-    const tag=document.querySelector('#vRev .mtag.prod'); if(tag)tag.textContent='聽寫 · Write';
-    if(!renderRev._spoke||renderRev._spoke!==cur){renderRev._spoke=cur;setTimeout(()=>speakWord(w.id),200);}
-  }catch(e){}
-};})(renderRev);
 /* settings rows */
 function cardStratPanel(){
   const s=S.settings, sc=s.prodScope||'current';
@@ -3459,7 +3660,6 @@ function cardStratPanel(){
       </select></div>
   </div>`;
 }
-renderSet=(function(orig){return function(){orig.apply(this,arguments);try{const v=document.getElementById('vSet');const conf=v.querySelector('.card:nth-of-type(2)');(conf||v.firstElementChild).insertAdjacentHTML('afterend',cardStratPanel());}catch(e){}};})(renderSet);
 
 /* ---- 3. Listening player ---- */
 const DIALOGUES={
@@ -3528,10 +3728,6 @@ function lpRender(){
     </div>`;
 }
 DMODES.push(['listen','聽力 Listening','dialogue lines read aloud · hide text · shadow']);
-startDrill=(function(orig){return function(mode){if(mode==='listen'){LP.ln=drillScope==='lesson'?drillLesson:(S.settings.curLesson||23);LP.src=DIALOGUES[LP.ln]?'dlg':'sent';return startListen();}return orig.apply(this,arguments);};})(startDrill);
-renderDrill=(function(orig){return function(){if(drillMode==='listen'&&!dq){lpRender();return;}orig.apply(this,arguments);};})(renderDrill);
-/* the weekday plan gets a listening action */
-planAct=(function(orig){return function(k,arg){if(k==='listen'){drillScope='lesson';drillLesson=S.settings.curLesson||23;go('drill');startDrill('listen');return;}return orig.apply(this,arguments);};})(planAct);
 
 /* ============================================================
    v27 — around-the-engine optimisation (engine verified numerically)
@@ -3549,12 +3745,6 @@ function leechUnpark(cid){const c=S.cards[cid];if(!c)return;delete c.susp;delete
 /* ---- 2. backlog mode ---- */
 let BACKLOG=null;
 function lastStudyGap(){const ks=Object.keys(S.log||{}).filter(k=>(S.log[k].rev||0)+(S.log[k].new||0)>0).sort();if(!ks.length)return 0;const d=new Date(ks[ks.length-1]);d.setHours(0,0,0,0);return Math.floor((Date.now()-d.getTime())/DAY);}
-renderHome=(function(orig){return function(){orig.apply(this,arguments);try{
-  buildQueue(); if(!BACKLOG)return; const hero=document.querySelector('#vHome .card.hero'); if(!hero)return;
-  hero.insertAdjacentHTML('afterend',`<div class="card backlog"><div class="lab">Easing back in</div>
-    <div style="font-size:14px"><b>${BACKLOG.due}</b> reviews piled up${BACKLOG.gap>=2?` over ${BACKLOG.gap} days away`:''}. Today shows <b>${BACKLOG.today}</b>: the live lesson and hard words first, then the cards you most likely still remember. New words pause until the pile is cleared.</div>
-    <div class="small muted" style="margin-top:6px">This is the FSRS backlog order — clearing what you still hold before it slips beats grinding the ones already gone. Keep the pace and the queue is normal again in a few days.</div></div>`);
-}catch(e){}};})(renderHome);
 
 /* ---- 3. sentence dictation ---- */
 function startSdict(){
@@ -3578,21 +3768,10 @@ function renderSdict(el){
   if(st==='ask'&&!q._played){q._played=1;setTimeout(sdSpeak,200);}
 }
 DMODES.push(['sdict','句子聽寫 Sentence dictation','hear a sentence · write all of it']);
-startDrill=(function(orig){return function(mode){if(mode==='sdict')return startSdict();return orig.apply(this,arguments);};})(startDrill);
-renderDrill=(function(orig){return function(){const el=document.getElementById('vDrill');if(dq&&dq.i<dq.qs.length&&dq.qs[dq.i].mode==='sdict'){renderSdict(el);return;}orig.apply(this,arguments);};})(renderDrill);
 
 /* ---- 4. quick session ---- */
 function startQuick(n){REV_CAP=n;go('rev');}
-renderHome=(function(orig){return function(){orig.apply(this,arguments);try{const b=document.querySelector('#vHome .card.hero .btn.big');if(b&&!b.classList.contains('ghost'))b.insertAdjacentHTML('afterend',`<div class="row" style="justify-content:center;margin-top:8px"><span class="link small" onclick="startQuick(20)">or a quick 20 · about 5 minutes</span></div>`);}catch(e){}};})(renderHome);
 
-/* settings: leeches + retention guidance */
-renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
-  const v=document.getElementById('vSet'); const strat=[...v.querySelectorAll('.card')].find(c=>/Card strategy/.test(c.textContent)); if(!strat)return;
-  const L=leechList();
-  strat.insertAdjacentHTML('beforeend',`<div class="set-row"><div><b>Leeches</b><div class="d">A word missed 4 times goes to the hard list and tonight’s paper; missed 7 times it is parked here until you un-park it. ${L.length?'':'None parked.'}</div></div>
-    <div class="row" style="gap:4px;flex-wrap:wrap;justify-content:flex-end">${L.map(c=>`<button class="btn ghost sm zh" onclick="leechUnpark('${c}')" title="un-park">${esc(byId[c.split(':')[0]].t)} ↩</button>`).join('')}</div></div>`);
-  const ret=[...v.querySelectorAll('.set-row')].find(r=>/Desired retention/.test(r.textContent)); if(ret){const d=ret.querySelector('.d');if(d)d.textContent='85–90% is the sweet spot: going to 95% roughly doubles the daily load for a few points of recall.';}
-}catch(e){}};})(renderSet);
 
 
 /* =====================================================   v28 — one-scan device linking (Mac ⇄ iPad)
@@ -3628,44 +3807,11 @@ function fbPasteCode(id){
 }
 
 
-/* ---- 2. QR block in Settings → Cloud sync ---- */
-syncPanel=(function(orig){return function(){
-  let h=orig.apply(this,arguments);
-  if(!fbConfig())return h;
-  let add='';
-  if(SYNC.code){
-    add=`<div class="set-row linkrow"><div><b>Link another device</b>
-        <div class="d">On an iPhone or iPad: point the Camera at this code, tap the link, and the app opens already linked.
-        Then <b>Share ↑ → Add to Home Screen</b>. The home-screen app keeps its own storage, so open it once and type <b>${esc(SYNC.code)}</b> when it asks — after that it stays linked.</div>
-        <div class="row" style="gap:6px;margin-top:8px"><button class="btn ghost sm" onclick="fbCopyLink()">Copy link</button></div></div>
-        <div class="qrbox" title="${esc(syncLink())}">${qrSvg(syncLink(),4)}</div></div>`;
-  }else{
-    add=`<div class="set-row"><div><b>Start here</b><div class="d">First device: tap <b>Generate</b>. Every other device: type that same code and tap <b>Link</b> — or open the link the first device shows.</div></div></div>`;
-  }
-  return h.replace(/(<details class="guide"><summary>Sync log)/,add+'$1');
-};})(syncPanel);
 
-/* ---- 3. Today card when this device is not linked ---- */
-renderHome=(function(orig){return function(){orig.apply(this,arguments);try{
-  if(!fbConfig()||SYNC.code)return;
-  const host=document.getElementById('vHome'); if(!host||document.getElementById('linkCard'))return;
-  const first=localEmpty();
-  const html=`<div class="card linkcard" id="linkCard"><div class="lab">☁️ Cloud sync is off on this ${esc(DEVICE.name)}</div>
-    <div style="font-size:14px;margin-bottom:10px">${first
-      ?'Nothing has been studied on this device yet. Type the sync code from your Mac (Settings → Cloud sync on the Mac) and tap <b>Link</b> — your whole deck comes across.'
-      :'Your progress lives only on this device. Already linked another device? Type its code and tap <b>Link</b>. First device? Tap <b>Generate</b> — then link the other one from Settings → Cloud sync.'}</div>
-    <div class="row" style="gap:6px;flex-wrap:wrap">
-      <input id="homeCodeInp" class="search" style="margin:0;width:160px;padding:7px 10px;font-size:13px" placeholder="zika-xxxxxx" autocapitalize="off" autocorrect="off" spellcheck="false">
-      <button class="btn sm" onclick="fbSetCode(document.getElementById('homeCodeInp').value);setTimeout(()=>go('home'),50)">Link</button>
-      <button class="btn ghost sm" onclick="fbPasteCode('homeCodeInp')">Paste</button>
-      ${first?'':`<button class="btn ghost sm" onclick="fbNewCode();go('set');setTimeout(()=>{const c=document.getElementById('syncCard');if(c)c.scrollIntoView({behavior:'smooth',block:'start'});},60)">Generate</button>`}
-    </div></div>`;
-  const hero=host.querySelector('.card.hero');
-  if(hero)hero.insertAdjacentHTML(first?'beforebegin':'afterend',html); else host.insertAdjacentHTML('afterbegin',html);
-}catch(e){}};})(renderHome);
 
 /* ---- 4. Add to Home Screen hint (iOS Safari, shown once) ---- */
 function showInstallHint(force){
+  try{if(SYNC.code&&navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(SYNC.code).catch(()=>{});}catch(e){}
   if(!isIOS()||isStandalone())return;
   if(!force){try{if(store.getItem('zika_a2hs_seen'))return;store.setItem('zika_a2hs_seen','1');}catch(e){}}
   const host=document.getElementById('syncModal'); if(!host)return;
@@ -3702,15 +3848,27 @@ function mtApply(wid,r){
     if(r==='h'){addHard(wid);S.pick=S.pick||[];if(!S.pick.includes(wid))S.pick.push(wid);}}
 }
 function mtMark(r){
+  {const T=mtGet(),wid=T.order[T.i];if(wid){MT.stack.push({wid,i:T.i,cards:JSON.parse(JSON.stringify(MODES.map(m=>S.cards[cardId(wid,m)]||null))),hard:isHard(wid),pick:(S.pick||[]).includes(wid),prev:T.res[wid]||null});if(MT.stack.length>50)MT.stack.shift();}}
   const T=mtGet(),wid=T.order[T.i];if(!wid)return;
   T.res[wid]=r;mtApply(wid,r);haptic(r==='h'?'again':'good');
   T.i++;MT.revealed=false;save();badge();
   if(T.i>=T.order.length||byId[T.order[T.i]].l!==byId[wid].l){/* lesson boundary: pause here */}
   mtRender();
 }
-function mtUndo(){const T=mtGet();if(T.i<=0)return;T.i--;const wid=T.order[T.i];delete T.res[wid];untrackWord(wid);S.hard=(S.hard||[]).filter(x=>x!==wid);save();MT.revealed=false;mtRender();}
+function mtUndo(){const u=MT.stack.pop();if(!u)return;const T=mtGet();
+  MODES.forEach((m,i)=>{const c=u.cards[i];if(c)S.cards[cardId(u.wid,m)]=c;else delete S.cards[cardId(u.wid,m)];});
+  S.hard=(S.hard||[]).filter(x=>x!==u.wid);if(u.hard)S.hard.push(u.wid);
+  S.pick=(S.pick||[]).filter(x=>x!==u.wid);if(u.pick)S.pick.push(u.wid);
+  if(u.prev)T.res[u.wid]=u.prev;else delete T.res[u.wid];
+  T.i=u.i;MT.revealed=false;save();badge();mtRender();}
 function mtStats(ln){const T=mtGet();const ids=T.order.length?T.order:mtWords();const sub=ln?ids.filter(id=>byId[id].l===ln):ids;const n={m:0,l:0,h:0,todo:0};sub.forEach(id=>{const r=T.res[id];if(r)n[r]++;else n.todo++;});n.n=sub.length;n.done=n.n-n.todo;return n;}
 function mtRender(){
+  mtRenderBase.apply(this,arguments);
+  mtRenderLookup();
+  try{const g=document.querySelectorAll('#vDrill .grades button');g.forEach(b=>{const s=b.querySelector('.g1,.g2,.g4');if(!s)return;if(/Couldn/.test(s.textContent))s.textContent='✗ Hell no';else if(/Shaky/.test(s.textContent))s.textContent='~ Sorta';else if(/Wrote/.test(s.textContent))s.textContent='★ Yes';});}catch(e){}
+}
+/* layer 1 (4734-4758), body verbatim: its `return;` after the "Test complete" card must end only this layer */
+function mtRenderBase(){
   const el=document.getElementById('vDrill'),T=mtGet();
   const wid=T.order[T.i],w=wid&&byId[wid];
   const tot=mtStats(),lessons=[];for(let l=T.lo;l<=T.hi;l++)lessons.push(l);
@@ -3735,28 +3893,20 @@ function mtRender(){
   if(r&&S.settings.strokeAnim&&document.getElementById('strokeHost'))try{renderStrokes('strokeHost',w.t.split('（')[0],{});}catch(e){}
   if(!r&&S.settings.autoplayAudio&&MT.lastSpoken!==wid){MT.lastSpoken=wid;setTimeout(()=>speakWord(wid),200);}
 }
-renderDrill=(function(orig){return function(){if(drillMode==='mtest'&&!dq){mtRender();return;}orig.apply(this,arguments);};})(renderDrill);
-DMODES.push(['mtest','寫字測驗 Mastery test','English + pinyin → write it · ★ ~ ✗']);
-startDrill=(function(orig){return function(mode){if(mode==='mtest')return mtResume();return orig.apply(this,arguments);};})(startDrill);
-/* write cards stay live for every word the test marked shaky or ✗, whatever its lesson */
-prodInScope=(function(orig){return function(wid){const r=(S.mtest&&S.mtest.res||{})[wid];if(r==='l'||r==='h')return true;return orig.apply(this,arguments);};})(prodInScope);
-/* one tap: B1 L1–L8 are owned */
-function mtOwnEarly(){if(!confirm('Mark every B1 L1–L8 word as mastered? They leave the queue and resurface in about three months.'))return;let n=0;WORDS.filter(w=>w.l<=8&&!isName(w)).forEach(w=>{if(!(MODES.some(m=>(S.cards[cardId(w.id,m)]||{}).mastAt))){markMastered(w.id);n++;}});S.hard=(S.hard||[]).filter(x=>byId[x].l>8);save();badge();toast(n+' words parked');renderHome();}
-/* Today card */
-function mtPanel(){
-  const T=mtGet(),tot=mtStats(),m={n:tot.n,frac:tot.n?tot.m/tot.n:0,lfrac:tot.n?tot.done/tot.n:0};
-  const early=WORDS.filter(w=>w.l<=8&&!isName(w)),earlyDone=early.filter(w=>MODES.some(mm=>(S.cards[cardId(w.id,mm)]||{}).mastAt)).length;
-  const nextLn=T.order.length&&T.order[T.i]?lnLabel(byId[T.order[T.i]].l):lnLabel(T.lo);
-  return `<div class="card"><div class="row spread" style="margin-bottom:6px"><div><div class="lab" style="margin:0">寫字測驗 · Writing mastery test</div><div class="small muted">${esc(lnLabel(T.lo))} → ${esc(lnLabel(T.hi))} · ${tot.n} words · can you write it from the English and pinyin?</div></div></div>
-    <div class="tier" style="border:0;padding:6px 0"><div class="lring">${ring2(m,44,4.5)}<span>${tot.n?Math.round(tot.done/tot.n*100):0}<i>%</i></span></div>
-      <div class="tier-b"><b>${tot.done?`${tot.done} tested · ★ ${tot.m} · ~ ${tot.l} · ✗ ${tot.h}`:'Not started'}</b><div class="small muted">${tot.todo?`next up: ${esc(nextLn)} · about ${Math.round(tot.todo/40)} sessions of 40 left`:'all done'}</div></div>
-      <div class="tier-acts"><button class="btn sm" onclick="mtResume()">${tot.done?'Continue':'Start'}</button></div></div>
-    <div class="tier" style="border:0;padding:6px 0"><div class="lring" style="opacity:.8">${ring2({n:early.length,frac:earlyDone/early.length,lfrac:earlyDone/early.length},44,4.5)}<span>${Math.round(earlyDone/early.length*100)}<i>%</i></span></div>
-      <div class="tier-b"><b>B1 L1–L8 · already owned</b><div class="small muted">${earlyDone} of ${early.length} parked as mastered</div></div>
-      <div class="tier-acts">${earlyDone<early.length?`<button class="btn sm ghost" onclick="mtOwnEarly()">Mark all mastered</button>`:''}</div></div>
-    <div class="small muted" style="margin-top:6px">One lesson at a time is fine — progress is saved after every word. Shaky and ✗ words get write cards and paper reps; ★ words go to the shelf.</div></div>`;
+/* layer 2 (4975), verbatim: its `return` inside the try must end only this layer */
+function mtRenderLookup(){
+  try{if(!MT.revealed)return;const T=mtGet(),wid=T.order[T.i];const st=document.querySelector('#vDrill .stage');if(wid&&st&&!st.querySelector('.lookup'))st.insertAdjacentHTML('beforeend',lookupRow(byId[wid].t));}catch(e){}
 }
-renderHome=(function(orig){return function(){orig.apply(this,arguments);try{const hero=document.querySelector('#vHome .card.hero');const bl=document.querySelector('#vHome .card.backlog');(bl||hero).insertAdjacentHTML('afterend',mtPanel());ringArm(document.getElementById('vHome'));}catch(e){}};})(renderHome);
+DMODES.push(['mtest','寫字測驗 Mastery test','English + pinyin → write it · ★ ~ ✗']);
+/* one tap: B1 L1–L8 are owned */
+function mtOwnEarly(){
+  mtOwnEarlyBase.apply(this,arguments);
+  try{if(view==='catch')renderCatch();}catch(e){}
+}
+/* layer 1 (4769), verbatim: its `return` when the confirm is cancelled must end only this layer */
+function mtOwnEarlyBase(){if(!confirm('Mark every B1 L1–L8 word as mastered? They leave the queue and resurface in about three months.'))return;let n=0;WORDS.filter(w=>w.l<=8&&!isName(w)).forEach(w=>{if(!(MODES.some(m=>(S.cards[cardId(w.id,m)]||{}).mastAt))){markMastered(w.id);n++;}});S.hard=(S.hard||[]).filter(x=>byId[x].l>8);save();badge();toast(n+' words parked');renderHome();}
+/* Today card */
+function mtPanel(){return '';}
 
 /* ============================================================
    v30 — three lanes, one queue, visible dates.
@@ -3792,27 +3942,6 @@ function lanePanel(){
     ${row('maint','Maintenance · everything else','long intervals, a few a day, never dropped',L.maint)}
     <div class="small muted" style="margin-top:8px">A card graded <b>Good</b> comes back on the date under the button. ~10 reviews per new word over its first month is the planning rule, so ${(S.settings.newPerDay??8)+(S.settings.newCatchPerDay??5)} new a day settles near ${((S.settings.newPerDay??8)+(S.settings.newCatchPerDay??5))*10} reviews a day; lower either intake in Settings if that’s too many.</div></div>`;
 }
-renderHome=(function(orig){return function(){orig.apply(this,arguments);try{
-  const v=document.getElementById('vHome'); const hero=v.querySelector('.card.hero'); if(hero)hero.insertAdjacentHTML('afterend',lanePanel());
-  /* the mastery test supersedes the tier card */
-  [...v.querySelectorAll('.card')].forEach(c=>{if(/追進度 · Catch-up tiers/.test(c.textContent))c.remove();});
-}catch(e){}};})(renderHome);
-/* grade buttons: the actual return date */
-renderRev=(function(orig){return function(){orig.apply(this,arguments);try{
-  document.querySelectorAll('#vRev .grades button .iv').forEach(el=>{const m=el.textContent.match(/^(\d+)d$/);if(m){el.textContent=m[1]+'d · '+fmtDay(Date.now()+(+m[1])*DAY);}});
-}catch(e){}};})(renderRev);
-/* Library rows: when it comes back */
-wrowHtml=(function(orig){return function(w,showLn){let h=orig.apply(this,arguments);try{
-  const cs=MODES.map(m=>S.cards[cardId(w.id,m)]).filter(Boolean); if(!cs.length)return h;
-  const started=cs.filter(c=>c.st!==undefined); let txt;
-  if(!started.length)txt='queued · not started'; else {const due=Math.min(...started.map(c=>c.due)); txt=due<=Date.now()?'due now':'back '+fmtDay(due);}
-  h=h.replace(/(<div class="mn">[\s\S]*?<\/div>)/,'$1<div class="small muted" style="font-size:11px">'+txt+'</div>');
-}catch(e){}return h;};})(wrowHtml);
-/* settings: catch-up intake */
-renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
-  const v=document.getElementById('vSet'); const strat=[...v.querySelectorAll('.card')].find(c=>/Card strategy/.test(c.textContent)); if(!strat)return;
-  strat.insertAdjacentHTML('beforeend',`<div class="set-row"><div><b>Catch-up words per day</b><div class="d">how many shaky / ✗ words from old lessons may start each day, separate from this week’s new words</div></div><input type="number" min="0" max="30" value="${S.settings.newCatchPerDay??5}" onchange="S.settings.newCatchPerDay=Math.max(0,parseInt(this.value)||0);save();badge()"></div>`);
-}catch(e){}};})(renderSet);
 
 function catchLessonCounts(ln){
   const now=Date.now(), T=mtGet(); const words=WORDS.filter(w=>w.l===ln&&!isName(w)&&!/[+＋]|number|noun/i.test(w.t));
@@ -3848,11 +3977,17 @@ function renderCatch(){
   <div class="card"><div class="lab">How this lane works</div>
     <div class="small muted">Only words you marked ~ or ✗ in the test live here, plus the hard list. ${S.settings.newCatchPerDay} new ones enter each day on the day 1 ×20 → day 2 ×5 → day 3 ×1 paper taper, then FSRS spaces them out. Every grade button shows the return date; the Library row for any word says when it is back. Change the intake in Settings → Card strategy.</div></div>`;
   countUp(el); ringArm(el);
+  renderCatchOwned();
 }
-/* Today: live week only — the mastery-test card moves here */
-renderHome=(function(orig){return function(){orig.apply(this,arguments);try{[...document.querySelectorAll('#vHome .card')].forEach(c=>{if(/寫字測驗 · Writing mastery test/.test(c.textContent))c.remove();});
-  const lane=[...document.querySelectorAll('#vHome .lane')].find(x=>/Catch-up/.test(x.textContent)); if(lane){const b=lane.querySelector('.btn');if(b){b.textContent='Open';b.disabled=false;b.className='btn sm ghost';b.onclick=()=>go('catch');}}
-}catch(e){}};})(renderHome);
+/* layer 2 (5052-5059), verbatim: its `return` inside the try must end only this layer */
+function renderCatchOwned(){try{
+  const el=document.getElementById('vCatch'),early=WORDS.filter(w=>w.l<=8&&!isName(w)),done=early.filter(w=>MODES.some(m=>(S.cards[cardId(w.id,m)]||{}).mastAt)).length;
+  const first=el.querySelector('.card.hero'); if(!first)return;
+  first.insertAdjacentHTML('afterend',`<div class="card"><div class="tier" style="border:0;padding:4px 0"><div class="lring">${ring2({n:early.length,frac:done/early.length,lfrac:done/early.length},44,4.5)}<span>${Math.round(done/early.length*100)}<i>%</i></span></div>
+    <div class="tier-b"><b>B1 L1–L8 · already owned</b><div class="small muted">${done} of ${early.length} parked as mastered · they resurface in about three months as a check</div></div>
+    <div class="tier-acts">${done<early.length?`<button class="btn sm ghost" onclick="mtOwnEarly()">Mark all mastered</button>`:''}</div></div></div>`);
+  ringArm(el);
+}catch(e){}}
 
 /* ============================================================
    v32 — deep pass: queue cache, character anatomy, external
@@ -3861,7 +3996,7 @@ renderHome=(function(orig){return function(){orig.apply(this,arguments);try{[...
    ============================================================ */
 /* ---- B. lookups ---- */
 function isAndroidUA(){return /Android/.test(navigator.userAgent);}
-function lookupRow(text){
+function lookupLinks(text){
   const t=String(text).split('（')[0].trim(); if(!t)return '';
   const enc=encodeURIComponent(t), mobile=(typeof isIOS==='function'&&isIOS())||isAndroidUA();
   const a=(href,label,title)=>`<a class="lk" href="${href}" target="_blank" rel="noopener" title="${title||''}" onclick="event.stopPropagation()">${label}</a>`;
@@ -3872,25 +4007,24 @@ function lookupRow(text){
     <a class="lk" href="https://skritter.com/" target="_blank" rel="noopener" title="copies the word, then opens Skritter — paste it into Add Words" onclick="event.stopPropagation();try{navigator.clipboard&&navigator.clipboard.writeText('${t.replace(/'/g,'')}');toast('${t.replace(/'/g,'')} copied — paste it into Skritter');}catch(e){}">Skritter</a>
   </div>`;
 }
+function lookupRow(text){
+  const h=lookupLinks(text); const t=String(text).split('（')[0]; const ch=[...t].find(c=>/\p{Script=Han}/u.test(c)); if(!ch)return h;
+  return h.replace('</div>',`<a class="lk" href="https://hanziyuan.net/#${encodeURIComponent(ch)}" target="_blank" rel="noopener" title="Chinese Etymology — oracle bone to modern form" onclick="event.stopPropagation()">字源</a></div>`);
+}
 /* ---- C. anatomy: meaning part + sound part, with the sound part's own reading ---- */
 function anatomyHtml(word){
   if(S.settings.showComp===false)return '';
-  const chars=[...String(word).split('（')[0]].filter(c=>/\p{Script=Han}/u.test(c));
+  const chars=[...String(word).split('（')[0]].filter((c,i,a)=>/\p{Script=Han}/u.test(c)&&a.indexOf(c)===i);     /* a character said twice (慢慢來) is taken apart once */
   const rows=chars.map(ch=>{
-    const e=COMPONENTS[ch]; if(!e||!(e.d||[]).length)return '';
-    const part=c=>{const i=COMPONENTS[c]||{};const role=c===e.s?'meaning':c===e.ph?'sound':'';return `<span class="apart ${role}"><b class="zh">${esc(c)}</b><i>${esc(i.p||'')}${i.g?(i.p?' · ':'')+esc(i.g.split(',')[0]):''}</i>${role?`<u>${role}</u>`:''}</span>`;};
+    const e=COMPONENTS[ch]||{};
+    const part=c=>{const i=COMPONENTS[c]||{};const role=c===e.s?'meaning':c===e.ph?'sound':'';return `<span class="apart ${role}" onclick="playAudio('${c}')" title="hear ${c}"><b class="zh">${esc(c)}</b><i>${esc(i.p||'')}${i.g?(i.p?' · ':'')+esc(i.g.split(',')[0]):''}</i>${role?`<u>${role}</u>`:''}</span>`;};
     const fam=e.ph?BCHARS.filter(c2=>c2!==ch&&(COMPONENTS[c2]||{}).ph===e.ph).slice(0,6):[];
-    return `<div class="arow"><span class="ahead zh">${esc(ch)}<i>${esc(e.p||'')}</i></span>${e.d.map(part).join('<span class="aplus">＋</span>')}
-      ${e.t&&ETYPE[e.t]?`<span class="atype">${esc(ETYPE[e.t])}</span>`:''}
-      ${fam.length?`<span class="afam">same sound part: ${fam.map(c=>`<b class="zh">${esc(c)}</b>`).join(' ')}</span>`:''}</div>`;
-  }).filter(Boolean);
+        return `<div class="arow"><span class="ahead zh" onclick="playAudio('${ch}')" title="hear ${ch}">${esc(ch)}<i>${esc(e.p||'')}</i></span>${(e.d||[]).length?(e.d.map(part).join('<span class="aplus">＋</span>')):'<span class="small muted">single-part character</span>'}
+      ${e.t&&ETYPE[e.t]?`<span class="atype">${esc(ETYPE[e.t])}</span>`:''}<button class="moebtn" onclick="moeToggle('${ch}',this)" title="萌典: 部首 · 筆畫 · 注音 · 釋義">ⓘ</button>
+      ${fam.length?`<span class="afam">same sound part: ${fam.map(c=>`<b class="zh" onclick="playAudio('${c}')">${esc(c)}</b>`).join(' ')}</span>`:''}</div>`;
+  });
   return rows.length?`<div class="anatomy">${rows.join('')}</div>`:'';
 }
-compLines=(function(orig){return function(word){return anatomyHtml(word);};})(compLines);
-/* card backs and the mastery-test reveal get the lookup row */
-renderRev=(function(orig){return function(){orig.apply(this,arguments);try{if(!cur||isGram(cur)||!revealed)return;const st=document.querySelector('#vRev .stage');if(st&&!st.querySelector('.lookup'))st.insertAdjacentHTML('beforeend',lookupRow(wordOf(cur).t));}catch(e){}};})(renderRev);
-mtRender=(function(orig){return function(){orig.apply(this,arguments);try{if(!MT.revealed)return;const T=mtGet(),wid=T.order[T.i];const st=document.querySelector('#vDrill .stage');if(wid&&st&&!st.querySelector('.lookup'))st.insertAdjacentHTML('beforeend',lookupRow(byId[wid].t));}catch(e){}};})(mtRender);
-renderBrain=(function(orig){return function(){orig.apply(this,arguments);try{const d=document.querySelector('#vBrain .detail .body');if(d&&brainSel&&!d.querySelector('.lookup')){const t=brainSel.type==='word'?(byId[brainSel.id]||{}).t:brainSel.id;if(t)d.insertAdjacentHTML('beforeend',lookupRow(t));}}catch(e){}};})(renderBrain);
 /* ---- D. keyboard: letters jump tabs, ? shows the map ---- */
 const KEYMAP={t:'home',r:'rev',d:'drill',c:'catch',g:'gram',b:'brain',l:'lib',s:'set'};
 function toggleKeyHelp(){
@@ -3906,12 +4040,8 @@ function toggleKeyHelp(){
     </div></div>`;
   h.style.display='flex';
 }
-renderRev=(function(orig){return function(){orig.apply(this,arguments);try{const row=document.querySelector('#vRev .srow');if(row&&!row.querySelector('.focuslink'))row.insertAdjacentHTML('beforeend',`<span class="link small focuslink" onclick="document.body.classList.toggle('focus')" title="hide the header and tabs (f)">${document.body.classList.contains('focus')?'exit focus':'focus'}</span>`);}catch(e){}};})(renderRev);
 /* ---- E. this week vs last week ---- */
 function weekCards(offset){const d=new Date();d.setHours(0,0,0,0);const dow=(d.getDay()+6)%7;const start=new Date(d);start.setDate(d.getDate()-dow-7*offset);let n=0;for(let i=0;i<7;i++){const k=dkey(new Date(start.getTime()+i*DAY));const l=S.log[k];if(l)n+=(l.rev||0)+(l.new||0);}return n;}
-renderHome=(function(orig){return function(){orig.apply(this,arguments);try{const st=document.querySelector('#vHome .stats');if(st&&!st.querySelector('.wk')){const a=weekCards(0),b=weekCards(1);st.insertAdjacentHTML('beforeend',`<div class="stat wk"><div class="n">${a}<span class="d"> / ${b}</span></div><div class="l">this week / last</div></div>`);}}catch(e){}};})(renderHome);
-/* ---- F. settings: a keyboard hint ---- */
-renderSet=(function(orig){return function(){orig.apply(this,arguments);try{document.getElementById('vSet').insertAdjacentHTML('beforeend',`<div class="small muted" style="text-align:center;margin:4px 0 10px">Press <kbd>?</kbd> anywhere for keyboard shortcuts · look-up links on every card back: 萌典 · MDBG · Pleco · Skritter</div>`);}catch(e){}};})(renderSet);
 
 
 /* ============================================================
@@ -3927,46 +4057,8 @@ function normalizeState(){
 let REV_FILTER=null, REV_CAP=0;
 /* mastery test: a real undo stack */
 MT.stack=[];
-mtMark=(function(orig){return function(r){const T=mtGet(),wid=T.order[T.i];if(wid){MT.stack.push({wid,i:T.i,cards:JSON.parse(JSON.stringify(MODES.map(m=>S.cards[cardId(wid,m)]||null))),hard:isHard(wid),pick:(S.pick||[]).includes(wid),prev:T.res[wid]||null});if(MT.stack.length>50)MT.stack.shift();}return orig.apply(this,arguments);};})(mtMark);
-mtUndo=function(){const u=MT.stack.pop();if(!u)return;const T=mtGet();
-  MODES.forEach((m,i)=>{const c=u.cards[i];if(c)S.cards[cardId(u.wid,m)]=c;else delete S.cards[cardId(u.wid,m)];});
-  S.hard=(S.hard||[]).filter(x=>x!==u.wid);if(u.hard)S.hard.push(u.wid);
-  S.pick=(S.pick||[]).filter(x=>x!==u.wid);if(u.pick)S.pick.push(u.wid);
-  if(u.prev)T.res[u.wid]=u.prev;else delete T.res[u.wid];
-  T.i=u.i;MT.revealed=false;save();badge();mtRender();};
-/* the B1 L1–L8 row lives in the Catch-up tab now */
-renderCatch=(function(orig){return function(){orig.apply(this,arguments);try{
-  const el=document.getElementById('vCatch'),early=WORDS.filter(w=>w.l<=8&&!isName(w)),done=early.filter(w=>MODES.some(m=>(S.cards[cardId(w.id,m)]||{}).mastAt)).length;
-  const first=el.querySelector('.card.hero'); if(!first)return;
-  first.insertAdjacentHTML('afterend',`<div class="card"><div class="tier" style="border:0;padding:4px 0"><div class="lring">${ring2({n:early.length,frac:done/early.length,lfrac:done/early.length},44,4.5)}<span>${Math.round(done/early.length*100)}<i>%</i></span></div>
-    <div class="tier-b"><b>B1 L1–L8 · already owned</b><div class="small muted">${done} of ${early.length} parked as mastered · they resurface in about three months as a check</div></div>
-    <div class="tier-acts">${done<early.length?`<button class="btn sm ghost" onclick="mtOwnEarly()">Mark all mastered</button>`:''}</div></div></div>`);
-  ringArm(el);
-}catch(e){}};})(renderCatch);
-mtOwnEarly=(function(orig){return function(){orig.apply(this,arguments);try{if(view==='catch')renderCatch();}catch(e){}};})(mtOwnEarly);
-/* Today: the tier and test cards are no longer built just to be removed */
-tierPanel=function(){return '';}; mtPanel=function(){return '';};
-/* plan actions: test a lesson, open the tab */
-planAct=(function(orig){return function(k,arg){if(k==='test'){mtResume();if(arg&&arg.ln)mtJump(arg.ln);return;}if(k==='catchtab'){go('catch');return;}return orig.apply(this,arguments);};})(planAct);
-/* speech + microphone never outlive the screen that started them */
-startDrill=(function(orig){return function(mode){recKill();if(mode!=='listen')try{lpStop();}catch(e){}return orig.apply(this,arguments);};})(startDrill);
 function recKill(){try{if(REC_ACTIVE&&REC_ACTIVE.state!=='inactive')REC_ACTIVE.stop();}catch(e){}}
-/* answer flash now applied after the re-render, where the buttons actually are */
-renderDrill=(function(orig){return function(){orig.apply(this,arguments);try{if(!dq||dq.state!=='done'||!animOn())return;const r=document.querySelector('#vDrill .opts button.right');const w=document.querySelector('#vDrill .opts button.wrong');if(r)r.classList.add('pop');if(w)w.classList.add('shake');}catch(e){}};})(renderDrill);
-/* audio handle table stays bounded */
-renderGram=(function(orig){return function(){if(window.AUDS&&AUDS.length>1500)window.AUDS=[];return orig.apply(this,arguments);};})(renderGram);
 
-renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
-  const sel=document.querySelector('#vSet select[onchange*="audioSrc"]'); if(!sel)return;
-  sel.options[0].textContent='Auto — bundled Taiwan voice, system voice as fallback';
-  sel.options[2].textContent='Bundled Taiwan voice only (offline)';
-  const row=sel.closest('.set-row'), d=row.querySelector('.d');
-  if(d)d.textContent='The bundled voices are Microsoft’s zh-TW neural voices, pre-rendered for every word and every character at a slightly slow pace — full tones, Taiwan readings (垃圾 lèsè). They work offline once stored on the device.';
-  if(d)d.insertAdjacentHTML('beforeend',' <a href="voice.html" style="color:var(--blue);white-space:nowrap">Record your own voice ↗</a>');
-  const voices=Object.keys(VOICE_PACKS).filter(v=>VOICE_OK[v]);
-  if(voices.length>1)row.insertAdjacentHTML('beforebegin',`<div class="set-row"><div><b>Bundled voice</b><div class="d">Tap a voice to switch and hear a sample; the choice follows you to your other devices.</div></div>
-    <div class="row" style="gap:6px;flex-wrap:wrap;justify-content:flex-end">${voices.map(v=>`<button class="btn sm ${voiceId()===v?'':'ghost'}" onclick="setVoice('${v}')">${VOICE_PACKS[v].name} · ${VOICE_PACKS[v].who}</button>`).join('')}</div></div>`);
-}catch(e){}};})(renderSet);
 
 /* ---- 3. 萌典 ---- */
 const MOE_KEY='zika_moe_v1'; let MOE=null;
@@ -3986,54 +4078,7 @@ async function moeToggle(ch,btn){
   const i=await moeInfo(ch); if(!i){box.textContent='萌典 unreachable right now';return;}
   box.innerHTML=`<b>部首</b> <span class="zh">${esc(i.rad)}</span> · <b>筆畫</b> ${i.n} · <span class="zh">${esc(i.bpm)}</span> ${esc(i.py)}${i.defs.length?`<div class="zh" style="margin-top:3px">${i.defs.map(esc).join('；')}</div>`:''}<a class="lk" href="https://www.moedict.tw/${encodeURIComponent(ch)}" target="_blank" rel="noopener">萌典 ↗</a>`;
 }
-/* anatomy rows: tap the character to hear it, ⓘ for 萌典 */
-anatomyHtml=(function(orig){return function(word){
-  if(S.settings.showComp===false)return '';
-  const chars=[...String(word).split('（')[0]].filter((c,i,a)=>/\p{Script=Han}/u.test(c)&&a.indexOf(c)===i);     /* a character said twice (慢慢來) is taken apart once */
-  const rows=chars.map(ch=>{
-    const e=COMPONENTS[ch]||{};
-    const part=c=>{const i=COMPONENTS[c]||{};const role=c===e.s?'meaning':c===e.ph?'sound':'';return `<span class="apart ${role}" onclick="playAudio('${c}')" title="hear ${c}"><b class="zh">${esc(c)}</b><i>${esc(i.p||'')}${i.g?(i.p?' · ':'')+esc(i.g.split(',')[0]):''}</i>${role?`<u>${role}</u>`:''}</span>`;};
-    const fam=e.ph?BCHARS.filter(c2=>c2!==ch&&(COMPONENTS[c2]||{}).ph===e.ph).slice(0,6):[];
-        return `<div class="arow"><span class="ahead zh" onclick="playAudio('${ch}')" title="hear ${ch}">${esc(ch)}<i>${esc(e.p||'')}</i></span>${(e.d||[]).length?(e.d.map(part).join('<span class="aplus">＋</span>')):'<span class="small muted">single-part character</span>'}
-      ${e.t&&ETYPE[e.t]?`<span class="atype">${esc(ETYPE[e.t])}</span>`:''}<button class="moebtn" onclick="moeToggle('${ch}',this)" title="萌典: 部首 · 筆畫 · 注音 · 釋義">ⓘ</button>
-      ${fam.length?`<span class="afam">same sound part: ${fam.map(c=>`<b class="zh" onclick="playAudio('${c}')">${esc(c)}</b>`).join(' ')}</span>`:''}</div>`;
-  });
-  return rows.length?`<div class="anatomy">${rows.join('')}</div>`:'';
-};})(anatomyHtml);
-compLines=function(word){return anatomyHtml(word);};
-/* more look-ups: 字源 (character evolution) */
-lookupRow=(function(orig){return function(text){
-  const h=orig(text); const t=String(text).split('（')[0]; const ch=[...t].find(c=>/\p{Script=Han}/u.test(c)); if(!ch)return h;
-  return h.replace('</div>',`<a class="lk" href="https://hanziyuan.net/#${encodeURIComponent(ch)}" target="_blank" rel="noopener" title="Chinese Etymology — oracle bone to modern form" onclick="event.stopPropagation()">字源</a></div>`);
-};})(lookupRow);
 
-/* ---- 4. weekday plan, character-first (grammar lives in Notion) ---- */
-planPanel=function(){
-  const d=new Date(), wd=d.getDay(), cl=S.settings.curLesson||26, L=lnLabel(cl), E=S.settings.examDay||4;
-  const A=(k,label,arg)=>`<button class="pact" onclick='planAct("${k}",${JSON.stringify(arg||null)})'>${label}</button>`;
-  const N=(url,label)=>`<a class="pact nl" href="${url}" target="_blank" rel="noopener">${label}</a>`;
-  const T={
-    mon:{t:'聽寫一',items:[A('dict','聽寫 rehearsal · '+L+' 對話一'),A('paper','田字格 · tonight\u2019s paper'),A('hardrec','Hard list → 認字'),A('triage','After class: Triage 對話二',{dlg:2})]},
-    d2:{t:'對話二 characters',items:[A('dict','聽寫 · '+L+' 對話二'),A('paper','田字格 · tonight\u2019s paper'),A('hardtone','Hard list → 聲調'),A('catchtab','Catch-up: shaky words')]},
-    t2:{t:'two days out',items:[A('dict','聽寫 · hard list',{hard:1}),A('dict','聽寫 · '+L),A('hardrec','Hard list → 認字'),N(notionLesson(cl),'Grammar + 口試 prep in Notion ↗')]},
-    t1:{t:'聽寫二',items:[A('dict','聽寫二 before class'),A('paper','田字格 · tonight\u2019s paper'),A('hardtone','Hard list → 聲調'),N(notionLesson(cl),'口試 spiel in Notion ↗')]},
-    exam:{t:'課考試',items:[A('hardrec','Hard list → 認字'),A('hardtone','then 聲調'),A('dict','聽寫 · hard list',{hard:1}),N(notionLesson(cl),'After: log what it asked in 疑問 ↗')]},
-    fri:{t:'new lesson opens',items:[A('triage','Triage 對話一 of the new lesson',{dlg:1}),A('paper','田字格 · the new characters ×20'),A('rev','Clear the queue')]},
-    sat:{t:'weekend · catch-up',items:[A('rev','Clear the queue'),A('mtest','Mastery test · two lessons'),A('catchtab','Catch-up: review the shaky ones'),A('dict','聽寫 · hard list',{hard:1})]},
-    sun:{t:'weekend · catch-up',items:[A('rev','Clear the queue'),A('mtest','Mastery test · two lessons'),A('paper','田字格 · tonight\u2019s paper'),A('catchtab','Catch-up: review the shaky ones')]}
-  };
-  const key=wd===0?'sun':wd===6?'sat':wd===1?'mon':wd===E?'exam':wd===E-1?'t1':wd===E-2?'t2':(wd===5&&E===4)?'fri':'d2';
-  const p=T[key], names=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
-  return `<div class="card plan"><div class="row spread" style="margin-bottom:8px"><div><div class="lab" style="margin:0">Today’s plan · ${names[wd]} · ${esc(p.t)}</div><div class="small muted">${L} · 聽寫一 Mon · 聽寫二 ${names[E-1]} · 考試 <select class="vsel" style="padding:1px 4px;font-size:11.5px;max-width:none" onchange="S.settings.examDay=+this.value;save();renderHome()"><option value="4" ${E===4?'selected':''}>星期四</option><option value="5" ${E===5?'selected':''}>星期五</option></select> · grammar lives in Notion</div></div><a class="nlink" href="${NOTION.flow}" target="_blank" rel="noopener">Workflow ↗</a></div>
-    <div class="pacts">${p.items.join('')}</div></div>`;
-};
-planAct=(function(orig){return function(k,arg){
-  const cl=S.settings.curLesson||26;
-  if(k==='paper'){go('home');setTimeout(()=>{const c=[...document.querySelectorAll('#vHome .card')].find(x=>/paper list/i.test(x.textContent));if(c)c.scrollIntoView({behavior:'smooth',block:'start'});else toast('Nothing on tonight\u2019s paper list yet');},60);return;}
-  if(k==='dict'&&arg&&arg.hard){drillScope='hard';go('drill');startDrill('dict');return;}
-  if(k==='mtest'){mtResume();return;}
-  return orig.apply(this,arguments);
-};})(planAct);
 
 /* ============================================================
    v35 — system tidy + the iPad in one card.
@@ -4081,8 +4126,6 @@ function ipadPanel(){
     ${step(4,'Device name',DEVICE.name===kind?'Shows as '+esc(kind)+' on your other devices.':'Showing as '+esc(DEVICE.name)+' — set it to '+esc(kind)+' in Cloud sync → This device.',DEVICE.name===kind)}
   </div>`;
 }
-/* copying the code before the Home Screen hint makes the second link a paste */
-showInstallHint=(function(orig){return function(){try{if(SYNC.code&&navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(SYNC.code).catch(()=>{});}catch(e){}return orig.apply(this,arguments);};})(showInstallHint);
 /* ---- 3. one intake card ---- */
 function intakePanel(){
   const s=S.settings;
@@ -4100,39 +4143,12 @@ function intakePanel(){
     <div class="small muted" style="margin-top:6px">Rule of thumb: about ten reviews per new card in its first month. ${(s.newPerDay??8)+(s.newCatchPerDay??12)+(s.newGramPerDay??4)} new a day settles near ${((s.newPerDay??8)+(s.newCatchPerDay??12)+(s.newGramPerDay??4))*10} reviews a day.</div></div>`;
 }
 const SET_ORDER=['Set up your iPhone or iPad','This iPhone','This iPad','Cloud sync','Daily intake','Card strategy','Offline & audio','Audio & strokes','Backup','Look & feel','Card types','Schedule','Grammar in the queue','Confidence · shared with Notion'];
-renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
-  const v=document.getElementById('vSet');
-  v.insertAdjacentHTML('afterbegin',ipadPanel()+intakePanel()+offlinePanel());
-  /* retire the rows now covered by Daily intake */
-  const kill=['New words per day','Max reviews per day','Desired retention','New grammar cards per day','Catch-up words per day'];
-  [...v.querySelectorAll('.set-row')].forEach(r=>{const b=r.querySelector('b');if(b&&kill.includes(b.textContent.trim())&&!r.closest('#intakeCard'))r.remove();});
-  /* cards with nothing left go too */
-  [...v.querySelectorAll('.card')].forEach(c=>{if(!c.querySelector('.set-row')&&!c.querySelector('.istep')&&!c.querySelector('button')&&!c.querySelector('.confrow'))c.remove();});
-  /* order */
-  const cards=[...v.querySelectorAll(':scope > .card')];
-  const rank=c=>{const l=c.querySelector('.lab');const t=l?l.textContent.trim():'';const i=SET_ORDER.findIndex(k=>t.startsWith(k));return i<0?SET_ORDER.length:i;};
-  cards.sort((a,b)=>rank(a)-rank(b)).forEach(c=>v.appendChild(c));
-  const tail=[...v.children].find(x=>x.className&&/small muted/.test(x.className)&&/keyboard/.test(x.textContent)); if(tail)v.appendChild(tail);
-}catch(e){}};})(renderSet);
-/* Today: the iPad card replaces the generic link card when unlinked on an iPad */
-renderHome=(function(orig){return function(){orig.apply(this,arguments);try{
-  if(!fbConfig()||SYNC.code)return; const host=document.getElementById('vHome'); const old=document.getElementById('linkCard');
-  if((typeof isIOS==='function')&&isIOS()){const html=ipadPanel(); if(old)old.outerHTML=html; else host.insertAdjacentHTML('afterbegin',html);}
-}catch(e){}};})(renderHome);
 /* ---- 4. drills: characters up front, sentences under More ---- */
 const DEMOTED=['listen','sdict','confuse','read','sent','speak'];
 let moreDrills=false;
-renderDrill=(function(orig){return function(){orig.apply(this,arguments);try{
-  if(dq||drillMode==='listen'||drillMode==='mtest')return; const el=document.getElementById('vDrill');
-  const grid=el.querySelector('.dgrid'); if(!grid)return;
-  const dem=[...grid.querySelectorAll('.dcard')].filter(c=>DEMOTED.some(m=>(c.getAttribute('onclick')||'').includes("'"+m+"'")));
-  if(!dem.length)return;
-  const det=document.createElement('details'); det.className='guide'; det.open=moreDrills; det.innerHTML='<summary>More drills · sentences, listening, grammar ›</summary>'; const g2=document.createElement('div'); g2.className='dgrid'; g2.style.marginTop='10px'; dem.forEach(c=>g2.appendChild(c)); det.appendChild(g2); grid.insertAdjacentElement('afterend',det); det.addEventListener('toggle',()=>{moreDrills=det.open;});
-}catch(e){}};})(renderDrill);
 
 /* ---- 5. small efficiencies ---- */
 
-renderHome=(function(orig){return function(){orig.apply(this,arguments);try{const meta=document.querySelector('#vHome .hero .hero-meta');if(meta&&!meta.querySelector('.nl')){const cl=S.settings.curLesson||26;meta.insertAdjacentHTML('beforeend',`<a class="chip nl" href="${notionLesson(cl)}" target="_blank" rel="noopener" style="color:var(--blue);text-decoration:none">lesson page ↗</a>`);}}catch(e){}};})(renderHome);
 
 /* v37: drawing on screen removed — writing lives on paper and in Skritter. Character drills first. */
 (function(){const order=['dict','rec','tone','mtest','listen','sdict','confuse','read','sent','speak'];DMODES.sort((a,b)=>order.indexOf(a[0])-order.indexOf(b[0]));})();
@@ -4211,10 +4227,8 @@ function exRender(){
   if(r&&S.settings.strokeAnim&&document.getElementById('strokeHost'))try{renderStrokes('strokeHost',w.t.split('（')[0],{});}catch(e){}
   if(!r&&S.settings.autoplayAudio&&EX.lastSpoken!==wid){EX.lastSpoken=wid;setTimeout(()=>speakWord(wid),200);}
 }
-renderDrill=(function(orig){return function(){if(drillMode==='extest'&&!dq){exRender();return;}orig.apply(this,arguments);};})(renderDrill);
 /* ---- drilling and reviewing a pile ---- */
 let EXAM_POOL=[];
-drillWords=(function(orig){return function(){if(drillScope==='examset')return EXAM_POOL.map(id=>byId[id]).filter(Boolean).filter(w=>S.settings.includeNames||!isName(w));return orig.apply(this,arguments);};})(drillWords);
 function exDict(kind){EXAM_POOL=exIds(kind);if(EXAM_POOL.length<2){toast('Fewer than two words in that pile');return;}drillScope='examset';go('drill');startDrill('dict');}
 function exReview(kind){const ids=new Set(exIds(kind));go('rev');if(!rq)return;['learn','rev','fresh'].forEach(x=>{rq[x]=rq[x].filter(c=>!isGram(c)&&ids.has(wordOf(c).id));});if(!(rq.learn.length+rq.rev.length+rq.fresh.length)){toast('Nothing in that pile is due right now');go('exam');return;}nextCard();}
 function exPrint(kind,reps){
@@ -4275,15 +4289,6 @@ function renderExam(){
     <div class="small muted">Night 1 is triage, not practice: run each lesson’s test cold and sort. Only the ✗ and ~ piles get time after that — ✓ words are parked and never come back before the exam. Re-test a pile whenever you have written it; a ✗ that becomes ~ or ✓ leaves the queue on the spot. Everything here shares the 寫字測驗 results, so the Catch-up tab and the review lanes see the same marks. <kbd>space</kbd> reveal · <kbd>1</kbd> hell no · <kbd>2</kbd> sorta · <kbd>3</kbd> yes.</div></div>`;
   countUp(el);ringArm(el);
 }
-/* ---- Today: one line to the exam ---- */
-renderHome=(function(orig){return function(){orig.apply(this,arguments);try{
-  const v=document.getElementById('vHome');if(v.querySelector('.card.examline'))return;const X=exGet(),days=exDays();if(days<-1)return;
-  const no=exIds('no').length,so=exIds('sorta').length,un=exStats().todo;
-  const hero=v.querySelector('.card.hero');if(!hero)return;
-  hero.insertAdjacentHTML('afterend',`<div class="card examline" style="border-left:3px solid var(--red)"><div class="row spread" style="flex-wrap:wrap;gap:8px"><div><div class="lab" style="margin:0">🎯 ${esc(X.name)} · ${esc(exDateLabel())} · ${days>1?days+' days':days===1?'tomorrow':'today'}</div><div class="small muted">${esc(lnLabel(X.lo))} → ${esc(lnLabel(X.hi))} · <span style="color:var(--red)">✗ ${no}</span> · ~ ${so} · ${un} untested</div></div><button class="btn sm" onclick="go('exam')">Open</button></div></div>`);
-}catch(e){}};})(renderHome);
-/* ---- the original 寫字測驗 uses the same words ---- */
-mtRender=(function(orig){return function(){orig.apply(this,arguments);try{const g=document.querySelectorAll('#vDrill .grades button');g.forEach(b=>{const s=b.querySelector('.g1,.g2,.g4');if(!s)return;if(/Couldn/.test(s.textContent))s.textContent='✗ Hell no';else if(/Shaky/.test(s.textContent))s.textContent='~ Sorta';else if(/Wrote/.test(s.textContent))s.textContent='★ Yes';});}catch(e){}};})(mtRender);
 
 /* e = 大考試 */
 KEYMAP.e='exam';
@@ -4316,10 +4321,6 @@ function tabIntoView(){
   const left=bar.scrollLeft+t.getBoundingClientRect().left-bar.getBoundingClientRect().left-(bar.clientWidth-t.offsetWidth)/2;
   try{bar.scrollTo({left:Math.max(0,left),behavior:animOn()?'smooth':'auto'});}catch(e){bar.scrollLeft=Math.max(0,left);}
 }
-/* Settings: say which version this device is running */
-renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
-  document.getElementById('vSet').insertAdjacentHTML('beforeend',`<div class="small muted" style="text-align:center;margin:0 0 10px">字卡 v${APP_VERSION} · ${WORDS.length} words · ${BOOKS.length} books · this device: ${esc(DEVICE.name)}</div>`);
-}catch(e){}};})(renderSet);
 
 /* ============================================================
    v43 — 聲調教練 Tone coach (beta). Record a word, see your pitch
@@ -4757,13 +4758,6 @@ function tcPanel(){
     <div class="small muted" style="margin-top:12px">Two-syllable words by tone pair — the first tone down the side, the second across. Tap a pair to practise ten words of it.</div>${tcPairMap()}</div>`;
 }
 DMODES.push(['tcoach','聲調教練 Tone coach','record yourself · see your tones against a native speaker']);
-startDrill=(function(orig){return function(mode){tcRelease();if(mode==='tcoach')return tcStart();return orig.apply(this,arguments);};})(startDrill);
-renderDrill=(function(orig){return function(){
-  if(drillMode==='tcoach'&&!dq&&TC.list.length){tcRender();return;}
-  orig.apply(this,arguments);
-  /* the drill menu (and only the menu) ends with the tone summary and the tone-pair map */
-  try{const el=document.getElementById('vDrill');if(!dq&&el&&el.querySelector('.dgrid')&&!el.querySelector('.tc-panel'))el.insertAdjacentHTML('beforeend','<div class="tc-panel">'+tcPanel()+'</div>');}catch(e){}
-};})(renderDrill);
 
 /* ============================================================
    v43 — 短文 Stories. Short original passages, one or more per
@@ -4831,8 +4825,6 @@ DMODES.push(['story','短文 Stories','short readings from the words you know ·
 /* Full-screen drill modes register here instead of wrapping startDrill / renderDrill again:
    DRILL_SCREENS[mode] = {start, render}. start() sets drillMode and calls go('drill'); render() paints #vDrill while dq is null. */
 const DRILL_SCREENS={story:{start:rdStart,render:rdRender}};
-startDrill=(function(orig){return function(mode){const x=DRILL_SCREENS[mode];if(x)return x.start();return orig.apply(this,arguments);};})(startDrill);
-renderDrill=(function(orig){return function(){const x=DRILL_SCREENS[drillMode];if(x&&!dq){x.render();return;}orig.apply(this,arguments);};})(renderDrill);
 
 /* ============================================================
    v44 — clean shell, "where I am", and My words.
@@ -4875,7 +4867,6 @@ function shLook(){
   const tb=document.getElementById('themeBtn'); if(tb)tb.innerHTML=SVG(curTheme()==='dark'?ICON.sun:ICON.moon);
   const mc=document.querySelector('meta[name="theme-color"]'); if(mc)mc.setAttribute('content',cssVar('--bg')||'#f3edde');
 }
-applyTheme=(function(orig){return function(){const r=orig.apply(this,arguments);try{shLook();}catch(e){}return r;};})(applyTheme);
 function shSetLook(k,v){S.settings[k]=v;save();shLook();if(view==='set')renderSet();if(view==='brain')renderBrain();}
 
 function shName(){return (S.settings.userName||'').trim();}
@@ -4957,25 +4948,7 @@ function shHome(){
     }
   }
 }
-renderHome=(function(orig){return function(){orig.apply(this,arguments);try{shHome();}catch(e){console.error(e);}};})(renderHome);
 
-/* ---------- Settings: a "You" card first, accent and character face under Look & feel ---------- */
-renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
-  const v=document.getElementById('vSet'), ln=shLesson();
-  const cards=[...v.querySelectorAll('.card')], look=cards.find(c=>/^Look & feel/.test(((c.querySelector('.lab')||{}).textContent||'').trim()));
-  const a=ACCENTS[S.settings.accent]?S.settings.accent:'classic', z=S.settings.zhFont||'sans', pal=S.settings.palette==='clean'?'clean':'paper';
-  const rows=`<div class="set-row"><div><b>Palette</b><div class="d">Paper is the warm original; Clean is neutral white and grey. Both have a day and a night side</div></div>
-      <div class="seg">${Object.keys(PALETTES).map(k=>`<button class="${pal===k?'on':''}" onclick="shSetLook('palette','${k}')">${PALETTES[k]}</button>`).join('')}</div></div>
-    <div class="set-row"><div><b>Accent colour</b><div class="d">buttons, links and the active tab. Classic is ink and tea green; follows you to your other devices</div></div>
-      <div class="swatches">${Object.keys(ACCENTS).map(k=>`<button class="swatch${a===k?' on':''}" style="background:${ACCENTS[k]}" title="${k}" aria-label="${k}" onclick="shSetLook('accent','${k}')"></button>`).join('')}</div></div>
-    <div class="set-row"><div><b>Character style</b><div class="d">the face study characters are shown in: a clean sans, the textbook’s 明體, or 楷體, which is closest to handwriting</div></div>
-      <div class="seg">${Object.keys(ZH_FONTS).map(k=>`<button class="${z===k?'on':''}" onclick="shSetLook('zhFont','${k}')">${ZH_FONTS[k]}</button>`).join('')}</div></div>`;
-  if(look)look.insertAdjacentHTML('beforeend',rows);
-  v.insertAdjacentHTML('afterbegin',`<div class="card" id="youCard"><div class="lab">You</div>
-    <div class="set-row"><div><b>${shName()?esc(shName()):'Your name'}</b><div class="d">Book ${bookOf(ln)} · Lesson ${lnInBook(ln)} · ${esc(LESSON_TITLES[ln]||'')}</div></div>
-      <button class="btn sm ghost" onclick="shCourse()">Change</button></div>
-    ${look?'':rows}</div>`);
-}catch(e){console.error(e);}};})(renderSet);
 
 /* ============================================================
    My words — a personal deck for vocabulary met outside class.
