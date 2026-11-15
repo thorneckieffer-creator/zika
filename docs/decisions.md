@@ -2,6 +2,16 @@
 
 Decisions with consequences, newest first, each with its reason. Thorne asked on 15 November 2026 that Claude decide without asking and write the decisions down ([CLAUDE.md](../CLAUDE.md#the-commitment)); this is where they are written. A decision here can be changed, but change it here, with the new reason, in the same commit as the code.
 
+## 2026-11-15 — accounts and sync by record: the design is chosen, the code waits for its review
+
+Decided in outline by this session and worked out in full by the second one, on two branches that add new files only and are not merged: `origin/users-accounts` (its `docs/multi-user.md` is the design; `js/account.js`, the security rules and their tests) and `origin/users-sync` (`docs/sync.md`, `js/sync-records.js` and its tests).
+
+- **Stay on Firebase Realtime Database.** The app keeps the truth on the device and works offline; what the cloud has to do is carry small records between one person's devices, which is what a tree of paths with per-user rules does, with no server to run. A relational database earns its keep when there are classes, teachers and shared decks; revisit then.
+- **A person is a Firebase uid.** Every device signs in anonymously as today; an account is that same uid with an email and password attached, so the deck does not move when someone signs up. Email and password first because it is the one method that never leaves the page inside an installed iPhone app; Google and Apple after a test on a real device.
+- **A second device** signs in with the same email, or shows a short code that a device owning the deck approves. The old sync code and room stay exactly as they are until the learner moves the deck, once, by choice.
+- **The deck is `users/<uid>/rec/…`, one record per card, setting, day and list member**, the later stamp winning per record, day counts kept per device and summed. Measured on a 3,155-card deck: 352 bytes written per review instead of 981 KB.
+- **Nothing is wired in until an independent review of both branches has reported**, and nothing changes in the live Firebase project before Thorne's exam. Wiring means: the script tags, the hooks listed in each branch's notes (`saveNow`, `fbBoot`, `fbAdopt`, the last line of `js/boot.js`), removing the anonymous sign-in line where an account exists, new My-words ids that cannot collide between two offline devices, and harness scenarios for two devices.
+
 ## 2026-11-15 — the deck cannot be written by a page that has not started
 
 Splitting the app into files opened a gap that one file never had: the page's buttons work as soon as their script has loaded, and start-up runs in the last script. At one point on `next`, a tap on the theme button in that gap saved the empty default deck over the real one, and a linked device could then send it to the cloud. The independent review found it; the harness scenario `tap-before-start` reproduces it (2,288 cards became 18) and now holds the fix in place. Three things, each enough on its own:
