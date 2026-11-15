@@ -5,6 +5,9 @@
 .claude/settings.local.json
 .claude/worktrees/
 
+# The checker's verdicts and reports: one set per working folder, never shared
+.claude/review/
+
 # Old working copies
 zika-v17/
 

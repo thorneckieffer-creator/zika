@@ -58,6 +58,7 @@ assets/
   icon-*.png
 tools/
   check.mjs                  release check: syntax, versions, data integrity
+  review.mjs                 review gate: no change to the app is finished or pushed without the checker's PASS
   import_dangdai.py          imports lessons from a downloaded DangDai volume
   add_characters.py          adds stroke data and component breakdowns for new characters
   content/                   original grammar write-ups for new books; 注音 readings per word
@@ -65,7 +66,7 @@ tools/
   build_voice_pack_breezy.py builds a pack in a cloned voice (BreezyVoice), with
   build_voice_staged.sh        a staged runner and build_readings.py for pinned readings
   tone_lab.mjs               tone coach test bench: scores and refits the tone classifier on recordings with known tones
-docs/                 working notes by area: architecture, content, voice, releasing, roadmap
+docs/                 working notes by area: architecture, content, voice, releasing, roadmap; the feature map and checklist
 ```
 
 **State.** One JSON object in `localStorage` under the key `shida_b1_fsrs_v2`. The key name is historical and must not change, because every device's progress lives under it.
@@ -116,7 +117,9 @@ A release is a commit on `main`; GitHub Pages deploys it within a couple of minu
 | [docs/multi-user.md](docs/multi-user.md) | What it takes to open the app to other learners. |
 | [docs/content.md](docs/content.md) | Adding a book: where the word lists come from and what may be copied. |
 | [docs/voice.md](docs/voice.md) | Voice packs and the two builders. |
-| [docs/releasing.md](docs/releasing.md) | The release steps, GitHub Pages, and working in two sessions at once. |
+| [docs/releasing.md](docs/releasing.md) | The release steps, the checker, GitHub Pages, and working in two sessions at once. |
+| [docs/feature-map.md](docs/feature-map.md) | Every feature: where it is, how to test it, what good looks like. |
+| [docs/review-checklist.md](docs/review-checklist.md) | What a change is held against before it ships. |
 | [docs/roadmap.md](docs/roadmap.md) | Everything still open, by area. |
 
 ## Roadmap

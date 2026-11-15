@@ -45,3 +45,8 @@ Verified dead or superseded code that is still in the file, to be removed one pi
 - The `dict` branch of the first `renderDrill`, and the write-card front in the first `renderRev`.
 - The first `anatomyHtml` body (the layer after it replaces it without calling it).
 - `NOTION.hub/.catchup/.prep/.book1/.chars`, CSS `.complines`, `.gres`, `.serif-en`, `.kai`.
+
+## Release and repo
+
+- **The checker has not run on a real change yet.** The gate was tested on a scratch copy (sent back, let go, refused, push stopped), but `verify-app` itself loads only in a session started after it was added, so the first change to the app after November 2026 is its first run. Expect it to be slow and to return corrections to the feature map; fix the checker's instructions (`.claude/agents/verify-app.md`) where it stumbles.
+- **Walk the rest of the feature map.** Entries marked *(from the notes)* in [feature-map.md](feature-map.md) have not been checked against the app.

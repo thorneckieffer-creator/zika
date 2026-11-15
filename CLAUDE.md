@@ -11,6 +11,7 @@ That means:
 - **Quality is Claude's job, not Thorne's.** Find and fix problems without being asked. Read the code around a change, not just the line. Leave every file you touch better than you found it.
 - **Take the initiative.** Routine work — edits, local testing, browser checks, read-only inspection of the Firebase console — needs no permission and no step-by-step check-ins.
 - **Verify before claiming.** Run `node tools/check.mjs` and the smoke test, look at the app on phone and tablet widths, and say plainly what was and was not tested.
+- **Then a second agent checks it.** A change to the app is not finished, and cannot be pushed, until the `verify-app` subagent has passed exactly those files. It did not write the change, so it has no reason to think it works. Only it records a verdict ([docs/releasing.md](docs/releasing.md#the-checker)).
 - **Release when it is ready.** Thorne has asked for work to be committed and pushed once it reaches a good point. Still ask once before anything that cannot be undone: deleting a sync room or other Firebase data, or rewriting git history.
 - **Keep these notes true.** This file and `docs/` are the hand-over to the next session. When the structure, a rule or the roadmap changes, change the notes for that area in the same commit.
 
@@ -23,7 +24,7 @@ The work divides into four areas. Each has its own notes; read the one you are a
 | **App** | [docs/architecture.md](docs/architecture.md), [docs/design.md](docs/design.md), [docs/multi-user.md](docs/multi-user.md) | The shell, scheduler, drills, My words, sync and state in `index.html`; `sw.js`; `manifest.webmanifest`. How it should look; what opening it to other users takes. |
 | **Content** | [docs/content.md](docs/content.md) | Books, words, grammar and characters: the data lines in `index.html`, `assets/strokes.json`, the importers, `tools/content/`. |
 | **Voice** | [docs/voice.md](docs/voice.md) | Voice packs and how they are built: `assets/audio-*`, `voice.html`, the pack builders, the audio functions in `index.html`. |
-| **Release and repo** | [docs/releasing.md](docs/releasing.md) | The release check, GitHub and Pages, these notes, the README. |
+| **Release and repo** | [docs/releasing.md](docs/releasing.md), [docs/feature-map.md](docs/feature-map.md), [docs/review-checklist.md](docs/review-checklist.md) | The release check, the checker and its gate, GitHub and Pages, these notes, the README. |
 
 Open work for every area is in one list: [docs/roadmap.md](docs/roadmap.md).
 
@@ -37,6 +38,8 @@ Open work for every area is in one list: [docs/roadmap.md](docs/roadmap.md).
 | `voice.html` | Stand-alone page that records the reference sentence for a cloned voice. | Voice |
 | `assets/` | Voice packs (`audio-tw.pack` 曉臻; `audio-tw-m` and `audio-me` when built; each with an index), `strokes.json`, `dict.txt` (the dictionary for My words), Hanzi Writer, icons. | Voice, Content |
 | `tools/check.mjs` | Release gate. `node tools/check.mjs` must pass before a push. It includes a self-test of the tone coach on synthetic tones. | Release |
+| `tools/review.mjs` | The review gate: ties the checker's PASS or FAIL to a fingerprint of the app files (everything but the notes and the tools), and stops a session finishing or a push leaving without a PASS. | Release |
+| `.claude/agents/verify-app.md`, `.claude/settings.json` | The checker subagent, and the hooks that call the gate: when a session tries to finish, and to keep anyone but the checker from recording a verdict. | Release |
 | `tools/import_dangdai.py` | Imports lessons from a downloaded DangDai volume (words, titles, BOOKS, DLGMAP, grammar). | Content |
 | `tools/add_characters.py` | Adds stroke data and component breakdowns for characters new to WORDS. | Content |
 | `tools/build_dict.py` | Builds `assets/dict.txt`, the dictionary My words fills pinyin and meanings from, out of CC-CEDICT, with the pinyin written the course's (Taiwan) way. | Content |
@@ -45,7 +48,7 @@ Open work for every area is in one list: [docs/roadmap.md](docs/roadmap.md).
 | `tools/build_voice_pack.py` | Builds a voice pack from WORDS with edge-tts. | Voice |
 | `tools/tone_lab.mjs` | The tone coach's test bench: runs the app's own tone code on recordings with known tones (`check`, `cv`), and refits the classifier (`fit --write`). | Voice |
 | `tools/build_voice_pack_breezy.py`, `tools/build_voice_staged.sh`, `tools/build_readings.py` | Cloned-voice pack with BreezyVoice, run in stages; the readings file it pins pronunciations with. | Voice |
-| `docs/` | The notes for each area, and the roadmap. | Release |
+| `docs/` | The notes for each area, the roadmap, the feature map and the checklist the checker works from. | Release |
 
 ## Rules that protect progress
 
@@ -71,4 +74,4 @@ Open work for every area is in one list: [docs/roadmap.md](docs/roadmap.md).
 
 ## Releasing
 
-Bump `APP_VERSION` (`index.html`) and `VERSION` (`sw.js`) together, run `node tools/check.mjs`, smoke-test locally at phone and tablet widths, then commit as `vNN — what changed` and push `main`. The full steps, and how two sessions share the repository, are in [docs/releasing.md](docs/releasing.md).
+Bump `APP_VERSION` (`index.html`) and `VERSION` (`sw.js`) together, run `node tools/check.mjs`, smoke-test locally at phone and tablet widths, run the `verify-app` subagent until it records a PASS, then commit as `vNN — what changed` and push `main`. When a change adds or moves a feature, update its entry in `docs/feature-map.md` in the same commit. The full steps, and how two sessions share the repository, are in [docs/releasing.md](docs/releasing.md).
