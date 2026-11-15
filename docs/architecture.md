@@ -38,7 +38,7 @@ New work should edit a function where it is defined when that is practical, and 
 - `WORDS` — `{id, l, t, p, pos, m, s?}`: lesson, traditional, pinyin, part of speech, meaning, simplified if different.
 - `GRAMMAR` — `{ "<lesson>": [{id, t, e, pat, tgt, alt, s:[{zh, en, py}], …}] }`.
 - `COMPONENTS` — per character `{p, g, d:[parts], t:type, s:semantic, ph:phonetic}`.
-- `S` (state) — `my` (the personal deck, see My words), `cards`, `settings`, `log` (per-day counts), `intro`/`cintro`/`gintro` (per-day intake by lane), `hard`, `pick`, `sib`, `hist`, `mtest` (writing-test results `m`/`l`/`h`), `exam`, `gram`, `cf`, `conf`, `listen`, `read` (stories read), `us` (usage-phrase practice per word, see [content.md](content.md#usage-phrases-用法)).
+- `S` (state) — `my` (the personal deck, see My words), `cards`, `settings`, `log` (per-day counts), `intro`/`cintro`/`gintro` (per-day intake by lane), `hard`, `pick`, `sib`, `hist`, `mtest` (writing-test results `m`/`l`/`h`), `exam`, `gram`, `cf`, `conf`, `listen`, `read` (stories read), `us` (usage-phrase practice per word, see [content.md](content.md#usage-phrases-用法)), `tone` and `vp` (the tone coach's results and its picture of the learner's voice, each with its own version marker, see [voice.md](voice.md)).
 - A card: `{st:'learn'|'rev'|'relearn', S, D, due, last, reps, lapses, days, known?, susp?, leech?, mastAt?}`. A card object with no `st` is queued but not started.
 
 ## App shell

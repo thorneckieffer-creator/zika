@@ -180,6 +180,8 @@ details.guide .gd p{margin-bottom:9px}
 .done{padding:46px 10px;text-align:center}
 .done .zhd{font-size:40px;margin-bottom:10px}
 kbd{background:var(--tint);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;font-size:11px;color:var(--mut)}
+/* keyboard hints are for keyboards: a phone or a tablet under a finger does not show them */
+@media (hover:none) and (pointer:coarse){.kbh{display:none}}
 .tone1{color:var(--t1)}.tone2{color:var(--t2)}.tone3{color:var(--t3)}.tone4{color:var(--t4)}.tone0{color:var(--t0)}
 .banner{background:#fbf4e4;border:1px solid #eedfb9;color:#8a6414;font-size:12.5px;border-radius:12px;padding:9px 14px;margin-bottom:14px;display:none}
 .set-row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--tint);gap:14px}
@@ -608,7 +610,8 @@ html[data-theme="dark"] .readline .seg.unk{background:#3d2420}
 .lane-n{text-align:right;flex:none;line-height:1.1}
 .lane-n b{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;display:block}
 .lane-n span{font-size:10.5px;color:var(--mut);white-space:nowrap}
-@media(max-width:560px){.lane{flex-wrap:wrap}.lane-n{text-align:left}.lane-n span{white-space:normal}}
+/* phone: the lane's name and note take the full width; its count and button share the row under them */
+@media(max-width:560px){.lane{flex-wrap:wrap;gap:6px 12px}.lane-b{flex:1 1 100%}.lane-n{text-align:left;flex:1;display:flex;align-items:baseline;gap:8px}.lane-n b{display:inline}.lane-n span{white-space:normal}}
 .clist{display:flex;flex-direction:column}
 .crow{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--tint)}
 .crow:last-child{border-bottom:0}
@@ -908,7 +911,7 @@ textarea.myin{min-height:120px;resize:vertical;line-height:1.5}
 <div id="printSheet"></div>
 <script>
 /* ============ VERSION ============ */
-const APP_VERSION=51;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
+const APP_VERSION=52;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
 
 /* ============ THEME ============ */
 function curTheme(){return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';}
@@ -2119,9 +2122,9 @@ function renderRev(){
       <button onclick="grade(3)"><span class="g3">Good</span><span class="iv">${previewIv(isNew?null:c,cur,3)}</span></button>
       <button onclick="grade(4)"><span class="g4">Easy</span><span class="iv">${previewIv(isNew?null:c,cur,4)}</span></button>
     </div>
-    <div class="small muted" style="text-align:center;margin-top:10px"><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd></div>`
+    <div class="small muted kbh" style="text-align:center;margin-top:10px"><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd></div>`
   :`<div style="margin-top:16px"><button class="btn big" onclick="reveal()">Show answer</button></div>
-    <div class="small muted" style="text-align:center;margin-top:10px"><kbd>space</kbd></div>`}`;
+    <div class="small muted kbh" style="text-align:center;margin-top:10px"><kbd>space</kbd></div>`}`;
   if(revealed){
     if(S.settings.autoplayAudio)setTimeout(()=>speakWord(w.id),120);
     if(m==='prod'&&S.settings.strokeAnim&&document.getElementById('strokeHost')){
@@ -2327,7 +2330,7 @@ function renderTriage(){
     <button class="tbn ok" onclick="triageAct('mast')"><b>4</b> Mastered ★</button>
     <button class="tbn skip" onclick="triageAct('skip')"><b>5</b> Skip</button>
   </div>
-  <div class="small muted" style="text-align:center;margin-top:10px">keys <kbd>1</kbd>–<kbd>5</kbd> · <kbd>space</kbd> hear it again</div>`;
+  <div class="small muted kbh" style="text-align:center;margin-top:10px">keys <kbd>1</kbd>–<kbd>5</kbd> · <kbd>space</kbd> hear it again</div>`;
   if(S.settings.autoplayAudio)setTimeout(()=>speakWord(w.id),120);
 }
 
@@ -2439,27 +2442,32 @@ function makeExam(){
   const ws=WORDS.filter(w=>w.l===ln&&!isName(w));
   examP={title:LESSON_TITLES[ln]||'',ln,
     g:shuf(pts).slice(0,3),v:shuf(ws).slice(0,5),
-    left:180,started:false};
-  if(examT)clearInterval(examT);
+    left:180,started:false,spoke:null};
+  if(examT){clearInterval(examT);examT=null;}
   renderDrill();
 }
+/* The clock and the recording are one thing: they start together (every take gets its own three minutes),
+   and they stop together — on Stop, when the time is up, and when the card is no longer on screen. */
 function examStart(){
-  if(!examP)return;examP.started=true;
+  if(!examP)return;examP.started=true;examP.left=180;examP.spoke=null;
   if(examT)clearInterval(examT);
-  examT=setInterval(()=>{if(!examP){clearInterval(examT);return;}
-    examP.left--;if(examP.left<=0){examP.left=0;clearInterval(examT);}
+  examT=setInterval(()=>{if(!examP){clearInterval(examT);examT=null;return;}
+    examP.left--;
     const el=document.getElementById('examClock');
     if(el)el.textContent=String(Math.floor(examP.left/60))+':'+String(examP.left%60).padStart(2,'0');
-    else {clearInterval(examT);}},1000);
+    if(examP.left<=0||!el||view!=='drill'){examP.left=Math.max(0,examP.left);examStop();}},1000);
   recStart();renderDrill();
+}
+function examStop(){
+  if(examT){clearInterval(examT);examT=null;}
+  if(examP&&examP.started&&examP.spoke==null)examP.spoke=180-examP.left;
+  if(recState&&recState.rec)recStop(); else if(view==='drill')renderDrill();
 }
 
 function renderDrill(){
   const el=document.getElementById('vDrill');
+  /* the menu's only bar is where the words come from; the drills themselves are the tiles below it */
   const scopeBar=`
-  <div class="segbar"><span class="cap">Drill</span>
-    ${DMODES.map(m=>`<button class="${drillMode===m[0]?'on':''}" onclick="startDrill('${m[0]}')">${m[1]}</button>`).join('')}
-  </div>
   <div class="segbar"><span class="cap">From</span>
     <button class="${drillScope==='lesson'?'on':''}" onclick="drillScope='lesson';dq=null;renderDrill()">A lesson</button>
     <button class="${drillScope==='hard'?'on':''}" onclick="drillScope='hard';dq=null;renderDrill()">My hard list (${(S.hard||[]).length})</button>
@@ -2565,13 +2573,13 @@ function renderDrill(){
 function examCard(){
   const p=examP;if(!p)return'';
   return `<div class="examcard">
-    <div class="row spread"><div><b>${esc(lnLabel(p.ln))} · ${esc(p.title)}</b><div class="small muted">Talk for three minutes.</div></div>
+    <div class="row spread"><div><b>${esc(lnLabel(p.ln))} · ${esc(p.title)}</b><div class="small muted">${p.spoke!=null&&!examT?`You spoke for ${Math.floor(p.spoke/60)}:${String(p.spoke%60).padStart(2,'0')}${p.spoke>=180?' — the full three minutes':''}.`:'Talk for three minutes.'}</div></div>
       <div class="clock" id="examClock">${Math.floor(p.left/60)}:${String(p.left%60).padStart(2,'0')}</div></div>
     <div class="small" style="margin-top:10px"><b>Use these grammar points:</b></div>
     <ul class="exlist">${p.g.map(g=>`<li>${esc(g.t)}${g.tgt&&g.tgt.length?` <span class="zh">「${esc(g.tgt[0])}」</span>`:''}</li>`).join('')}</ul>
     <div class="small"><b>Use these words:</b> <span class="zh">${p.v.map(w=>esc(w.t)).join('、')}</span></div>
     <div class="qfoot" style="margin-top:12px">
-      ${p.started?(recState&&recState.rec?`<button class="btn rec-on" onclick="recStop()">■ Stop</button>`:`<button class="btn ghost" onclick="examStart()">● Record again</button>`)
+      ${p.started?(examT?`<button class="btn rec-on" onclick="examStop()">■ Stop</button>`:`<button class="btn ghost" onclick="examStart()">● Record again</button>`)
         :`<button class="btn" onclick="examStart()">Start · record</button>`}
       ${recState&&recState.url?`<button class="btn ghost" onclick="recPlay()">▶ Play mine</button>`:''}
       <button class="btn ghost" onclick="makeExam()">New prompt</button>
@@ -4139,8 +4147,8 @@ function renderGramCard(){
       <button onclick="grade(2)"><span class="g2">Hard</span><span class="iv">${previewIv(isNew?null:c,cur,2)}</span></button>
       <button onclick="grade(3)"><span class="g3">Good</span><span class="iv">${previewIv(isNew?null:c,cur,3)}</span></button>
       <button onclick="grade(4)"><span class="g4">Easy</span><span class="iv">${previewIv(isNew?null:c,cur,4)}</span></button></div>
-    <div class="small muted" style="text-align:center;margin-top:10px"><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd></div>`
-    :`<div style="margin-top:16px"><button class="btn big" onclick="reveal()">Show answer</button></div><div class="small muted" style="text-align:center;margin-top:10px"><kbd>space</kbd></div>`}`;
+    <div class="small muted kbh" style="text-align:center;margin-top:10px"><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd></div>`
+    :`<div style="margin-top:16px"><button class="btn big" onclick="reveal()">Show answer</button></div><div class="small muted kbh" style="text-align:center;margin-top:10px"><kbd>space</kbd></div>`}`;
   if(animOn()){const st=el.querySelector('.stage');st.classList.add(revealed?'flip-in':'slide-in');if(lastGrade&&!revealed){st.classList.add(lastGrade===1?'from-again':lastGrade===2?'from-hard':'from-good');lastGrade=0;}st.addEventListener('animationend',()=>st.classList.remove('slide-in','flip-in'),{once:true});}
   if(revealed&&S.settings.autoplayAudio)setTimeout(()=>playAudio(s.zh),150);
 }
@@ -5230,7 +5238,6 @@ renderDrill=(function(orig){return function(){orig.apply(this,arguments);try{
   const dem=[...grid.querySelectorAll('.dcard')].filter(c=>DEMOTED.some(m=>(c.getAttribute('onclick')||'').includes("'"+m+"'")));
   if(!dem.length)return;
   const det=document.createElement('details'); det.className='guide'; det.open=moreDrills; det.innerHTML='<summary>More drills · sentences, listening, grammar ›</summary>'; const g2=document.createElement('div'); g2.className='dgrid'; g2.style.marginTop='10px'; dem.forEach(c=>g2.appendChild(c)); det.appendChild(g2); grid.insertAdjacentElement('afterend',det); det.addEventListener('toggle',()=>{moreDrills=det.open;});
-  el.querySelectorAll('.segbar:first-of-type button').forEach(b=>{if(DEMOTED.some(m=>(b.getAttribute('onclick')||'').includes("'"+m+"'"))&&!b.classList.contains('on'))b.style.display=moreDrills?'':'none';});
 }catch(e){}};})(renderDrill);
 try{badge();if(view==='set')renderSet();if(view==='home')renderHome();}catch(e){}
 
@@ -5496,9 +5503,11 @@ try{tabsSync();tabIntoView();if(view==='set')renderSet();}catch(e){}
    curve against the native speaker's, and get each syllable's tone
    graded. Everything is signal processing in the browser: no audio
    leaves the device. The app keeps a running picture of your voice
-   (mid pitch and range) and of which tones you miss.
+   (mid pitch and range) and of which tones and tone pairs you miss.
+   v52 rebuilt the analysis (tracker, octave repair, segmentation,
+   classifier) against ten voices: docs/voice.md, tools/tone_lab.mjs.
    ============================================================ */
-const TC_SR=16000, TC_HOP=0.01, TC_FRAME=0.04, TC_FMIN=70, TC_FMAX=420;
+const TC_SR=16000, TC_HOP=0.01, TC_FRAME=0.025, TC_FMIN=70, TC_FMAX=420;
 /* mono Float32 at any rate → 16 kHz (box-filter decimation is plenty for pitch) */
 function tcResample(x,sr){
   if(sr===TC_SR)return x;
@@ -5506,47 +5515,85 @@ function tcResample(x,sr){
   for(let i=0;i<n;i++){const a=Math.floor(i*ratio), b=Math.min(x.length,Math.floor((i+1)*ratio)); let s=0; for(let j=a;j<b;j++)s+=x[j]; y[i]=s/Math.max(1,b-a);}
   return y;
 }
-/* YIN pitch tracker → Hz per 10 ms frame, 0 where unvoiced */
+/* YIN pitch tracker → Hz per 10 ms frame, 0 where unvoiced; the loudness of each frame rides along as f0.rms */
 function tcPitch(x){
   const N=Math.round(TC_FRAME*TC_SR), H=Math.round(TC_HOP*TC_SR), tMin=Math.floor(TC_SR/TC_FMAX), tMax=Math.ceil(TC_SR/TC_FMIN);
-  const frames=Math.max(0,Math.floor((x.length-N-tMax)/H)), f0=new Float32Array(frames), d=new Float32Array(tMax+1);
-  let peak=0; for(let i=0;i<x.length;i++){const a=Math.abs(x[i]); if(a>peak)peak=a;}
-  const gate=Math.max(0.01,peak*0.06);
+  const frames=Math.max(0,Math.floor((x.length-N-tMax)/H)), f0=new Float32Array(frames), rms=new Float32Array(frames), d=new Float32Array(tMax+1);
+  for(let f=0;f<frames;f++){ const o=f*H; let e=0; for(let j=0;j<N;j++)e+=x[o+j]*x[o+j]; rms[f]=Math.sqrt(e/N); }
+  /* the gate follows the loud part of the take, not its single loudest click */
+  const loud=Array.from(rms).sort((a,b)=>a-b)[Math.floor(frames*0.9)]||0, gate=Math.max(0.002,loud*0.1);
+  f0.rms=rms;
   for(let f=0;f<frames;f++){
-    const o=f*H; let e=0; for(let j=0;j<N;j++)e+=x[o+j]*x[o+j];
-    if(Math.sqrt(e/N)<gate)continue;
-    let run=0, best=0;
+    if(rms[f]<gate)continue;
+    const o=f*H; let run=0, best=0;
     for(let t=1;t<=tMax;t++){
       let s=0; for(let j=0;j<N;j++){const v=x[o+j]-x[o+j+t]; s+=v*v;}
       run+=s; d[t]=run?s*t/run:1;
     }
     for(let t=tMin;t<tMax;t++){ if(d[t]<0.14){ while(t+1<tMax&&d[t+1]<d[t])t++; best=t; break; } }
-    if(!best){ let m=1; for(let t=tMin;t<tMax;t++)if(d[t]<m){m=d[t];best=t;} if(m>0.3)continue; }
+    if(!best){ let m=1; for(let t=tMin;t<tMax;t++)if(d[t]<m){m=d[t];best=t;} if(m>0.45)continue; }
     const a=d[best-1], b=d[best], c=d[best+1], den=a-2*b+c, shift=den?0.5*(a-c)/den:0;
     f0[f]=TC_SR/(best+(Math.abs(shift)<1?shift:0));
   }
   return f0;
 }
-/* clean a raw track: octave slips out, single-frame blips out, short gaps bridged; returns semitones (NaN = unvoiced) re 100 Hz */
+/* clean a raw track → semitones re 100 Hz (NaN = unvoiced): octave slips put back, blips out, short gaps bridged.
+   A slip is found by continuity, never by distance from the speaker's middle: a voice really does travel an octave
+   inside one falling tone, and a creaky low tone flickers between a note and the octave under it. Each voiced frame
+   may stay, or move an octave either way; the cheapest path is the one with no jump faster than a voice can glide. */
 function tcClean(f0){
-  const n=f0.length, st=new Float32Array(n).fill(NaN), v=[];
-  for(let i=0;i<n;i++)if(f0[i]>0)v.push(Math.log2(f0[i]/100)*12);
-  if(v.length<4)return st;
-  const med=v.slice().sort((a,b)=>a-b)[v.length>>1];
-  for(let i=0;i<n;i++){ if(!(f0[i]>0))continue; let s=Math.log2(f0[i]/100)*12; if(s-med>9.5)s-=12; else if(med-s>9.5)s+=12; if(Math.abs(s-med)<=11)st[i]=s; }
-  for(let i=1;i<n-1;i++){ if(!isNaN(st[i])&&isNaN(st[i-1])&&isNaN(st[i+1]))st[i]=NaN; }                       /* lone frames */
-  for(let i=1;i<n-1;i++){ if(!isNaN(st[i])&&!isNaN(st[i-1])&&!isNaN(st[i+1])){const m=[st[i-1],st[i],st[i+1]].sort((a,b)=>a-b)[1]; if(Math.abs(st[i]-m)>3)st[i]=m;} }
-  for(let i=0;i<n;i++){ if(!isNaN(st[i]))continue; let j=i; while(j<n&&isNaN(st[j]))j++; if(i>0&&j<n&&j-i<=4){for(let k=i;k<j;k++)st[k]=st[i-1]+(st[j]-st[i-1])*(k-i+1)/(j-i+1);} i=j; }
+  const n=f0.length, st=new Float32Array(n).fill(NaN), ix=[];
+  for(let i=0;i<n;i++)if(f0[i]>0){st[i]=Math.log2(f0[i]/100)*12;ix.push(i);}
+  const m=ix.length; if(m<4)return st.fill(NaN);
+  const SH=[0,12,-12], cost=[0,0.3,0.3], back=new Int8Array(m*3);
+  for(let q=1;q<m;q++){
+    const g=ix[q]-ix[q-1], d=st[ix[q]]-st[ix[q-1]], next=[0,0,0];
+    for(let k=0;k<3;k++){ let best=Infinity, arg=0;
+      for(let p=0;p<3;p++){const c=cost[p]+Math.max(0,Math.abs(d+SH[k]-SH[p])-1.5*g); if(c<best){best=c;arg=p;}}
+      next[k]=best+(k?0.3:0); back[q*3+k]=arg; }
+    cost[0]=next[0]; cost[1]=next[1]; cost[2]=next[2];
+  }
+  let k=cost[1]<cost[0]?1:0; if(cost[2]<cost[k])k=2;
+  for(let q=m-1;q>=0;q--){ st[ix[q]]+=SH[k]; k=back[q*3+k]; }
+  for(let i=0;i<n;i++){ if(!isNaN(st[i])&&(i===0||isNaN(st[i-1]))&&(i===n-1||isNaN(st[i+1])))st[i]=NaN; }          /* lone frames */
+  for(let i=1;i<n-1;i++){ if(!isNaN(st[i])&&!isNaN(st[i-1])&&!isNaN(st[i+1])){const md=[st[i-1],st[i],st[i+1]].sort((a,b)=>a-b)[1]; if(Math.abs(st[i]-md)>3)st[i]=md;} }
+  for(let i=0;i<n;i++){ if(!isNaN(st[i]))continue; let j=i; while(j<n&&isNaN(st[j]))j++; if(i>0&&j<n&&j-i<=4){for(let q=i;q<j;q++)st[q]=st[i-1]+(st[j]-st[i-1])*(q-i+1)/(j-i+1);} i=j; }
   return st;
 }
-/* voiced stretches → exactly `count` syllables: close gaps are merged, over-long stretches are split */
-function tcSyllables(st,count){
+/* voiced stretches → exactly `count` syllables. A short stray stretch well away from the rest (the hiss of an x or sh
+   that the tracker took for a note) is dropped and close gaps are merged; a stretch that holds more than one syllable
+   is cut into equal parts and each cut is moved to the nearest dip in loudness (the closure between two syllables).
+   Each syllable then loses its quiet edges: the tone is carried by the loud middle, not by the dying tail. */
+function tcSyllables(st,count,rms){
   let runs=[]; const n=st.length;
   for(let i=0;i<n;i++){ if(isNaN(st[i]))continue; let j=i; while(j<n&&!isNaN(st[j]))j++; if(j-i>=4)runs.push([i,j]); i=j; }
   if(!runs.length||count<1)return [];
-  while(runs.length>count){ let k=0, g=Infinity; for(let i=0;i<runs.length-1;i++){const gap=runs[i+1][0]-runs[i][1]; if(gap<g){g=gap;k=i;}} runs.splice(k,2,[runs[k][0],runs[k+1][1]]); }
-  while(runs.length<count){ let k=0, L=0; for(let i=0;i<runs.length;i++){const len=runs[i][1]-runs[i][0]; if(len>L){L=len;k=i;}} if(L<8)break; const [a,b]=runs[k], mid=(a+b)>>1; runs.splice(k,1,[a,mid],[mid,b]); }
-  return runs;
+  while(runs.length>count){
+    let k=0, g=Infinity; for(let i=0;i<runs.length-1;i++){const gap=runs[i+1][0]-runs[i][1]; if(gap<g){g=gap;k=i;}}
+    const la=runs[k][1]-runs[k][0], lb=runs[k+1][1]-runs[k+1][0];
+    if(g>=10&&Math.min(la,lb)<=6)runs.splice(la<lb?k:k+1,1);
+    else runs.splice(k,2,[runs[k][0],runs[k+1][1]]);
+  }
+  const parts=runs.map(()=>1); let left=count-runs.length;
+  while(left>0){ let k=-1, best=0; runs.forEach((r,i)=>{const v=(r[1]-r[0])/parts[i]; if(v>best){best=v;k=i;}}); if(best<8)break; parts[k]++; left--; }
+  const out=[];
+  runs.forEach(([a,b],i)=>{
+    const p=parts[i], L=(b-a)/p; let prev=a;
+    for(let j=1;j<p;j++){
+      let cut=Math.round(a+j*L);
+      if(rms){ const w=Math.max(2,Math.round(L*0.3)); let m=Infinity, c=cut;
+        for(let t=Math.max(prev+4,cut-w);t<=Math.min(b-4,cut+w);t++){ const e=((rms[t-1]||0)+(rms[t]||0)+(rms[t+1]||0))*(1+0.5*Math.abs(t-cut)/w); if(e<m){m=e;c=t;} }
+        cut=c; }
+      out.push([prev,cut]); prev=cut;
+    }
+    out.push([prev,b]);
+  });
+  if(rms)for(const r of out){
+    let mx=0; for(let t=r[0];t<r[1];t++)if(rms[t]>mx)mx=rms[t];
+    while(r[1]-r[0]>6&&rms[r[1]-1]<mx*0.25)r[1]--;
+    while(r[1]-r[0]>6&&rms[r[0]]<mx*0.25)r[0]++;
+  }
+  return out;
 }
 /* one syllable's contour as 16 evenly spaced points (semitones), with the unsteady edges trimmed */
 function tcShape(st,a,b){
@@ -5555,34 +5602,61 @@ function tcShape(st,a,b){
   const out=new Array(16); for(let i=0;i<16;i++){const p=i*(core.length-1)/15, k=Math.floor(p), fr=p-k; out[i]=core[k]+(core[Math.min(core.length-1,k+1)]-core[k])*fr;}
   return out;
 }
-/* Softmax over one syllable: 16 contour points (z-scored against the speaker's own range), its length, a bias.
-   Fitted on the 1,962 non-neutral syllables of the bundled native clips; 90% on held-out syllables
-   (tone 1 97%, tone 2 94%, tone 3 72%, tone 4 92%). Refit if the analysis above changes. */
-const TC_W=[
- [-0.16,-0.22,-0.23,-0.25,-0.23,-0.22,0.01,0.19,0.28,0.46,0.57,0.52,0.44,0.41,0.58,0.86,0.76,-0.59],
- [0.19,-0.16,-0.44,-0.63,-0.62,-0.47,-0.35,-0.3,-0.19,-0.01,0.13,0.29,0.37,0.33,0.29,0.18,0.83,0.37],
- [0.32,0.27,0.06,0.14,0.32,0.32,0.06,-0.11,-0.33,-0.45,-0.62,-0.78,-0.66,-0.41,-0.32,-0.29,-1.42,-0.38],
- [-0.35,0.11,0.61,0.74,0.53,0.38,0.28,0.21,0.24,0,-0.08,-0.02,-0.14,-0.34,-0.55,-0.75,-0.17,0.6]];
+/* The tone of one syllable: a small network (17 inputs → 10 → 4 tones) over its 16 contour points, z-scored against
+   the speaker's own range, and its length. Fitted in v52 on ten voices — two people (audio-cmn: Chen Wang's 1,660
+   syllables, Yue Tan's HSK words), the bundled 曉臻, 雲哲, and six macOS voices — about 17,000 syllables, with
+   the pitch and range estimates jittered so a rough picture of the speaker still works. Scored on a voice it was
+   not fitted on it agrees with the written tone about 80% of the time (74–87% by voice). tools/tone_lab.mjs
+   re-runs that test against this file and refits; refit whenever the analysis above changes. */
+const TC_NET={
+ W1:[
+  [-0.54,0.45,0.17,-0.09,0.37,0.04,-0.19,-0.85,0.09,-0.24,-0.86,-0.01,0.78,0.19,-0.04,-0.61,0.62],
+  [0.37,0.12,0.05,-0.7,-0.98,-1.53,-1.49,-0.83,0.65,1.41,1.16,0.32,0.3,0.34,-0.55,0.17,-0.06],
+  [-0.76,-1.05,-2.16,-2,-1.34,-0.74,0.01,1.28,2.02,2.62,2.04,0.85,-0.03,-0.04,-0.02,-0.78,0.62],
+  [-1.96,-0.24,0.42,0.89,1.16,1.25,1.59,0.54,0.57,0.28,-0.79,-0.51,-0.2,-0.19,-1.18,-1.01,3.09],
+  [-1.68,-1.2,-0.46,0.31,0.52,1.12,1.43,1.76,1.52,0.25,-0.6,0.55,0,-0.71,-1.08,-2.08,-0.57],
+  [0.64,-0.13,-0.47,-0.59,0.02,-0.02,0.36,0.8,0.53,0.37,-0.01,-0.32,-0.42,-0.12,0.05,0.96,2.11],
+  [2.22,1.28,1.31,0.81,-0.21,-0.47,-0.2,0.05,-0.13,-0.59,-1.07,-1.58,-1.29,-0.32,-0.15,0.36,0.61],
+  [0.5,0.17,-0.73,-1.27,-1.27,-1.34,-1.07,-0.55,-0.18,0.46,0.83,0.8,0.72,0.77,0.69,1.55,1.83],
+  [-0.29,0.44,0.55,0.32,-0.56,-1.45,-1.52,-1.69,-1.24,-1.1,-0.22,0.06,0.76,1.48,1.86,2.85,2.05],
+  [1.41,0.2,-0.33,-0.81,-0.02,0.41,-0.22,-0.41,-0.65,-1.3,-1.61,-1.33,-0.83,0.12,1.66,3.86,0.18]],
+ b1:[-1.13,0.4,0.24,-0.8,-0.41,1.62,0.77,1.45,-0.48,-1.74],
+ W2:[
+  [-0.9,-0.46,1.16,0.85,-0.03,-1.18,1.41,0.14,1.91,-1.75],
+  [0.13,1.06,0.25,-0.38,-0.23,0.83,-0.36,-0.65,0.39,0.81],
+  [1.54,0.03,-1.25,0.44,-0.54,0.43,-0.46,0.87,-0.98,0.66],
+  [-0.08,-0.82,-0.9,-0.97,0.83,-0.17,-0.78,-0.56,-0.37,0.08]],
+ b2:[-1.75,0.52,-0.03,1.19]};
 function tcClassify(shape,frames,sp){
-  const x=shape.map(v=>(v-sp.base)/sp.sd); x.push(Math.min(3,frames/30));
-  const z=TC_W.map(r=>{let s=r[17];for(let j=0;j<17;j++)s+=r[j]*x[j];return s;}), m=Math.max(...z), e=z.map(v=>Math.exp(v-m)), sum=e.reduce((a,b)=>a+b,0), p=e.map(v=>v/sum);
+  const sd=Math.min(5,Math.max(2,sp.sd)), x=shape.map(v=>(v-sp.base)/sd); x.push(Math.min(3,frames/30));
+  const h=TC_NET.W1.map((w,i)=>{let s=TC_NET.b1[i];for(let j=0;j<w.length;j++)s+=w[j]*x[j];return Math.tanh(s);});
+  const z=TC_NET.W2.map((w,k)=>{let s=TC_NET.b2[k];for(let j=0;j<w.length;j++)s+=w[j]*h[j];return s;}), m=Math.max(...z), e=z.map(v=>Math.exp(v-m)), sum=e.reduce((a,b)=>a+b,0), p=e.map(v=>v/sum);
   let k=0; for(let i=1;i<4;i++)if(p[i]>p[k])k=i;
   return {tone:k+1,p,z:x.slice(0,16)};
 }
+/* the verdict on one syllable, given the tone it should be. 'ok' when that tone is the likeliest or nearly so:
+   a native speaker passes about nine times in ten, a wrong tone slips through about one time in twelve.
+   'close' is a near miss, said in words and drawn in amber, and still counted as a miss. */
+function tcJudge(s,e){ const p=s.p[e-1]; return (s.tone===e||p>=0.34)?'ok':p>=0.2?'close':'no'; }
 /* the tones a listener should hear: pinyin as written, plus third-tone sandhi (3+3 → 2+3) */
 function tcExpected(p){
   const t=toneSeq(p).slice();
   for(let i=0;i<t.length-1;i++)if(t[i]===3&&t[i+1]===3)t[i]=2;
   return t;
 }
-/* one utterance → pitch track, and per syllable its contour and the tone it sounds like */
-function tcAnalyse(x,sr,count,sp){
-  const st=tcClean(tcPitch(tcResample(x,sr))), voiced=[];
+/* one utterance → its cleaned pitch track (the slow part: do it once per take) */
+function tcTrack(x,sr){
+  const f0=tcPitch(tcResample(x,sr)), st=tcClean(f0), voiced=[];
   for(const v of st)if(!isNaN(v))voiced.push(v);
-  if(voiced.length<6)return null;
-  const med=voiced.slice().sort((a,b)=>a-b)[voiced.length>>1], who=sp||{base:med,sd:3.2};
-  const syl=tcSyllables(st,count).map(([a,z])=>{const shape=tcShape(st,a,z); return shape?Object.assign({a,z},tcClassify(shape,z-a,who)):null;});
-  return {med,voiced,syl,sp:who};
+  return {st,rms:f0.rms,voiced,med:voiced.length?voiced.slice().sort((a,b)=>a-b)[voiced.length>>1]:NaN};
+}
+/* a track → per syllable its contour and the tone it sounds like. `sp` is the speaker's {base, sd}; without it
+   the take is judged against its own middle. Pass `tr` to reuse a track instead of analysing the audio again. */
+function tcAnalyse(x,sr,count,sp,tr){
+  tr=tr||tcTrack(x,sr); if(tr.voiced.length<6)return null;
+  const who=sp||{base:tr.med,sd:3.2};
+  const syl=tcSyllables(tr.st,count,tr.rms).map(([a,z])=>{const shape=tcShape(tr.st,a,z); return shape?Object.assign({a,z},tcClassify(shape,z-a,who)):null;});
+  return {med:tr.med,voiced:tr.voiced,syl,sp:who,tr};
 }
 
 /* ---------- who is speaking ---------- */
@@ -5596,17 +5670,25 @@ async function tcDecode(buf){
 async function tcClip(key){ if(!(await loadPack())||!AIDX[key])return null; const [o,l]=AIDX[key]; return tcDecode(APACK.slice(o,o+l)); }
 async function tcNativeStats(){
   const id=APACK_ID||'f'; if(TC_NATIVE[id])return TC_NATIVE[id];
-  try{const c=JSON.parse(store.getItem('zika_tc_native_'+id)||'null'); if(c&&c.sd){TC_NATIVE[id]=c;return c;}}catch(e){}
+  try{const c=JSON.parse(store.getItem('zika_tc_native2_'+id)||'null'); if(c&&c.sd){TC_NATIVE[id]=c;return c;}}catch(e){}
   const all=[], keys=WORDS.filter(w=>{const n=[...audioKey(w.t)].length;return n>=1&&n<=3;}).map(w=>audioKey(w.t)).filter((k,i,a)=>AIDX[k]&&a.indexOf(k)===i);
-  for(let i=0;i<keys.length&&i<100;i++){const c=await tcClip(keys[Math.floor(i*keys.length/100)]); if(!c)continue; for(const v of tcClean(tcPitch(tcResample(c.x,c.sr))))if(!isNaN(v))all.push(v);}
-  if(all.length<200)return {base:14,sd:3.2};
-  all.sort((a,b)=>a-b); const mean=all.reduce((a,b)=>a+b,0)/all.length;
-  const s={base:all[all.length>>1],sd:Math.sqrt(all.reduce((a,b)=>a+(b-mean)*(b-mean),0)/all.length)};
-  TC_NATIVE[id]=s; try{store.setItem('zika_tc_native_'+id,JSON.stringify(s));}catch(e){} return s;
+  for(let i=0;i<keys.length&&i<100;i++){const c=await tcClip(keys[Math.floor(i*keys.length/100)]); if(!c)continue; for(const v of tcTrack(c.x,c.sr).voiced)all.push(v);}
+  if(all.length<200)return {base:14.5,sd:3.4};
+  const mean=all.reduce((a,b)=>a+b,0)/all.length;
+  const s={base:mean,sd:Math.sqrt(all.reduce((a,b)=>a+(b-mean)*(b-mean),0)/all.length)};
+  TC_NATIVE[id]=s; try{store.setItem('zika_tc_native2_'+id,JSON.stringify(s));store.removeItem('zika_tc_native_'+id);}catch(e){} return s;
 }
 /* You: the app learns your mid pitch and your range from every recording, so "high" and "low" are judged
    against your own voice. Until it has heard about three seconds of you it leans on the current take. */
-function tcState(){S.tone=S.tone||{n:0,by:{},conf:{},w:{}};S.vp=S.vp||{n:0,sum:0,sq:0};return S.tone;}
+/* S.tone = what the recordings say about your tones; S.vp = the picture of your voice. Both carry the version of the
+   analysis that made them (v:2 since v52): grades and pitch statistics from the first analysis are not comparable, so
+   they start again — the marker travels with the data, so an older device syncing its copy back cannot revive them. */
+function tcState(){
+  if(!S.tone||S.tone.v!==2)S.tone={v:2,n:0,by:{},conf:{},pair:{},w:{}};
+  if(!S.vp||S.vp.v!==2)S.vp={v:2,n:0,sum:0,sq:0};
+  S.tone.pair=S.tone.pair||{};
+  return S.tone;
+}
 function tcUserStats(utterMed){
   tcState(); const v=S.vp;
   if(v.n<300)return {base:utterMed,sd:3.2,learning:true};
@@ -5621,12 +5703,32 @@ function tcLearn(voiced){
 /* ---------- the drill ---------- */
 const TC={list:[],i:0,state:'ask',stream:null,rec:null,timer:0,res:null,ref:null,url:null,busy:false,err:''};
 const TC_NAME={1:'high and level',2:'rising',3:'low',4:'falling'};
+/* what to change, by the tone it should be and the tone it sounded like */
+const TC_TIP={
+ '12':'Start at the top and hold it there — don’t slide up into it.', '13':'Higher: hold it near the top of your voice.', '14':'Keep it up and flat to the very end — don’t let it drop.',
+ '21':'Begin lower, so there is room to climb.', '23':'Climb straight away — don’t dip first.', '24':'This one goes up, like asking “what?”.',
+ '31':'Lower: let it sink to the bottom of your voice.', '32':'Stay down: sink and keep it low — the rise at the end is optional.', '34':'Begin low, not high: the third tone has no drop from the top.',
+ '41':'Start high and let it fall all the way.', '42':'This one goes down, like a firm “No!”.', '43':'Start higher: a sharp drop from the top of your voice.'};
+/* what to lean on next: the tone pair, or the single tone, that the recordings show as weakest (after a few tries at it) */
+function tcFocus(){
+  const T=tcState(); let best=null;
+  for(const k in T.pair){const ok=T.pair[k][0], n=T.pair[k][1]; if(n>=4&&ok/n<0.75&&(!best||ok/n<best.r))best={kind:'pair',k,r:ok/n,n};}
+  for(const t of [1,2,3,4]){const b=T.by[t]; if(b&&b[1]>=6&&b[0]/b[1]<0.75&&(!best||b[0]/b[1]<best.r-0.1))best={kind:'tone',k:String(t),r:b[0]/b[1],n:b[1]};}
+  return best;
+}
+function tcFocusName(f){return f.kind==='pair'?'tone '+f.k[0]+' + tone '+f.k[1]:'tone '+f.k;}
 function tcPool(){
   return drillWords().filter(w=>{const k=audioKey(w.t), n=[...k].length, t=tcExpected(w.p); return /^[㐀-鿿]+$/.test(k)&&n>=1&&n<=4&&t.length===n&&t.some(x=>x>0);});
 }
 function tcStart(){
   const pool=tcPool(); if(pool.length<2){toast('Not enough words in that scope for the tone coach');return;}
-  TC.list=shuf(pool).slice(0,10).map(w=>w.id); TC.i=0; TC.res=null; TC.err=''; TC.done=0; TC.right=0; TC.total=0;
+  /* up to six of the ten words practise the weakest tone or tone pair so far */
+  const f=tcFocus(); let pick=shuf(pool); TC.focus=null;
+  if(f){
+    const hit=shuf(pool.filter(w=>{const t=tcExpected(w.p).join(''); return f.kind==='pair'?t===f.k:t.includes(f.k);})).slice(0,6), ids=new Set(hit.map(w=>w.id));
+    if(hit.length>=2){pick=shuf(hit.concat(pick.filter(w=>!ids.has(w.id)).slice(0,10-hit.length))); TC.focus=f;}
+  }
+  TC.list=pick.slice(0,10).map(w=>w.id); TC.i=0; TC.res=null; TC.err=''; TC.done=0; TC.right=0; TC.total=0;
   tcState(); TC.state=S.vp.n<300?'cal':'ask';        /* first time: hear a sentence, to learn this voice's range */
   drillMode='tcoach'; dq=null; go('drill');
 }
@@ -5640,9 +5742,8 @@ const TC_CAL='大家好，我現在在臺灣學中文。我每天都練習聽、
 async function tcCalDone(blob){
   TC.busy=true; TC.state='think'; tcRender();
   try{
-    const a=await tcDecode(await blob.arrayBuffer()), voiced=[];
-    for(const v of tcClean(tcPitch(tcResample(a.x,a.sr))))if(!isNaN(v))voiced.push(v);
-    tcLearn(voiced); save();
+    const a=await tcDecode(await blob.arrayBuffer());
+    tcLearn(tcTrack(a.x,a.sr).voiced); save();
     if(S.vp.n>=300){TC.state='ask';TC.err='';toast('Got it — the coach now knows your voice range');}
     else{TC.state='cal';TC.err='I need a little more of your voice — read the whole sentence at a normal pace.';}
   }catch(e){TC.state='cal';TC.err='That recording could not be read. Try again.';}
@@ -5670,13 +5771,14 @@ async function tcGrade(input){
     const want=tcExpected(w.p), n=want.length;
     const rough=tcAnalyse(mine.x,mine.sr,n,null);
     if(!rough||rough.syl.length!==n||rough.syl.some(s=>!s)){ TC.err=rough?'I could not find '+n+' clear syllable'+(n>1?'s':'')+' in that take — say it a little slower and closer to the microphone.':'I could not hear a voice in that take. Check the microphone and try again.'; TC.state='ask'; TC.busy=false; tcRender(); return; }
-    const me=tcUserStats(rough.med), got=tcAnalyse(mine.x,mine.sr,n,me);
+    const me=tcUserStats(rough.med), got=tcAnalyse(null,0,n,me,rough.tr);
     let ref=null; const clip=await tcClip(audioKey(w.t)); if(clip){const ns=await tcNativeStats(); ref=tcAnalyse(clip.x,clip.sr,n,ns);}
     const T=tcState(); let right=0, graded=0;
     const syl=got.syl.map((s,i)=>{const e=want[i]; if(!e)return {e:0,ok:null,s};
-      const ok=s.tone===e, close=!ok&&s.p[e-1]>=0.28; graded++; if(ok)right++;
+      const v=tcJudge(s,e), ok=v==='ok', close=v==='close'; graded++; if(ok)right++;
       T.by[e]=T.by[e]||[0,0]; T.by[e][1]++; if(ok)T.by[e][0]++; else {const k=e+'>'+s.tone;T.conf[k]=(T.conf[k]||0)+1;}
       return {e,ok,close,s};});
+    if(n===2&&graded===2){const pr=T.pair[''+want[0]+want[1]]||[0,0]; pr[1]++; if(right===2)pr[0]++; T.pair[''+want[0]+want[1]]=pr;}
     T.n++; const rec=T.w[wid]||[0,0]; rec[0]++; rec[1]=Math.max(rec[1],Math.round(right/Math.max(1,graded)*100)); T.w[wid]=rec;
     tcLearn(got.voiced);
     TC.res={syl,ref,right,graded,learning:!!me.learning}; TC.state='done'; TC.err=''; TC.total+=graded; TC.right+=right;
@@ -5689,7 +5791,7 @@ function tcAgain(){ TC.state='ask'; TC.res=null; TC.err=''; tcRender(); }
 function tcPlayMine(){ if(TC.url)new Audio(TC.url).play().catch(()=>{}); }
 /* two pitch curves per syllable: the native speaker's in grey, yours in colour, each drawn against its own voice's range */
 function tcChart(res,chars){
-  const n=res.syl.length, W=118, H=132, y=z=>Math.max(8,Math.min(H-8,H/2-z*(H/2-10)/2.6));
+  const n=res.syl.length, W=118, H=104, y=z=>Math.max(8,Math.min(H-8,H/2-z*(H/2-10)/2.6));
   const line=(pts,x0)=>pts.map((z,i)=>(i?'L':'M')+(x0+14+i*(W-28)/15).toFixed(1)+','+y(z).toFixed(1)).join('');
   let g='';
   for(let i=0;i<n;i++){
@@ -5697,9 +5799,9 @@ function tcChart(res,chars){
     g+=`<rect x="${x0+3}" y="3" width="${W-6}" height="${H-6}" rx="10" class="tc-cell"/>`
       +`<line x1="${x0+10}" x2="${x0+W-10}" y1="${H/2}" y2="${H/2}" class="tc-mid"/>`
       +(r?`<path d="${line(r.z,x0)}" class="tc-ref"/>`:'')
-      +`<path d="${line(s.s.z,x0)}" class="tc-me ${s.ok===null?'na':s.ok?'ok':'no'}"/>`;
+      +`<path d="${line(s.s.z,x0)}" class="tc-me ${s.ok===null?'na':s.ok?'ok':s.close?'close':'no'}"/>`;
   }
-  return `<svg class="tc-chart" viewBox="0 0 ${n*W} ${H}" style="max-width:${n*150}px" role="img" aria-label="pitch curves, yours against the native speaker">${g}</svg>`;
+  return `<svg class="tc-chart" viewBox="0 0 ${n*W} ${H}" style="max-width:${n*132}px" role="img" aria-label="pitch curves, yours against the native speaker">${g}</svg>`;
 }
 function tcRender(){
   const el=document.getElementById('vDrill'); if(!el||drillMode!=='tcoach')return;
@@ -5721,19 +5823,22 @@ function tcRender(){
       <div class="small muted" style="text-align:center;margin-top:10px">${st==='rec'?'recording — press Stop when you finish':'<span class="link" onclick="TC.state=\'ask\';TC.cal=false;tcRender()">skip for now</span>'}</div></div>`;
     return;
   }
-  const word=`<div class="bigzh zh" style="font-size:54px">${esc(w.t.split('（')[0])}</div>
-    <div class="row" style="justify-content:center;gap:9px"><span class="pyline" style="font-size:23px">${tonePinyin(esc(w.p))}</span>${spkBtn(w.id)}</div>
-    <div class="meaning" style="font-size:15px;margin-top:2px">${esc(w.m)}</div>`;
+  const shown=st==='done'&&res;        /* the result is the tall state: the word shrinks to make room for it */
+  const word=`<div class="bigzh zh" style="font-size:${shown?38:54}px${shown?';margin:0 0 2px':''}">${esc(w.t.split('（')[0])}</div>
+    <div class="row" style="justify-content:center;gap:9px"><span class="pyline" style="font-size:${shown?19:23}px">${tonePinyin(esc(w.p))}</span>${spkBtn(w.id)}</div>
+    ${shown?'':`<div class="meaning" style="font-size:15px;margin-top:2px">${esc(w.m)}</div>`}`;
   let body;
   if(st==='done'&&res){
-    const lines=res.syl.map((s,i)=>s.ok===null?'':s.ok?'':`<div><b class="zh">${esc(chars[i])}</b> should be tone ${s.e} (${TC_NAME[s.e]}) — yours sounded ${s.close?'closer to':'like'} tone ${s.s.tone} (${TC_NAME[s.s.tone]}).</div>`).join('');
+    const cls=s=>s.ok===null?'na':s.ok?'ok':s.close?'close':'no';
+    const lines=res.syl.map((s,i)=>s.ok===null?'':s.ok?'':`<div><b class="zh">${esc(chars[i])}</b> ${s.close?'was close, but leaned towards':'sounded like'} tone ${s.s.tone} (${TC_NAME[s.s.tone]}). <span class="tc-tip">${TC_TIP[''+s.e+s.s.tone]||''}</span></div>`).join('');
     body=`${tcChart(res,chars)}
-      <div class="tc-chips">${res.syl.map((s,i)=>`<span class="tc-chip ${s.ok===null?'na':s.ok?'ok':'no'}"><b class="zh">${esc(chars[i])}</b><i>${s.e?'tone '+s.e:'neutral'}</i>${s.ok===null?'':s.ok?'✓':'✗'}</span>`).join('')}</div>
+      <div class="tc-chips">${res.syl.map((s,i)=>`<span class="tc-chip ${cls(s)}"><b class="zh">${esc(chars[i])}</b><i>${s.e?'tone '+s.e:'neutral'}</i>${s.ok===null?'':s.ok?'✓':s.close?'≈':'✗'}</span>`).join('')}</div>
       <div class="tc-say">${res.right===res.graded?'Every tone on target.':lines}</div>
-      <div class="small muted" style="margin-top:8px">grey = the native speaker · colour = you${res.learning?' · still learning your voice range, so the first few grades are rough':''}</div>
-      <div class="row" style="justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap">${TC.url?`<button class="btn ghost sm" onclick="tcPlayMine()">▶ Mine</button>`:''}<button class="btn ghost sm" onclick="speakWord('${w.id}')">▶ Native</button><button class="btn ghost" onclick="tcAgain()">Try again</button><button class="btn" onclick="tcNext()">Next →</button></div>`;
+      <div class="tc-key">grey = the native speaker · colour = you${res.learning?' · still learning your voice range, so these first grades are rough':''}</div>
+      <div class="tc-acts">${TC.url?`<button class="btn ghost sm" onclick="tcPlayMine()">▶ Mine</button>`:''}<button class="btn ghost sm" onclick="speakWord('${w.id}')">▶ Native</button><button class="btn ghost sm" onclick="tcAgain()">Again</button><button class="btn sm" onclick="tcNext()">Next →</button></div>`;
   }else{
     body=`<div class="hint" style="margin-top:10px">listen · then record yourself saying it</div>
+      ${TC.focus&&TC.i===0?`<div class="small muted" style="text-align:center;margin-top:6px">This round leans on ${tcFocusName(TC.focus)} — your hardest so far.</div>`:''}
       ${TC.err?`<div class="tc-err">${esc(TC.err)}</div>`:''}
       <div class="row" style="justify-content:center;gap:10px;margin-top:14px"><button class="btn ghost" onclick="speakWord('${w.id}')">▶ Listen</button>
         <button class="btn tc-rec ${st==='rec'?'on':''}" onclick="tcRecord()" ${st==='think'?'disabled':''}>${st==='rec'?'■ Stop':st==='think'?'Listening…':'● Record'}</button></div>
@@ -5745,9 +5850,10 @@ function tcRender(){
 function tcSummary(){
   const T=tcState(), rows=[1,2,3,4].filter(t=>T.by[t]&&T.by[t][1]).map(t=>({t,ok:T.by[t][0],n:T.by[t][1]}));
   if(!rows.length)return 'No recordings yet.';
-  const worst=Object.entries(T.conf).sort((a,b)=>b[1]-a[1])[0];
+  const worst=Object.entries(T.conf).sort((a,b)=>b[1]-a[1])[0], f=tcFocus();
   return rows.map(r=>`tone ${r.t}: <b>${Math.round(r.ok/r.n*100)}%</b> of ${r.n}`).join(' · ')
-    +(worst&&worst[1]>=3?`<br>Most often, your tone ${worst[0][0]} comes out as tone ${worst[0][2]} (${TC_NAME[worst[0][2]]} instead of ${TC_NAME[worst[0][0]]}).`:'');
+    +(worst&&worst[1]>=3?`<br>Most often, your tone ${worst[0][0]} comes out as tone ${worst[0][2]} (${TC_NAME[worst[0][2]]} instead of ${TC_NAME[worst[0][0]]}).`:'')
+    +(f?`<br>The next round leans on ${tcFocusName(f)} (${Math.round(f.r*100)}% of ${f.n} so far).`:'');
 }
 function tcPanel(){
   const T=tcState(); if(!T.n)return '';
@@ -5763,17 +5869,21 @@ renderDrill=(function(orig){return function(){
 go=(function(orig){return function(v){if(v!=='drill')tcRelease();return orig.apply(this,arguments);};})(go);
 (function(){const st=document.createElement('style');st.textContent=`
 .tc-beta{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line2);border-radius:99px;padding:1px 6px;color:var(--mut);margin-left:4px}
-.tc-chart{display:block;width:100%;margin:14px auto 6px}
+.tc-chart{display:block;width:100%;margin:10px auto 4px}
+.tc-key{font-size:11.5px;color:var(--mut);text-align:center;margin-top:6px}
+.tc-acts{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:nowrap}
+.tc-acts .btn{white-space:nowrap}
 .tc-cell{fill:var(--panel);stroke:var(--line)}
 .tc-mid{stroke:var(--line2);stroke-dasharray:3 4}
 .tc-ref{fill:none;stroke:var(--mut2);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;opacity:.75}
 .tc-me{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
-.tc-me.ok{stroke:var(--acc)}.tc-me.no{stroke:var(--red)}.tc-me.na{stroke:var(--mut)}
+.tc-me.ok{stroke:var(--acc)}.tc-me.no{stroke:var(--red)}.tc-me.close{stroke:var(--amber)}.tc-me.na{stroke:var(--mut)}
 .tc-chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px}
 .tc-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:99px;padding:4px 11px;font-size:12.5px;font-weight:700}
 .tc-chip b{font-size:17px}.tc-chip i{font-style:normal;font-weight:500;color:var(--mut)}
-.tc-chip.ok{color:var(--acc)}.tc-chip.no{color:var(--red)}.tc-chip.na{color:var(--mut)}
-.tc-say{font-size:14px;margin-top:12px;text-align:center;line-height:1.6}
+.tc-chip.ok{color:var(--acc)}.tc-chip.no{color:var(--red)}.tc-chip.close{color:var(--amber)}.tc-chip.na{color:var(--mut)}
+.tc-tip{color:var(--mut)}
+.tc-say{font-size:13.5px;margin-top:8px;text-align:center;line-height:1.5}
 .tc-err{font-size:13.5px;color:var(--red);text-align:center;margin-top:10px}
 .tc-rec.on{background:var(--red);color:#fff}
 `;document.head.appendChild(st);})();

@@ -42,6 +42,7 @@ Open work for every area is in one list: [docs/roadmap.md](docs/roadmap.md).
 | `tools/content/` | Original grammar write-ups per book, consumed by the importer; the Stories (`reading_passages.py`) and the usage phrases (`usage/*.txt`); `readings.json`, the publisher's 注音 per word. | Content, Voice |
 | `tools/check_reading.py`, `tools/check_usage.py` | Check the Stories and the usage phrases against the vocabulary learned so far, and install them into `index.html` (`--write`). | Content |
 | `tools/build_voice_pack.py` | Builds a voice pack from WORDS with edge-tts. | Voice |
+| `tools/tone_lab.mjs` | The tone coach's test bench: runs the app's own tone code on recordings with known tones (`check`, `cv`), and refits the classifier (`fit --write`). | Voice |
 | `tools/build_voice_pack_breezy.py`, `tools/build_voice_staged.sh`, `tools/build_readings.py` | Cloned-voice pack with BreezyVoice, run in stages; the readings file it pins pronunciations with. | Voice |
 | `docs/` | The notes for each area, and the roadmap. | Release |
 
