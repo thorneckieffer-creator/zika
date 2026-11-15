@@ -22,6 +22,7 @@ import { tmpdir, homedir } from 'node:os';
 import { join, dirname, extname, resolve, normalize, sep, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
+import { inflateSync } from 'node:zlib';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
@@ -36,7 +37,9 @@ const T0 = Date.parse('2026-11-20T09:30:00+08:00');
 const prelude = (t0, storage) => `(() => {
   window.__errors = [];
   /* a clock that moves only when the scenario says so */
-  const RealDate = Date; let now = ${t0};
+  /* a reload within a scenario is the same device a moment later: the clock carries on and storage is not seeded again */
+  const again = (() => { try { return sessionStorage.getItem('__harness'); } catch (e) { return null; } })();
+  const RealDate = Date; let now = again ? +again : ${t0};
   class FakeDate extends RealDate { constructor(...a) { if (a.length) super(...a); else super(now); } static now() { return now; } }
   window.Date = FakeDate;
   window.__now = () => now;
@@ -59,7 +62,7 @@ const prelude = (t0, storage) => `(() => {
       if (!best) break; if (best.due > now) now = best.due;
       if (best.every) best.due = now + best.every; else timers.delete(bid);
       fired++; try { best.fn(...best.args); } catch (e) { window.__errors.push('timer: ' + (e && e.message || e)); } }
-    if (until > now) now = until; return fired; };
+    if (until > now) now = until; try { sessionStorage.setItem('__harness', String(now)); } catch (e) {} return fired; };
   window.__setNow = t => { if (t > now) window.__run(t); else now = t; }; window.__tick = ms => window.__run(now + ms);
   /* a seeded Math.random (mulberry32) */
   let seed = 12345;
@@ -118,7 +121,7 @@ const prelude = (t0, storage) => `(() => {
   window.addEventListener('error', e => window.__errors.push('error: ' + (e.message || e)));
   window.addEventListener('unhandledrejection', e => window.__errors.push('rejection: ' + ((e.reason && e.reason.message) || e.reason)));
   const store = ${JSON.stringify(storage || {})};
-  try { for (const k in store) localStorage.setItem(k, typeof store[k] === 'string' ? store[k] : JSON.stringify(store[k])); } catch (e) {}
+  if (!again) try { for (const k in store) localStorage.setItem(k, typeof store[k] === 'string' ? store[k] : JSON.stringify(store[k])); sessionStorage.setItem('__harness', String(now)); } catch (e) {}
   /* stillness: animations and transitions off, so a screenshot is the same picture every time */
   document.addEventListener('DOMContentLoaded', () => { const st = document.createElement('style'); st.id = '__still';
     st.textContent = '*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important;scroll-behavior:auto!important} svg:has([clip-path]),.qrbox svg{visibility:hidden!important}'; document.head.appendChild(st); });
@@ -184,6 +187,10 @@ const CAPTURE = quiet => `(async () => {
   const head = [...document.head.querySelectorAll('style')].filter(s => s.id !== '__still').map(s => s.textContent.length).join(',');
   const extra = { view: typeof view === 'undefined' ? null : view, title: document.title, attrs: [...document.documentElement.attributes].map(a => a.name + '=' + a.value).sort().join(' '),
     scrollH: document.documentElement.scrollHeight, busy: window.__busy, pending: [...window.__pending].join(' '), who: [...new Set((window.__who || []).slice(-60))].join(' '), waited: Math.round(performance.now() - began), errors: window.__errors.splice(0), local: Object.fromEntries(Object.keys(localStorage).sort().filter(k => k !== 'shida_b1_fsrs_v2' && k !== 'zika_snap_v1').map(k => [k, localStorage.getItem(k).length > 400 ? 'len ' + localStorage.getItem(k).length : localStorage.getItem(k)])) };
+  /* the deck as it sits in storage: the same as the one in memory unless a save is still owed or start-up wrote something else */
+  try { const raw = localStorage.getItem('shida_b1_fsrs_v2'); if (raw === null) extra.stored = 'nothing stored';
+    else { const st = JSON.stringify(stable(JSON.parse(raw))); if (st === JSON.stringify(state)) extra.stored = 'same as in memory';
+      else { let x = 5381; for (let i = 0; i < st.length; i++) x = (x * 33 ^ st.charCodeAt(i)) >>> 0; extra.stored = 'differs from memory: ' + x.toString(16) + ' (' + st.length + ' characters)'; } } } catch (e) { extra.stored = 'unreadable'; }
   if (window.__cloud) { const room = (window.__cloud.tree.rooms || {})[window.__cloud.code] || {}, st = room.study_state;
     extra.cloud = { writes: window.__cloud.writes.length, held: st ? { device: st.device, synced_at: st.synced_at, cards: Object.keys(JSON.parse(st.json).cards || {}).length } : null, log: Object.keys(room.sync_log || {}).length };
     extra.sync = typeof SYNC === 'undefined' ? null : { status: SYNC.status, code: SYNC.code, dirty: SYNC.dirty, at: SYNC.at, remoteAt: SYNC.remoteAt, remoteDev: SYNC.remoteDev, lastErr: SYNC.lastErr, log: SYNC.log.map(l => l.kind + ' ' + l.extra) }; }
@@ -211,7 +218,8 @@ async function record(dir, out, { only, size, shots = true, coverage = false, de
     await s('Emulation.setDeviceMetricsOverride', { width: v.width, height: v.height, deviceScaleFactor: 1, mobile: v.mobile });
     if (v.mobile) await s('Emulation.setTouchEmulationEnabled', { enabled: true });
     await s('Emulation.setTimezoneOverride', { timezoneId: 'Asia/Taipei' });
-    await s('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'light' }, { name: 'prefers-reduced-motion', value: 'reduce' }] });
+    /* `scheme: 'dark'` is a device in dark mode; `motion: true` lets the app's own animation code run (the pictures stay still either way) */
+    await s('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: sc.scheme || 'light' }, { name: 'prefers-reduced-motion', value: sc.motion ? 'no-preference' : 'reduce' }] });
     /* only this machine answers: the Firebase SDK, 萌典 and everything else fail at once, as they do offline */
     await s('Fetch.enable', { patterns: [{ urlPattern: '*' }] });
     const off = br.on(m => { if (m.sessionId !== sessionId || m.method !== 'Fetch.requestPaused') return;
@@ -227,13 +235,14 @@ async function record(dir, out, { only, size, shots = true, coverage = false, de
     const evalJs = async js => { const r = await s('Runtime.evaluate', { expression: js, awaitPromise: true, returnByValue: true, userGesture: true });
       if (r.exceptionDetails) return { threw: (r.exceptionDetails.exception && r.exceptionDetails.exception.description || r.exceptionDetails.text || '').split('\n')[0] }; return { value: r.result.value }; };
     const dump = (id, st, ran, c, shot) => writeFileSync(join(out, id + '.txt'), [`# ${id}`, `threw: ${ran.threw || ''}`, `returned: ${st.fixture ? '(fixture)' : ran.value === undefined ? '' : JSON.stringify(ran.value)}`, `view: ${c.extra.view}`, `html-attrs: ${c.extra.attrs}`, `title: ${c.extra.title}`,
-      `styles-in-head: ${c.head}`, `scroll-height: ${c.extra.scrollH}`, `errors: ${JSON.stringify(c.extra.errors)}`, `local: ${JSON.stringify(c.extra.local)}`, `cloud: ${JSON.stringify(c.extra.cloud || null)}`, `sync: ${JSON.stringify(c.extra.sync || null)}`, `screenshot: ${shot}`,
+      `styles-in-head: ${c.head}`, `scroll-height: ${c.extra.scrollH}`, `errors: ${JSON.stringify(c.extra.errors)}`, `local: ${JSON.stringify(c.extra.local)}`, `stored: ${c.extra.stored}`, `cloud: ${JSON.stringify(c.extra.cloud || null)}`, `sync: ${JSON.stringify(c.extra.sync || null)}`, `screenshot: ${shot}`,
       '', '## state', JSON.stringify(c.state, null, 1), '', '## html', c.html, ''].join('\n'));
 
     const all = [{ name: 'open', js: '' }, ...(sc.steps || [])];
     for (let i = 0; i < all.length; i++) {
       const st = all[i], id = `${sc.name}.${sz}.${String(i).padStart(2, '0')}-${st.name}`.replace(/[^\w.\-]+/g, '_');
       await evalJs(`__seed(${1000 + i})`);
+      if (st.reload) { const again = new Promise(ok => { const stop = br.on(m => { if (m.sessionId === sessionId && m.method === 'Page.loadEventFired') { stop(); ok(); } }); }); await s('Page.reload'); await again; }
       const ran = st.js ? await evalJs(`(async()=>{${st.js}\n})()`) : {};
       const cap = await evalJs(CAPTURE(160)); steps++;
       if (cap.threw) { writeFileSync(join(out, id + '.txt'), 'CAPTURE FAILED: ' + cap.threw); continue; }
@@ -266,7 +275,7 @@ async function record(dir, out, { only, size, shots = true, coverage = false, de
           const c = JSON.parse(cap.value);
           if (opt('verbose')) console.log(n, m.name || '', ran.value, c.extra.waited + ' ms', c.extra.waited > 400 ? 'still changing: ' + c.extra.who : '');
           if (c.extra.waited > 4000) console.log(`\n  slow capture in ${sc.name}.${sz} step ${n} (${c.extra.waited} ms): busy=${c.extra.busy} waiting for [${c.extra.pending}] changing [${c.extra.who}]`);
-          lines.push([n, m.name || k, ran.threw ? 'THREW ' + ran.threw : ran.value, 'view=' + c.extra.view, 'state=' + sha(JSON.stringify(c.state)), 'html=' + sha(c.html), c.extra.cloud ? 'cloud=' + sha(JSON.stringify([c.extra.cloud, c.extra.sync])) : '', c.extra.errors.length ? 'errors=' + JSON.stringify(c.extra.errors) : ''].join('\t'));
+          lines.push([n, m.name || k, ran.threw ? 'THREW ' + ran.threw : ran.value, 'view=' + c.extra.view, 'state=' + sha(JSON.stringify(c.state)), 'html=' + sha(c.html), c.extra.stored === 'same as in memory' ? '' : 'stored: ' + c.extra.stored, c.extra.cloud ? 'cloud=' + sha(JSON.stringify([c.extra.cloud, c.extra.sync])) : '', c.extra.errors.length ? 'errors=' + JSON.stringify(c.extra.errors) : ''].join('\t'));
           if (detail && detail.name === sc.name && detail.step === n) dump(`${sc.name}.${sz}.monkey-step-${n}`, {}, ran, c, '');
         }
         if (m.after) await evalJs(`(async()=>{${m.after}\n})()`);
@@ -295,6 +304,26 @@ async function record(dir, out, { only, size, shots = true, coverage = false, de
 }
 
 /* ---------- comparing two recordings ---------- */
+/* How many pixels differ between two PNG screenshots (8-bit RGB or RGBA, not interlaced: what Chrome writes).
+   Rounded corners and thin strokes are anti-aliased a little differently from run to run on the same code, so a
+   picture counts as changed only above a handful of pixels. */
+function pngPixels(file) {
+  const d = readFileSync(file); let i = 8, w = 0, h = 0, bpp = 3; const idat = [];
+  while (i < d.length) { const n = d.readUInt32BE(i), t = d.toString('latin1', i + 4, i + 8), c = d.subarray(i + 8, i + 8 + n);
+    if (t === 'IHDR') { w = c.readUInt32BE(0); h = c.readUInt32BE(4); bpp = c[9] === 6 ? 4 : c[9] === 2 ? 3 : 0; } else if (t === 'IDAT') idat.push(c); i += 12 + n; }
+  if (!bpp) return null;
+  const raw = inflateSync(Buffer.concat(idat)), out = Buffer.alloc(w * h * bpp), row = w * bpp;
+  for (let y = 0, p = 0; y < h; y++) { const f = raw[p++], o = y * row;
+    for (let x = 0; x < row; x++, p++) { const a = x >= bpp ? out[o + x - bpp] : 0, b = y ? out[o - row + x] : 0, c = x >= bpp && y ? out[o - row + x - bpp] : 0;
+      let v = raw[p]; if (f === 1) v += a; else if (f === 2) v += b; else if (f === 3) v += (a + b) >> 1; else if (f === 4) { const q = a + b - c, pa = Math.abs(q - a), pb = Math.abs(q - b), pc = Math.abs(q - c); v += pa <= pb && pa <= pc ? a : pb <= pc ? b : c; }
+      out[o + x] = v & 255; } }
+  return { w, h, bpp, px: out };
+}
+function pixelsChanged(fa, fb) {
+  try { const a = pngPixels(fa), b = pngPixels(fb); if (!a || !b || a.w !== b.w || a.h !== b.h || a.bpp !== b.bpp) return Infinity;
+    let n = 0; for (let i = 0; i < a.px.length; i += a.bpp) if (a.px[i] !== b.px[i] || a.px[i + 1] !== b.px[i + 1] || a.px[i + 2] !== b.px[i + 2]) n++; return n; } catch (e) { return Infinity; }
+}
+const SAME_PICTURE = 60;   /* pixels */
 /* Things that differ between two builds without the app behaving differently. */
 const scrub = (t, loose) => {
   t = t.replace(/^screenshot: .*$/m, '').replace(/^styles-in-head: .*$/m, '');
@@ -319,7 +348,8 @@ function diff(a, b, { loose = false, max = 12 } = {}) {
     } else {
       same++;
       const sa = /^screenshot: (.*)$/m.exec(ta), sb = /^screenshot: (.*)$/m.exec(tb);
-      if (sa && sb && sa[1] && sb[1] && sa[1] !== sb[1]) shotsDiff.push(f.replace(/\.txt$/, '.png'));
+      if (sa && sb && sa[1] && sb[1] && sa[1] !== sb[1]) { const png = f.replace(/\.txt$/, '.png'), n = pixelsChanged(join(a, png), join(b, png));
+        if (n > SAME_PICTURE) shotsDiff.push(png + (n === Infinity ? '' : `  (${n} pixels)`)); }
     }
   }
   for (const d of bad.slice(0, max)) { console.log(`\n✗ ${d.f}: ${d.why}`); if (d.a !== undefined) { console.log('    was: ' + d.a); console.log('    now: ' + d.b); } }

@@ -6,12 +6,26 @@
    - `monkeys`: seeded random tapping, typing and key presses, optionally kept inside one part of the page
      (`scope`), recorded as one line per action with fingerprints of state and page.
    __tick(ms) moves the clock; __setNow(t) sets it. Names starting with `__` only run when asked for by name. */
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 const DAY = 86400000;
 const T0 = Date.parse('2026-11-20T09:30:00+08:00');
 const tabs = ['home', 'rev', 'drill', 'gram', 'brain', 'lib', 'set', 'exam', 'catch', 'my'];
 const drills = ['rec', 'tone', 'dict', 'sent', 'speak', 'confuse', 'read', 'listen', 'sdict', 'mtest', 'tcoach', 'story', 'usage'];
 const CODE = 'zika-test01';   /* a made-up sync code: the harness's cloud is in memory */
 const SHEETS = ', .modal-card, #syncModal';   /* sheets and modals sit outside the view they belong to */
+
+/* the fixture's deck, for scenarios that open on an altered copy of it */
+const fx = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'fixtures', 'deck.json'), 'utf8'));
+const altered = (drop, change) => { const S = JSON.parse(fx.shida_b1_fsrs_v2); for (const k of drop) delete S.settings[k]; if (change) change(S); return JSON.stringify(S); };
+const FLAGS = ['_v18', '_v22', '_v25', '_v26', '_v28', '_v30', '_v31', '_v38'];
+const oldDeck = S => { delete S.exam; delete S.conf; delete S.my; delete S.settings.userName; delete S.settings.prodScope; S.settings.curLesson = 22; S.settings.newPerDay = 9; };
+const unlinked = { zika_sync_meta: JSON.stringify({ at: 0, dirty: false, remoteDev: '' }) };
+const linkedIdle = { zika_sync_code: CODE, zika_sync_meta: JSON.stringify({ at: T0 - 2 * DAY, dirty: false, remoteDev: 'iPad' }) };   /* linked, nothing unsent */
+const opened = [{ name: 'settings', js: `go('set')`, noShot: true }, { name: 'home', js: `go('home')`, noShot: true }, { name: 'a-little-later', js: `__tick(5000)`, noShot: true }];
+const otherSaves = change => `{ const o = JSON.parse(localStorage.getItem('shida_b1_fsrs_v2')); ${change}; __cloud.other(o, 'iPad', Date.now() + 1000); }`;
 
 /* one sitting of reviews through the real screen: show the answer, grade, next */
 const study = max => `{ go('rev'); let n = 0; while (cur && n < ${max}) { reveal(); const r = Math.random(); grade(r < 0.1 ? 1 : r < 0.25 ? 2 : r < 0.85 ? 3 : 4); __tick(15000); n++; } go('home'); }`;
@@ -110,6 +124,51 @@ export const scenarios = [
   ] },
   { name: 'sync-roam', fixture: 'deck', sizes: ['phone'], local: { zika_sync_code: CODE }, cloud: { code: CODE }, monkeys: [
     { name: 'settings', start: `go('set')`, scope: '#vSet' + SHEETS, steps: 60, seed: 71 }, { name: 'roam', steps: 80, seed: 72 }] },
+
+  /* Opening the app, on the states a device can be in. What matters here is what start-up leaves behind: the stored
+     deck, whether the device now claims unsent work, and what it sends. (Scenarios and the cases they cover come
+     from the independent review of the restructure, November 2026.) */
+  { name: 'open-new-day', fixture: 'deck', local: unlinked, steps: opened },
+  { name: 'open-same-day', fixture: 'deck', at: Date.parse('2026-11-18T21:00:00+08:00'), local: unlinked, steps: opened },
+  { name: 'open-twice', fixture: 'deck', local: unlinked, sizes: ['phone'], steps: [{ name: 'study', js: `go('rev'); reveal(); grade(3); reveal(); grade(1); __tick(30000)`, noShot: true }, { name: 'open-again', reload: true }, ...opened, { name: 'and-again-next-morning', js: `__tick(${DAY})`, noShot: true }, { name: 'open-next-day', reload: true }] },
+  { name: 'open-linked-idle-cloud-newer', fixture: 'deck', local: linkedIdle, cloud: { code: CODE, remote: 'deck', remoteAt: T0 - 3600000 }, steps: opened },
+  { name: 'open-linked-idle-then-other-saves', fixture: 'deck', local: linkedIdle, cloud: { code: CODE }, sizes: ['phone'], steps: [{ name: 'other-saves', js: `__tick(60000);` + otherSaves(`o.settings.curLesson = 27`), noShot: true }, { name: 'a-little-later', js: `__tick(5000)`, noShot: true }] },
+  { name: 'open-one-migration-behind', fixture: 'deck', sizes: ['phone'], local: { ...linkedIdle, shida_b1_fsrs_v2: altered(['_v38'], S => { delete S.exam; }) }, cloud: { code: CODE, remote: 'deck', remoteAt: T0 - 3600000 }, steps: opened },
+  { name: 'open-old-deck-linked', fixture: 'deck', sizes: ['phone'], local: { ...linkedIdle, shida_b1_fsrs_v2: altered(FLAGS, oldDeck) }, cloud: { code: CODE, remote: 'deck', remoteAt: T0 - 3600000 }, steps: opened },
+  { name: 'open-old-deck', fixture: 'deck', local: { ...unlinked, shida_b1_fsrs_v2: altered(FLAGS, oldDeck) }, steps: opened },
+  { name: 'open-no-confidence-snapshot', fixture: 'deck', sizes: ['phone'], local: { ...linkedIdle, shida_b1_fsrs_v2: altered([], S => { delete S.conf; }) }, cloud: { code: CODE, remote: 'deck', remoteAt: T0 - 3600000 }, steps: opened },
+  { name: 'open-before-v11', fixture: 'deck', sizes: ['phone'], local: { ...linkedIdle, shida_b1_fsrs_v2: altered(['_v11']) }, cloud: { code: CODE, remote: 'deck', remoteAt: T0 - 3600000 }, steps: opened },
+  { name: 'open-v1-deck', sizes: ['phone'], local: { shida_b1_fsrs_v1: JSON.stringify({ cards: { 'w10:mean': { st: 'rev', S: 12, D: 5, due: T0 - DAY, last: T0 - 9 * DAY, reps: 4, lapses: 0, days: 3 }, 'w10:hw': { st: 'learn', S: 1, D: 5, due: T0 - DAY, last: T0 - 2 * DAY, reps: 1, lapses: 0, days: 1 }, 'w11:pin': {} }, log: { '2026-11-01': { rev: 5, new: 2 } }, settings: { retention: 0.88, maxRev: 150, includeNames: true } }) }, steps: opened },
+  { name: 'open-fresh-linked', sizes: ['phone'], local: { zika_sync_code: CODE }, cloud: { code: CODE, remote: 'deck' }, steps: opened },
+  { name: 'open-link-over-a-deck', fixture: 'deck', sizes: ['phone'], hash: '#sync=' + CODE, cloud: { code: CODE, remote: 'deck' }, steps: [...opened, { name: 'use-theirs', js: `const b = document.getElementById('cfUse'); if (b) b.click(); return !!b`, noShot: true }, { name: 'a-little-later-still', js: `__tick(5000)`, noShot: true }] },
+  { name: 'open-link-same-code', fixture: 'deck', sizes: ['phone'], hash: '#sync=' + CODE, local: linkedIdle, cloud: { code: CODE, remote: 'deck', remoteAt: T0 - 3600000 }, steps: opened },
+  { name: 'open-cloud-unreadable', fixture: 'deck', sizes: ['phone'], local: linkedIdle, cloud: { code: CODE }, steps: [
+    { name: 'bad-copy-arrives', js: `__tick(60000); __cloud.put('rooms/' + SYNC.code + '/study_state', { v: 18, json: '{not json', device: 'iPad', device_id: 'other-device', synced_at: Date.now() + 5, bytes: 1 })`, noShot: true }] },
+
+  /* a device in dark mode with the theme left on "auto"; a chosen look */
+  { name: 'dark-auto', fixture: 'deck', scheme: 'dark', steps: [{ name: 'settings', js: `go('set')` }, { name: 'review', js: `go('rev'); reveal()` }] },
+  { name: 'dark-fresh', scheme: 'dark', sizes: ['phone'], steps: [{ name: 'settings', js: `go('set')` }] },
+  { name: 'dark-forced-light', fixture: 'deck', scheme: 'dark', sizes: ['phone'], local: { shida_b1_fsrs_v2: altered([], S => { S.settings.theme = 'light'; }), zika_look: JSON.stringify({ t: 'light', p: '', a: '', z: '' }) }, steps: [{ name: 'review', js: `go('rev')` }] },
+  { name: 'look-clean-blue-kai-dark', fixture: 'deck', local: { shida_b1_fsrs_v2: altered([], S => { S.settings.palette = 'clean'; S.settings.accent = 'blue'; S.settings.zhFont = 'kai'; S.settings.theme = 'dark'; }) }, steps: [{ name: 'review', js: `go('rev'); reveal()` }, { name: 'settings', js: `go('set')` }] },
+
+  /* with the app's animations on (every other scenario asks for reduced motion) */
+  { name: 'motion-review', fixture: 'deck', motion: true, sizes: ['phone'], steps: [{ name: 'front', js: `go('rev')`, noShot: true }, ...[3, 1, 4, 3].flatMap((g, i) => [{ name: `card${i}`, js: `reveal(); grade(${g}); __tick(20000)`, noShot: true }])],
+    monkeys: [{ name: 'roam', steps: 120, seed: 31 }] },
+
+  /* a sitting that crosses midnight; lanes, a catch-up lesson, a quick sitting, grammar cards, leeches */
+  { name: 'midnight', fixture: 'deck', sizes: ['phone'], at: Date.parse('2026-11-20T23:57:00+08:00'), steps: [
+    { name: 'start', js: `go('rev')`, noShot: true },
+    ...[3, 1, 3, 4, 2, 3, 1, 3, 3, 3].map((g, i) => ({ name: `card${i}`, js: `reveal(); grade(${g}); __tick(40000)`, noShot: true })),
+    { name: 'home', js: `go('home')` }, { name: 'undo', js: `go('rev'); doUndo(); doUndo(); doUndo()`, noShot: true }, { name: 'brain', js: `go('brain')`, noShot: true }] },
+  { name: 'lanes', fixture: 'deck', sizes: ['phone'], steps: [
+    { name: 'lane-live', js: `startLane('live'); return [cur, rq.learn.length, rq.rev.length, rq.fresh.length]`, noShot: true }, { name: 'grade', js: `reveal(); grade(3); reveal(); grade(1); __tick(20000)`, noShot: true },
+    { name: 'lane-catch', js: `go('home'); startLane('catch'); return [cur, rq.learn.length, rq.rev.length, rq.fresh.length]`, noShot: true }, { name: 'grade-catch', js: `for (let i = 0; i < 6 && cur; i++) { reveal(); grade(i % 3 ? 3 : 1); __tick(20000); } return [S.intro, S.cintro, S.gintro]`, noShot: true },
+    { name: 'catch-lesson', js: `go('home'); startCatchLesson(24); return [view, cur]`, noShot: true }, { name: 'quick', js: `go('home'); startQuick(5); return [cur, rq.learn.length + rq.rev.length + rq.fresh.length]`, noShot: true },
+    { name: 'grammar-cards', js: `go('home'); const g = Object.keys(S.cards).filter(isGram).slice(0, 6); g.forEach((c, i) => rate(c, 1 + i % 4)); return [S.intro, S.gintro, g.map(c => S.cards[c].st)]`, noShot: true },
+    { name: 'leech', js: `const c = Object.keys(S.cards).find(k => !isGram(k) && S.cards[k].st === 'rev'); S.cards[c].lapses = 3; rate(c, 1); const a = [S.cards[c].lapses, isHard(c.split(':')[0])]; S.cards[c].st = 'rev'; S.cards[c].lapses = 6; rate(c, 1); return [a, S.cards[c].susp, S.cards[c].leech]`, noShot: true }] },
+  { name: 'sync-burst', fixture: 'deck', sizes: ['phone'], local: linkedIdle, cloud: { code: CODE }, steps: [
+    { name: 'burst', js: `go('rev'); for (let i = 0; i < 4 && cur; i++) { reveal(); grade(3); __tick(300); } fbPush(); reveal(); grade(2); fbPush(); __tick(100)`, noShot: true },
+    { name: 'to-the-background', js: `reveal(); grade(3); document.dispatchEvent(new Event('visibilitychange')); window.dispatchEvent(new Event('pagehide')); __tick(3000)`, noShot: true }] },
 
   /* the whole app under random use, with days passing */
   { name: 'roam-a', fixture: 'deck', sizes: ['phone'], monkeys: [{ name: 'roam', steps: 260, seed: 7, dayEvery: 90 }] },

@@ -330,8 +330,7 @@ function syncPanel(){
       ${hard?'':`<div class="set-row"><div><b>Firebase config</b><div class="d">stored in this browser · project <b>${esc(cfg.projectId||'?')}</b></div></div><button class="btn ghost sm" onclick="if(confirm('Forget the Firebase config on this device?'))fbSaveConfig('')">Forget</button></div>`}
       <details class="guide"><summary>Sync log ›</summary><div id="syncLogBox" class="gd small" style="font-variant-numeric:tabular-nums">${syncLogHtml()}</div></details>`}
   </div>`;
-  /* layer 2 (4644-4658), verbatim from its second line on */
-  if(!fbConfig())return h;
+    if(!fbConfig())return h;
   let add='';
   if(SYNC.code){
     add=`<div class="set-row linkrow"><div><b>Link another device</b>

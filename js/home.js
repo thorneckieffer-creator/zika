@@ -35,8 +35,7 @@ function printPaperSheet(){
 }
 /* ---- HOME ---- */
 function renderHome(){
-  /* base */
-  {
+    {
   const q=buildQueue();
   const trackedWords=WORDS.filter(w=>tracked(w.id));
   const mature=Object.values(S.cards).filter(c=>c.st==='rev'&&c.S>=21).length;

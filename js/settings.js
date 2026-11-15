@@ -1,7 +1,6 @@
 /* ---- SETTINGS ---- */
 function renderSet(){
-  /* layer 1 — base */
-  const s=S.settings;
+    const s=S.settings;
   document.getElementById('vSet').innerHTML=`
   ${bkPanel()}
   <div class="card"><div class="lab">Card types</div>
@@ -58,23 +57,23 @@ function renderSet(){
       <button class="tgl ${s.usageHint===true?'on':''}" onclick="S.settings.usageHint=S.settings.usageHint!==true;save();renderSet()"><i></i></button></div>
   </div>
   `;
-  /* layer 2 (3269) — Confidence card first */
+  /* Confidence card first */
   try{ document.getElementById('vSet').insertAdjacentHTML('afterbegin',confPanel()); }catch(e){}
-  /* layer 3 (3651) — Cloud sync card first, Look & feel card last */
+  /* Cloud sync card first, Look & feel card last */
   try{const v=document.getElementById('vSet');v.insertAdjacentHTML('afterbegin',syncPanel());v.insertAdjacentHTML('beforeend',polishPanel());}catch(e){}
-  /* layer 4 (4188) — Grammar in the queue card last */
+  /* Grammar in the queue card last */
   try{document.getElementById('vSet').insertAdjacentHTML('beforeend',gramSetPanel());}catch(e){}
-  /* layer 5 (4419) — Card strategy card after the second .card */
+  /* Card strategy card after the second .card */
   try{const v=document.getElementById('vSet');const conf=v.querySelector('.card:nth-of-type(2)');(conf||v.firstElementChild).insertAdjacentHTML('afterend',cardStratPanel());}catch(e){}
-  /* layer 6 (4580) — Leeches row, retention wording (helper: early return) */
+  /* Leeches row, retention wording (helper: early return) */
   renderSetLeeches();
-  /* layer 7 (4864) — Catch-up words per day row (helper: early return) */
+  /* Catch-up words per day row (helper: early return) */
   renderSetCatchUp();
-  /* layer 8 (5005) — keyboard hint line last */
+  /* keyboard hint line last */
   try{document.getElementById('vSet').insertAdjacentHTML('beforeend',`<div class="small muted" style="text-align:center;margin:4px 0 10px">Press <kbd>?</kbd> anywhere for keyboard shortcuts · look-up links on every card back: 萌典 · MDBG · Pleco · Skritter</div>`);}catch(e){}
-  /* layer 9 (5091) — Audio source wording, Bundled voice row (helper: early return) */
+  /* Audio source wording, Bundled voice row (helper: early return) */
   renderSetVoices();
-  /* layer 10 (5236) — iPad / Daily intake / Offline cards first, retire rows, drop empty cards, order */
+  /* iPad / Daily intake / Offline cards first, retire rows, drop empty cards, order */
   try{
   const v=document.getElementById('vSet');
   v.insertAdjacentHTML('afterbegin',ipadPanel()+intakePanel()+offlinePanel());
@@ -89,11 +88,11 @@ function renderSet(){
   cards.sort((a,b)=>rank(a)-rank(b)).forEach(c=>v.appendChild(c));
   const tail=[...v.children].find(x=>x.className&&/small muted/.test(x.className)&&/keyboard/.test(x.textContent)); if(tail)v.appendChild(tail);
 }catch(e){}
-  /* layer 11 (5519) — version line last */
+  /* version line last */
   try{
   document.getElementById('vSet').insertAdjacentHTML('beforeend',`<div class="small muted" style="text-align:center;margin:0 0 10px">字卡 v${APP_VERSION} · ${WORDS.length} words · ${BOOKS.length} books · this device: ${esc(DEVICE.name)}</div>`);
 }catch(e){}
-  /* layer 12 (6257, second script block) — Look rows, You card first */
+  /* Look rows, You card first */
   try{
   const v=document.getElementById('vSet'), ln=shLesson();
   const cards=[...v.querySelectorAll('.card')], look=cards.find(c=>/^Look & feel/.test(((c.querySelector('.lab')||{}).textContent||'').trim()));
@@ -111,7 +110,7 @@ function renderSet(){
     ${look?'':rows}</div>`);
 }catch(e){console.error(e);}
 }
-/* layer 6 (4580): its own function because of `if(!strat)return;` inside its try */
+/* a function of its own, so that its `if(!strat)return;` ends only this step */
 function renderSetLeeches(){try{
   const v=document.getElementById('vSet'); const strat=[...v.querySelectorAll('.card')].find(c=>/Card strategy/.test(c.textContent)); if(!strat)return;
   const L=leechList();
@@ -119,12 +118,12 @@ function renderSetLeeches(){try{
     <div class="row" style="gap:4px;flex-wrap:wrap;justify-content:flex-end">${L.map(c=>`<button class="btn ghost sm zh" onclick="leechUnpark('${c}')" title="un-park">${esc(byId[c.split(':')[0]].t)} ↩</button>`).join('')}</div></div>`);
   const ret=[...v.querySelectorAll('.set-row')].find(r=>/Desired retention/.test(r.textContent)); if(ret){const d=ret.querySelector('.d');if(d)d.textContent='85–90% is the sweet spot: going to 95% roughly doubles the daily load for a few points of recall.';}
 }catch(e){}}
-/* layer 7 (4864): its own function because of `if(!strat)return;` inside its try */
+/* a function of its own, so that its `if(!strat)return;` ends only this step */
 function renderSetCatchUp(){try{
   const v=document.getElementById('vSet'); const strat=[...v.querySelectorAll('.card')].find(c=>/Card strategy/.test(c.textContent)); if(!strat)return;
   strat.insertAdjacentHTML('beforeend',`<div class="set-row"><div><b>Catch-up words per day</b><div class="d">how many shaky / ✗ words from old lessons may start each day, separate from this week’s new words</div></div><input type="number" min="0" max="30" value="${S.settings.newCatchPerDay??5}" onchange="S.settings.newCatchPerDay=Math.max(0,parseInt(this.value)||0);save();badge()"></div>`);
 }catch(e){}}
-/* layer 9 (5091): its own function because of `if(!sel)return;` inside its try */
+/* a function of its own, so that its `if(!sel)return;` ends only this step */
 function renderSetVoices(){try{
   const sel=document.querySelector('#vSet select[onchange*="audioSrc"]'); if(!sel)return;
   sel.options[0].textContent='Auto — bundled Taiwan voice, system voice as fallback';

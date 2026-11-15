@@ -29,7 +29,7 @@ function mtRender(){
   mtRenderLookup();
   try{const g=document.querySelectorAll('#vDrill .grades button');g.forEach(b=>{const s=b.querySelector('.g1,.g2,.g4');if(!s)return;if(/Couldn/.test(s.textContent))s.textContent='✗ Hell no';else if(/Shaky/.test(s.textContent))s.textContent='~ Sorta';else if(/Wrote/.test(s.textContent))s.textContent='★ Yes';});}catch(e){}
 }
-/* layer 1 (4734-4758), body verbatim: its `return;` after the "Test complete" card must end only this layer */
+/* a function of its own, so that its early return ends only this step */
 function mtRenderBase(){
   const el=document.getElementById('vDrill'),T=mtGet();
   const wid=T.order[T.i],w=wid&&byId[wid];
@@ -55,7 +55,7 @@ function mtRenderBase(){
   if(r&&S.settings.strokeAnim&&document.getElementById('strokeHost'))try{renderStrokes('strokeHost',w.t.split('（')[0],{});}catch(e){}
   if(!r&&S.settings.autoplayAudio&&MT.lastSpoken!==wid){MT.lastSpoken=wid;setTimeout(()=>speakWord(wid),200);}
 }
-/* layer 2 (4975), verbatim: its `return` inside the try must end only this layer */
+/* a function of its own, so that its early return ends only this step */
 function mtRenderLookup(){
   try{if(!MT.revealed)return;const T=mtGet(),wid=T.order[T.i];const st=document.querySelector('#vDrill .stage');if(wid&&st&&!st.querySelector('.lookup'))st.insertAdjacentHTML('beforeend',lookupRow(byId[wid].t));}catch(e){}
 }
@@ -64,7 +64,7 @@ function mtOwnEarly(){
   mtOwnEarlyBase.apply(this,arguments);
   try{if(view==='catch')renderCatch();}catch(e){}
 }
-/* layer 1 (4769), verbatim: its `return` when the confirm is cancelled must end only this layer */
+/* a function of its own, so that its early return ends only this step */
 function mtOwnEarlyBase(){if(!confirm('Mark every B1 L1–L8 word as mastered? They leave the queue and resurface in about three months.'))return;let n=0;WORDS.filter(w=>w.l<=8&&!isName(w)).forEach(w=>{if(!(MODES.some(m=>(S.cards[cardId(w.id,m)]||{}).mastAt))){markMastered(w.id);n++;}});S.hard=(S.hard||[]).filter(x=>byId[x].l>8);save();badge();toast(n+' words parked');renderHome();}
 /* Today card */
 function mtPanel(){return '';}

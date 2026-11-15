@@ -128,7 +128,7 @@ function showInstallHint(force){
 /* ---- B. lookups ---- */
 function isAndroidUA(){return /Android/.test(navigator.userAgent);}
 /* ---- D. keyboard: letters jump tabs, ? shows the map ---- */
-const KEYMAP={t:'home',r:'rev',d:'drill',c:'catch',g:'gram',b:'brain',l:'lib',s:'set',e:'exam'};
+const KEYMAP={t:'home',r:'rev',d:'drill',c:'catch',g:'gram',b:'brain',l:'lib',s:'set',e:'exam',m:'my'};
 function toggleKeyHelp(){
   let h=document.getElementById('keyHelp');
   if(!h){h=document.createElement('div');h.id='keyHelp';h.className='modal';h.onclick=ev=>{if(ev.target===h)h.style.display='none';};document.body.appendChild(h);}

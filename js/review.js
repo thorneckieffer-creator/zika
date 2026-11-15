@@ -18,23 +18,22 @@ function pickNext(){
 }
 function nextCard(){cur=pickNext();revealed=false;hintShown=false;renderRev();}
 function renderRev(){
-  /* L4 (4180): grammar cards take the whole card; L1–L3 run only for the others */
+  /* grammar cards take the whole card; L1–L3 run only for the others */
   if(cur&&isGram(cur))renderGramCard();
   else{
-    renderRevBase();      /* L1 */
-    renderRevMotion();    /* L2 (3671) post-code */
-    renderRevSession();   /* L3 (3805) post-code */
+    renderRevBase();
+    renderRevMotion();
+    renderRevSession();
   }
-  renderRevDictation();   /* L5 (4385) post-code */
-  /* L6 (4853) post-code — grade buttons: the actual return date */
+  renderRevDictation();
+  /* grade buttons: the actual return date */
   try{
   document.querySelectorAll('#vRev .grades button .iv').forEach(el=>{const m=el.textContent.match(/^(\d+)d$/);if(m){el.textContent=m[1]+'d · '+fmtDay(Date.now()+(+m[1])*DAY);}});
 }catch(e){}
-  renderRevLookup();      /* L7 (4974) post-code */
-  /* L8 (5000) post-code — the focus link */
+  renderRevLookup();
+  /* the focus link */
   try{const row=document.querySelector('#vRev .srow');if(row&&!row.querySelector('.focuslink'))row.insertAdjacentHTML('beforeend',`<span class="link small focuslink" onclick="document.body.classList.toggle('focus')" title="hide the header and tabs (f)">${document.body.classList.contains('focus')?'exit focus':'focus'}</span>`);}catch(e){}
 }
-/* L1 (2095-2155), body verbatim */
 function renderRevBase(){
   const el=document.getElementById('vRev');
   badge();
@@ -96,14 +95,14 @@ function renderRevBase(){
     }
   }
 }
-/* L2 (3671-3676) post-code, verbatim — review: card slides in; the grade you just gave colours the edge of the next card for a beat */
+/* review: card slides in; the grade you just gave colours the edge of the next card for a beat */
 function renderRevMotion(){
   const done=document.querySelector('#vRev .card.done'); if(done&&sessionN>0&&!done.dataset.party){done.dataset.party=1;if(animOn())confetti();haptic('done');}
   if(!animOn())return;const st=document.querySelector('#vRev .stage');if(!st)return;
   st.classList.add(revealed?'flip-in':'slide-in'); if(lastGrade&&!revealed){st.classList.add(lastGrade===1?'from-again':lastGrade===2?'from-hard':'from-good');lastGrade=0;}
   st.addEventListener('animationend',()=>st.classList.remove('slide-in','flip-in'),{once:true});
 }
-/* L3 (3805-3836) post-code, verbatim, in L3's own try — progress bar + run counter + session summary */
+/* progress bar + run counter + session summary */
 function renderRevSession(){try{
   const el=document.getElementById('vRev');
   if(cur){
@@ -136,7 +135,7 @@ function renderRevSession(){try{
     countUp(done);
   }
 }catch(e){}}
-/* L5 (4385-4400) post-code, verbatim, in L5's own try — the production card: audio-first 聽寫 card */
+/* the production card: audio-first 聽寫 card */
 function renderRevDictation(){
   try{
     if(!cur||isGram(cur)||modeOf(cur)!=='prod'||revealed||S.settings.prodAudio===false)return;
@@ -152,7 +151,7 @@ function renderRevDictation(){
     if(!renderRev._spoke||renderRev._spoke!==cur){renderRev._spoke=cur;setTimeout(()=>speakWord(w.id),200);}
   }catch(e){}
 }
-/* L7 (4974) post-code, verbatim, in L7's own try — card backs get the lookup row */
+/* card backs get the lookup row */
 function renderRevLookup(){
   try{if(!cur||isGram(cur)||!revealed)return;const st=document.querySelector('#vRev .stage');if(st&&!st.querySelector('.lookup'))st.insertAdjacentHTML('beforeend',lookupRow(wordOf(cur).t));}catch(e){}
 }

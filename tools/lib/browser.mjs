@@ -32,7 +32,9 @@ export async function chrome() {
   const profile = mkdtempSync(join(tmpdir(), 'zika-snap-'));
   const proc = spawn(CHROME, ['--headless=new', '--remote-debugging-port=0', '--user-data-dir=' + profile, '--no-first-run', '--no-default-browser-check',
     '--disable-gpu', '--hide-scrollbars', '--mute-audio', '--force-color-profile=srgb', '--font-render-hinting=none', '--disable-background-networking',
-    '--disable-component-update', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows', '--disable-popup-blocking', '--disable-sync', '--disable-extensions', '--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
+    '--disable-component-update', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows', '--disable-popup-blocking', '--disable-sync', '--disable-extensions', /* nothing leaves this machine: not the page, not a service worker, not Chrome itself */
+    '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE localhost', '--disable-features=OptimizationHints,MediaRouter',
+    '--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
   const wsUrl = await new Promise((ok, no) => {
     let buf = ''; const t = setTimeout(() => no(new Error('Chrome did not start: ' + buf.slice(0, 400))), 20000);
     proc.stderr.on('data', d => { buf += d; const m = /DevTools listening on (ws:\/\/\S+)/.exec(buf); if (m) { clearTimeout(t); ok(m[1]); } });

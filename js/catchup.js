@@ -34,7 +34,7 @@ function renderCatch(){
   countUp(el); ringArm(el);
   renderCatchOwned();
 }
-/* layer 2 (5052-5059), verbatim: its `return` inside the try must end only this layer */
+/* a function of its own, so that its early return ends only this step */
 function renderCatchOwned(){try{
   const el=document.getElementById('vCatch'),early=WORDS.filter(w=>w.l<=8&&!isName(w)),done=early.filter(w=>MODES.some(m=>(S.cards[cardId(w.id,m)]||{}).mastAt)).length;
   const first=el.querySelector('.card.hero'); if(!first)return;
