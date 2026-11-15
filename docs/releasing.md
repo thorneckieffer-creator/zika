@@ -14,7 +14,7 @@ The release area: `tools/check.mjs`, `README.md`, `CLAUDE.md`, `docs/`, `.gitign
 
 1. Make the change. Bump `APP_VERSION` in `index.html` and `VERSION` in `sw.js` to the same number. Bump `ASSETS` in `sw.js` only if a file under `assets/` changed.
 2. `node tools/check.mjs`
-3. Serve locally (`python3 -m http.server 8791 --bind 127.0.0.1`; port 8765 is taken by another project on this Mac) and smoke-test: open every tab, start a review, grade a card, run one drill, check the console. Check a 390-px-wide frame for iPhone and ~820 px for iPad.
+3. Serve locally (`python3 -m http.server 8791 --bind 127.0.0.1`; port 8765 is taken by another project on this Mac) and smoke-test: open every tab, start a review, grade a card, run one drill, check the console. Check a 390-px-wide frame for iPhone, ~820 px for iPad upright, and 1180 × 796 for Thorne's iPad (10th generation) on its side: there the answer side of a review card and its grade buttons must fit without scrolling. Load the page with a throw-away query (`index.html?t=1`) so the service worker does not hand back the previous build.
 4. Commit as `vNN — what changed` and push `main`.
 
 A change that touches only documentation or `tools/` does not need a version bump: nothing the devices load has changed. Commit it with a plain description instead of a `vNN` title.

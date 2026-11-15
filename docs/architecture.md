@@ -8,7 +8,7 @@ Five lines of `index.html` are enormous single-line JSON blobs (`const WORDS`, `
 
 ## Script blocks
 
-`index.html` holds two inline scripts that share one global scope. The first is everything up to v43, layer on layer. The second, added in v44, holds the shell (`sh*`: top bar, tab icons, the look, *Where you are*, the Today layout) and My words (`my*`). The third, added in v50, holds the usage phrases (`us*`) and their `USAGE` data line. New features go in the second block, or in a new block of their own, as plain functions with a prefix. `tools/check.mjs` syntax-checks every block.
+`index.html` holds two inline scripts that share one global scope. The first is everything up to v43, layer on layer. The second, added in v44, holds the shell (`sh*`: top bar, tab icons, the look, *Where you are*, the Today layout) and My words (`my*`). The third, added in v50, holds the usage phrases (`us*`), their `USAGE` data line and the wide-and-short layout for the answer side of a card. New features go in the second block, or in a new block of their own, as plain functions with a prefix. `tools/check.mjs` syntax-checks every block.
 
 A function in a later block is not defined while the first block paints the opening view, so the first block calls it guarded: `window.usBlock?usBlock(w):''`.
 
@@ -38,7 +38,7 @@ New work should edit a function where it is defined when that is practical, and 
 - `WORDS` — `{id, l, t, p, pos, m, s?}`: lesson, traditional, pinyin, part of speech, meaning, simplified if different.
 - `GRAMMAR` — `{ "<lesson>": [{id, t, e, pat, tgt, alt, s:[{zh, en, py}], …}] }`.
 - `COMPONENTS` — per character `{p, g, d:[parts], t:type, s:semantic, ph:phonetic}`.
-- `S` (state) — `my` (the personal deck, see My words), `cards`, `settings`, `log` (per-day counts), `intro`/`cintro`/`gintro` (per-day intake by lane), `hard`, `pick`, `sib`, `hist`, `mtest` (writing-test results `m`/`l`/`h`), `exam`, `gram`, `cf`, `conf`, `listen`.
+- `S` (state) — `my` (the personal deck, see My words), `cards`, `settings`, `log` (per-day counts), `intro`/`cintro`/`gintro` (per-day intake by lane), `hard`, `pick`, `sib`, `hist`, `mtest` (writing-test results `m`/`l`/`h`), `exam`, `gram`, `cf`, `conf`, `listen`, `read` (stories read), `us` (usage-phrase practice per word, see [content.md](content.md#usage-phrases-用法)).
 - A card: `{st:'learn'|'rev'|'relearn', S, D, due, last, reps, lapses, days, known?, susp?, leech?, mastAt?}`. A card object with no `st` is queued but not started.
 
 ## App shell

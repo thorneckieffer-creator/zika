@@ -1,0 +1,18 @@
+# Usage phrases for the app: original, written for it (never copied from the textbook).
+#
+# Every .txt file in this folder is read, in name order. One file holds a run of lessons.
+# For each word: a few short collocations first, then one or two short sentences, so the word is
+# learned with the company it keeps. tools/check_usage.py checks them and installs them into index.html.
+#
+# Format
+#   == 2.6                         a section: Book 2, Lesson 6
+#   word: phrase = English | phrase = English | ...
+#
+#   * The word is written as it is in WORDS (python3 tools/check_usage.py --words 2.6 lists a lesson).
+#     A word listed twice in one lesson takes two lines, in the lesson's order.
+#   * A phrase may use only characters met by the end of that lesson. The checker lists any others.
+#   * At least one phrase per word is a full sentence, ending in a full stop, question mark or
+#     exclamation mark: the review card shows it.
+#   * Pinyin is generated. To force a reading, put it after the character, e.g. de(dei) as in the
+#     existing files: a character followed by (reading).
+#   * People's names need no phrases.

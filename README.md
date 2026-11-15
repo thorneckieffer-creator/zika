@@ -16,7 +16,7 @@ It is a single-page progressive web app with no build step and no server of its 
 | **Writing** | Paper-first. The writing test shows English and pinyin, you write the character on paper, then grade yourself. Missed words go to a printable 田字格 sheet that tapers ×20 → ×5 → ×1. |
 | **Exam prep (大考試)** | A lesson range and a date. Every word is sorted into ✓ / ~ / ✗ piles that can be re-tested, dictated, reviewed or printed. |
 | **Drills** | 認字 recognition, 聲調 tones, 聽寫 dictation, sentence dictation, "Which one?" confusables, reading sprint, sentence building, speaking. |
-| **Usage phrases (用法)** | Each word comes with short phrases and sentences that use it (搬東西, 搬到台北, 我下個月要搬到學校附近。), written only with characters already learned. They show on the answer side of a card, and a drill gives the English and asks for the phrase. Book 2 Lessons 6–15 so far. |
+| **Usage phrases (用法)** | Every word comes with a sentence and short phrases that use it (搬東西, 搬到台北, 我下個月要搬到學校附近。), written only with characters already learned: about 6,800 across every lesson. They show on the answer side of a card; a drill lets you pick a lesson, browse its phrases, or be given the English and asked for the phrase. |
 | **Characters** | Stroke-order animation, component breakdown (meaning part and sound part), phonetic series, and a 萌典 panel with radical, stroke count, 注音 and definition. |
 | **Audio** | Bundled Taiwan neural voices for every word and every character (曉臻, female; 雲哲, male, when its pack is installed), with the system voice as fallback. |
 | **Brain** | A map of every character you know, by lesson and by word type, with a time-lapse. |

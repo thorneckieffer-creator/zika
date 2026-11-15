@@ -6,13 +6,16 @@
     python3 tools/check_usage.py --review        # also list every reading the tool had to choose
     python3 tools/check_usage.py --show 2.6      # print one lesson's phrases with their pinyin
     python3 tools/check_usage.py --write         # also (re)write the USAGE line in index.html
+    python3 tools/check_usage.py --words 2.6     # a lesson's words, and the characters it may use
+    python3 tools/check_usage.py --file tools/content/usage/b1-l01-03.txt   # check one file only
 
-The phrases live in tools/content/usage_phrases.txt (the format is described at the top of that file).
+The phrases live in tools/content/usage/*.txt (the format is described in 00-format.txt there).
 
 Rules, enforced here:
   * a phrase for a word of Book B Lesson L uses only characters met by the end of that lesson (numerals allowed);
   * a phrase contains its headword (or, for a separable verb, the headword's characters in order);
-  * every word of a covered lesson that is not a person's name has at least two phrases.
+  * every word of a covered lesson that is not a person's name has at least two phrases,
+    and at least one of them is a full sentence (it ends in 。？！): the review card shows it.
 
 Pinyin is not typed by hand. Each phrase is cut into the longest words WORDS knows, and every word keeps
 the publisher's own reading and spacing; characters that stand alone take the reading they have in
@@ -24,7 +27,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SRC = ROOT / 'tools' / 'content' / 'usage_phrases.txt'
+SRC = ROOT / 'tools' / 'content' / 'usage'          # every .txt file in it, in name order
 HAN = re.compile(r'[㐀-鿿]')
 NUM = dict(zip('零一二三四五六七八九十百千萬兩', 'líng yī èr sān sì wǔ liù qī bā jiǔ shí bǎi qiān wàn liǎng'.split()))
 PUNCT = {'，': ',', '。': '.', '？': '?', '！': '!', '、': ',', '：': ':', '；': ';', '…': '…', '「': '“', '」': '”', '—': '—'}
@@ -45,8 +48,29 @@ EXTRA = {'星期': 'xīngqí', '電腦': 'diànnǎo', '第一': 'dìyī', '一�
          '哪個': 'nǎge', '每天': 'měitiān', '每個': 'měi ge', '一個': 'yí ge', '兩個': 'liǎng ge', '幾個': 'jǐ ge',
          '台灣': 'Táiwān', '台北': 'Táiběi', '常常': 'chángcháng', '別人': 'biérén', '有人': 'yǒu rén', '一直': 'yìzhí',
          '一百': 'yìbǎi', '一千': 'yìqiān', '一萬': 'yíwàn', '電子': 'diànzǐ', '假日': 'jiàrì', '可樂': 'kělè',
-         '紅包': 'hóngbāo', '公車': 'gōngchē'}
-PROPER = {'王': 'Wáng'}   # a surname standing alone keeps its capital
+         '紅包': 'hóngbāo', '公車': 'gōngchē', '白色': 'báisè', '獎金': 'jiǎngjīn', '西式': 'xīshì', '日文': 'Rìwén',
+         '台南': 'Táinán', '故宮': 'Gùgōng', '早餐': 'zǎocān', '書店': 'shūdiàn', '咖啡店': 'kāfēidiàn', '火車站': 'huǒchēzhàn',
+         '女生': 'nǚshēng', '男生': 'nánshēng', '女朋友': 'nǚpéngyǒu', '男朋友': 'nánpéngyǒu', '大學生': 'dàxuéshēng',
+         '小學生': 'xiǎoxuéshēng', '爸媽': 'bàmā', '樓上': 'lóushàng', '豆腐': 'dòufǔ', '拍照': 'pāizhào', '天空': 'tiānkōng',
+         '杯子': 'bēizi', '車子': 'chēzi', '鞋子': 'xiézi', '包包': 'bāobāo', '雨傘': 'yǔsǎn', '茶葉': 'cháyè', '醫院': 'yīyuàn',
+         '客氣': 'kèqì', '成功': 'chénggōng', '打開': 'dǎkāi', '頭痛': 'tóutòng', '下班': 'xiàbān', '得到': 'dédào',
+         '看到': 'kàndào', '聽到': 'tīngdào', '找到': 'zhǎodào', '看看': 'kànkan', '走走': 'zǒuzou', '逛逛': 'guàngguang',
+         '好好': 'hǎohǎo', '題目': 'tímù', '約定': 'yuēdìng', '貿易': 'màoyì', '話題': 'huàtí', '醫學系': 'yīxuéxì',
+         '口味': 'kǒuwèi', '可愛': "kě'ài", '護照': 'hùzhào', '姓名': 'xìngmíng', '從來': 'cónglái', '出來': 'chūlái',
+         '下來': 'xiàlái', '特價': 'tèjià', '毛衣': 'máoyī', '信用卡': 'xìnyòngkǎ', '口袋': 'kǒudài', '解決': 'jiějué',
+         '門號': 'ménhào', '水電費': 'shuǐdiànfèi', '中心': 'zhōngxīn', '早安': "zǎo'ān", '只好': 'zhǐhǎo', '卡片': 'kǎpiàn',
+         '看法': 'kànfǎ', '期末': 'qímò', '慢慢': 'mànmàn', '外國': 'wàiguó', '高中生': 'gāozhōngshēng',
+         '不好用': 'bù hǎoyòng', '不好喝': 'bù hǎohē', '不好看': 'bù hǎokàn', '不好玩': 'bù hǎowán', '最好吃': 'zuì hǎochī',
+         '最好喝': 'zuì hǎohē', '好聽': 'hǎotīng', '坐坐': 'zuòzuo', '有人情味': 'yǒu rénqíngwèi', '不同意': 'bù tóngyì',
+         '小時候': 'xiǎoshíhòu', '麻辣': 'málà', '預報': 'yùbào', '手套': 'shǒutào', '合理': 'hélǐ', '晚會': 'wǎnhuì',
+         '晚餐': 'wǎncān', '節目': 'jiémù', '博物館': 'bówùguǎn', '教育': 'jiàoyù', '各地': 'gèdì', '太陽': 'tàiyáng',
+         '心情': 'xīnqíng', '室內': 'shìnèi', '照顧': 'zhàogù', '相信': 'xiāngxìn', '愛情': 'àiqíng', '台語': 'Táiyǔ',
+         '雨水': 'yǔshuǐ', '日出': 'rìchū', '祖父': 'zǔfù',
+         # longer runs that would otherwise be cut in the wrong place (有機 + 會, 請客 + 人, 不好 + 吃)
+         '有機會': 'yǒu jīhuì', '不得了': 'bùdéliǎo', '請客人': 'qǐng kèrén', '不好吃': 'bù hǎochī', '自我介紹': 'zìwǒ jièshào'}
+# Readings that replace the word list's own: a greeting it lists with a capital, which is wrong in mid-sentence.
+FIX = {'你好': 'nǐ hǎo'}
+PROPER = {'王': 'Wáng', '李': 'Lǐ', '陳': 'Chén', '林': 'Lín'}   # a surname standing alone keeps its capital
 NOJOIN = {'好的'}        # words that would swallow a neighbour: 很好的 is 很好 + 的, not 很 + 好的
 
 # ---------- pinyin syllables ----------
@@ -181,6 +205,8 @@ class Reader:
                 self.words[t] = g
             if len(hs) == 1 and hs[0] not in self.alone:
                 self.alone[hs[0]] = flat[0].lower()
+        for t, p in FIX.items():
+            self.words[t] = word_groups({'t': t, 'p': p}) or sys.exit(f'FIX: cannot read {t} {p}')
         self.maxlen = max(len(t) for t in self.words)
         self.choices = []          # (char, reading, phrase) for --review
 
@@ -221,7 +247,8 @@ class Reader:
         i = 0
         while i < len(clean):
             hit = None
-            for L in range(min(self.maxlen, len(clean) - i), 1, -1):
+            counting = clean[i] in NUM and i and clean[i - 1] in NUM      # 十一點 is 十一 + 點, not 十 + 一點
+            for L in range(0 if counting else min(self.maxlen, len(clean) - i), 1, -1):
                 s = clean[i:i + L]
                 if s in self.words and (s not in NOJOIN or s == clean) and not any(k in forced for k in range(i, i + L)):
                     hit = s
@@ -231,14 +258,22 @@ class Reader:
                 i += len(hit)
                 continue
             ch = clean[i]
+            m = re.match(r'[A-Za-z0-9]+', clean[i:])
+            if m:                                    # KTV, 101: written as they are, as a word of their own
+                run = m.group(0)
+                if run.isdigit() and clean[i + len(run):i + len(run) + 1] == '號':      # 2號線: èr hào xiàn
+                    run = ''.join(NUM['零一二三四五六七八九'[int(d)]] for d in run)
+                toks.append(['a', run, i, m.group(0)])
+                i += m.end()
+                continue
             if HAN.match(ch):
-                toks.append(['c', forced.get(i) or self.single(ch, clean, clean[i - 1] if i else ''), i, ch])
+                toks.append(['c', forced.get(i) or self.single(ch, clean, clean[i - 1] if i else '') or '?', i, ch])
             else:
                 toks.append(['p', ch, i, ch])
             i += 1
         # tone change on a standalone 一 / 不, from the syllable that follows
         def first_syl(k):
-            if k >= len(toks) or toks[k][0] == 'p':
+            if k >= len(toks) or toks[k][0] in 'pa':
                 return None
             return toks[k][1][0][0] if toks[k][0] == 'w' else toks[k][1]
         for k, t in enumerate(toks):
@@ -266,7 +301,9 @@ class Reader:
                 elif out:
                     out[-1] += p
                 continue
-            if t[0] == 'w':
+            if t[0] == 'a':
+                parts = [t[1]]
+            elif t[0] == 'w':
                 parts = [join(g) for g in t[1]]
             else:
                 parts = [t[1]]
@@ -282,28 +319,31 @@ class Reader:
 
 
 def parse(src):
-    """→ [(book, lesson, head, [(zh, en)], line number)] in file order."""
-    out, book, lesson = [], None, None
-    for n, raw in enumerate(src.read_text(encoding='utf-8').split('\n'), 1):
-        line = raw.strip()
-        if not line or line.startswith('#'):
-            continue
-        m = re.match(r'==\s*(\d+)\.(\d+)\s*$', line)
-        if m:
-            book, lesson = int(m.group(1)), int(m.group(2))
-            continue
-        if ':' not in line or book is None:
-            sys.exit(f'{src.name}:{n}: cannot read this line: {raw}')
-        head, body = line.split(':', 1)
-        items = []
-        for part in body.split('|'):
-            if not part.strip():
+    """src: one file, or a folder of .txt files → [(book, lesson, head, [(zh, en)], 'file:line')] in order."""
+    files = sorted(src.glob('*.txt')) if src.is_dir() else [src]
+    out = []
+    for f in files:
+        book = lesson = None
+        for n, raw in enumerate(f.read_text(encoding='utf-8').split('\n'), 1):
+            line = raw.strip()
+            if not line or line.startswith('#'):
                 continue
-            if '=' not in part:
-                sys.exit(f'{src.name}:{n}: “{part.strip()}” has no “= English”')
-            zh, en = part.split('=', 1)
-            items.append((zh.strip(), en.strip()))
-        out.append((book, lesson, head.strip(), items, n))
+            m = re.match(r'==\s*(\d+)\.(\d+)\s*$', line)
+            if m:
+                book, lesson = int(m.group(1)), int(m.group(2))
+                continue
+            if ':' not in line or book is None:
+                sys.exit(f'{f.name}:{n}: cannot read this line: {raw}')
+            head, body = line.split(':', 1)
+            items = []
+            for part in body.split('|'):
+                if not part.strip():
+                    continue
+                if '=' not in part:
+                    sys.exit(f'{f.name}:{n}: “{part.strip()}” has no “= English”')
+                zh, en = part.split('=', 1)
+                items.append((zh.strip(), en.strip()))
+            out.append((book, lesson, head.strip(), items, f'{f.name}:{n}'))
     return out
 
 
@@ -312,6 +352,8 @@ def main():
     ap.add_argument('--write', action='store_true')
     ap.add_argument('--review', action='store_true')
     ap.add_argument('--show', metavar='B.L')
+    ap.add_argument('--words', metavar='B.L')
+    ap.add_argument('--file', metavar='PATH')
     a = ap.parse_args()
     path = ROOT / 'index.html'
     lines = path.read_text(encoding='utf-8').split('\n')
@@ -319,15 +361,30 @@ def main():
     books = {int(n): int(f) for n, f, c in re.findall(r"\{n:(\d+),zh:'.',first:(\d+),count:(\d+)\}", next(l for l in lines if l.startswith('const BOOKS=')))}
     reader = Reader(WORDS)
 
+    if a.words:
+        b, l = map(int, a.words.split('.'))
+        ln = books[b] + l - 1
+        before = {c for x in WORDS if x['l'] < ln for c in HAN.findall(x['t'])}
+        new = list(dict.fromkeys(c for x in WORDS if x['l'] == ln for c in HAN.findall(x['t']) if c not in before))
+        print(f'Book {b} Lesson {l}: the words (write each one before the colon exactly as shown)')
+        for x in WORDS:
+            if x['l'] == ln:
+                name = '   [a name: no phrases needed]' if x['p'][:1].isupper() else ''
+                print(f"  {x['t']}\t{x['pos'] or '-'}\t{x['p']}\t{x['m']}{name}")
+        print(f'\nCharacters new in this lesson ({len(new)}): ' + ''.join(new))
+        print(f'Characters from earlier lessons ({len(before)}): ' + ''.join(sorted(before)))
+        print('Numerals are always allowed: ' + ''.join(NUM))
+        return
+
     problems, out, covered, seen_head = [], {}, set(), Counter()
     n_phr = 0
-    for book, lesson, head, items, n in parse(SRC):
+    for book, lesson, head, items, n in parse(Path(a.file) if a.file else SRC):
         ln = books[book] + lesson - 1
         covered.add((book, lesson, ln))
         cands = [w for w in WORDS if w['l'] == ln and head in (w['t'], w['t'].split('（')[0], head_of(w))]
         k = seen_head[(ln, head)]
         seen_head[(ln, head)] += 1
-        where = f'B{book} L{lesson} {head} (line {n})'
+        where = f'B{book} L{lesson} {head} ({n})'
         if k >= len(cands):
             problems.append(f'{where}: no such word in that lesson' if not cands else f'{where}: listed more often than the lesson has it')
             continue
@@ -348,16 +405,18 @@ def main():
                 problems.append(f'{where}: 「{clean}」 has no English')
             if any(r[0] == clean for r in rows):
                 problems.append(f'{where}: 「{clean}」 is listed twice')
-            if None in py.split() or 'None' in py:
+            if '?' in py.replace('?', '', 1 if clean.endswith('？') else 0):
                 problems.append(f'{where}: 「{clean}」 has a character with no known reading')
             rows.append([clean, py, en])
         if len(rows) < 2:
             problems.append(f'{where}: only {len(rows)} phrase(s) — give at least two')
+        if not any(r[0][-1] in ENDS or r[0].rstrip('」')[-1:] in ENDS for r in rows if r[0]):
+            problems.append(f'{where}: no full sentence (one phrase must end in 。？ or ！)')
         out[w['id']] = rows
         n_phr += len(rows)
 
     for book, lesson, ln in sorted(covered):
-        missing = [w['t'] for w in WORDS if w['l'] == ln and w['id'] not in out and not re.match(r'^[A-Z]', w['p']) ]
+        missing = [w['t'] for w in WORDS if w['l'] == ln and w['id'] not in out and not w['p'][:1].isupper()]
         if missing:
             problems.append(f'B{book} L{lesson}: no phrases for {" ".join(missing)}')
         ws = [w for w in WORDS if w['l'] == ln and w['id'] in out]
@@ -385,6 +444,8 @@ def main():
         print('\n' + '\n'.join('  ✗ ' + p for p in problems))
         print(f'\n{len(problems)} problem(s).')
         sys.exit(1)
+    if a.write and a.file:
+        sys.exit('--write installs every file: run it without --file')
     if a.write:
         i = next((k for k, l in enumerate(lines) if l.startswith('const USAGE = ')), None)
         if i is None:

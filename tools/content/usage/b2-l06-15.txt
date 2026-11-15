@@ -1,17 +1,4 @@
-# Usage phrases for 字卡 — original, written for this app (never copied from the textbook).
-#
-# For each word: a few short collocations first, then one or two short sentences, so the word is
-# learned with the company it keeps. tools/check_usage.py checks them and installs them into index.html.
-#
-# Format
-#   == 2.6                         a section: Book 2, Lesson 6
-#   詞: 中文 = English | 中文 = English | …
-#
-#   * The word must be written as it is in WORDS. A word listed twice in one lesson (又, 又) takes
-#     two lines, in the lesson's order.
-#   * A phrase may use only characters met by the end of that lesson. The checker lists any others.
-#   * Pinyin is generated. To force a reading, put it after the character: 你得(děi)去.
-#   * People's names need no phrases.
+# Book 2, Lessons 6-15. Format and rules: 00-format.txt
 
 == 2.6
 搬: 搬東西 = to move things | 搬到台北 = to move to Taipei | 搬出去 = to move out | 我下個月要搬到學校附近。 = Next month I'm moving near the school.
