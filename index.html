@@ -853,7 +853,7 @@ textarea.myin{min-height:120px;resize:vertical;line-height:1.5}
 .my-empty .big{font-size:40px;font-family:var(--cjk);margin-bottom:8px}
 .my-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--tint)}
 .my-row:last-child{border-bottom:0}
-.my-row .tr{font-family:var(--cjk);font-size:22px;min-width:76px;line-height:1.3}
+.my-row .tr{font-family:var(--cjk);font-size:22px;min-width:76px;max-width:46%;line-height:1.3}
 .my-row .info{flex:1;min-width:0}
 .my-row .py{font-size:13px;font-weight:500}
 .my-row .mn{font-size:12.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -872,6 +872,9 @@ textarea.myin{min-height:120px;resize:vertical;line-height:1.5}
 .my-trow{display:flex;align-items:center;gap:8px;padding:4px 0}
 .my-trow .myin{padding:8px 12px}
 .my-trow .n{font-size:12.5px;color:var(--mut);min-width:22px;text-align:right;font-variant-numeric:tabular-nums}
+.my-alt{display:block;width:100%;text-align:left;margin-top:6px;border:1px solid var(--line2);background:var(--panel);color:var(--ink);border-radius:9px;padding:6px 10px;font:inherit;font-size:12.5px;cursor:pointer}
+.my-alt b{font-weight:600;margin-right:6px}
+.my-hint i{font-style:normal;opacity:.8}
 .my-hint{font-size:12.5px;color:var(--mut);background:var(--tint);border-radius:10px;padding:8px 11px;margin:-4px 0 12px}
 .my-top{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--mut);margin-bottom:10px}
 @media(max-width:560px){.decks{gap:10px}.deck{padding:14px}.hello h1,.my-head h1{font-size:22px}.card{padding:18px 16px}
@@ -929,7 +932,7 @@ textarea.myin{min-height:120px;resize:vertical;line-height:1.5}
 <div id="printSheet"></div>
 <script>
 /* ============ VERSION ============ */
-const APP_VERSION=61;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
+const APP_VERSION=62;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
 
 /* ============ THEME ============ */
 function curTheme(){return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';}
@@ -6279,6 +6282,7 @@ renderSet=(function(orig){return function(){orig.apply(this,arguments);try{
 const MY={mode:'list',cur:null,shown:false,done:0,q:'',edit:null,tab:'one',
   tp:null,      /* the list's topic filter: null = all, a topic id, or '-' = words with no topic */
   sel:[],       /* topics ticked in the add / edit sheet */
+  auto:{p:'',m:''},   /* what the sheet last filled into Pinyin and Meaning by itself: a field still holding it follows the characters, one you typed in is left alone */
   scope:null};  /* the filter the running study session was started with */
 /* The topics a deck starts with: parts of life, not parts of speech. Every device seeds the same ids in the same order, so two that seed apart still agree. */
 const MY_TOPICS=['Food & drink','Getting around','Shopping & money','Home & daily life','School & study','Work','People & family','Health & body','Feelings & opinions','Free time','Travel & places','Slang & set phrases'];
@@ -6315,12 +6319,65 @@ function myTopicCounts(){
   return c;
 }
 function myTopicPills(w,skip){const ts=myTopicsOf(w).filter(t=>t.id!==skip);return ts.length?'<div class="tp">'+ts.map(t=>'<span>'+esc(t.n)+'</span>').join('')+'</div>':'';}   /* skip: the topic the list is already filtered to */
-/* a first guess at the pinyin: the course's own reading if the word is in a lesson, otherwise character by character */
+/* ---- the dictionary (v62): CC-CEDICT, CC BY-SA 4.0, cut down by tools/build_dict.py to one line per word:
+   字<TAB>pinyin<TAB>gloss[<TAB>pinyin<TAB>gloss …] — the first pair is the everyday reading (Taiwan's where it differs), the rest are other readings.
+   7 MB, about 3 MB over the air: fetched the first time My words is opened, then kept by the service worker with the other assets. ---- */
+const DC={url:'assets/dict.txt?v=1',map:null,wait:null,failed:false,warm:false};
+function dcLoad(){
+  if(DC.map)return Promise.resolve(DC.map);
+  if(!DC.wait)DC.wait=fetch(DC.url).then(r=>{if(!r.ok)throw new Error('dict '+r.status);return r.text();}).then(txt=>{
+    const m=new Map(); let i=0;
+    while(i<txt.length){const e=txt.indexOf('\n',i), end=e<0?txt.length:e, tab=txt.indexOf('\t',i); if(tab>i&&tab<end)m.set(txt.slice(i,tab),txt.slice(tab+1,end)); i=end+1;}
+    DC.map=m; DC.failed=false; return m;
+  }).catch(()=>{DC.wait=null;DC.failed=true;return null;});   /* offline before the first fetch: the next call tries again */
+  return DC.wait;
+}
+function dcEntry(t){
+  const v=DC.map&&DC.map.get(t); if(!v)return null;
+  const f=v.split('\t'), out=[]; for(let i=0;i+1<f.length;i+=2)out.push({p:f[i],m:f[i+1]});
+  return out.length?out:null;
+}
+/* what the dictionary knows about a word or phrase: the word itself, or failing that its parts by longest match (pinyin only) */
+function dcLook(t){
+  t=String(t||'').trim(); if(!t||!DC.map)return null;
+  const han=[...t].filter(ch=>/\p{Script=Han}/u.test(ch)), whole=dcEntry(t)||dcEntry(han.join(''));
+  if(whole)return {p:whole[0].p,m:whole[0].m,alts:whole.slice(1),parts:null};
+  const parts=[]; let i=0;
+  while(i<han.length){
+    let hit=null;
+    for(let n=Math.min(6,han.length-i);n>=1&&!hit;n--){     /* a part the course teaches is read the course's way: 吧 ba, 得 de */
+      const w=han.slice(i,i+n).join(''), cw=myCourseWord(w), e=cw?[{p:cw.p,m:cw.m}]:dcEntry(w); if(e)hit={t:w,n,p:e[0].p,m:e[0].m};}
+    if(!hit)return null;
+    parts.push(hit); i+=hit.n;
+  }
+  /* 一 and 不 between parts are written with the tone they are spoken with, as the course and the dictionary write them inside a word: 不 + 見 bú jiàn */
+  parts.forEach((x,k)=>{
+    const nx=parts[k+1], tn=nx?toneSeq(nx.p)[0]:0; if(!tn)return;
+    if(x.t==='不'&&x.p==='bù'&&tn===4)x.p='bú';
+    else if(x.t==='一'&&x.p==='yī'&&!(k&&/[第十初]$/.test(parts[k-1].t)))x.p=tn===4?'yí':tn<=3?'yì':x.p;
+  });
+  return parts.length?{p:parts.map(x=>x.p).join(' '),m:'',alts:[],parts}:null;
+}
+/* The best guess at a word's pinyin and meaning: the course's own if it teaches the word, then the dictionary, then (pinyin only) character by character. */
 function myCourseWord(t){return WORDS.find(w=>w.t===t||String(w.t).split('（')[0]===t)||null;}
-function myGuessPy(t){
-  const w=myCourseWord(t); if(w)return w.p;
-  const out=[]; for(const ch of String(t)){ if(!/\p{Script=Han}/u.test(ch))continue; const c=COMPONENTS[ch]; if(!c||!c.p)return ''; out.push(String(c.p).split(/[,;/ ]/)[0]); }
-  return out.join('');
+function myGuess(t){
+  t=String(t||'').trim(); const none={p:'',m:'',alts:[],parts:null,src:''}; if(!t)return none;
+  const cw=myCourseWord(t); if(cw)return {p:cw.p,m:cw.m,alts:[],parts:null,src:'course'};
+  const d=dcLook(t); if(d)return Object.assign(d,{src:'dict'});
+  const out=[]; for(const ch of t){ if(!/\p{Script=Han}/u.test(ch))continue; const c=COMPONENTS[ch]; if(!c||!c.p)return none; out.push(String(c.p).split(/[,;/ ]/)[0]); }
+  return out.length?{p:out.join(''),m:'',alts:[],parts:null,src:'chars'}:none;
+}
+const myMissing=()=>{const d=myDeck();return myIds().filter(id=>!d.w[id].p||!d.w[id].m);};
+/* words added before the dictionary, or while it could not be reached */
+function myFillMissing(){
+  toast('Looking them up…');
+  dcLoad().then(()=>{
+    const d=myDeck(), was={}; let n=0;
+    for(const id of myMissing()){const w=d.w[id], g=myGuess(w.t), p=w.p||g.p, m=w.m||g.m; if(p!==w.p||m!==w.m){was[id]={p:w.p,m:w.m};w.p=p;w.m=m;n++;}}
+    if(!n){toast(DC.map?'The dictionary has nothing more for those words':'The dictionary could not be reached. It needs a connection the first time.');return;}
+    save(); if(view==='my'&&MY.mode!=='study')renderMy();
+    toast('Filled in '+n+' word'+(n===1?'':'s'),{action:'Undo',ms:7000,onAction:()=>{const dd=myDeck();for(const id in was)if(dd.w[id])Object.assign(dd.w[id],was[id]);save();if(view==='my'&&MY.mode!=='study')renderMy();}});
+  });
 }
 function myQueue(f){   /* f: a topic filter as in MY.tp; the daily allowance of new cards is the deck's, whatever the filter */
   const d=myDeck(), now=Date.now(), learn=[], rev=[], fresh=[], ahead=[];
@@ -6373,7 +6430,13 @@ function renderMy(){
   if(MY.tp&&!all.some(id=>myInTopic(d.w[id],MY.tp)))MY.tp=null;      /* the last word left that topic */
   const q=myQueue(MY.tp), name=myScopeName(MY.tp), inTopic=MY.tp?all.filter(id=>myInTopic(d.w[id],MY.tp)).length:all.length;
   const ready=q.learn.length+q.rev.length+q.fresh.length;
+  /* words with a gap; once the dictionary is in memory, only those it can do something for */
+  const gaps=myMissing().filter(id=>{if(!DC.map)return true;const w=d.w[id],g=myGuess(w.t);return (!w.p&&g.p)||(!w.m&&g.m);}).length;
   myBadge();
+  /* have the dictionary on the device before it is needed offline; once it is here the line about gaps counts only what it can fill */
+  if(!DC.map&&!DC.wait&&!DC.warm&&navigator.onLine!==false){DC.warm=true;setTimeout(()=>dcLoad().then(m=>{
+    DC.warm=false; const sh=document.getElementById('shSheet'), at=document.activeElement;
+    if(m&&view==='my'&&MY.mode==='list'&&!(sh&&sh.style.display==='flex')&&!(at&&at.id==='myQ'))renderMy();}),1200);}
   const head=`<div class="my-head"><div><h1>My words</h1><div class="sub">Your own deck for words outside class. It is scheduled like the course, and kept separate from it.</div></div>
     <button class="btn" onclick="myOpenAdd()">Add words</button></div>`;
   if(!all.length){
@@ -6393,6 +6456,7 @@ function renderMy(){
         <button class="tgl${d.both?' on':''}" aria-label="both directions" onclick="myDeck().both=!myDeck().both;save();renderMy()"><i></i></button></div>
     </div>
     <div class="card"><div class="lab">${MY.tp?inTopic+' of ':''}${all.length} word${all.length===1?'':'s'}</div>
+      ${gaps?`<div class="small muted" style="margin:6px 0 2px">${gaps} word${gaps===1?' is':'s are'} missing pinyin or a meaning · <span class="link" onclick="myFillMissing()">Fill in from the dictionary</span></div>`:''}
       ${myTopicBar()}
       ${all.length>6?`<input class="search" id="myQ" placeholder="Search characters, pinyin, meaning or topic" value="${esc(MY.q).replace(/"/g,'&quot;')}" oninput="MY.q=this.value;myListOnly()">`:''}
       <div id="myList">${myRows(myShown())}</div></div>`;
@@ -6426,6 +6490,7 @@ function myOpenAdd(id){
   MY.edit=id||null; if(id)MY.tab='one';
   const w=id?myDeck().w[id]:null;
   MY.sel=w?myTopicsOf(w).map(t=>t.id):(MY.tp&&MY.tp!=='-'?[MY.tp]:[]);   /* a new word starts in the topic being looked at */
+  MY.auto={p:'',m:''};
   myAddRender();
 }
 /* the topic chips of the add / edit sheet. Ticking one changes MY.sel and the chip, never the sheet, so nothing typed is lost. */
@@ -6448,7 +6513,7 @@ function myNewTopic(btn){
 }
 function myAddRender(){
   const m=shHost(), d=myDeck(), w=MY.edit?d.w[MY.edit]:null, q=s=>esc(s||'').replace(/"/g,'&quot;');
-  const one=`<div class="frow"><label for="myT">Characters</label><input id="myT" class="myin zh" lang="zh-Hant" autocomplete="off" autocapitalize="off" value="${w?q(w.t):''}" placeholder="珍珠奶茶" oninput="myHint()" onblur="myAutoPy()"></div>
+  const one=`<div class="frow"><label for="myT">Characters</label><input id="myT" class="myin zh" lang="zh-Hant" autocomplete="off" autocapitalize="off" value="${w?q(w.t):''}" placeholder="珍珠奶茶" oninput="myHint(event)" oncompositionend="myHint()" onblur="myFill()"></div>
     <div id="myHintBox"></div>
     <div class="frow"><label for="myP">Pinyin</label><input id="myP" class="myin" autocomplete="off" autocapitalize="off" spellcheck="false" value="${w?q(w.p):''}" placeholder="zhēnzhū nǎichá"></div>
     <div class="frow"><label for="myM">Meaning</label><input id="myM" class="myin" autocomplete="off" value="${w?q(w.m):''}" placeholder="bubble tea" onkeydown="if(event.key==='Enter'){event.preventDefault();mySaveOne();}"></div>
@@ -6457,32 +6522,59 @@ function myAddRender(){
       ${w?`<button class="btn ghost" style="color:var(--red)" onclick="myDelete('${MY.edit}')">Delete</button>`:''}</div>`;
   const many=`<div class="frow"><label for="myBulk">One word per line: characters, pinyin, meaning</label>
       <textarea id="myBulk" class="myin" lang="zh-Hant" spellcheck="false" placeholder="珍珠奶茶, zhēnzhū nǎichá, bubble tea&#10;悠遊卡, EasyCard&#10;夜市"></textarea></div>
-    <div class="small muted" style="margin:-4px 0 12px">Commas, tabs or semicolons all work. Pinyin and meaning are optional: pinyin is filled in when the characters are known.</div>
+    <div class="small muted" style="margin:-4px 0 12px">Commas, tabs or semicolons all work. Pinyin and meaning are optional: what you leave out is filled in from the dictionary.</div>
     <div class="frow"><label>Topics for every word in the list</label><div class="my-chips" id="myChips">${myChips()}</div></div>
     <button class="btn" style="width:100%" onclick="mySaveMany()">Add all</button>`;
   m.innerHTML=`<div class="modal-card">
     <div class="sheet-h"><b>${w?'Edit word':'Add to My words'}</b><button class="xbtn" onclick="shClose();renderMy()" aria-label="close">✕</button></div>
     ${w?'':`<div class="seg" style="margin-bottom:14px"><button class="${MY.tab==='one'?'on':''}" onclick="MY.tab='one';myAddRender()">One word</button><button class="${MY.tab==='many'?'on':''}" onclick="MY.tab='many';myAddRender()">Paste a list</button></div>`}
-    ${w||MY.tab==='one'?one:many}</div>`;
+    ${w||MY.tab==='one'?one:many}
+    <div class="small muted" style="margin-top:12px;text-align:center">Pinyin and meanings from <a class="link" href="https://cc-cedict.org/wiki/" target="_blank" rel="noopener">CC-CEDICT</a> (CC BY-SA 4.0)</div></div>`;
   m.style.display='flex';
+  myHint(); if(!DC.map)dcLoad().then(()=>myHint());
   const first=document.getElementById(w||MY.tab==='one'?'myT':'myBulk'); if(first&&!w)try{first.focus();}catch(e){}
 }
-function myHint(){
-  const t=(document.getElementById('myT')||{}).value||'', box=document.getElementById('myHintBox'); if(!box)return;
-  const cw=myCourseWord(t.trim()), d=myDeck();
-  const dup=Object.keys(d.w).find(id=>d.w[id].t===t.trim()&&id!==MY.edit);
-  box.innerHTML=dup?'<div class="my-hint">Already in My words.</div>'
-    :cw?'<div class="my-hint">This is a course word (Book '+bookOf(cw.l)+' · Lesson '+lnInBook(cw.l)+'): '+esc(cw.m)+'. You can still add it here.</div>':'';
+/* Pinyin and Meaning follow the characters as they are typed. A field is filled only while it is empty or still holds what was filled in
+   last time (MY.auto), so anything typed by hand stays. */
+function myFill(){
+  const g=id=>document.getElementById(id), T=g('myT'), P=g('myP'), M=g('myM'); if(!T||!P||!M)return;
+  const a=MY.auto, x=myGuess(T.value);
+  if(!P.value.trim()||P.value===a.p){P.value=x.p;a.p=x.p;}
+  if(!M.value.trim()||M.value===a.m){M.value=x.m;a.m=x.m;}
+  const eg=!T.value.trim(); P.placeholder=eg?'zhēnzhū nǎichá':''; M.placeholder=eg?'bubble tea':'';   /* the example belongs to the empty form, not to a word being typed */
 }
-function myAutoPy(){
-  const t=((document.getElementById('myT')||{}).value||'').trim(), p=document.getElementById('myP'), m=document.getElementById('myM'); if(!t||!p)return;
-  if(!p.value.trim())p.value=myGuessPy(t);
-  const cw=myCourseWord(t); if(cw&&m&&!m.value.trim())m.value=cw.m;
+function myHint(e){
+  if(e&&e.isComposing)return;                      /* an input method still composing: wait for the characters */
+  const T=document.getElementById('myT'), box=document.getElementById('myHintBox'); if(!T||!box)return;
+  myFill();
+  const t=T.value.trim(), d=myDeck(), cw=myCourseWord(t);
+  const dup=Object.keys(d.w).find(id=>d.w[id].t===t&&id!==MY.edit);
+  let h='';
+  if(dup)h='Already in My words.';
+  else if(cw)h='This is a course word (Book '+bookOf(cw.l)+' · Lesson '+lnInBook(cw.l)+'): '+esc(cw.m)+'. You can still add it here.';
+  else if(/\p{Script=Han}/u.test(t)){
+    const g=myGuess(t);
+    if(!DC.map)h=DC.failed?'The dictionary could not be reached, so nothing is looked up. It needs a connection the first time.':'Looking it up…';
+    else if(g.src==='dict'&&g.parts&&g.parts.length>1)h='Not in the dictionary as one word, so the pinyin is put together from its parts and the meaning is yours to write: '
+      +g.parts.map(x=>'<span class="zh">'+esc(x.t)+'</span> '+esc(x.p)+' <i>'+esc(x.m.split('; ')[0])+'</i>').join(' · ');
+    else if(g.src==='dict'&&g.alts.length)h='Also read '+g.alts.map((x,i)=>'<button type="button" class="my-alt" onclick="myUseAlt('+i+')"><b>'+esc(x.p)+'</b> '+esc(x.m)+'</button>').join('');
+    else if(g.src!=='dict')h='Not in the dictionary. Type the pinyin and the meaning yourself.';
+  }
+  box.innerHTML=h?'<div class="my-hint">'+h+'</div>':'';
+}
+/* take another reading the dictionary lists for these characters. (The characters' blur only fills, it never repaints the hint box:
+   a tap on one of these buttons begins with that blur, and a repaint would remove the button before the tap lands.) */
+function myUseAlt(i){
+  const g=id=>document.getElementById(id), T=g('myT'), P=g('myP'), M=g('myM'); if(!T||!P||!M)return;
+  const x=myGuess(T.value).alts[i]; if(!x)return;
+  P.value=x.p; M.value=x.m; MY.auto={p:x.p,m:x.m};
 }
 function mySaveOne(){
-  const g=id=>((document.getElementById(id)||{}).value||'').trim(), t=g('myT'); let p=g('myP'); const m=g('myM');
+  const g=id=>((document.getElementById(id)||{}).value||'').trim(), t=g('myT');
   if(!t){toast('Type the characters first');return;}
-  if(!p)p=myGuessPy(t);
+  if((!g('myP')||!g('myM'))&&!DC.map&&!DC.failed){toast('Looking it up…');dcLoad().then(()=>{myFill();mySaveOne();});return;}   /* saved before the dictionary arrived */
+  let p=g('myP'); const m=g('myM');
+  if(!p)p=myGuess(t).p;
   const d=myDeck();
   if(MY.edit&&d.w[MY.edit]){
     Object.assign(d.w[MY.edit],{t,p,m}); myTag(d.w[MY.edit],MY.sel); save(); shClose(); renderMy(); toast('Saved'); return;
@@ -6490,7 +6582,7 @@ function mySaveOne(){
   const r=myAdd(t,p,m,MY.sel);
   if(r&&r.dup){toast('“'+esc(t)+'” is already in My words');return;}
   save(); myBadge(); toast('Added '+esc(t));
-  ['myT','myP','myM'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); myHint();
+  ['myT','myP','myM'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); MY.auto={p:'',m:''}; myHint();
   const el=document.getElementById('myT'); if(el)el.focus();
   if(view==='my')renderMyKeepSheet();
 }
@@ -6506,11 +6598,12 @@ function myParse(text){
     let p='', m='';
     if(parts.length>=3){p=parts[1];m=parts.slice(2).join(', ');if(!MY_PY.test(p)){m=parts.slice(1).join(', ');p='';}}
     else if(parts.length===2){if(MY_PY.test(parts[1])&&/[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ1-5]/i.test(parts[1]))p=parts[1];else m=parts[1];}
-    out.push({t,p:p||myGuessPy(t),m:m||((myCourseWord(t)||{}).m||'')});
+    const x=myGuess(t); out.push({t,p:p||x.p,m:m||x.m});
   });
   return out;
 }
 function mySaveMany(){
+  if(!DC.map&&!DC.failed){toast('Looking them up…');dcLoad().then(mySaveMany);return;}
   const rows=myParse((document.getElementById('myBulk')||{}).value); if(!rows.length){toast('Nothing to add yet: one word per line, characters first');return;}
   const d=myDeck(); let added=0, dup=0;
   rows.forEach(r=>{

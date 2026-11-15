@@ -2,6 +2,24 @@
 
 The content area: `WORDS`, `GRAMMAR`, `COMPONENTS`, `BOOKS`, `LESSON_TITLES` and `DLGMAP` in `index.html`, `assets/strokes.json`, `tools/import_dangdai.py`, `tools/add_characters.py`, `tools/content/`. The schemas are in [architecture.md](architecture.md#key-structures); what is still to import is in [roadmap.md](roadmap.md).
 
+## The dictionary
+
+`assets/dict.txt` is what My words fills pinyin and meanings from. It is [CC-CEDICT](https://www.mdbg.net/chinese/dictionary?page=cc-cedict) (CC BY-SA 4.0: free to redistribute with credit, which the add sheet and the README give), reduced by `tools/build_dict.py`:
+
+```bash
+# download cedict_1_0_ts_utf-8_mdbg.txt.gz from the page above and unpack it, then
+python3 tools/build_dict.py /path/to/cedict.txt     # writes assets/dict.txt; then bump ?v= in DC.url (index.html)
+```
+
+- One line per traditional headword of up to eight characters: the everyday reading first, up to three other readings after it. A gloss is at most four short items.
+- **The pinyin is written the way the course writes it**, and the course is the measure: of the 1,381 course words the dictionary holds it reads 98.0% the way the course does (90.7% before the rules below); `node tools/check.mjs` prints the figure and fails under 97%. The rules, each found by comparing the two syllable by syllable (`taiwan_style()` in the tool):
+  - a stated Taiwan reading is used (垃圾 lèsè), and longer words follow it (垃圾車);
+  - a character keeps its Taiwan reading inside words (期 qí, 績 jī, 究 jiù, 微 wéi), except four the course does not teach that way (法, 應, 亞, 括);
+  - Taiwan's full tone replaces the mainland's neutral one (朋友 péngyǒu, 衣服 yīfú, 回來 huílái), except on particles and suffixes, doubled characters and a few words (意思, 東西);
+  - 一 and 不 carry the tone they are spoken with (yíyàng, yìqǐ, búcuò).
+- What is left wrong is mostly characters with two readings where the neutral tone hid which one was meant (答應 dāyìng comes out dāyīng). The course's own reading always wins for a course word, so these only show in words outside the course.
+- Not in it: slang and phrases (沒差), which get pinyin from their parts and no meaning; simplified headwords.
+
 ## Where the content comes from
 
 1. **The publisher's 當代中文 (DangDai) app, installed on Thorne's Mac.** It is the authoritative source. Each downloaded volume is a folder of local files, not just screens:

@@ -11,7 +11,7 @@ It is a single-page progressive web app with no build step and no server of its 
 | Area | What you get |
 |---|---|
 | **Scheduling** | FSRS-5. Two cards per word (recognise, and recall/write) plus grammar cloze cards, with a daily intake per lane. |
-| **My words** | A personal deck for vocabulary met outside class: add one word or paste a list, pinyin is filled in, and it is scheduled like the course but kept apart from it. Words are sorted into topics (food, getting around, work, your own), and a topic can be browsed or studied on its own. |
+| **My words** | A personal deck for vocabulary met outside class: add one word or paste a list, pinyin and meaning fill themselves in from a bundled dictionary (Taiwan readings, works offline), and it is scheduled like the course but kept apart from it. Words are sorted into topics (food, getting around, work, your own), and a topic can be browsed or studied on its own. |
 | **Three lanes** | *This week* (the live lesson), *Catch-up* (words the writing test flagged, plus the hard list) and *Maintenance* (everything else). |
 | **Writing** | Paper-first. The writing test shows English and pinyin, you write the character on paper, then grade yourself. Missed words go to a printable 田字格 sheet that tapers ×20 → ×5 → ×1. |
 | **Exam prep (大考試)** | A lesson range and a date. Every word is sorted into ✓ / ~ / ✗ piles that can be re-tested, dictated, reviewed or printed. |
@@ -130,4 +130,4 @@ The full list, including known gaps, is in [docs/roadmap.md](docs/roadmap.md).
 
 ## Credits
 
-Vocabulary lists follow *A Course in Contemporary Chinese* (NTNU Mandarin Training Center; Linking Publishing), compiled with Zhong Chinese. Scheduling is [FSRS-5](https://github.com/open-spaced-repetition/fsrs4anki/wiki/The-Algorithm). Stroke data and animation are from [Hanzi Writer](https://hanziwriter.org/) and Make Me a Hanzi. Dictionary panels use [萌典](https://www.moedict.tw/). QR codes use qrcode-generator (MIT). The app is a personal study tool and is not affiliated with NTNU or the publisher.
+Vocabulary lists follow *A Course in Contemporary Chinese* (NTNU Mandarin Training Center; Linking Publishing), compiled with Zhong Chinese. Scheduling is [FSRS-5](https://github.com/open-spaced-repetition/fsrs4anki/wiki/The-Algorithm). Stroke data and animation are from [Hanzi Writer](https://hanziwriter.org/) and Make Me a Hanzi. Dictionary panels use [萌典](https://www.moedict.tw/). QR codes use qrcode-generator (MIT). The app is a personal study tool and is not affiliated with NTNU or the publisher. The dictionary behind My words (`assets/dict.txt`) is derived from [CC-CEDICT](https://cc-cedict.org/wiki/) and is shared under the same licence, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).

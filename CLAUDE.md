@@ -35,10 +35,11 @@ Open work for every area is in one list: [docs/roadmap.md](docs/roadmap.md).
 | `sw.js` | Service worker. Shell cache is per-version; `zika-assets-v1` holds audio/strokes and survives updates. | App |
 | `manifest.webmanifest` | Install metadata. Do not add an `id` — it would change the identity of already-installed copies. | App |
 | `voice.html` | Stand-alone page that records the reference sentence for a cloned voice. | Voice |
-| `assets/` | Voice packs (`audio-tw.pack` 曉臻; `audio-tw-m` and `audio-me` when built; each with an index), `strokes.json`, Hanzi Writer, icons. | Voice, Content |
+| `assets/` | Voice packs (`audio-tw.pack` 曉臻; `audio-tw-m` and `audio-me` when built; each with an index), `strokes.json`, `dict.txt` (the dictionary for My words), Hanzi Writer, icons. | Voice, Content |
 | `tools/check.mjs` | Release gate. `node tools/check.mjs` must pass before a push. It includes a self-test of the tone coach on synthetic tones. | Release |
 | `tools/import_dangdai.py` | Imports lessons from a downloaded DangDai volume (words, titles, BOOKS, DLGMAP, grammar). | Content |
 | `tools/add_characters.py` | Adds stroke data and component breakdowns for characters new to WORDS. | Content |
+| `tools/build_dict.py` | Builds `assets/dict.txt`, the dictionary My words fills pinyin and meanings from, out of CC-CEDICT, with the pinyin written the course's (Taiwan) way. | Content |
 | `tools/content/` | Original grammar write-ups per book, consumed by the importer; the Stories (`reading_passages.py`) and the usage phrases (`usage/*.txt`); `readings.json`, the publisher's 注音 per word. | Content, Voice |
 | `tools/check_reading.py`, `tools/check_usage.py` | Check the Stories and the usage phrases against the vocabulary learned so far, and install them into `index.html` (`--write`). | Content |
 | `tools/build_voice_pack.py` | Builds a voice pack from WORDS with edge-tts. | Voice |

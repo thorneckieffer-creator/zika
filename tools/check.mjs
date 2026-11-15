@@ -118,6 +118,21 @@ if (WORDS && BOOKS) {
     const miss = [...wanted].filter(k => !idx[k]);
     note(`${pack}: ${Object.keys(idx).length} clips, ${(size / 1e6).toFixed(1)} MB${miss.length ? ` · ${miss.length} without a clip: ${miss.slice(0, 12).join(' ')}` : ' · full coverage'}`);
   }
+
+  /* the dictionary My words fills pinyin and meanings from (tools/build_dict.py): every line is a word and pairs of pinyin and gloss */
+  if (!existsSync(join(root, 'assets/dict.txt'))) fail('assets/dict.txt is missing (python3 tools/build_dict.py)');
+  else {
+    const lines = read('assets/dict.txt').split('\n').filter(Boolean), dict = new Map();
+    let bad = 0; for (const l of lines) { const f = l.split('\t'); if (f.length < 3 || f.length % 2 === 0 || f.some(x => !x)) bad++; else dict.set(f[0], f); }
+    if (bad) fail(`assets/dict.txt: ${bad} malformed lines`);
+    if (lines.length < 100000) fail(`assets/dict.txt: only ${lines.length} words`);
+    for (const [w, py] of [['垃圾', 'lèsè'], ['珍珠奶茶', 'zhēnzhūnǎichá'], ['女兒', "nǚ'ér"], ['行', 'xíng']]) if ((dict.get(w) || [])[1] !== py) fail(`assets/dict.txt: ${w} should read ${py}, found ${(dict.get(w) || [])[1]}`);
+    /* the course is the measure of the dictionary's pinyin: of the course words it holds, how many does it read the way the course does? (98.0% when built, v62; 90.7% before taiwan_style) */
+    const flat = p => String(p).split('/')[0].split('(')[0].normalize('NFC').toLowerCase().replace(/[\s'’\-·,]/g, '');
+    let held = 0, same = 0; for (const w of WORDS) { const f = dict.get(String(w.t).split('（')[0]); if (!f) continue; held++; if (flat(f[1]) === flat(w.p)) same++; }
+    if (same / held < 0.97) fail(`assets/dict.txt reads only ${(100 * same / held).toFixed(1)}% of the course's words the way the course does (tools/build_dict.py, taiwan_style)`);
+    note(`dict.txt: ${lines.length} words, ${(statSync(join(root, 'assets/dict.txt')).size / 1e6).toFixed(1)} MB · reads ${same} of the ${held} course words it holds the way the course does (${(100 * same / held).toFixed(1)}%)`);
+  }
 }
 
 /* 5. manifest */
