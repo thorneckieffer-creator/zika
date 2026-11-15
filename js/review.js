@@ -200,3 +200,4 @@ function startQuick(n){REV_CAP=n;go('rev');}
 function startLane(k){REV_FILTER=c=>laneOf(c)===k;go('rev');}
 /* review sessions can start filtered and capped without a stray first card */
 let REV_FILTER=null, REV_CAP=0;
+if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

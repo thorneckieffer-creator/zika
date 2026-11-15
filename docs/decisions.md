@@ -2,6 +2,17 @@
 
 Decisions with consequences, newest first, each with its reason. Thorne asked on 15 November 2026 that Claude decide without asking and write the decisions down ([CLAUDE.md](../CLAUDE.md#the-commitment)); this is where they are written. A decision here can be changed, but change it here, with the new reason, in the same commit as the code.
 
+## 2026-11-15 — the review of the user branches: the design stands, the code does not go in yet
+
+Three reviewers that did not write the code tried to break the sync engine, the accounts module and the security rules ([review-users-branches.md](review-users-branches.md)). No stranger can reach another learner's deck, and nothing argues for a different store. But a learner's own progress can be lost in ordinary situations, so:
+
+- **Neither branch is wired in until its reproductions pass.** They are kept, failing, on `origin/review/users-sync` and `origin/review/users-accounts`.
+- **A join code is treated as a secret that gives access**, because it does: whoever answers a code first receives the joining device's deck. The joining device must show who answered and wait for a tap before it deletes or merges anything.
+- **The engine's shadow moves out of localStorage** (IndexedDB), is tied to the deck by a generation number, and keeps unsent changes apart from itself. Storing it beside the deck is what lets a failed save turn into lost reviews on every device.
+- **A stamp's time is written as decimal digits**, so the rules can hold it to the server's clock. Nothing has shipped in the old form.
+- **App Check is enforced before the first outside learner**, not left unenforced at launch: without it any anonymous visitor can fill the database.
+- **The rules are tested on the official emulator.** The home-made evaluator agreed with it on all 184 of the authors' cases but is blind to priorities and increments, which is where two of the holes were.
+
 ## 2026-11-15 — accounts and sync by record: the design is chosen, the code waits for its review
 
 Decided in outline by this session and worked out in full by the second one, on two branches that add new files only and are not merged: `origin/users-accounts` (its `docs/multi-user.md` is the design; `js/account.js`, the security rules and their tests) and `origin/users-sync` (`docs/sync.md`, `js/sync-records.js` and its tests).
@@ -21,6 +32,8 @@ Splitting the app into files opened a gap that one file never had: the page's bu
 3. A deck with no cards never replaces a stored one that has cards, and is never pushed from a device that has synced before, unless the learner erased, imported, restored or chose the cloud's copy (`DECK_EMPTY_OK`). Every write of the deck goes through `deckStore()`.
 
 A new way of writing or replacing the deck must go through `deckStore()` and say so with `DECK_EMPTY_OK` if emptying is the point.
+
+A fourth, added when the checker failed v63's first two passes: **an app with a piece missing does not start, and nothing under the "could not start" message can be used.** Start-up used to run to its end with, say, `js/home.js` absent (the missing call was caught), which left the deck open under the message; the keyboard could grade a card there, then Tab and Enter could, a lost stylesheet was never reported, and a file cut off on the way went unnoticed. Now a failed start is any of: a file that does not arrive, a file that cannot be run, a file that did not report running to its last line, a start-up that stops. Then `js/boot.js` starts nothing, the deck is closed, the page under the message is inert and the keyboard goes no further than **Try again** ([architecture.md](architecture.md#start-up)). The price is one fixed last line in every file under `js/`, which the release check enforces.
 
 ## 2026-11-15 — a device with no deck starts clean
 
@@ -43,6 +56,10 @@ The split kept every function a global and every inline `onclick="fn()"` working
 ## 2026-11-15 — a second session works beside this one, by agreement
 
 Thorne opened a second window and asked for more agents. The split agreed between the two sessions: this one owns the restructure on `next` and applies and verifies everything with the harness; the other one's agents read the layers and wrote the single definitions (each checked against its original before delivery), reviewed every push independently, and are drafting the multi-user design (accounts, storage per person, sync by record) on branches of their own, as new files that touch no existing function. Their review found real things: the service worker's version skew, the tools broken by the data move, and start-up saves that would have marked an idle device as holding unsent work.
+
+## 2026-11-15 — the restructure is released as v63, before the exam, on Thorne's word
+
+The plan below was to hold it until after the exam of 18 November. On the 15th Thorne asked for it to be released once the review of the user branches had reported. **It went out without the checker's PASS, on his instruction** ("Just push it now so I can use it", after being told the third pass had failed): the checker failed it three times, each time on the "could not start" message and never on the app in use, and after the third the rule is to stop and ask him. What was still open when it was pushed is in [roadmap.md](roadmap.md) under Release and repo. What it was held to: the release check; the harness against a recording (identical but for the version label) and against v62 itself (the same deck in memory on opening, the same deck stored after a graded card; the differences are the new-device screens, the sync note of whether a deck ever had cards, and the two-day sibling list being trimmed when another device's save is taken); the upgrade test from a v62 device carrying a deck, a sync code and stored audio; and the checker's three passes, which found a deck made with v62 opening byte for byte the same, every tab matching v62, and normal starts clean at all three sizes. If a device misbehaves after it, the way back is to publish the v62 files again under the next version number (`git revert` of the release, then bump `APP_VERSION` and `VERSION` in the old places). That was tried before the release, by hand, in headless Chrome: a device running v63 under its worker, with a deck it had saved, a sync code and stored audio, was given the single-file app numbered 64; it became it, dropped the v63 shell, kept every card, My words, the log, the link and the audio, and opened offline.
 
 ## 2026-11-15 — the restructure lives on `next`, not on `main`
 

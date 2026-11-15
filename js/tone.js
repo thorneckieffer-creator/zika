@@ -270,3 +270,4 @@ function tcPanel(){
     <div class="row" style="gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn sm" onclick="startDrill('tcoach')">Ten words</button><button class="btn sm ghost" onclick="tcStart('phr')">Ten short phrases</button></div>
     <div class="small muted" style="margin-top:12px">Two-syllable words by tone pair — the first tone down the side, the second across. Tap a pair to practise ten words of it.</div>${tcPairMap()}</div>`;
 }
+if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

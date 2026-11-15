@@ -71,3 +71,4 @@ function mtOwnEarly(){
 function mtOwnEarlyBase(){if(!confirm('Mark every B1 L1–L8 word as mastered? They leave the queue and resurface in about three months.'))return;let n=0;WORDS.filter(w=>w.l<=8&&!isName(w)).forEach(w=>{if(!(MODES.some(m=>(S.cards[cardId(w.id,m)]||{}).mastAt))){markMastered(w.id);n++;}});S.hard=(S.hard||[]).filter(x=>byId[x].l>8);save();badge();toast(n+' words parked');renderHome();}
 /* Today card */
 /* mastery test: a real undo stack */
+if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

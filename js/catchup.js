@@ -45,3 +45,4 @@ function renderCatchOwned(){try{
     <div class="tier-acts">${done<early.length?`<button class="btn sm ghost" onclick="mtOwnEarly()">Mark all mastered</button>`:''}</div></div></div>`);
   ringArm(el);
 }catch(e){}}
+if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

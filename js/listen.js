@@ -66,3 +66,4 @@ function lpRender(){
       <div class="small muted" style="margin-top:14px">Shadow it: play a line, say it back with the tones before the next one starts. Slow the slider for new material, then work back up to 1.0. Full 對話 texts get added as you send them.</div>
     </div>`;
 }
+if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

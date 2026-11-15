@@ -11,37 +11,90 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="字卡">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="stylesheet" href="css/app.css">
-<script>try{var L=JSON.parse(localStorage.getItem('zika_look')||'{}'),R=document.documentElement;if(L.t==='dark'||(L.t==='auto'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))R.setAttribute('data-theme','dark');if(L.p)R.setAttribute('data-pal',L.p);if(L.a)R.setAttribute('data-accent',L.a);if(L.z)R.setAttribute('data-zh',L.z);}catch(e){}</script>
 <script>
-/* If a file of the app does not arrive, or start-up stops part-way, say so on the page instead of leaving it dead.
-   js/boot.js sets window.zikaStarted when start-up has finished; a file that fails after that is not fatal. */
+/* When the app cannot start, say so on the page instead of leaving it dead or, worse, half alive. This script comes
+   before the stylesheet and every other file so that it hears about each of them.
+
+   Three things count as not starting, until js/boot.js has set window.zikaStarted:
+   - a script or the stylesheet that does not arrive;
+   - a script that arrives but cannot be run, or stops while it is being read in (a file cut off on the way);
+   - start-up itself stopping part-way (still not started when the page has finished loading).
+   Each script of the app also reports that it ran to its last line (zikaWhole), and js/boot.js refuses to start
+   unless all of them have: a file cut off between two statements raises no error at all.
+
+   A failure closes the app for this load: window.zikaFailed keeps js/boot.js from starting it, the deck is taken
+   back if start-up had already opened it (DECK_READY, js/core.js), and the page under the message is put out of
+   reach of taps, of the keyboard and of focus. An app with a piece missing must not be able to grade a card. */
 (function(){
-  var said=false;
+  var said=false, again=null;
+  window.zikaWhole=function(){var s=document.currentScript; if(s)(window.zikaGot=window.zikaGot||{})[s.getAttribute('src')]=1;};
+  function name(u){return String(u).split('?')[0].split('/').slice(-2).join('/');}
+  /* everything on the page but the message: not clickable, not focusable, not read out */
+  function shut(){
+    var kids=document.body?document.body.children:[];
+    for(var i=0;i<kids.length;i++){var k=kids[i]; if(k.id!=='loadFail'&&!k.hasAttribute('inert')){k.setAttribute('inert','');k.setAttribute('aria-hidden','true');}}
+  }
+  function hold(){if(again&&document.activeElement!==again){try{again.focus();}catch(e){}}}
   function say(what){
     if(said)return; said=true;
+    window.zikaFailed=true;
+    try{if(typeof DECK_READY!=='undefined')DECK_READY=false;}catch(e){}
+    /* the keyboard: no key reaches the app's shortcuts, none types into a field or presses a button under the
+       message, and Tab does not leave "Try again". The browser's own shortcuts (reload) are left alone. */
+    ['keydown','keypress','keyup'].forEach(function(t){window.addEventListener(t,function(e){
+      e.stopImmediatePropagation();
+      if(e.metaKey||e.ctrlKey||e.altKey)return;
+      if(e.key==='Tab'||e.target!==again){e.preventDefault();hold();}
+    },true);});
+    window.addEventListener('focusin',function(e){if(e.target!==again)hold();},true);
     var show=function(){
-      /* it covers the whole page: a half-started app can show a card but cannot save a grade, so nothing under it may be used */
+      if(again||!document.body)return;
       var cover=document.createElement('div'); cover.id='loadFail'; cover.setAttribute('role','alert');
       cover.style.cssText='position:fixed;left:0;top:0;right:0;bottom:0;z-index:99999;background:rgba(243,237,222,.97);display:flex;align-items:center;justify-content:center;padding:20px';
       var d=document.createElement('div');
       d.style.cssText='max-width:420px;background:#fff;color:#222;border:1px solid #c0392b;border-radius:14px;padding:18px 20px;font:15px/1.5 system-ui,sans-serif';
       var b=document.createElement('b'); b.textContent='字卡 could not start. '; d.appendChild(b);
       d.appendChild(document.createTextNode(what+' Your progress on this device is safe. '));
-      var again=document.createElement('button'); again.type='button'; again.textContent='Try again';
+      again=document.createElement('button'); again.type='button'; again.textContent='Try again';
       again.style.cssText='display:block;margin-top:12px;padding:8px 18px;border-radius:999px;border:0;background:#222;color:#fff;font:inherit;font-weight:600';
       again.onclick=function(){location.reload();}; d.appendChild(again);
+      cover.addEventListener('mousedown',function(e){if(e.target!==again)e.preventDefault();});   /* a click on the message does not take the focus off the button */
       cover.appendChild(d); document.body.appendChild(cover);
+      shut(); hold();
+      /* whatever a half-started page adds later (a sheet, a toast) is shut as well */
+      try{new MutationObserver(shut).observe(document.body,{childList:true});}catch(e){}
     };
-    if(document.body)show(); else document.addEventListener('DOMContentLoaded',show);
+    /* as soon as there is a page to cover: a stylesheet can fail before the body exists, and the scripts after it
+       take time to arrive, during which the bare page must not be left open to taps */
+    if(document.body)show();
+    else{
+      try{var seen=new MutationObserver(function(){if(document.body){seen.disconnect();show();}}); seen.observe(document.documentElement,{childList:true});}catch(e){}
+      document.addEventListener('DOMContentLoaded',show);
+    }
   }
+  window.zikaFail=say;   /* js/boot.js calls it when a file did not report in */
   window.addEventListener('error',function(e){
-    var t=e.target; if(window.zikaStarted||!t||(t.tagName!=='SCRIPT'&&t.tagName!=='LINK'))return;
-    var u=String(t.src||t.href||''); if(u)say('A file did not arrive ('+u.split('?')[0].split('/').slice(-2).join('/')+'). Check the connection.');
+    if(window.zikaStarted)return;
+    var t=e.target;
+    if(t&&t!==window&&t.tagName){
+      if(t.tagName==='SCRIPT'||(t.tagName==='LINK'&&/stylesheet/i.test(t.rel||''))){
+        var u=String(t.src||t.href||''); if(u)say('A file did not arrive ('+name(u)+'). Check the connection.');
+      }
+      return;
+    }
+    /* an error with no element, from one of the app's own files: a syntax error, which only a damaged file gives,
+       or an error raised while a file is being read in (document.currentScript), which leaves that file half
+       defined. An error in a handler that ran early is not a failed start. */
+    var cs=document.currentScript, f=String(e.filename||(cs&&cs.src)||'');
+    if(!f||f.indexOf(location.origin+'/')!==0)return;
+    if((e.error&&e.error.name==='SyntaxError')||/SyntaxError/.test(String(e.message||'')))say('A file did not arrive whole ('+name(f)+'). Check the connection.');
+    else if(cs&&cs.src)say('Something stopped it part-way.');
   },true);
   window.addEventListener('load',function(){if(!window.zikaStarted)say('Something stopped it part-way.');});
 })();
 </script>
+<link rel="stylesheet" href="css/app.css">
+<script>try{var L=JSON.parse(localStorage.getItem('zika_look')||'{}'),R=document.documentElement;if(L.t==='dark'||(L.t==='auto'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))R.setAttribute('data-theme','dark');if(L.p)R.setAttribute('data-pal',L.p);if(L.a)R.setAttribute('data-accent',L.a);if(L.z)R.setAttribute('data-zh',L.z);}catch(e){}</script>
 </head>
 <body>
 <div class="wrap">

@@ -247,3 +247,4 @@ function intakePanel(){
     <div class="small muted" style="margin-top:6px">Rule of thumb: about ten reviews per new card in its first month. ${(s.newPerDay??8)+(s.newCatchPerDay??12)+(s.newGramPerDay??4)} new a day settles near ${((s.newPerDay??8)+(s.newCatchPerDay??12)+(s.newGramPerDay??4))*10} reviews a day.</div></div>`;
 }
 const SET_ORDER=['Set up your iPhone or iPad','This iPhone','This iPad','Cloud sync','Daily intake','Card strategy','Offline & audio','Audio & strokes','Backup','Look & feel','Card types','Schedule','Grammar in the queue','Confidence · shared with Notion'];
+if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

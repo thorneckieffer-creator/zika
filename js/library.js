@@ -429,3 +429,4 @@ function ring2(m,size,stroke){
   const arc=(f,cls)=>`<circle class="${cls}" cx="${size/2}" cy="${size/2}" r="${r}" stroke-width="${stroke}" stroke-dasharray="${C}" stroke-dashoffset="${C}" data-off="${C*(1-Math.max(0,Math.min(1,f)))}"/>`;
   return `<svg class="ring r2 ${m.frac>=0.999&&m.n?'full':''}" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle class="bg" cx="${size/2}" cy="${size/2}" r="${r}" stroke-width="${stroke}"/>${arc(m.lfrac,'fg soft')}${arc(m.frac,'fg')}</svg>`;
 }
+if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

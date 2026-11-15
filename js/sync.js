@@ -386,3 +386,4 @@ function fbPasteCode(id){
   if(navigator.clipboard&&navigator.clipboard.readText)navigator.clipboard.readText().then(t=>{const m=String(t).match(/sync=([a-z0-9-]+)/i);el.value=m?m[1]:String(t).trim();}).catch(()=>el.focus());
   else el.focus();
 }
+if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

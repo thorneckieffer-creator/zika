@@ -7,17 +7,18 @@
    - Install: every file of the release is put in a new cache. A file whose content is unchanged since the release
      this device already holds is copied from it; the others are downloaded and their content is checked against
      the hash written here. If anything is missing or does not match, the install fails and the old release stays.
-   - Activate: older shell caches go; audio, stroke data and the dictionary are carried forward (ASSETS).
+   - Activate: older shell caches go; audio, stroke data and the dictionary are carried forward (ASSETS). A cache
+     that a v62-or-earlier worker puts back during the hand-over goes the next time the app is opened (sweepOld).
    - The page hears about the new release (`controllerchange`, js/shell.js) and reloads itself when that is safe.
    - Assets (audio packs, stroke data, the dictionary, icons, the pinned Firebase SDK): cache-first in a
      long-lived cache that survives releases.
 
    VERSION is bumped by hand together with APP_VERSION in js/core.js. FILES and DIGEST are written by
    `node tools/stamp.mjs`; `node tools/check.mjs` fails when they are out of date. */
-const VERSION = 'zika-v62';
+const VERSION = 'zika-v63';
 /* FILES:BEGIN — written by tools/stamp.mjs, do not edit by hand */
-const DIGEST = 'e9030a10f154';
-const FILES = [["index.html","043ed41bfa9f"],["manifest.webmanifest","1037668406b7"],["voice.html","88088877971f"],["css/app.css","d80361671bea"],["data/course.js","fa2bed407b55"],["data/words.js","a675ae803ca0"],["data/grammar.js","44727f5c38f3"],["data/components.js","023c7223a619"],["data/readings.js","63b362eface9"],["data/usage.js","adf97459240a"],["js/core.js","99f492923b74"],["js/text.js","95a825454be2"],["js/shell.js","c5da895670f7"],["js/audio.js","85009eb26015"],["js/chars.js","a2837e68a305"],["js/sync.js","0b50e0174c3a"],["js/backup.js","fd3d7a5613fc"],["js/home.js","225b58e8eb17"],["js/review.js","e04c825fd8c6"],["js/library.js","03be8f9666dd"],["js/brain.js","a8a768657112"],["js/grammar.js","6f8c023d06ac"],["js/drills.js","9f9315720856"],["js/listen.js","01c9fdbecd00"],["js/mtest.js","c88a4197ab38"],["js/exam.js","845123402a17"],["js/catchup.js","c8ba7e5456be"],["js/settings.js","3ccf427337c7"],["js/tone-analysis.js","b5c065d38d4e"],["js/tone.js","86b4b13ee1fd"],["js/stories.js","f73c424e4c79"],["js/my-words.js","f7b5c6610562"],["js/usage.js","db8c1cedf6b5"],["js/boot.js","3633a4bdbdf6"]];
+const DIGEST = '24fa83753a63';
+const FILES = [["index.html","5b65424af8ff"],["manifest.webmanifest","1037668406b7"],["voice.html","88088877971f"],["css/app.css","d80361671bea"],["data/course.js","fa2bed407b55"],["data/words.js","a675ae803ca0"],["data/grammar.js","44727f5c38f3"],["data/components.js","023c7223a619"],["data/readings.js","63b362eface9"],["data/usage.js","adf97459240a"],["js/core.js","11766e247b60"],["js/text.js","5dcc50c016b1"],["js/shell.js","7db0e2fa18ed"],["js/audio.js","6b27d4dd20f8"],["js/chars.js","3d40d8106759"],["js/sync.js","33a80c8e3939"],["js/backup.js","3e598abc2725"],["js/home.js","173d2e71b9d6"],["js/review.js","730aa0299c9e"],["js/library.js","7d11d4af32e4"],["js/brain.js","d1e878e1e2ea"],["js/grammar.js","eef597817775"],["js/drills.js","b9c14f5efa41"],["js/listen.js","fbdfe1f62aa0"],["js/mtest.js","10bef4d68600"],["js/exam.js","867cac075cc2"],["js/catchup.js","2f5d48c64eec"],["js/settings.js","ec52088d5424"],["js/tone-analysis.js","ad34e56925b1"],["js/tone.js","7d4d9c799548"],["js/stories.js","9f528f6f9242"],["js/my-words.js","eedc660f5c04"],["js/usage.js","fffeb79fa7e2"],["js/boot.js","1e2dbd93676a"]];
 /* FILES:END */
 const SHELL = VERSION.replace('zika-', 'zika-shell-') + '-' + DIGEST;   // one cache per release: zika-shell-v63-<digest>
 const ASSETS = 'zika-assets-v1';                        // bump only when a file under assets/ changes
@@ -53,6 +54,9 @@ self.addEventListener('install', e => {
       if (await caches.match(f)) return;
       try { await assets.add(f); } catch (err) { /* picked up on first use instead */ }
     }));
+    /* all but one: the page loads the QR library as a script before it starts, and does not start without it, so a
+       release that could not store it is not taken (the install is tried again the next time the app is opened) */
+    if (!(await caches.match('./assets/qrcode.min.js'))) throw new Error('assets/qrcode.min.js could not be stored');
     await self.skipWaiting();
   })());
 });
@@ -78,7 +82,17 @@ self.addEventListener('activate', e => {
   })());
 });
 
+/* A worker from v62 or earlier names its cache zika-vNN and stores in it whatever a page asks it for. While this
+   worker is taking over, that one may still be answering the reloading page, and its cache comes back after
+   activate removed it. Nothing here reads it; it is removed each time the app is opened. Only that old name, and
+   only from an earlier release, is swept: a `zika-shell-…` cache other than SHELL may be a newer release that is
+   still being stored, and so may a zika-vNN with a higher number (the old single-file app published again as a
+   way back). */
+const RELEASE = +VERSION.replace(/\D+/g, '');
+const sweepOld = async () => { try { for (const k of await caches.keys()) { const m = /^zika-v(\d+)$/.exec(k); if (m && +m[1] < RELEASE) await caches.delete(k); } } catch (err) { /* next time */ } };
+
 self.addEventListener('fetch', e => {
+  if (e.request.mode === 'navigate') e.waitUntil(sweepOld());
   if (e.request.method !== 'GET') return;
   if (e.request.cache === 'no-store') return;   /* the app's own update check must reach the network */
   const url = new URL(e.request.url);

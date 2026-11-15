@@ -34,6 +34,10 @@ for (const f of ['data/course.js', 'data/words.js', 'data/grammar.js', 'data/com
 if (!/window\.zikaStarted=true/.test(read('js/boot.js'))) fail('js/boot.js: the last line must set window.zikaStarted (index.html reports a failed start by its absence)');
 for (const f of onDisk) if (!code.includes(f)) fail(`${f} is not loaded by index.html`);
 if (code[code.length - 1] !== 'js/boot.js') fail('index.html: js/boot.js must be the last script (it starts the app once everything is defined)');
+/* every script of the app but the last ends by reporting that it ran to its end; start-up refuses to run without all of them */
+for (const f of code.filter(f => f !== 'js/boot.js')) if (!/\nif\(typeof zikaWhole==='function'\)zikaWhole\(\);[^\n]*\n?$/.test(read(f))) fail(`${f}: the last line must be  if(typeof zikaWhole==='function')zikaWhole();  (js/boot.js does not start the app unless every file reports in)`);
+if (!/bootLost\(\)/.test(read('js/boot.js')) || !/window\.zikaWhole=/.test(html)) fail('the check that every file arrived whole is missing (zikaWhole in index.html, bootLost in js/boot.js)');
+if (html.indexOf('window.zikaFail=') < 0 || html.indexOf('window.zikaFail=') > html.indexOf('<link rel="stylesheet"')) fail('index.html: the script that reports a failed start must come before the stylesheet, or a missing stylesheet is never heard of');
 /* the data files and the two libraries are scripts too: a cut-off file or an unclosed comment is a syntax error in the browser */
 for (const f of [...new Set([...srcs, 'sw.js', 'assets/hanzi-writer.min.js'])].filter(f => existsSync(join(root, f)))) {
   try { execFileSync(process.execPath, ['--check', join(root, f)], { stdio: 'pipe' }); }

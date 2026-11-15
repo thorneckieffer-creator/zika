@@ -116,3 +116,4 @@ function bkPanel(){
       </div></div>
   </div>`;
 }
+if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

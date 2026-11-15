@@ -536,3 +536,4 @@ let moreDrills=false;
 /* Full-screen drill modes register here instead of wrapping startDrill / renderDrill again:
    DRILL_SCREENS[mode] = {start, render}. start() sets drillMode and calls go('drill'); render() paints #vDrill while dq is null. */
 const DRILL_SCREENS={};
+if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

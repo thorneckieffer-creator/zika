@@ -24,6 +24,12 @@ export function serve(dir, { port = 0, log = null } = {}) {
       if (drop && p.endsWith(decodeURIComponent(drop[1]))) { res.writeHead(404); res.end('dropped'); return; }
       const slow = /[?&]slow=([^&#]+)(?:&ms=(\d+))?/.exec(req.headers.referer || '');
       if (slow && p.endsWith(decodeURIComponent(slow[1]))) await new Promise(r => setTimeout(r, +(slow[2] || 1200)));
+      /* …and with ?cut=<path>&keep=<n> gets all but its last n lines (default 1), with keep=half the first half of
+         its bytes, with keep=none nothing at all: a file that arrives, but not whole */
+      const cut = /[?&]cut=([^&#]+)(?:&keep=(\w+))?/.exec(req.headers.referer || '');
+      if (cut && p.endsWith(decodeURIComponent(cut[1]))) { const whole = readFileSync(f);
+        const part = cut[2] === 'none' ? Buffer.alloc(0) : cut[2] === 'half' ? whole.subarray(0, whole.length >> 1) : Buffer.from(whole.toString('utf8').replace(/\n$/, '').split('\n').slice(0, -(+cut[2] || 1)).join('\n') + '\n');
+        res.writeHead(200, { 'Content-Type': MIME[extname(f)] || 'application/octet-stream', 'Cache-Control': 'no-store' }); res.end(part); return; }
       const body = readFileSync(f), range = /bytes=(\d+)-(\d*)/.exec(req.headers.range || '');
       const head = { 'Content-Type': MIME[extname(f)] || 'application/octet-stream', 'Cache-Control': 'no-store', 'Accept-Ranges': 'bytes' };
       if (range) { const a = +range[1], z = range[2] ? +range[2] : body.length - 1; res.writeHead(206, { ...head, 'Content-Range': `bytes ${a}-${z}/${body.length}` }); res.end(body.subarray(a, z + 1)); }

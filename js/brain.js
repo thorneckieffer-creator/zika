@@ -306,3 +306,4 @@ function phoneticPanel(){
   return `<div class="card"><div class="lab">Sound families · 聲旁</div><div class="small muted" style="margin-bottom:10px">Characters that share a phonetic component usually share a sound. Know one, and the rest come cheap — the grey ones are the ones you haven’t met yet.</div>
     <div class="phgrid">${rows.map(r=>`<div class="ph"><span class="ph-k zh">${esc(r.ph)}</span>${r.chs.map(ch=>`<span class="tile s${csm[ch]||0} zh" style="font-size:16px;width:30px;height:30px;border-radius:7px" title="${esc(ch)}${COMPONENTS[ch]&&COMPONENTS[ch].p?' '+esc(COMPONENTS[ch].p):''}" onclick="brainSel={type:'char',id:'${esc(ch)}'};brainView='chars';renderBrain()">${esc(ch)}</span>`).join('')}</div>`).join('')}</div></div>`;
 }
+if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

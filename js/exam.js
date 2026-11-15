@@ -127,3 +127,4 @@ function renderExam(){
     <div class="small muted">Night 1 is triage, not practice: run each lesson’s test cold and sort. Only the ✗ and ~ piles get time after that — ✓ words are parked and never come back before the exam. Re-test a pile whenever you have written it; a ✗ that becomes ~ or ✓ leaves the queue on the spot. Everything here shares the 寫字測驗 results, so the Catch-up tab and the review lanes see the same marks. <kbd>space</kbd> reveal · <kbd>1</kbd> hell no · <kbd>2</kbd> sorta · <kbd>3</kbd> yes.</div></div>`;
   countUp(el);ringArm(el);
 }
+if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

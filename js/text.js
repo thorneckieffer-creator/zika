@@ -81,3 +81,4 @@ function toneSeq(p){
 function firstTone(p){for(const ch of String(p)){const t=toneMarks[ch.toLowerCase()];if(t)return t;}return 0;}
 const TONEMARK=['·','ˉ','ˊ','ˇ','ˋ'];
 function toneLabel(seq){return seq.map(t=>TONEMARK[t]).join(' ')+'   ('+seq.join('-')+')';}
+if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

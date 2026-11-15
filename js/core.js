@@ -1,7 +1,7 @@
 /* The core: the app's version, books and lessons, storage, the state S and how it is saved, FSRS-5, cards and
    modes, the queue of what is ready to study, the hard list, lanes and leeches. No screen is painted here. */
 
-const APP_VERSION=62;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
+const APP_VERSION=63;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
 /* ============ DATA ============ */
 const byId = {}; WORDS.forEach(w=>byId[w.id]=w);
 const isName = w => /^a (woman|man) from/.test(w.m)||/name of a (girl|boy|man|woman)|, a (man|woman) from/.test(w.m);
@@ -415,3 +415,4 @@ function normalizeState(){
   if(!S.settings.retention)S.settings.retention=0.9; if(S.settings.newPerDay==null)S.settings.newPerDay=8; if(!S.settings.maxRev)S.settings.maxRev=300; if(!S.settings.writeTarget)S.settings.writeTarget=20;
   S.cards=S.cards||{}; S.pick=S.pick||[]; S.hard=S.hard||[]; S.log=S.log||{}; S.intro=S.intro||{}; S.hist=S.hist||{d:[],s:[]}; S.sib=S.sib||{}; S.cf=S.cf||{}; S.gram=S.gram||{};
 }
+if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

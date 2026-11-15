@@ -174,3 +174,4 @@ async function moeToggle(ch,btn){
   const i=await moeInfo(ch); if(!i){box.textContent='萌典 unreachable right now';return;}
   box.innerHTML=`<b>部首</b> <span class="zh">${esc(i.rad)}</span> · <b>筆畫</b> ${i.n} · <span class="zh">${esc(i.bpm)}</span> ${esc(i.py)}${i.defs.length?`<div class="zh" style="margin-top:3px">${i.defs.map(esc).join('；')}</div>`:''}<a class="lk" href="https://www.moedict.tw/${encodeURIComponent(ch)}" target="_blank" rel="noopener">萌典 ↗</a>`;
 }
+if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

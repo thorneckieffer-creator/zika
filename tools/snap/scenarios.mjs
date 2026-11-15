@@ -168,6 +168,24 @@ export const scenarios = [
   { name: 'start-file-lost', fixture: 'deck', local: unlinked, sizes: ['phone'], query: '?drop=js/boot.js', steps: [
     { name: 'try-the-tabs', js: `const hit = (x, y) => { const e = document.elementFromPoint(x, y); return e && e.closest('#loadFail') ? 'covered' : (e ? e.tagName + '#' + e.id : 'nothing'); }; return [hit(120, 820), hit(195, 400), hit(350, 30), hit(40, 30)]` },
     { name: 'a-grade-anyway', js: `try { go('rev'); reveal(); grade(3); } catch (e) {} __tick(3000)`, noShot: true }] },
+  /* Any other file never arrives, or arrives cut short. Start-up itself is there, so without a refusal it would run
+     with a piece missing and the keyboard would drive what is left: the checker graded a card under the message
+     this way (v63, first pass), then reached the buttons under it with Tab, found the stylesheet's loss unreported
+     and a cut-off file unnoticed (second pass). In every case: the message, the app not started, the deck closed,
+     focus held on "Try again", nothing in storage changed, and a grade called directly not stored. */
+  ...[['other-file-lost', '?drop=js/home.js'], ['stylesheet-lost', '?drop=css/app.css'], ['file-cut-in-half', '?cut=js/review.js&keep=half'], ['file-cut-between-lines', '?cut=js/home.js&keep=1'], ['data-cut-in-half', '?cut=data/grammar.js&keep=half']].map(([name, query]) =>
+  ({ name, fixture: 'deck', local: unlinked, sizes: ['phone'], query, steps: [
+    { name: 'keys-under-the-cover', js: `window.__before = JSON.stringify(Object.keys(localStorage).sort().map(k => [k, localStorage.getItem(k)]));
+        const press = (el, k) => el.dispatchEvent(new KeyboardEvent('keydown', { key: k, code: k === ' ' ? 'Space' : k, bubbles: true, cancelable: true }));
+        for (const k of ['r', ' ', '3', '2', 'Enter', 'Tab']) press(document.body, k);
+        /* focus cannot be put on anything under the message, and Enter there does nothing */
+        const under = ['#tabRev', '#themeBtn', '#setBtn', 'button', 'input', 'a[href]'].map(q => document.querySelector('.wrap ' + q) || document.querySelector(q)).filter(e => e && !e.closest('#loadFail'));
+        let reached = 0; for (const e of under) { try { e.focus(); } catch (x) {} if (document.activeElement === e) reached++; press(document.activeElement, 'Enter'); }
+        __tick(3000);
+        return { cover: !!document.getElementById('loadFail'), says: (document.getElementById('loadFail') || {}).textContent, started: !!window.zikaStarted, deckOpen: typeof DECK_READY === 'undefined' ? 'no deck code' : DECK_READY,
+          focus: document.activeElement && document.activeElement.textContent, tried: under.length, reached, shut: [...document.body.children].every(e => e.id === 'loadFail' || e.inert === true),
+          view: typeof view === 'undefined' ? null : view, storage: JSON.stringify(Object.keys(localStorage).sort().map(k => [k, localStorage.getItem(k)])) === window.__before ? 'as it was' : 'CHANGED' }` },
+    { name: 'a-grade-anyway', js: `try { toggleTheme(); } catch (e) {} try { go('rev'); reveal(); grade(3); } catch (e) {} __tick(3000); return localStorage.getItem('shida_b1_fsrs_v2') === new Map(JSON.parse(window.__before)).get('shida_b1_fsrs_v2') ? 'the deck is as it was' : 'THE DECK CHANGED'`, noShot: true }] })),
 
   /* Replacing the deck on purpose still works through the guard on empty decks: erase, import (a small deck, then an
      empty one), and a new learner with no cards yet whose settings must still reach the cloud. */

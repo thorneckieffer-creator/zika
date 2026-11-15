@@ -431,3 +431,4 @@ function myStudyRender(){
     <div class="small muted kbh" style="text-align:center;margin-top:10px"><kbd>space</kbd> show · <kbd>1</kbd>–<kbd>4</kbd> grade · <kbd>esc</kbd> stop</div>`;
 }
 function myStrokes(id){const w=myDeck().w[id];if(!w)return;try{renderStrokes('myStrokeHost',w.t,{});}catch(e){}}
+if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

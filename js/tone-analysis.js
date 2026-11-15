@@ -158,3 +158,4 @@ function tcAnalyse(x,sr,count,sp,tr){
   const syl=tcSyllables(tr.st,count,tr.rms).map(([a,z])=>{const shape=tcShape(tr.st,a,z); return shape?Object.assign({a,z},tcClassify(shape,z-a,who)):null;});
   return {med:tr.med,voiced:tr.voiced,syl,sp:who,tr};
 }
+if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

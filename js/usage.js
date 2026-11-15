@@ -145,3 +145,4 @@ function usRender(){
       <div class="small muted" style="text-align:center;margin-top:10px"><span class="kbh"><kbd>space</kbd> · </span><span class="link" onclick="usHome()">stop</span></div>`}`;
 }
 DRILL_SCREENS.usage={start:usStart,render:usRender};
+if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

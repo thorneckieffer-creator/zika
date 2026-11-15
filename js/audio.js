@@ -100,3 +100,4 @@ function speakWord(wid){
 const SPK_SVG='<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a3.5 3.5 0 0 0-2-3.15v6.3a3.5 3.5 0 0 0 2-3.15zm-2-6.7v2.06A5 5 0 0 1 18 12a5 5 0 0 1-3.5 4.64v2.06A7 7 0 0 0 20 12a7 7 0 0 0-5.5-6.7z"/></svg>';
 function spkBtn(wid,lg){return '<button class="spk'+(lg?' lg':'')+'" title="pronounce" onclick="event.stopPropagation();speakWord(\''+wid+'\')">'+SPK_SVG+'</button>';}
 function spkBtnText(t){window.AUDS=window.AUDS||[];const i=AUDS.push(t)-1;return '<button class="spk" title="listen" onclick="playAudio(AUDS['+i+'])">'+SPK_SVG+'</button>';}
+if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

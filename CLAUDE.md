@@ -33,7 +33,7 @@ The work divides into four areas. Each has its own notes; read the one you are a
 
 | Area | Notes | Covers |
 |---|---|---|
-| **App** | [docs/architecture.md](docs/architecture.md), [docs/design.md](docs/design.md), [docs/multi-user.md](docs/multi-user.md) | The page (`index.html`), the code in `js/`, the styles in `css/app.css`, `sw.js`, `manifest.webmanifest`. How it should look; what opening it to other users takes. |
+| **App** | [docs/architecture.md](docs/architecture.md), [docs/design.md](docs/design.md), [docs/multi-user.md](docs/multi-user.md), [docs/review-users-branches.md](docs/review-users-branches.md) | The page (`index.html`), the code in `js/`, the styles in `css/app.css`, `sw.js`, `manifest.webmanifest`. How it should look; what opening it to other users takes. |
 | **Content** | [docs/content.md](docs/content.md) | Books, words, grammar and characters: the files in `data/`, `assets/strokes.json`, the importers, `tools/content/`. |
 | **Voice** | [docs/voice.md](docs/voice.md) | Voice packs and how they are built: `assets/audio-*`, `voice.html`, the pack builders, `js/audio.js`, the tone coach (`js/tone-analysis.js`, `js/tone.js`). |
 | **Release and repo** | [docs/releasing.md](docs/releasing.md), [docs/feature-map.md](docs/feature-map.md), [docs/review-checklist.md](docs/review-checklist.md) | The release check, the checker and its gate, GitHub and Pages, these notes, the README. |
@@ -55,7 +55,7 @@ Open work for every area is in one list: [docs/roadmap.md](docs/roadmap.md).
 | `tools/check.mjs` | Release gate. `node tools/check.mjs` must pass before a push. It includes a self-test of the tone coach on synthetic tones. | Release |
 | `tools/stamp.mjs` | Writes the list of shell files and their hashes into `sw.js`. Run it after any change to the page, `js/`, `css/` or `data/`; the release check fails if it is stale. | Release |
 | `tools/snap.mjs`, `tools/snap/` | The screen-by-screen harness: records every screen, the saved state and a picture for scripted and seeded random use, and compares two recordings. `node tools/snap.mjs record` before a change, `check` after. | Release |
-| `tools/swtest.mjs` | Takes the service worker through a device's life in headless Chrome: first visit, offline, a release, a half-published release, the upgrade from an earlier release (`--from`). | Release |
+| `tools/swtest.mjs` | Takes the service worker through a device's life in headless Chrome: first visit, offline, a release, a half-published release, the upgrade from an earlier release (`--from`), which carries a deck, a sync code and stored audio across. | Release |
 | `tools/applib.py`, `tools/lib/browser.mjs` | What the tools share: reading and writing `data/`; a static server and a Chrome driver. | Release |
 | `tools/review.mjs` | The review gate: ties the checker's PASS or FAIL to a fingerprint of the app files (everything but the notes and the tools), and stops a session finishing or a push leaving without a PASS. | Release |
 | `.claude/agents/verify-app.md`, `.claude/settings.json` | The checker subagent, and the hooks that call the gate: when a session tries to finish, and to keep anyone but the checker from recording a verdict. | Release |
@@ -82,7 +82,7 @@ Open work for every area is in one list: [docs/roadmap.md](docs/roadmap.md).
 
 - **One definition per function, in the file for its area.** Find it with `grep -n "function X(" js/*.js`. There are no wrapper layers any more and none may be added: to change what a function does, change it where it is.
 - **Files only define; `js/boot.js` runs.** A file's top level holds functions and constants and nothing that reads the deck or touches the page. Anything that must happen at start-up goes in the right step of `js/boot.js` (load, migrate, mount, listen, start). `tools/check.mjs` fails on a name defined at the top of two files.
-- **Scripts share one global scope and load in the order `index.html` lists them.** A function may call anything; a top-level constant may only use what an earlier file defined. A new file is added to `index.html` before `js/boot.js`, then `node tools/stamp.mjs`.
+- **Scripts share one global scope and load in the order `index.html` lists them.** A function may call anything; a top-level constant may only use what an earlier file defined. A new file ends with the line every file under `js/` ends with (`if(typeof zikaWhole==='function')zikaWhole();`: start-up refuses to run unless each file reports that it arrived whole) and is added to `index.html` before `js/boot.js`, then `node tools/stamp.mjs`.
 - **New features are prefixed functions** (`sh*` shell, `my*` My words, `us*` usage, `tc*` tone coach, `rd*` stories, `ex*` exam, `mt*` writing test, `fb*` sync, `bk*` backup) in the file for their area, or a new file. A drill that takes over the Drill tab registers itself in `DRILL_SCREENS` and has a line in `DMODES`. Styles use the colour variables ([docs/design.md](docs/design.md)).
 - **Record before, check after.** `node tools/snap.mjs record`, make the change, `node tools/snap.mjs check`. A change that is not meant to alter behaviour must come back identical; one that is must differ only where intended.
 - The files in `data/` are single enormous lines. Never read them whole; grep with `cut -c1-300`, and read or write them through `tools/applib.py`.

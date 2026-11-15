@@ -56,3 +56,4 @@ function rdRender(){
       <div class="small muted" style="text-align:center;margin-top:10px">underlined = this lesson's new words · <span class="link" onclick="rdQuiet();RD.i=-1;rdRender()">back to the list</span></div></div>`;
 }
 DRILL_SCREENS.story={start:rdStart,render:rdRender};
+if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */
