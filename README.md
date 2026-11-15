@@ -16,6 +16,7 @@ It is a single-page progressive web app with no build step and no server of its 
 | **Writing** | Paper-first. The writing test shows English and pinyin, you write the character on paper, then grade yourself. Missed words go to a printable 田字格 sheet that tapers ×20 → ×5 → ×1. |
 | **Exam prep (大考試)** | A lesson range and a date. Every word is sorted into ✓ / ~ / ✗ piles that can be re-tested, dictated, reviewed or printed. |
 | **Drills** | 認字 recognition, 聲調 tones, 聽寫 dictation, sentence dictation, "Which one?" confusables, reading sprint, sentence building, speaking. |
+| **Tone coach (聲調教練, beta)** | Say a word into the microphone and see your pitch curve against the native speaker's, each tone graded, with a line on what to change. A map of the sixteen tone pairs shows which ones to practise, and every review card has a microphone to check that word on the spot. It is all computed on the device: no audio leaves it. |
 | **Usage phrases (用法)** | Every word comes with a sentence and short phrases that use it (搬東西, 搬到台北, 我下個月要搬到學校附近。), written only with characters already learned: about 6,800 across every lesson. They show on the answer side of a card; a drill lets you pick a lesson, browse its phrases, or be given the English and asked for the phrase. |
 | **Characters** | Stroke-order animation, component breakdown (meaning part and sound part), phonetic series, and a 萌典 panel with radical, stroke count, 注音 and definition. |
 | **Audio** | Bundled Taiwan neural voices for every word and every character (曉臻, female; 雲哲, male, when its pack is installed), with the system voice as fallback. |
@@ -63,6 +64,7 @@ tools/
   build_voice_pack.py        builds a voice pack from the word list (Microsoft neural voices)
   build_voice_pack_breezy.py builds a pack in a cloned voice (BreezyVoice), with
   build_voice_staged.sh        a staged runner and build_readings.py for pinned readings
+  tone_lab.mjs               tone coach test bench: scores and refits the tone classifier on recordings with known tones
 docs/                 working notes by area: architecture, content, voice, releasing, roadmap
 ```
 

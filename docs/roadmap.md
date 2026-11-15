@@ -44,4 +44,5 @@ Verified dead or superseded code that is still in the file, to be removed one pi
 - `TIERS`, `RECUR_TGT`, `CATCHUP_SCHED`, `tierWords`, `recurPoints`, `drillTier` and the `drillScope==='tier'` branch (the tier card was stubbed out in v33).
 - The first `renderLib` body, the first `buildQueue` body and the first `compLines` body (each replaced wholesale by a later layer).
 - The `dict` branch of the first `renderDrill`, and the write-card front in the first `renderRev`.
+- The first `anatomyHtml` body (the layer after it replaces it without calling it).
 - `NOTION.hub/.catchup/.prep/.book1/.chars`, CSS `.complines`, `.gres`, `.serif-en`, `.kai`.
