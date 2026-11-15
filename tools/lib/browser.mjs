@@ -19,6 +19,9 @@ export function serve(dir, { port = 0, log = null } = {}) {
       const f = normalize(join(dir, p));
       if (!f.startsWith(dir + sep) || !existsSync(f) || !statSync(f).isFile()) { res.writeHead(404); res.end('not found'); return; }
       /* a page opened with ?slow=<path>&ms=<n> gets that one file late: how a start-up interrupted half-way is rehearsed */
+      /* …and with ?drop=<path> never gets it at all */
+      const drop = /[?&]drop=([^&#]+)/.exec(req.headers.referer || '');
+      if (drop && p.endsWith(decodeURIComponent(drop[1]))) { res.writeHead(404); res.end('dropped'); return; }
       const slow = /[?&]slow=([^&#]+)(?:&ms=(\d+))?/.exec(req.headers.referer || '');
       if (slow && p.endsWith(decodeURIComponent(slow[1]))) await new Promise(r => setTimeout(r, +(slow[2] || 1200)));
       const body = readFileSync(f), range = /bytes=(\d+)-(\d*)/.exec(req.headers.range || '');

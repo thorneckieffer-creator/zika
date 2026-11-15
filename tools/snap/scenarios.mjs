@@ -164,6 +164,11 @@ export const scenarios = [
   { name: 'tap-before-start-linked', fixture: 'deck', sizes: ['phone'], query: '?slow=js/boot.js&ms=900', local: { zika_sync_code: CODE, zika_sync_meta: JSON.stringify({ at: T0 - 2 * DAY, dirty: false, remoteDev: 'Web' }) }, cloud: { code: CODE, remote: 'deck', remoteAt: T0 - 2 * DAY },
     early: { when: GAP, js: `toggleTheme()` }, steps: opened },
 
+  /* The start-up file never arrives: the page says so, covers everything, and the deck is as it was. */
+  { name: 'start-file-lost', fixture: 'deck', local: unlinked, sizes: ['phone'], query: '?drop=js/boot.js', steps: [
+    { name: 'try-the-tabs', js: `const hit = (x, y) => { const e = document.elementFromPoint(x, y); return e && e.closest('#loadFail') ? 'covered' : (e ? e.tagName + '#' + e.id : 'nothing'); }; return [hit(120, 820), hit(195, 400), hit(350, 30), hit(40, 30)]` },
+    { name: 'a-grade-anyway', js: `try { go('rev'); reveal(); grade(3); } catch (e) {} __tick(3000)`, noShot: true }] },
+
   /* Replacing the deck on purpose still works through the guard on empty decks: erase, import (a small deck, then an
      empty one), and a new learner with no cards yet whose settings must still reach the cloud. */
   { name: 'erase', fixture: 'deck', sizes: ['phone'], local: linkedIdle, cloud: { code: CODE, remote: 'deck', remoteAt: T0 - 2 * DAY }, steps: [

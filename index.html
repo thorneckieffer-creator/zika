@@ -21,14 +21,17 @@
   function say(what){
     if(said)return; said=true;
     var show=function(){
-      var d=document.createElement('div'); d.id='loadFail'; d.setAttribute('role','alert');
-      d.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;background:#fff;color:#222;border:1px solid #c0392b;border-radius:12px;padding:14px 16px;font:15px/1.45 system-ui,sans-serif';
+      /* it covers the whole page: a half-started app can show a card but cannot save a grade, so nothing under it may be used */
+      var cover=document.createElement('div'); cover.id='loadFail'; cover.setAttribute('role','alert');
+      cover.style.cssText='position:fixed;left:0;top:0;right:0;bottom:0;z-index:99999;background:rgba(243,237,222,.97);display:flex;align-items:center;justify-content:center;padding:20px';
+      var d=document.createElement('div');
+      d.style.cssText='max-width:420px;background:#fff;color:#222;border:1px solid #c0392b;border-radius:14px;padding:18px 20px;font:15px/1.5 system-ui,sans-serif';
       var b=document.createElement('b'); b.textContent='字卡 could not start. '; d.appendChild(b);
       d.appendChild(document.createTextNode(what+' Your progress on this device is safe. '));
       var again=document.createElement('button'); again.type='button'; again.textContent='Try again';
-      again.style.cssText='margin-left:6px;padding:6px 14px;border-radius:999px;border:0;background:#222;color:#fff;font:inherit;font-weight:600';
+      again.style.cssText='display:block;margin-top:12px;padding:8px 18px;border-radius:999px;border:0;background:#222;color:#fff;font:inherit;font-weight:600';
       again.onclick=function(){location.reload();}; d.appendChild(again);
-      document.body.appendChild(d);
+      cover.appendChild(d); document.body.appendChild(cover);
     };
     if(document.body)show(); else document.addEventListener('DOMContentLoaded',show);
   }
