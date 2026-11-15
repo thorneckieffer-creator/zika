@@ -913,7 +913,7 @@ textarea.myin{min-height:120px;resize:vertical;line-height:1.5}
 <div id="printSheet"></div>
 <script>
 /* ============ VERSION ============ */
-const APP_VERSION=54;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
+const APP_VERSION=55;   /* keep in step with VERSION in sw.js — tools/check.mjs verifies it */
 
 /* ============ THEME ============ */
 function curTheme(){return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';}
@@ -4731,7 +4731,7 @@ function mtRender(){
   </div>
   ${r?`<div class="grades mt3"><button onclick="mtMark('h')"><span class="g1">✗ Couldn’t</span><span class="iv">learning + hard + paper</span></button><button onclick="mtMark('l')"><span class="g2">~ Shaky</span><span class="iv">into the deck</span></button><button onclick="mtMark('m')"><span class="g4">★ Wrote it</span><span class="iv">parked · 3 months</span></button></div>
     <div class="small muted" style="text-align:center;margin-top:10px"><kbd>1</kbd> couldn’t · <kbd>2</kbd> shaky · <kbd>3</kbd> wrote it${T.i>0?` · <span class="link" onclick="mtUndo()">← undo last</span>`:''} · <span class="link" onclick="go('home')">pause</span></div>`
-  :`<div style="margin-top:16px"><button class="btn big" onclick="MT.revealed=true;mtRender()">Show the character</button></div><div class="small muted" style="text-align:center;margin-top:10px"><kbd>space</kbd>${T.i>0?` · <span class="link" onclick="mtUndo()">← undo last</span>`:''} · <span class="link" onclick="go('home')">pause — progress is saved</span></div>`}`;
+  :`<div style="margin-top:16px"><button class="btn big" onclick="MT.revealed=true;mtRender()">Show the character</button></div><div class="small muted" style="text-align:center;margin-top:10px"><span class="kbh"><kbd>space</kbd> · </span>${T.i>0?`<span class="link" onclick="mtUndo()">← undo last</span> · `:''}<span class="link" onclick="go('home')">pause — progress is saved</span></div>`}`;
   if(r&&S.settings.strokeAnim&&document.getElementById('strokeHost'))try{renderStrokes('strokeHost',w.t.split('（')[0],{});}catch(e){}
   if(!r&&S.settings.autoplayAudio&&MT.lastSpoken!==wid){MT.lastSpoken=wid;setTimeout(()=>speakWord(wid),200);}
 }
@@ -5342,7 +5342,7 @@ function exRender(){
   </div>
   ${r?`<div class="grades mt3"><button onclick="exMark('h')"><span class="g1">✗ Hell no</span><span class="iv">✗ pile · hard list · 田字格</span></button><button onclick="exMark('l')"><span class="g2">~ Sorta</span><span class="iv">~ pile · write card live</span></button><button onclick="exMark('m')"><span class="g4">✓ Yes</span><span class="iv">parked · off the list</span></button></div>
     <div class="small muted" style="text-align:center;margin-top:10px"><kbd>1</kbd> hell no · <kbd>2</kbd> sorta · <kbd>3</kbd> yes${R.hist.length?` · <span class="link" onclick="exUndo()">← undo last</span>`:''} · <span class="link" onclick="go('exam')">pause</span></div>`
-  :`<div style="margin-top:16px"><button class="btn big" onclick="EX.revealed=true;exRender()">Show the character</button></div><div class="small muted" style="text-align:center;margin-top:10px"><kbd>space</kbd>${R.hist.length?` · <span class="link" onclick="exUndo()">← undo last</span>`:''} · <span class="link" onclick="go('exam')">pause — progress is saved</span></div>`}`;
+  :`<div style="margin-top:16px"><button class="btn big" onclick="EX.revealed=true;exRender()">Show the character</button></div><div class="small muted" style="text-align:center;margin-top:10px"><span class="kbh"><kbd>space</kbd> · </span>${R.hist.length?`<span class="link" onclick="exUndo()">← undo last</span> · `:''}<span class="link" onclick="go('exam')">pause — progress is saved</span></div>`}`;
   if(r&&S.settings.strokeAnim&&document.getElementById('strokeHost'))try{renderStrokes('strokeHost',w.t.split('（')[0],{});}catch(e){}
   if(!r&&S.settings.autoplayAudio&&EX.lastSpoken!==wid){EX.lastSpoken=wid;setTimeout(()=>speakWord(wid),200);}
 }
@@ -5665,7 +5665,8 @@ function tcAnalyse(x,sr,count,sp,tr){
 /* The native voice: mid pitch and spread measured once per voice pack from a hundred clips. */
 const TC_NATIVE={};
 async function tcDecode(buf){
-  const ctx=new (window.OfflineAudioContext||window.webkitOfflineAudioContext)(1,1,TC_SR);
+  const C=window.OfflineAudioContext||window.webkitOfflineAudioContext; let ctx;
+  try{ctx=new C(1,1,TC_SR);}catch(e){ctx=new C(1,1,44100);}        /* an older Safari refuses a 16 kHz context; tcResample brings any rate down */
   const audio=await new Promise((res,rej)=>{const pr=ctx.decodeAudioData(buf,res,rej); if(pr&&pr.then)pr.then(res,rej);});
   return {x:audio.getChannelData(0),sr:audio.sampleRate};
 }
@@ -6434,7 +6435,7 @@ function myStudyRender(){
       ${MY.shown?`<div class="row" style="justify-content:center;gap:8px">${mySpk(id)}<button class="btn sm ghost" onclick="event.stopPropagation();myStrokes('${id}')">Strokes</button><button class="btn sm ghost" onclick="event.stopPropagation();MY.mode='list';myOpenAdd('${id}')">Edit</button></div><div id="myStrokeHost" class="strokerow"></div>`:''}</div>
     ${MY.shown?`<div class="grades">${[[1,'Again'],[2,'Hard'],[3,'Good'],[4,'Easy']].map(([g,l])=>`<button class="g${g}" onclick="myGrade(${g})">${l}<span class="iv">${previewIv(c,'x:rec',g)}</span></button>`).join('')}</div>`
       :`<button class="btn big" style="margin-top:14px" onclick="myReveal()">Show answer</button>`}
-    <div class="small muted" style="text-align:center;margin-top:10px"><kbd>space</kbd> show · <kbd>1</kbd>–<kbd>4</kbd> grade · <kbd>esc</kbd> stop</div>`;
+    <div class="small muted kbh" style="text-align:center;margin-top:10px"><kbd>space</kbd> show · <kbd>1</kbd>–<kbd>4</kbd> grade · <kbd>esc</kbd> stop</div>`;
 }
 function myStrokes(id){const w=myDeck().w[id];if(!w)return;try{renderStrokes('myStrokeHost',w.t,{});}catch(e){}}
 document.addEventListener('keydown',e=>{
@@ -6603,7 +6604,7 @@ function usRender(){
     ${UQ.shown?`<div class="grades us-grades"><button onclick="usGrade(0)"><span class="g1">Missed</span><span class="iv">go over it again</span></button><button onclick="usGrade(1)"><span class="g3">Got it</span><span class="iv">next phrase</span></button></div>
       <div class="small muted" style="text-align:center;margin-top:10px"><kbd>1</kbd> missed · <kbd>2</kbd> got it · <span class="link" onclick="usHome()">stop</span></div>`
     :`<div style="margin-top:16px"><button class="btn big" onclick="usShow()">Show answer</button></div>
-      <div class="small muted" style="text-align:center;margin-top:10px"><kbd>space</kbd> · <span class="link" onclick="usHome()">stop</span></div>`}`;
+      <div class="small muted" style="text-align:center;margin-top:10px"><span class="kbh"><kbd>space</kbd> · </span><span class="link" onclick="usHome()">stop</span></div>`}`;
 }
 DMODES.push(['usage','用法 Phrases','pick a lesson · say the phrase each word lives in']);
 DRILL_SCREENS.usage={start:usStart,render:usRender};
