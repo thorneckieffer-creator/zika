@@ -2,6 +2,8 @@
 
 The app was built for one learner. This is the plan for opening it to others, in the order the work should happen. Nothing here is built yet except where a version is named.
 
+> **16 November 2026: the store and the sign-in below are replaced.** Accounts and sync go to Supabase and take the place of the room code outright ([decisions.md](decisions.md), [roadmap.md](roadmap.md#app)). Steps 2, 3, 4 and 7 below describe the earlier Firebase plan and are kept for their reasoning; "Where it stands", the clean first run (shipped in v63) and the rights questions in step 6 still hold.
+
 ## Where it stands
 
 | Piece | Today | Why it does not stretch to other people |
