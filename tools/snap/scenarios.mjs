@@ -187,6 +187,12 @@ export const scenarios = [
           focus: document.activeElement && document.activeElement.textContent, tried: under.length, reached, shut: [...document.body.children].every(e => e.id === 'loadFail' || e.inert === true),
           view: typeof view === 'undefined' ? null : view, storage: JSON.stringify(Object.keys(localStorage).sort().map(k => [k, localStorage.getItem(k)])) === window.__before ? 'as it was' : 'CHANGED' }` },
     { name: 'a-grade-anyway', js: `try { toggleTheme(); } catch (e) {} try { go('rev'); reveal(); grade(3); } catch (e) {} __tick(3000); return localStorage.getItem('shida_b1_fsrs_v2') === new Map(JSON.parse(window.__before)).get('shida_b1_fsrs_v2') ? 'the deck is as it was' : 'THE DECK CHANGED'`, noShot: true }] })),
+  /* A script that is not the app's (one an extension or a blocker put on the page) fails before start-up has
+     finished: the app starts all the same. v63 took it for a file of its own and shut the app (third pass). Start-up
+     is held back so that the failure always comes first. */
+  { name: 'foreign-script-lost', fixture: 'deck', local: unlinked, sizes: ['phone'], query: '?slow=js/boot.js&ms=900',
+    early: { when: `document.head`, js: `const s = document.createElement('script'); s.async = true; s.src = 'http://127.0.0.1:9/not-the-apps.js'; s.onerror = () => { window.__foreign = window.zikaStarted ? 'failed after start-up' : 'failed before start-up'; }; document.head.appendChild(s)` },
+    steps: [{ name: 'started-all-the-same', js: `return { foreign: window.__foreign || 'no failure seen', cover: !!document.getElementById('loadFail'), started: !!window.zikaStarted, deckOpen: typeof DECK_READY === 'undefined' ? 'no deck code' : DECK_READY }` }] },
 
   /* Replacing the deck on purpose still works through the guard on empty decks: erase, import (a small deck, then an
      empty one), and a new learner with no cards yet whose settings must still reach the cloud. */

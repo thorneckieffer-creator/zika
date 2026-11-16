@@ -2,6 +2,24 @@
 
 Decisions with consequences, newest first, each with its reason. Thorne asked on 15 November 2026 that Claude decide without asking and write the decisions down ([CLAUDE.md](../CLAUDE.md#the-commitment)); this is where they are written. A decision here can be changed, but change it here, with the new reason, in the same commit as the code.
 
+## 2026-11-16 — the new sync replaces the room-code sync; it does not run beside it
+
+Thorne gave two rules for the backend ([CLAUDE.md](../CLAUDE.md#how-thorne-wants-it-built)): subscribe to changes instead of polling, and replace the old thing instead of building the new one beside it. The first costs nothing: the room sync listens (`onValue`) and the engine on `origin/users-sync` is built on listeners. The second **changes the plan of 15 November below**, which kept the sync code and the room "exactly as they are until the learner moves the deck, once, by choice" and wired accounts in behind the old sync. Now: one release puts accounts and sync by record in the place of the room-code sync; a device that holds a room code moves its deck on its first start under that release; the room code, `fbAdopt` and the whole-deck push are deleted in the same release. The price is that the move cannot be optional or gradual, so it has to be proven first: on a copy of Thorne's real deck, on all three kinds of device, with an export taken before. The room itself is deleted only after he says so.
+
+He also wants a real database set up in time and named Supabase and Convex as ones that push. Not decided: Firebase Realtime Database stays the working choice (it pushes, the rules and tests exist), and the question is put to him before the wiring starts.
+
+Same day, on content: the publisher's dialogues are not needed in the app. Original dialogues from each lesson's vocabulary; grammar from open references and his own study. The app holds no dialogue text today.
+
+## 2026-11-16 — v64: the three findings v63 went out with, and a fourth pass of the checker on Thorne's word
+
+v63 was pushed on the morning of 16 November with three findings of the checker open, all on the "could not start" message. Thorne then asked for the next version. The rule after three FAILs is to stop and ask him; his asking for the release is that answer, so the checker ran a fourth time, on v64.
+
+- **A stylesheet or the QR library that arrives cut short is a failed start**, like a script: `css/app.css` ends with `html{--zika-css-whole:1}` and `bootLost` reads it; the library is known by its name.
+- **Only files under the page's own folder count.** A script an extension adds can fail without shutting the app.
+- **The check of the stylesheet runs on every start, so a false alarm would shut the app on every device.** It was therefore run in WebKit, the engine of Safari on the iPhone and iPad, before release (Playwright's build, on this Mac): thirty normal starts at phone and tablet size, starts with the stylesheet, the last script, the QR library or a data file arriving 1.5 s late, a graded card, the nine ways a file can fail, the foreign script, and the worker's install. The check concludes nothing when the browser gives no computed style.
+- **The release number goes on the file addresses** (see the 15 November entry on how a release is stored): found necessary while preparing this release, by reasoning first and then by test.
+- **Kept out of v64 on purpose**: everything else the checker noted about the message (its colours at night, the 39 px button, a data file cut at its line break being reported without its name). They are in the roadmap. This release changes nothing a learner sees in normal use.
+
 ## 2026-11-15 — the review of the user branches: the design stands, the code does not go in yet
 
 Three reviewers that did not write the code tried to break the sync engine, the accounts module and the security rules ([review-users-branches.md](review-users-branches.md)). No stranger can reach another learner's deck, and nothing argues for a different store. But a learner's own progress can be lost in ordinary situations, so:
@@ -47,7 +65,7 @@ Before: the page was fetched from the network on every open (with a 3.5-second f
 
 The cost is that a release arrives one open later than before: the open that finds it runs the old one while the new one is stored, then reloads into it at once if nothing has been touched, or offers Refresh. That is the price of never mixing versions, and it is what makes splitting the app into files safe.
 
-File names carry no version stamp (`js/core.js`, not `js/core.js?v=63`): the worker checks content against its hashes, which is stronger, and a stamp in `index.html` would be one more generated edit per release. `tools/swtest.mjs` holds all of this in place, including the upgrade from the v62 worker.
+Since v64 `index.html` asks for each shell file with the release number (`js/core.js?v=64`), written by `tools/stamp.mjs` and enforced by the release check. The worker of v63 and later does not need it: it answers by path and checks content against its hashes. It is for a device still run by the v62 worker, which answers the page from the network and every other file from the copy it first saw at that address. Such a device that had opened v63 once, without v63's worker finishing its install, would have been handed v63's scripts and stylesheet by a v64 page; with part of them stored (an open cut short) it got v64's `js/boot.js` with v63's stylesheet, and the new check of the stylesheet's last rule said "could not start". Reproduced before the number was added and gone with it (the old-worker test, [releasing.md](releasing.md)). v63 itself shipped without the number; that was safe only because v62 had no such files to hold.
 
 ## 2026-11-15 — plain scripts in one shared scope, not modules, for now
 

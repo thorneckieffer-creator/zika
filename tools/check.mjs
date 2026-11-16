@@ -61,8 +61,10 @@ if (!swV) fail('sw.js: VERSION not found');
 if (appV && swV && appV !== swV) fail(`version mismatch: js/core.js APP_VERSION=${appV}, sw.js VERSION=zika-v${swV}`);
 
 /* the service worker's list of shell files matches what is on disk (node tools/stamp.mjs rewrites it) */
-{ const { stampIsCurrent, shellFiles } = await import('./stamp.mjs');
-  if (!stampIsCurrent()) fail('sw.js: the list of shell files is out of date — run node tools/stamp.mjs, then check again');
+{ const { stampIsCurrent, pageIsStamped, shellFiles } = await import('./stamp.mjs');
+  /* every shell file is asked for as file?v=<release>: a device still under the v62 worker, which keeps files by address, then never gets an older release's script on a newer page */
+  if (!pageIsStamped()) fail(`index.html: the scripts and the stylesheet must be loaded with ?v=${swV} — run node tools/stamp.mjs (after the version bump), then check again`);
+  else if (!stampIsCurrent()) fail('sw.js: the list of shell files is out of date — run node tools/stamp.mjs, then check again');
   else note(`service worker: ${shellFiles().length} shell files stamped`); }
 
 /* 3. the storage key that holds everyone's progress has not moved */

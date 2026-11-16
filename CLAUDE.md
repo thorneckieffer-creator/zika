@@ -53,7 +53,8 @@ Open work for every area is in one list: [docs/roadmap.md](docs/roadmap.md).
 | `voice.html` | Stand-alone page that records the reference sentence for a cloned voice. | Voice |
 | `assets/` | Voice packs (`audio-tw.pack` 曉臻; `audio-tw-m` and `audio-me` when built; each with an index), `strokes.json`, `dict.txt` (the dictionary for My words), Hanzi Writer, icons. | Voice, Content |
 | `tools/check.mjs` | Release gate. `node tools/check.mjs` must pass before a push. It includes a self-test of the tone coach on synthetic tones. | Release |
-| `tools/stamp.mjs` | Writes the list of shell files and their hashes into `sw.js`. Run it after any change to the page, `js/`, `css/` or `data/`; the release check fails if it is stale. | Release |
+| `tools/stamp.mjs` | Writes the release number onto the file addresses in `index.html` (`js/core.js?v=64`) and the list of shell files with their hashes into `sw.js`. Run it after the version bump and after any change to the page, `js/`, `css/` or `data/`; the release check fails if it is stale. | Release |
+| `tools/oldworker.mjs`, `tools/webkit.mjs` | Two tests for a release that changes how the page loads or starts: a device still run by the v62 worker is given this release; the start-up checks in WebKit, Safari's engine (needs Playwright in a scratch folder). | Release |
 | `tools/snap.mjs`, `tools/snap/` | The screen-by-screen harness: records every screen, the saved state and a picture for scripted and seeded random use, and compares two recordings. `node tools/snap.mjs record` before a change, `check` after. | Release |
 | `tools/swtest.mjs` | Takes the service worker through a device's life in headless Chrome: first visit, offline, a release, a half-published release, the upgrade from an earlier release (`--from`), which carries a deck, a sync code and stored audio across. | Release |
 | `tools/applib.py`, `tools/lib/browser.mjs` | What the tools share: reading and writing `data/`; a static server and a Chrome driver. | Release |
@@ -77,6 +78,17 @@ Open work for every area is in one list: [docs/roadmap.md](docs/roadmap.md).
 4. **Device-local settings do not sync.** Add new ones to `LOCAL_SETTINGS` (kept if the device has a value) or `STRICT_LOCAL` (never inherited from another device).
 5. **Never put a sync code in the repo.** It is the only secret; the Firebase web config is public by design.
 6. **The live app is the study tool.** `main` deploys to GitHub Pages in about two minutes and every device takes the release the next time it is opened with a connection. Test locally first.
+
+## How Thorne wants it built
+
+Two rules he gave on 16 November 2026, for the backend above all, and for everything else too:
+
+1. **Subscribe, do not poll.** Nothing asks a server for data on a timer. What comes from the cloud arrives through a listener on changes the backend pushes.
+2. **Replace, do not layer.** No fallbacks, no backwards-compatibility paths, no new version built beside the old one "in case". Change the thing where it is, delete what it replaces in the same release, and make sure the new one works. This is the rule the wrapper layers broke for sixty versions.
+
+What rule 2 does not mean: his saved progress is still carried across every change (the rules above). Moving a deck once, tested, is not a compatibility layer; keeping the old code path alive afterwards would be.
+
+And on content (same day): the app stands on its own material. The textbook's dialogues are not added; dialogues and essays are written from each lesson's vocabulary, and grammar is explained from open references, dictionaries and his own study ([docs/content.md](docs/content.md), [docs/roadmap.md](docs/roadmap.md)).
 
 ## Before changing the code
 

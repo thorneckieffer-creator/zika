@@ -61,7 +61,9 @@ assets/
   icon-*.png
 tools/
   check.mjs                  release check: every file loads and parses, versions, data integrity
-  stamp.mjs                  writes the list of app files and their hashes into sw.js
+  stamp.mjs                  writes the release number onto the page's file addresses, and the list of app files and their hashes into sw.js
+  oldworker.mjs              a device still run by the v62 service worker is given this release
+  webkit.mjs                 the start-up checks in WebKit, Safari's engine (needs Playwright, installed elsewhere)
   snap.mjs                   records every screen and the saved state for scripted and random use; compares two recordings
   swtest.mjs                 takes the service worker through first visit, offline, a release and an upgrade
   review.mjs                 review gate: no change to the app is finished or pushed without the checker's PASS
