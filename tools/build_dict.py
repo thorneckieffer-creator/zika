@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build assets/dict.txt, the dictionary My words fills pinyin and meanings from.
+"""Build assets/dict.txt, the word list behind the dictionary entries and what My words fills pinyin and meanings from.
 
 Source: CC-CEDICT (https://www.mdbg.net/chinese/dictionary?page=cc-cedict), licensed
 CC BY-SA 4.0. Download cedict_1_0_ts_utf-8_mdbg.txt.gz from that page, unpack it, and run
@@ -26,7 +26,7 @@ learner in Taiwan who wants a short card, not a dictionary article:
   reading in the app's own COMPONENTS table, and surnames, variants, "used in"
   entries and literary senses after the rest.
 
-After a rebuild, bump the ?v= of DC.url in js/my-words.js so devices fetch the new file.
+After a rebuild, bump the ?v= of DC.url in js/dict.js so devices fetch the new file.
 """
 import json
 import re

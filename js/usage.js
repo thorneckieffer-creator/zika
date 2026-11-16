@@ -87,7 +87,7 @@ function usStop(){usQuiet();UQ.q=null;UQ.scr='start';drillMode=null;renderDrill(
 function usBrowse(){UQ.src='lesson';UQ.scr='browse';usRender();window.scrollTo(0,0);}
 function usWordCard(w){
   const x=usState()[w.id];
-  return `<div class="us-wcard"><div class="us-whead"><b class="zh" lang="zh-Hant">${esc(w.t)}</b><span class="us-wpy">${tonePinyin(esc(w.p))}</span>${spkBtn(w.id)}${x?`<span class="us-mark ${x[2]?'ok':'no'}" title="${x[2]?'right last time':'missed last time'}">${x[2]?'✓':'·'}</span>`:''}</div>
+  return `<div class="us-wcard"><div class="us-whead"><b class="zh" lang="zh-Hant">${dcZh(w.t)}</b><span class="us-wpy">${tonePinyin(esc(w.p))}</span>${spkBtn(w.id)}${x?`<span class="us-mark ${x[2]?'ok':'no'}" title="${x[2]?'right last time':'missed last time'}">${x[2]?'✓':'·'}</span>`:''}</div>
     <div class="us-wm">${w.pos?`<span class="us-pos">${esc(w.pos)}</span> `:''}${esc(w.m)}</div>${usOf(w.id).map((p,k)=>usRow(w,k)).join('')}</div>`;
 }
 function usRender(){
@@ -136,7 +136,7 @@ function usRender(){
       <div class="us-en">${esc(p[2])}</div>
       <div class="us-big zh" lang="zh-Hant">${usMark(p[0],w,!UQ.shown)}</div>
       ${UQ.shown?`<div class="row" style="justify-content:center;gap:9px"><span class="pyline" style="font-size:19px">${tonePinyin(esc(p[1]))}</span><button class="spk" title="pronounce" onclick="usSay('${w.id}',${c.k})">${SPK_SVG}</button></div>
-        <div class="us-word"><b class="zh" lang="zh-Hant">${esc(w.t)}</b> <span>${tonePinyin(esc(w.p))}</span> · ${esc(w.m)}</div>`:''}</div>
+        <div class="us-word"><b class="zh" lang="zh-Hant">${dcZh(w.t)}</b> <span>${tonePinyin(esc(w.p))}</span> · ${esc(w.m)}</div>`:''}</div>
       ${UQ.shown&&others.length?`<div class="us-box"><div class="us-h">also</div>${others.map(k=>usRow(w,k)).join('')}</div>`:''}
     </div>
     ${UQ.shown?`<div class="grades us-grades"><button onclick="usGrade(0)"><span class="g1">Missed</span><span class="iv">go over it again</span></button><button onclick="usGrade(1)"><span class="g3">Got it</span><span class="iv">next phrase</span></button></div>

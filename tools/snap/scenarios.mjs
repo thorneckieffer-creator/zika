@@ -156,6 +156,25 @@ export const scenarios = [
   { name: 'open-cloud-unreadable', fixture: 'deck', sizes: ['phone'], local: linkedIdle, cloud: { code: CODE }, steps: [
     { name: 'bad-copy-arrives', js: `__tick(60000); __cloud.put('rooms/' + SYNC.code + '/study_state', { v: 18, json: '{not json', device: 'iPad', device_id: 'other-device', synced_at: Date.now() + 5, bytes: 1 })`, noShot: true }] },
 
+  /* The dictionary (v65): a character's entry from a Library row, a word opened from inside it and back, an entry over a review
+     card (keys must not reach the card under the sheet: the grade count stays where it was), the Library's search in the
+     dictionary, and a word from outside the course added to My words. */
+  { name: 'dictionary', fixture: 'deck', local: unlinked, steps: [
+    { name: 'library-lesson', js: `go('lib'); libBook = 1; openLessons[3] = true; renderLib()`, noShot: true },
+    { name: 'character', js: `document.querySelector('#libResults .wrow .tr .dcc').click()` },
+    { name: 'a-word-from-it', js: `document.querySelector('#dcSheet .dc-w').click()` },
+    { name: 'back', js: `dcBack(); return dcTop() + ' ' + DCV.stack.length`, noShot: true },
+    { name: 'close', js: `dcClose(); return dcIsOpen()`, noShot: true },
+    { name: 'over-a-card', js: `go('rev'); reveal(); document.querySelector('#vRev .bigzh .dcc').click()` },
+    { name: 'keys-stay-out', js: `const n = SES.n, c = cur; for (const k of ['3', ' ', 'r', 'u']) (document.activeElement || document.body).dispatchEvent(new KeyboardEvent('keydown', { key: k, code: k === ' ' ? 'Space' : '', bubbles: true, cancelable: true })); return [SES.n === n, cur === c, view, dcIsOpen()].join(' ')`, noShot: true },
+    { name: 'escape-closes', js: `document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })); return dcIsOpen()`, noShot: true },
+    { name: 'search', js: `go('lib'); libQueue('eat'); __tick(200)`, noShot: true },
+    { name: 'search-results', js: `renderLibResults(); return DCV.found.map(x => x.t).join(' ')` },
+    { name: 'outside-the-course', js: `dcOpen(DCV.found[1].t)` },
+    { name: 'add-to-my-words', js: `const n = Object.keys(myDeck().w).length; dcAdd(); return Object.keys(myDeck().w).length - n`, noShot: true },
+    { name: 'brain-tile', js: `dcClose(); go('brain'); document.querySelector('#vBrain .wall .tile').click(); return dcTop()` },
+    { name: 'night', js: `toggleTheme()` }] },
+
   /* A tap before start-up has run. The page's buttons work as soon as their script has loaded, so with js/boot.js
      arriving late (or never) a tap must not store or send an empty deck in place of the saved one. Found by the
      independent review: at one point on the `next` branch this replaced a 2,288-card deck with an empty one. */

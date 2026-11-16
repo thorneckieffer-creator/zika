@@ -203,7 +203,6 @@ input[type=number]{width:64px;padding:7px;border:1px solid var(--line);border-ra
 .opts button.right{background:var(--accT);border-color:var(--acc);color:var(--acc)}
 .opts button.wrong{background:transparent;border-color:var(--red);color:var(--red)}
 .py2{font-size:12px;margin-top:1px}
-.storybox{border-top:1px dashed var(--line2);margin-top:12px;padding-top:12px}
 .cchip{display:inline-flex;flex-direction:column;align-items:center;background:var(--tint);border:1px solid var(--line);border-radius:9px;padding:5px 10px;margin:2px;cursor:pointer;font-size:19px;line-height:1.3}
 .cchip i{font-style:normal;font-size:9.5px;color:var(--mut);white-space:nowrap;max-width:86px;overflow:hidden;text-overflow:ellipsis}
 .cchip.on{background:var(--accT);border-color:var(--acc)}
@@ -261,7 +260,6 @@ html[data-theme="dark"] .banner{background:#3a2f1b;border-color:#57431f;color:#d
 .wall.words{grid-template-columns:repeat(auto-fill,minmax(86px,1fr))}
 .tile{aspect-ratio:1;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;position:relative;transition:transform .08s}
 .tile:hover{transform:scale(1.12);z-index:2}
-.tile.sel{outline:2px solid var(--ink);outline-offset:1px}
 .wall.words .tile{aspect-ratio:auto;padding:8px 4px;font-size:15px;line-height:1.2}
 .tile .dot{position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:var(--red);border:1px solid #fff}
 .grp{margin:18px 0 8px;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--tint);padding-bottom:5px}
@@ -271,10 +269,6 @@ html[data-theme="dark"] .banner{background:#3a2f1b;border-color:#57431f;color:#d
 .tchip{flex:none;display:flex;flex-direction:column;align-items:center;gap:1px;background:var(--tint);border-radius:11px;padding:9px 13px;cursor:pointer}
 .tchip .c{font-size:21px;line-height:1.25}
 .tchip .d{font-size:10px;color:var(--mut)}
-.detail{border:1px solid var(--line2);border-radius:14px;padding:16px 18px;margin:14px 0;background:var(--tint);display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
-.detail .big{font-size:54px;line-height:1.15}
-.detail .body{flex:1;min-width:220px}
-.detail .close{margin-left:auto;border:0;background:none;color:var(--mut);cursor:pointer;font-size:16px}
 .wchip{display:inline-block;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:3px 9px;margin:3px 4px 0 0;font-size:12.5px;cursor:pointer}
 .wchip:hover{border-color:var(--line2)}
 .kv{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--mut)}
@@ -296,6 +290,19 @@ html[data-theme="dark"] .banner{background:#3a2f1b;border-color:#57431f;color:#d
 .tl-banner{background:var(--accT);color:var(--acc);font-size:12px;font-weight:600;border-radius:9px;padding:7px 12px;margin-top:10px;display:flex;justify-content:space-between;align-items:center}
 select.vsel{max-width:230px;padding:7px 9px;border:1px solid var(--line);border-radius:9px;background:var(--panel);font-size:12.5px;outline:none;color:var(--ink)}
 @media(max-width:560px){.wrow .tr{min-width:70px;font-size:21px}.stage .bigzh{font-size:60px}.tabs{gap:20px}}
+/* phone: a word row is two lines, the word with its reading, meaning and state, then the speaker and the buttons. On one line
+   the buttons took the whole width: the reading and meaning were left with none, and the last button ran off the card (so until
+   v64). The empty ::before is the line break: it sits between the text (order 1) and the buttons (order 3) and is a full line wide. */
+@media(max-width:560px){
+  .wrow{flex-wrap:wrap;gap:8px}
+  .wrow::before{content:"";order:2;flex:0 0 100%;height:0;margin-top:-8px}
+  .wrow>*{order:1}
+  .wrow>.spk,.wrow>.wbtn{order:3}
+  .wrow>.spk{margin-left:auto}
+  .wrow .tr{max-width:50%;overflow-wrap:anywhere}
+  .wrow .info{flex:1 1 0}
+  .wrow.dc-row::before{content:none}
+}
 /* ---- v11: desktop width ---- */
 @media(min-width:1000px){
   .wrap{max-width:1020px}
@@ -623,11 +630,8 @@ body.focus .mast,body.focus .tabs,body.focus .banner,body.focus .foot{display:no
 body.focus .wrap{padding-top:14px}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 /* ---- v34 ---- */
-.moebtn{border:1px solid var(--line);background:var(--panel);color:var(--mut);border-radius:99px;width:22px;height:22px;font-size:12px;cursor:pointer;line-height:1;padding:0}
-.moebtn:hover{color:var(--ink);background:var(--tint)}
-.moebox{flex-basis:100%;font-size:12.5px;color:var(--mut);background:var(--tint);border-radius:9px;padding:6px 10px;text-align:left;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.moebox b{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut2)}
-.moebox .zh{color:var(--ink)}
+.infobtn{border:1px solid var(--line);background:var(--panel);color:var(--mut);border-radius:99px;width:22px;height:22px;font-size:12px;cursor:pointer;line-height:1;padding:0}
+.infobtn:hover{color:var(--ink);background:var(--tint)}
 .apart,.ahead{cursor:pointer}
 .apart:hover,.ahead:hover{background:var(--panel)}
 /* ---- v35 ---- */
@@ -952,7 +956,6 @@ textarea.myin{min-height:120px;resize:vertical;line-height:1.5}
 .us-word b{font-size:17px;font-weight:500;color:var(--ink)}
 .us-grades{grid-template-columns:1fr 1fr}
 .us-missed{display:flex;gap:8px 14px;flex-wrap:wrap;justify-content:center;font-size:20px}
-.detail .us-box{margin-top:12px}
 .us-lab{font-size:12.5px;font-weight:600;color:var(--mut)}
 .us-pickrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 .us-ltitle{font-size:19px;font-weight:650;line-height:1.3;margin-bottom:2px}
@@ -987,6 +990,37 @@ textarea.myin{min-height:120px;resize:vertical;line-height:1.5}
 
 /* links to the first learner's own notes: shown only where shLook() says this deck has them (html[data-links]) */
 html:not([data-links]) .nlink,html:not([data-links]) .nl{display:none!important}
+
+/* ---- the dictionary (js/dict.js): tappable characters, the entry sheet, its rows ---- */
+.dcc,.dcl{cursor:pointer}
+@media(hover:hover){.dcc:hover{color:var(--brandInk)}}
+.dc-card{max-width:520px}
+.dc-card:focus{outline:0}
+.dc-head{display:flex;align-items:center;gap:6px 18px;flex-wrap:wrap}
+.dc-big{font-family:var(--cjk);line-height:1.15;font-weight:500;max-width:100%}
+.dc-id{flex:1;min-width:150px}
+.dc-py{font-size:21px}
+.dc-tags{gap:8px;margin-top:8px}
+.dc-senses{margin-top:12px}
+.dc-sense{font-size:14.5px;line-height:1.5;margin-top:3px;overflow-wrap:anywhere}
+.dc-rp{font-weight:500;margin-right:3px}
+.dc-sec{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}
+.dc-lab{font-size:12px;font-weight:600;color:var(--mut);margin-bottom:8px}
+.dc-w{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;padding:7px 8px;border-radius:10px;cursor:pointer}   /* a long word's reading and meaning go to lines of their own */
+.dc-w:hover,.dc-w:active{background:var(--tint)}
+.dc-w b{font-family:var(--cjk);font-size:19px;font-weight:500;flex:0 1 auto;min-width:0;overflow-wrap:anywhere}
+.dc-w .p{font-size:13px;font-weight:500;flex:0 1 auto;min-width:0;overflow-wrap:anywhere}
+.dc-w .m{font-size:12.5px;color:var(--mut);flex:1 1 110px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dc-w .lnchip{flex:none;margin-left:0}
+.dc-morelink{padding:4px 8px 0;font-size:12.5px}
+.dc-card .us-row{padding-left:8px;padding-right:8px}
+.dc-card .lookup{margin-top:0}
+.dc-card .cchip i{max-width:64px}
+.dc-credit{margin-top:14px;text-align:center}
+.wrow.dc-row{cursor:pointer}
+.wrow.dc-row .tr{font-size:21px;max-width:48%;overflow-wrap:anywhere}
+.dc-my{gap:8px;margin-top:10px}
+.dc-my:empty{display:none}
 
 /* The last rule of the stylesheet, and it stays the last: start-up reads it to know the whole file arrived (bootLost in js/boot.js). */
 html{--zika-css-whole:1}

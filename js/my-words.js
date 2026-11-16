@@ -1,5 +1,5 @@
-/* My words: a personal deck for words outside the course, kept apart from it, with topics, a bundled dictionary
-   that fills in pinyin and meaning, and its own study sitting. Always reach the deck through myDeck(). */
+/* My words: a personal deck for words outside the course, kept apart from it, with topics, pinyin and meaning
+   filled in from the dictionary (js/dict.js), and its own study sitting. Always reach the deck through myDeck(). */
 
 const MY={mode:'list',cur:null,shown:false,done:0,q:'',edit:null,tab:'one',
   tp:null,      /* the list's topic filter: null = all, a topic id, or '-' = words with no topic */
@@ -41,45 +41,6 @@ function myTopicCounts(){
   return c;
 }
 function myTopicPills(w,skip){const ts=myTopicsOf(w).filter(t=>t.id!==skip);return ts.length?'<div class="tp">'+ts.map(t=>'<span>'+esc(t.n)+'</span>').join('')+'</div>':'';}   /* skip: the topic the list is already filtered to */
-/* ---- the dictionary (v62): CC-CEDICT, CC BY-SA 4.0, cut down by tools/build_dict.py to one line per word:
-   字<TAB>pinyin<TAB>gloss[<TAB>pinyin<TAB>gloss …] — the first pair is the everyday reading (Taiwan's where it differs), the rest are other readings.
-   7 MB, about 3 MB over the air: fetched the first time My words is opened, then kept by the service worker with the other assets. ---- */
-const DC={url:'assets/dict.txt?v=1',map:null,wait:null,failed:false,warm:false};
-function dcLoad(){
-  if(DC.map)return Promise.resolve(DC.map);
-  if(!DC.wait)DC.wait=fetch(DC.url).then(r=>{if(!r.ok)throw new Error('dict '+r.status);return r.text();}).then(txt=>{
-    const m=new Map(); let i=0;
-    while(i<txt.length){const e=txt.indexOf('\n',i), end=e<0?txt.length:e, tab=txt.indexOf('\t',i); if(tab>i&&tab<end)m.set(txt.slice(i,tab),txt.slice(tab+1,end)); i=end+1;}
-    DC.map=m; DC.failed=false; return m;
-  }).catch(()=>{DC.wait=null;DC.failed=true;return null;});   /* offline before the first fetch: the next call tries again */
-  return DC.wait;
-}
-function dcEntry(t){
-  const v=DC.map&&DC.map.get(t); if(!v)return null;
-  const f=v.split('\t'), out=[]; for(let i=0;i+1<f.length;i+=2)out.push({p:f[i],m:f[i+1]});
-  return out.length?out:null;
-}
-/* what the dictionary knows about a word or phrase: the word itself, or failing that its parts by longest match (pinyin only) */
-function dcLook(t){
-  t=String(t||'').trim(); if(!t||!DC.map)return null;
-  const han=[...t].filter(ch=>/\p{Script=Han}/u.test(ch)), whole=dcEntry(t)||dcEntry(han.join(''));
-  if(whole)return {p:whole[0].p,m:whole[0].m,alts:whole.slice(1),parts:null};
-  const parts=[]; let i=0;
-  while(i<han.length){
-    let hit=null;
-    for(let n=Math.min(6,han.length-i);n>=1&&!hit;n--){     /* a part the course teaches is read the course's way: 吧 ba, 得 de */
-      const w=han.slice(i,i+n).join(''), cw=myCourseWord(w), e=cw?[{p:cw.p,m:cw.m}]:dcEntry(w); if(e)hit={t:w,n,p:e[0].p,m:e[0].m};}
-    if(!hit)return null;
-    parts.push(hit); i+=hit.n;
-  }
-  /* 一 and 不 between parts are written with the tone they are spoken with, as the course and the dictionary write them inside a word: 不 + 見 bú jiàn */
-  parts.forEach((x,k)=>{
-    const nx=parts[k+1], tn=nx?toneSeq(nx.p)[0]:0; if(!tn)return;
-    if(x.t==='不'&&x.p==='bù'&&tn===4)x.p='bú';
-    else if(x.t==='一'&&x.p==='yī'&&!(k&&/[第十初]$/.test(parts[k-1].t)))x.p=tn===4?'yí':tn<=3?'yì':x.p;
-  });
-  return parts.length?{p:parts.map(x=>x.p).join(' '),m:'',alts:[],parts}:null;
-}
 /* The best guess at a word's pinyin and meaning: the course's own if it teaches the word, then the dictionary, then (pinyin only) character by character. */
 function myCourseWord(t){return WORDS.find(w=>w.t===t||String(w.t).split('（')[0]===t)||null;}
 function myGuess(t){
@@ -201,8 +162,8 @@ function mySetTopic(f){MY.tp=f||null;renderMy();}
 function myRows(ids){
   const d=myDeck();
   if(!ids.length)return '<div class="small muted" style="padding:10px 0">No match.</div>';
-  return ids.map(id=>{const w=d.w[id];return `<div class="my-row"><div class="tr">${esc(w.t)}</div>
-    <div class="info"><div class="py">${w.p?tonePinyin(esc(w.p)):'<span class="muted">no pinyin</span>'}</div><div class="mn">${esc(w.m)||'<span class="muted">no meaning yet</span>'}</div>${myTopicPills(w,MY.tp)}</div>
+  return ids.map(id=>{const w=d.w[id];return `<div class="my-row"><div class="tr">${dcZh(w.t)}</div>
+    <div class="info dcl" onclick="dcOpen(myDeck().w['${id}'].t)" title="open its dictionary entry"><div class="py">${w.p?tonePinyin(esc(w.p)):'<span class="muted">no pinyin</span>'}</div><div class="mn">${esc(w.m)||'<span class="muted">no meaning yet</span>'}</div>${myTopicPills(w,MY.tp)}</div>
     ${myState(id)}${mySpk(id)}<button class="wbtn" title="edit" aria-label="edit" onclick="myOpenAdd('${id}')">✎</button></div>`;}).join('');
 }
 function myListOnly(){const el=document.getElementById('myList'); if(el)el.innerHTML=myRows(myShown());}
@@ -418,7 +379,7 @@ function myStudyRender(){
   }
   const w=myWord(MY.cur), id=MY.cur.split(':')[0], prod=MY.cur.endsWith(':prod'), c=myDeck().c[MY.cur];
   const len=[...w.t].length, size=len<=2?78:len<=4?60:len<=6?44:32;
-  const zh=`<div class="bigzh" style="font-size:${size}px">${esc(w.t)}</div>`;
+  const zh=`<div class="bigzh" style="font-size:${size}px">${MY.shown?dcZh(w.t):esc(w.t)}</div>`;   /* the answer side's characters open the dictionary */
   const py=w.p?`<div class="pyline">${tonePinyin(esc(w.p))}</div>`:'';
   const mean=`<div class="meaning" style="font-family:inherit">${esc(w.m)||'<span class="muted">no meaning yet</span>'}</div>`;
   const front=prod?`${mean}${py}<div class="hint">write it on paper, then check</div>`:`${zh}<div class="hint">say it and recall the meaning</div>`;

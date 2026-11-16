@@ -4,11 +4,11 @@ The content area: the files in `data/` (`words.js`, `grammar.js`, `components.js
 
 ## The dictionary
 
-`assets/dict.txt` is what My words fills pinyin and meanings from. It is [CC-CEDICT](https://www.mdbg.net/chinese/dictionary?page=cc-cedict) (CC BY-SA 4.0: free to redistribute with credit, which the add sheet and the README give), reduced by `tools/build_dict.py`:
+`assets/dict.txt` is the word list behind the dictionary entries and the Library's search ([architecture.md](architecture.md#the-dictionary)), and what My words fills pinyin and meanings from. It is [CC-CEDICT](https://www.mdbg.net/chinese/dictionary?page=cc-cedict) (CC BY-SA 4.0: free to redistribute with credit, which the add sheet and the README give), reduced by `tools/build_dict.py`:
 
 ```bash
 # download cedict_1_0_ts_utf-8_mdbg.txt.gz from the page above and unpack it, then
-python3 tools/build_dict.py /path/to/cedict.txt     # writes assets/dict.txt; then bump ?v= in DC.url (js/my-words.js)
+python3 tools/build_dict.py /path/to/cedict.txt     # writes assets/dict.txt; then bump ?v= in DC.url (js/dict.js)
 ```
 
 - One line per traditional headword of up to eight characters: the everyday reading first, up to three other readings after it. A gloss is at most four short items.
@@ -18,7 +18,7 @@ python3 tools/build_dict.py /path/to/cedict.txt     # writes assets/dict.txt; th
   - Taiwan's full tone replaces the mainland's neutral one (朋友 péngyǒu, 衣服 yīfú, 回來 huílái), except on particles and suffixes, doubled characters and a few words (意思, 東西);
   - 一 and 不 carry the tone they are spoken with (yíyàng, yìqǐ, búcuò).
 - What is left wrong is mostly characters with two readings where the neutral tone hid which one was meant (答應 dāyìng comes out dāyīng). The course's own reading always wins for a course word, so these only show in words outside the course.
-- Not in it: slang and phrases (沒差), which get pinyin from their parts and no meaning; simplified headwords.
+- Not in it: slang and phrases (沒差), which get pinyin from their parts and no meaning; simplified headwords; how common a word is. The lines are in CC-CEDICT's own order, so the app orders the dictionary's words by what the learner can read (`dcRank`). If a frequency list is added, the simplest way is to write the lines most common first: the app already keeps the file's order among equals.
 
 ## Where the content comes from
 

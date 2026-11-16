@@ -57,7 +57,7 @@ function exRender(){
     ${w.pos?`<div class="pos">${esc(w.pos)}</div>`:''}
     <div class="meaning" style="font-size:23px">${esc(w.m)}</div>
     <div class="row" style="justify-content:center;gap:9px"><span class="pyline" style="font-size:24px">${tonePinyin(esc(w.p))}</span>${spkBtn(w.id)}</div>
-    ${r?`<div class="bigzh zh" style="font-size:56px;margin-top:4px">${esc(w.t)}</div>${S.settings.strokeAnim?`<div id="strokeHost" class="strokerow"></div>`:''}${w.s?`<div class="simpnote">简体 ${esc(w.s)}</div>`:''}${compLines(w.t)}`:''}
+    ${r?`<div class="bigzh zh" style="font-size:56px;margin-top:4px">${dcZh(w.t)}</div>${S.settings.strokeAnim?`<div id="strokeHost" class="strokerow"></div>`:''}${w.s?`<div class="simpnote">简体 ${esc(w.s)}</div>`:''}${compLines(w.t)}`:''}
   </div>
   ${r?`<div class="grades mt3"><button onclick="exMark('h')"><span class="g1">✗ Hell no</span><span class="iv">✗ pile · hard list · 田字格</span></button><button onclick="exMark('l')"><span class="g2">~ Sorta</span><span class="iv">~ pile · write card live</span></button><button onclick="exMark('m')"><span class="g4">✓ Yes</span><span class="iv">parked · off the list</span></button></div>
     <div class="small muted" style="text-align:center;margin-top:10px"><kbd>1</kbd> hell no · <kbd>2</kbd> sorta · <kbd>3</kbd> yes${R.hist.length?` · <span class="link" onclick="exUndo()">← undo last</span>`:''} · <span class="link" onclick="go('exam')">pause</span></div>`

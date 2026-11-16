@@ -44,8 +44,8 @@ function rdRender(){
     return;
   }
   const p=list[RD.i], sel=RD.sel>=0?RD.segs[RD.sel]:null;
-  const gloss=sel?(sel.w?`<b class="zh" style="font-size:20px">${esc(sel.t)}</b> <span class="pyline">${tonePinyin(esc(sel.w.p))}</span> ${spkBtn(sel.w.id)}<div>${esc(sel.w.m)} <span class="small muted">· ${esc(lnLabel(sel.w.l))}</span></div>`
-      :`<b class="zh" style="font-size:20px">${esc(sel.t)}</b> <span class="small muted">a character you know from other words</span>`)
+  const gloss=sel?(sel.w?`<b class="zh" style="font-size:20px">${dcZh(sel.t)}</b> <span class="pyline">${tonePinyin(esc(sel.w.p))}</span> ${spkBtn(sel.w.id)}<div>${esc(sel.w.m)} <span class="small muted">· ${esc(lnLabel(sel.w.l))}</span></div>`
+      :`<b class="zh" style="font-size:20px">${dcZh(sel.t)}</b> <span class="small muted">a character you know from other words</span>`)
     :'<span class="small muted">tap any word for its reading and meaning · tapped words are marked to review</span>';
   el.innerHTML=head+`<div class="stage rd-stage">
       <div class="rd-title zh">${esc(p.t)}</div><div class="small muted" style="margin-bottom:12px">${esc(p.en)}</div>

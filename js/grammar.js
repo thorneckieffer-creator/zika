@@ -243,7 +243,7 @@ function renderGramCard(){
   const el=document.getElementById('vRev'), id=cur.slice(2), gp=GP[id]; if(!gp)return nextCard();
   const p=gp.p, c=S.cards[cur]||{}, isNew=c.st===undefined, s=gramSentence(p,c), b=gramBlank(p,s);
   const remaining=rq.learn.length+rq.rev.length+rq.fresh.length, tot=SES.n+remaining, frac=tot?SES.n/tot:0;
-  const shown=esc(s.zh).split(esc(b.t)).join('<b class="hit">'+esc(b.t)+'</b>');
+  const shown=s.zh.split(b.t).map(dcZh).join('<b class="hit">'+dcZh(b.t)+'</b>');
   const front=`<div class="qtype" style="margin-bottom:6px">語法 · ${esc(lnLabel(gp.l))}</div>
     <div class="bigzh zh cloze">${b.html}</div>
     <div class="meaning">${esc(s.en)}</div>

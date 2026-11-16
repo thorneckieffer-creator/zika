@@ -134,6 +134,15 @@ function bootMount(){
 }
 
 function bootListen(){
+  /* The dictionary sheet lies over whatever was open, so while it is up no key reaches the screen under it (a 3 would grade the
+     card behind it). This listener is the first on the page, so it is asked before every other; Esc closes the sheet. */
+  document.addEventListener('keydown',e=>{
+    if(!dcIsOpen())return;
+    e.stopImmediatePropagation();
+    if(e.key==='Escape'){e.preventDefault();dcClose();return;}
+    const sheet=document.getElementById('dcSheet');
+    if(!sheet.contains(e.target)&&e.key!=='Tab'&&!e.metaKey&&!e.ctrlKey&&!e.altKey)e.preventDefault();   /* nor does Enter press a button left focused behind the sheet */
+  },true);
   document.addEventListener('keydown',e=>{
     if(view!=='rev'||!cur||TC.host)return; if(e.repeat||e.metaKey||e.ctrlKey||e.altKey)return;
     if(e.code==='Space'&&!revealed){e.preventDefault();reveal();}
@@ -293,6 +302,9 @@ function bootStart(){
   /* ---- 1. audio ---- */
   /* warm the pack early so the first card doesn't wait */
   setTimeout(()=>{try{loadPack();}catch(e){}},1500);
+  /* the dictionary: on the device before it is wanted offline (js/dict.js) */
+  setTimeout(dcWarm,9000);
+  try{store.removeItem('zika_moe_v1');}catch(e){}   /* what the 萌典 button fetched, kept until v64; the dictionary entry replaced it */
   /* drills open on the live lesson */
   drillLesson=S.settings.curLesson||drillLesson;
   try{tabsSync();tabIntoView();if(view==='set')renderSet();}catch(e){}

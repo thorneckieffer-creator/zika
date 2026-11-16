@@ -197,14 +197,14 @@ async function preloadOffline(btn){
   try{
     say('Loading voice pack…'); const ok=await loadPack(); if(!ok)throw new Error('voice pack');
     say('Loading stroke data…'); await loadStrokes(); await ensureHW();
-    if('caches' in window){try{const c=await caches.open('zika-assets-v1'),f='assets/'+VOICE_PACKS[APACK_ID||'f'].file;await c.addAll([f+'.pack',f+'-index.json','assets/strokes.json?v=2','assets/hanzi-writer.min.js']);}catch(e){}}
-    S.settings.preloadedAt=Date.now(); save(); say('Ready offline ✓'); toast('Voice pack and strokes are stored on this device');
+    if('caches' in window){try{const c=await caches.open('zika-assets-v1'),f='assets/'+VOICE_PACKS[APACK_ID||'f'].file;await c.addAll([f+'.pack',f+'-index.json','assets/strokes.json?v=2','assets/hanzi-writer.min.js']);if(!(await c.match(DC.url)))await c.add(DC.url);}catch(e){}}
+    S.settings.preloadedAt=Date.now(); save(); say('Ready offline ✓'); toast('Voice pack, strokes and dictionary are stored on this device');
   }catch(e){say('Could not preload — try on wifi');}
 }
 function offlinePanel(){
   const at=S.settings.preloadedAt;
   return `<div class="card" id="offlineCard"><div class="lab">Offline & audio</div>
-    <div class="set-row"><div><b>Store the voice pack and strokes on this device</b><div class="d">About 22 MB once, on Wi-Fi. After that every word and character speaks, and stroke order plays, with no connection — including on the MRT. Switching the bundled voice needs one more download. <span id="preStat">${at?'Ready offline ✓ · '+ago(at):'Not stored yet'}</span></div></div>
+    <div class="set-row"><div><b>Store the voice pack, strokes and dictionary on this device</b><div class="d">About 25 MB once, on Wi-Fi. After that every word and character speaks, stroke order plays and the dictionary opens with no connection — including on the MRT. Switching the bundled voice needs one more download. <span id="preStat">${at?'Ready offline ✓ · '+ago(at):'Not stored yet'}</span></div></div>
       <button class="btn sm ${at?'ghost':''}" onclick="preloadOffline(this)">${at?'Refresh':'Download now'}</button></div></div>`;
 }
 /* ---- 1. iPad card ---- */

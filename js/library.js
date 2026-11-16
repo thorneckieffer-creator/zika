@@ -1,5 +1,6 @@
-/* The Library: search, lesson lists and word rows, triage of a new lesson, confidence levels (hard / learning /
-   know / mastered) and their export, and which dialogue each word belongs to. */
+/* The Library: search (the course's words, then the dictionary's: js/dict.js), lesson lists and word rows, triage
+   of a new lesson, confidence levels (hard / learning / know / mastered) and their export, and which dialogue
+   each word belongs to. */
 
 /* ---- LIBRARY ---- */
 function renderLib(){
@@ -12,8 +13,8 @@ function wrowTagged(w,showLn){
   const startable=!st||st.k==='new';
   const pi=(S.pick||[]).indexOf(w.id);
   const h=`<div class="wrow">
-    <div class="tr zh">${esc(w.t)}</div>
-    <div class="info">
+    <div class="tr zh">${dcZh(w.t)}</div>
+    <div class="info dcl" onclick="dcOpenWord('${w.id}')" title="open its dictionary entry">
       <div class="py">${tonePinyin(esc(w.p))}${w.pos?` <span class="tag">${esc(w.pos)}</span>`:''}${w.s?` <span class="tag simp">简 ${esc(w.s)}</span>`:''}</div>
       <div class="mn">${esc(w.m)}${showLn?` <span class="lnchip">${esc(lnLabel(w.l))}${dlgTag(w.id)}</span>`:''}</div>
     </div>
@@ -87,7 +88,7 @@ function renderTriage(){
   </div>
   <div class="prog" style="margin-bottom:14px;border-radius:3px"><i style="width:${Math.round(tri.i/total*100)}%"></i></div>
   <div class="stage" style="min-height:300px">
-    <div class="bigzh zh">${esc(w.t)}</div>
+    <div class="bigzh zh">${dcZh(w.t)}</div>
     <div class="row" style="justify-content:center;gap:9px"><span class="pyline">${tonePinyin(esc(w.p))}</span>${spkBtn(w.id)}</div>
     ${w.pos?`<div class="pos">${esc(w.pos)}</div>`:''}
     <div class="meaning">${esc(w.m)}</div>
@@ -119,6 +120,7 @@ function dlgTag(wid){const d=dlgOf(wid);return d?`<span class="dtag d${d}">聽�
 var LIBIDX=null, libTimer=null, libComposing=false, libShowAll=false, libPaintTok=0;
 var LIB_PAGE=45;          /* rows painted synchronously */
 var LIB_CHUNK=60;         /* rows appended per animation frame */
+var LIB_DICT=20;          /* dictionary words shown under the course's own matches */
 
 function libStrip(s){
   /* ā→a etc. so "lese"/"laji" both find 垃圾 and "nuli" finds 努力 */
@@ -257,9 +259,10 @@ function libResultsPaint(){
     const hits=libMatches(q);
     if(!hits.length){
       box.innerHTML=`<div class="card"><div class="small muted" style="text-align:center;padding:18px 0">
-        Nothing matches <b>${esc(q)}</b>${libFilter!=='all'?` in <b>${esc(libFilter)}</b>`:''}.
+        No course word matches <b>${esc(q)}</b>${libFilter!=='all'?` among <b>${({tracked:'In deck',due:'Due',untracked:'Not started',simp:'Trad ≠ Simp'})[libFilter]||esc(libFilter)}</b>`:''}.
         ${libFilter!=='all'?`<div style="margin-top:8px"><span class="link" onclick="libFilter='all';libSyncChrome();renderLibResults()">search all words instead</span></div>`:''}
-      </div></div>`;
+      </div></div><div id="libDict"></div>`;
+      libDictPaint(q,tok);
       return;
     }
     const cap=libShowAll?hits.length:Math.min(hits.length,LIB_PAGE);
@@ -270,7 +273,8 @@ function libResultsPaint(){
       </div>
       <div class="wl" id="libRows"></div>
       <div class="small muted" id="libMore" style="margin-top:10px"></div>
-    </div>`;
+    </div><div id="libDict"></div>`;
+    libDictPaint(q,tok);
     const rows=document.getElementById('libRows');
     const first=Math.min(cap,LIB_PAGE);
     rows.innerHTML=hits.slice(0,first).map(h=>wrowHtml(h.w,true)).join('');
@@ -319,6 +323,22 @@ function libResultsPaint(){
     </div>`;
   }
   box.innerHTML=html;
+}
+/* under the course's own matches: the same search in the dictionary, for the words the course does not teach. It is painted when
+   the dictionary is in memory (the first search fetches it), and only for the search still on screen. */
+function libDictPaint(q,tok){
+  const box=document.getElementById('libDict'); if(!box||libFilter!=='all')return;
+  const paint=()=>{
+    if(tok!==libPaintTok||!box.isConnected)return;
+    DCV.found=dcFind(q,LIB_DICT);
+    box.innerHTML=DCV.found.length?`<div class="card"><div class="lab">From the dictionary</div>
+      <div class="wl">${DCV.found.map((x,i)=>`<div class="wrow dc-row" onclick="dcOpen(DCV.found[${i}].t)"><div class="tr zh">${esc(x.t)}</div>
+        <div class="info"><div class="py">${tonePinyin(esc(x.p))}</div><div class="mn">${esc(x.m)}</div></div></div>`).join('')}</div>
+      <div class="small muted" style="margin-top:10px">Words outside the course, from CC-CEDICT. Tap one for its entry.</div></div>`:'';
+  };
+  if(DC.ix){paint();return;}
+  box.innerHTML='<div class="small muted" style="text-align:center;padding:6px 0 14px">Looking in the dictionary…</div>';
+  dcIndex().then(ix=>{if(ix)paint(); else if(tok===libPaintTok&&box.isConnected)box.innerHTML='<div class="small muted" style="text-align:center;padding:6px 0 14px">The dictionary could not be reached, so only the course was searched. It needs a connection the first time.</div>';});
 }
 function renderLibResults(){
   libResultsPaint();

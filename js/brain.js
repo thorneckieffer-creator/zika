@@ -19,7 +19,7 @@ function takeSnapshot(quiet){
 }
 
 /* ---- BRAIN ---- */
-let brainView='chars', brainGroup='stage', brainSel=null, brainTime=null, brainScope=1;
+let brainView='chars', brainGroup='stage', brainTime=null, brainScope=1;
 const STAGE_NAMES=['Not started','Learning','Young','Solid','Mastered'];
 const STAGE_DESC=['not yet studied','in short-step drilling (first days)','memory holds < 3 weeks','memory holds 3–6 weeks','memory holds 6+ weeks'];
 function wordCards(wid){return MODES.filter(m=>S.settings.modes[m]).map(m=>S.cards[cardId(wid,m)]).filter(Boolean);}
@@ -139,66 +139,21 @@ function renderBrain(){
   // ----- mastered ticker -----
   const masteredWords=words.filter(w=>w.mastAt).sort((a,b)=>b.mastAt-a.mastAt);
   const tickerHtml=masteredWords.length
-    ? '<div class="ticker">'+masteredWords.slice(0,30).map(w=>'<div class="tchip" onclick="brainSel={type:\'word\',id:\''+w.id+'\'};renderBrain()"><span class="c zh">'+esc(w.t)+'</span><span class="d">'+fmtAgo(w.mastAt)+'</span></div>').join('')+'</div>'
+    ? '<div class="ticker">'+masteredWords.slice(0,30).map(w=>'<div class="tchip" onclick="dcOpenWord(\''+w.id+'\')"><span class="c zh">'+esc(w.t)+'</span><span class="d">'+fmtAgo(w.mastAt)+'</span></div>').join('')+'</div>'
     : '<div class="small muted">Nothing mastered yet — a word joins this shelf once both its cards hold for '+MASTER_S+'+ days. Keep reviewing; the first ones usually land after a few weeks.</div>';
   // ----- controls -----
   const groups=isChars?[['stage','Stage'],['lesson','Lesson'],['simp','Trad ≠ Simp']]:[['stage','Stage'],['lesson','Lesson'],['pos','Word type'],['tone','Tone']];
   if(!groups.some(g=>g[0]===brainGroup))brainGroup='stage';
   const ctrlHtml='<div class="segbar"><span class="cap">Scope</span>'
-    +BOOKS.map(b=>[b.n,'Book '+b.n]).concat([['all','Everything']]).map(v=>'<button class="'+(brainScope===v[0]?'on':'')+'" onclick="brainScope='+(typeof v[0]==='string'?'\'all\'':v[0])+';brainSel=null;renderBrain()">'+v[1]+'</button>').join('')
+    +BOOKS.map(b=>[b.n,'Book '+b.n]).concat([['all','Everything']]).map(v=>'<button class="'+(brainScope===v[0]?'on':'')+'" onclick="brainScope='+(typeof v[0]==='string'?'\'all\'':v[0])+';renderBrain()">'+v[1]+'</button>').join('')
     +'</div><div class="segbar"><span class="cap">View</span>'
-    +[['chars','Characters'],['words','Words']].map(v=>'<button class="'+(brainView===v[0]?'on':'')+'" onclick="brainView=\''+v[0]+'\';brainSel=null;renderBrain()">'+v[1]+'</button>').join('')
+    +[['chars','Characters'],['words','Words']].map(v=>'<button class="'+(brainView===v[0]?'on':'')+'" onclick="brainView=\''+v[0]+'\';renderBrain()">'+v[1]+'</button>').join('')
     +'</div><div class="segbar"><span class="cap">Group</span>'
     +groups.map(g=>'<button class="'+(brainGroup===g[0]?'on':'')+'" onclick="brainGroup=\''+g[0]+'\';renderBrain()">'+g[1]+'</button>').join('')+'</div>';
-  // ----- detail panel -----
-  let detailHtml='';
-  if(brainSel){
-    if(brainSel.type==='char'){
-      const e=chars.find(c=>c.ch===brainSel.id);
-      if(e){
-        const mem=e.mem!==null?Math.round(e.mem*100):null;
-        detailHtml='<div class="detail"><div><div class="big zh">'+esc(e.ch)+'</div><div style="text-align:center;margin-top:6px"><button class="spk" title="pronounce" onclick="speakText(\''+esc(e.ch)+'\')">'+SPK_SVG+'</button></div></div>'
-        +'<div id="bdStrokes" class="strokerow" style="align-self:center"></div><div class="body">'
-        +'<div class="row" style="gap:8px"><span class="tag '+(e.stage>=3?'mat':e.stage>0?'ok':'')+'">'+STAGE_NAMES[e.stage]+'</span>'
-        +(SIMP_CHAR[e.ch]?'<span class="tag simp">简 '+esc(SIMP_CHAR[e.ch])+'</span>':'<span class="tag">same in simplified</span>')
-        +(e.due?'<span class="tag due">due now</span>':'')+'</div>'
-        +(mem!==null?'<div class="kv"><span>memory right now <b>'+mem+'%</b></span><span>first met in <b>'+(typeof e.lesson==='number'?lnLabel(e.lesson):e.lesson)+'</b></span></div><div class="membar"><i style="width:'+mem+'%"></i></div>':'<div class="kv"><span>first appears in <b>Lesson '+e.lesson+'</b></span></div>')
-        +'<div style="margin-top:10px">'+e.words.map(wid=>{const w=byId[wid];return '<span class="wchip zh" onclick="brainSel={type:\'word\',id:\''+wid+'\'};renderBrain()">'+esc(w.t)+' <span class="muted">'+esc(w.p)+'</span></span>';}).join('')+'</div>'
-        +charStoryHtml(e.ch)
-        +'</div><button class="close" onclick="brainSel=null;renderBrain()">✕</button></div>';
-      }
-    } else {
-      const w=words.find(x=>x.id===brainSel.id);
-      if(w){
-        const mem=w.mem!==null?Math.round(w.mem*100):null;
-        const cardLine=MODES.filter(m=>S.settings.modes[m]).map(m=>{
-          const c=S.cards[cardId(w.id,m)];
-          const nm=m==='rec'?'Recognize':'Recall';
-          if(!c)return '<span>'+nm+' <b>—</b></span>';
-          if(c.st===undefined)return '<span>'+nm+' <b>queued</b></span>';
-          return '<span>'+nm+' <b>'+(c.S<1?'<1':Math.round(c.S))+'d hold</b> · '+fmtDueIn(c)+'</span>';
-        }).join('');
-        detailHtml='<div class="detail"><div class="big zh">'+esc(w.t)+'</div><div class="body">'
-        +'<div class="row" style="gap:8px"><span class="pyline" style="font-size:18px">'+tonePinyin(esc(w.p))+'</span>'+spkBtn(w.id)+'</div>'
-        +'<div class="small" style="margin-top:2px">'+esc(w.m)+'</div>'
-        +'<div class="row" style="gap:8px;margin-top:8px"><span class="tag '+(w.stage>=3?'mat':w.stage>0?'ok':'')+'">'+STAGE_NAMES[w.stage]+'</span>'
-        +(w.s?'<span class="tag simp">简 '+esc(w.s)+'</span>':'')
-        +(w.mastAt?'<span class="tag known">mastered '+fmtAgo(w.mastAt)+'</span>':'')+'</div>'
-        +'<div class="kv">'+cardLine+(mem!==null?'<span>memory now <b>'+mem+'%</b></span>':'')+'</div>'
-        +(mem!==null?'<div class="membar"><i style="width:'+mem+'%"></i></div>':'')
-        +(window.usBlock?usBlock(w,true):'')
-        +'</div><button class="close" onclick="brainSel=null;renderBrain()">✕</button></div>';
-      }
-    }
-  }
   // ----- grouped walls -----
-  function tile(it){
-    if(isChars){
-      const sel=brainSel&&brainSel.type==='char'&&brainSel.id===it.ch;
-      return '<div class="tile zh s'+it.stage+(sel?' sel':'')+'" title="'+esc(tileTitle(it.ch,it.stage,it.mem,it.due))+'" onclick="brainSel={type:\'char\',id:\''+it.ch+'\'};renderBrain()">'+esc(it.ch)+(it.due?'<span class="dot"></span>':'')+'</div>';
-    }
-    const sel=brainSel&&brainSel.type==='word'&&brainSel.id===it.id;
-    return '<div class="tile zh s'+it.stage+(sel?' sel':'')+'" title="'+esc(tileTitle(it.t+' '+it.p,it.stage,it.mem,it.due))+'" onclick="brainSel={type:\'word\',id:\''+it.id+'\'};renderBrain()">'+esc(it.t)+(it.due?'<span class="dot"></span>':'')+'</div>';
+  function tile(it){   /* a tile opens the dictionary entry of its character or word (js/dict.js) */
+    if(isChars)return '<div class="tile zh s'+it.stage+'" title="'+esc(tileTitle(it.ch,it.stage,it.mem,it.due))+'" onclick="dcOpen(\''+it.ch+'\')">'+esc(it.ch)+(it.due?'<span class="dot"></span>':'')+'</div>';
+    return '<div class="tile zh s'+it.stage+'" title="'+esc(tileTitle(it.t+' '+it.p,it.stage,it.mem,it.due))+'" onclick="dcOpenWord(\''+it.id+'\')">'+esc(it.t)+(it.due?'<span class="dot"></span>':'')+'</div>';
   }
   function wall(list){return '<div class="wall'+(isChars?'':' words')+'">'+list.map(tile).join('')+'</div>';}
   let groupsHtml='';
@@ -251,17 +206,14 @@ function renderBrain(){
   <div class="card"><div class="lab">Mastered shelf · newest first</div>${tickerHtml}</div>
   <div class="card">
     ${ctrlHtml}
-    ${detailHtml}
     ${groupsHtml}
-    <div class="small muted" style="margin-top:16px">Deeper teal = stronger memory. Tap any tile for its story — red dot means it's waiting in your review queue.</div>
+    <div class="small muted" style="margin-top:16px">Deeper teal = stronger memory. Tap any tile for its dictionary entry — red dot means it's waiting in your review queue.</div>
   </div>`;
-  if(brainSel&&brainSel.type==='char'&&S.settings.strokeAnim)renderStrokes('bdStrokes',brainSel.id,{});
   }finally{renderBrain._in=false;}
   try{const el=document.getElementById('vBrain'); const first=el.querySelector('.card'); if(first)first.insertAdjacentHTML('afterend',catPanel()); ringArm(el);
     if(brainCat){const c=WCATS.find(x=>x[0]===brainCat); const h=el.querySelector('.segbar'); if(h&&c)h.insertAdjacentHTML('beforebegin',`<div class="catnote">Showing <b>${esc(c[1])}</b> ${c[2]} only</div>`);}
   }catch(e){}
   try{const el=document.getElementById('vBrain');const cards=el.querySelectorAll(':scope > .card');const anchor=cards[1]||cards[0];if(anchor)anchor.insertAdjacentHTML('afterend',phoneticPanel());}catch(e){}
-  try{const d=document.querySelector('#vBrain .detail .body');if(d&&brainSel&&!d.querySelector('.lookup')){const t=brainSel.type==='word'?(byId[brainSel.id]||{}).t:brainSel.id;if(t)d.insertAdjacentHTML('beforeend',lookupRow(t));}}catch(e){}
 }
 
 /* ---- Brain: word-type categories ---- */
@@ -290,10 +242,10 @@ function catPanel(){
     list.forEach(w=>{const st=wordStage(w.id); if(st>=3)known++; else if(st>=1)learn++;});
     const m={n:list.length,frac:known/list.length,lfrac:(known+learn)/list.length};
     const on=brainCat===c[0];
-    return `<div class="ctile ${on?'on':''} ${known?'':'none'}" onclick="brainCat=brainCat==='${c[0]}'?null:'${c[0]}';brainSel=null;renderBrain()">
+    return `<div class="ctile ${on?'on':''} ${known?'':'none'}" onclick="brainCat=brainCat==='${c[0]}'?null:'${c[0]}';renderBrain()">
       ${ring2(m,46,5)}<div class="ct-b"><b>${esc(c[1])}</b><span class="zh">${c[2]}</span><span class="ct-n">${known}<i>/${list.length}</i></span></div></div>`;
   }).join('');
-  return `<div class="card"><div class="row spread" style="margin-bottom:10px"><div class="lab" style="margin:0">By word type${brainCat?' · <span class="link" onclick="brainCat=null;brainSel=null;renderBrain()">show all</span>':''}</div><div class="small muted">tap a type to focus the walls on it</div></div>
+  return `<div class="card"><div class="row spread" style="margin-bottom:10px"><div class="lab" style="margin:0">By word type${brainCat?' · <span class="link" onclick="brainCat=null;renderBrain()">show all</span>':''}</div><div class="small muted">tap a type to focus the walls on it</div></div>
     <div class="cgrid">${tiles}</div></div>`;
 }
 
@@ -304,6 +256,6 @@ function phoneticPanel(){
   const rows=Object.entries(series).map(([ph,chs])=>({ph,chs,met:chs.filter(c=>met.has(c)).length})).filter(r=>r.chs.length>=2&&r.met>=1).sort((a,b)=>b.met-a.met||b.chs.length-a.chs.length).slice(0,24);
   if(!rows.length)return '';
   return `<div class="card"><div class="lab">Sound families · 聲旁</div><div class="small muted" style="margin-bottom:10px">Characters that share a phonetic component usually share a sound. Know one, and the rest come cheap — the grey ones are the ones you haven’t met yet.</div>
-    <div class="phgrid">${rows.map(r=>`<div class="ph"><span class="ph-k zh">${esc(r.ph)}</span>${r.chs.map(ch=>`<span class="tile s${csm[ch]||0} zh" style="font-size:16px;width:30px;height:30px;border-radius:7px" title="${esc(ch)}${COMPONENTS[ch]&&COMPONENTS[ch].p?' '+esc(COMPONENTS[ch].p):''}" onclick="brainSel={type:'char',id:'${esc(ch)}'};brainView='chars';renderBrain()">${esc(ch)}</span>`).join('')}</div>`).join('')}</div></div>`;
+    <div class="phgrid">${rows.map(r=>`<div class="ph"><span class="ph-k zh">${esc(r.ph)}</span>${r.chs.map(ch=>`<span class="tile s${csm[ch]||0} zh" style="font-size:16px;width:30px;height:30px;border-radius:7px" title="${esc(ch)}${COMPONENTS[ch]&&COMPONENTS[ch].p?' '+esc(COMPONENTS[ch].p):''}" onclick="dcOpen('${esc(ch)}')">${esc(ch)}</span>`).join('')}</div>`).join('')}</div></div>`;
 }
 if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

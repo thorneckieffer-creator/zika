@@ -50,7 +50,7 @@ function mtRenderBase(){
     ${w.pos?`<div class="pos">${esc(w.pos)}</div>`:''}
     <div class="meaning" style="font-size:23px">${esc(w.m)}</div>
     <div class="row" style="justify-content:center;gap:9px"><span class="pyline" style="font-size:24px">${tonePinyin(esc(w.p))}</span>${spkBtn(w.id)}</div>
-    ${r?`<div class="bigzh zh" style="font-size:56px;margin-top:4px">${esc(w.t)}</div>${S.settings.strokeAnim?`<div id="strokeHost" class="strokerow"></div>`:''}${w.s?`<div class="simpnote">简体 ${esc(w.s)}</div>`:''}${compLines(w.t)}`:''}
+    ${r?`<div class="bigzh zh" style="font-size:56px;margin-top:4px">${dcZh(w.t)}</div>${S.settings.strokeAnim?`<div id="strokeHost" class="strokerow"></div>`:''}${w.s?`<div class="simpnote">简体 ${esc(w.s)}</div>`:''}${compLines(w.t)}`:''}
   </div>
   ${r?`<div class="grades mt3"><button onclick="mtMark('h')"><span class="g1">✗ Couldn’t</span><span class="iv">learning + hard + paper</span></button><button onclick="mtMark('l')"><span class="g2">~ Shaky</span><span class="iv">into the deck</span></button><button onclick="mtMark('m')"><span class="g4">★ Wrote it</span><span class="iv">parked · 3 months</span></button></div>
     <div class="small muted" style="text-align:center;margin-top:10px"><kbd>1</kbd> couldn’t · <kbd>2</kbd> shaky · <kbd>3</kbd> wrote it${T.i>0?` · <span class="link" onclick="mtUndo()">← undo last</span>`:''} · <span class="link" onclick="go('home')">pause</span></div>`

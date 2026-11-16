@@ -260,7 +260,7 @@ function drillRenderBase(){
       <div style="text-align:center"><button class="spk lg" onclick="speakWord('${w.id}')">${SPK_SVG}</button></div>
       <div class="opts">${q.opts.map((o,i)=>`<button class="zh" style="font-size:24px" onclick="drillPick(${i})">${esc(o.t)}</button>`).join('')}</div>`;
     }
-    if(done)body+=`<div class="revealbox"><span class="zh" style="font-size:28px">${esc(w.t)}</span> <span class="pyline" style="font-size:18px">${tonePinyin(esc(w.p))}</span> ${spkBtn(w.id)}<div class="small muted">${esc(w.m)}</div>${compLines(w.t)}</div>`;
+    if(done)body+=`<div class="revealbox"><span class="zh" style="font-size:28px">${dcZh(w.t)}</span> <span class="pyline" style="font-size:18px">${tonePinyin(esc(w.p))}</span> ${spkBtn(w.id)}<div class="small muted">${esc(w.m)}</div>${compLines(w.t)}</div>`;
   } else if(q.mode==='tone'){
     const w=q.w;
     body=`<div class="bigzh zh" style="font-size:56px">${esc(w.t)}</div>
@@ -271,11 +271,11 @@ function drillRenderBase(){
     const w=q.w;
     body=`<div class="hint">聽寫 — play it, write it on paper, then check</div>
       <div style="text-align:center;margin:6px 0"><button class="spk lg" onclick="speakWord('${w.id}')">${SPK_SVG}</button></div>
-      ${done?`<div class="bigzh zh" style="font-size:56px">${esc(w.t)}</div>
+      ${done?`<div class="bigzh zh" style="font-size:56px">${dcZh(w.t)}</div>
         <div class="row" style="justify-content:center;gap:9px"><span class="pyline">${tonePinyin(esc(w.p))}</span>${spkBtn(w.id)}</div>
         <div class="meaning">${esc(w.m)}</div>${compLines(w.t)}`
       :`<div class="qfoot"><button class="btn" onclick="dq.state='reveal';renderDrill()">Show the answer</button></div>`}
-      ${dq.state==='reveal'?`<div class="bigzh zh" style="font-size:56px">${esc(w.t)}</div>
+      ${dq.state==='reveal'?`<div class="bigzh zh" style="font-size:56px">${dcZh(w.t)}</div>
         <div class="row" style="justify-content:center;gap:9px"><span class="pyline">${tonePinyin(esc(w.p))}</span>${spkBtn(w.id)}</div>
         <div class="meaning">${esc(w.m)}</div>${compLines(w.t)}
         <div class="qfoot"><button class="btn ghost" onclick="drillAnswer(false)">Missed it ✗</button><button class="btn" onclick="drillAnswer(true)">Wrote it right ✓</button></div>`:''}`;
@@ -320,7 +320,7 @@ function drillDictCard(){
     const w=q.w, st=dq.state, box=document.querySelector('#vDrill .qbox'); if(!box)return;
     const hintOn=S.settings.dictHint!=='late'||st==='hint'||st==='reveal'||st==='done';
     const meta=`<div class="row" style="justify-content:center;gap:9px"><span class="pyline">${tonePinyin(esc(w.p))}</span></div><div class="meaning">${esc(w.m)}</div>`;
-    const charBlock=`<div class="bigzh zh" style="font-size:56px">${esc(w.t)}</div>${w.s?`<div class="simpnote">简体 ${esc(w.s)}</div>`:''}${compLines(w.t)}`;
+    const charBlock=`<div class="bigzh zh" style="font-size:56px">${dcZh(w.t)}</div>${w.s?`<div class="simpnote">简体 ${esc(w.s)}</div>`:''}${compLines(w.t)}`;
     box.innerHTML=`<div class="hint">聽寫 — listen, write it on paper, then check</div>
       <div style="text-align:center;margin:6px 0"><button class="spk lg" onclick="speakWord('${w.id}')">${SPK_SVG}</button></div>
       ${hintOn?meta:`<div class="qfoot"><button class="btn ghost" onclick="dq.state='hint';renderDrill()">Show pinyin · meaning</button></div>`}

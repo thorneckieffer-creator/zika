@@ -19,7 +19,8 @@ Because the scope is shared, a function in any file can call a function in any o
 | `text.js` | Pinyin: tone marks, syllable splitting, tone colouring, tone sequences. No page, no deck: the tools load it as it is. |
 | `shell.js` | The view switch `go`, tab badges, theme and look (`sh*`), toasts, the *Where you are* sheet, icons, the keyboard map, the service worker and releases, the install hint, Notion links. |
 | `audio.js` | Voice packs, `playAudio`, the system voice as fallback. |
-| `chars.js` | Character components and etymology, the anatomy line on card backs, look-up links, 萌典, stroke order (Hanzi Writer). |
+| `chars.js` | Character components and etymology, the anatomy line on card backs, links to look a word up elsewhere, stroke order (Hanzi Writer). |
+| `dict.js` | The dictionary: the word list (`assets/dict.txt`), the entry sheet every tap on a character opens, the search the Library uses. |
 | `sync.js` | Cloud sync: config, device identity, connect, reconcile, push, the sync code and link, the Settings panel. |
 | `backup.js` | The backup file (File System Access) and the in-browser snapshots. |
 | `home.js` | Today: the hero, lanes panel, plan, Up next queue, paper list, statistics, heatmap. |
@@ -31,7 +32,7 @@ Because the scope is shared, a function in any file can call a function in any o
 | `listen.js`, `mtest.js`, `exam.js`, `catchup.js`, `stories.js`, `usage.js` | The listening player, the writing mastery test, 大考試, the Catch-up tab, Stories, usage phrases. |
 | `settings.js` | Settings and its panels, export and import. |
 | `tone-analysis.js`, `tone.js` | The tone coach: pitch tracking and tone classification (pure, loaded by the tools as it is), then the coach itself. |
-| `my-words.js` | My words and the dictionary. |
+| `my-words.js` | My words. |
 | `boot.js` | Start-up. |
 
 ## Start-up
@@ -58,7 +59,7 @@ Until November 2026 the app was version blocks, each wrapping or replacing earli
 
 ## The service worker and releases
 
-`sw.js` stores the whole app shell (the page, `js/`, `css/`, `data/`, the manifest; 34 files) once per release and serves it from that store, so opening never waits for the network and a page never runs with scripts from two versions.
+`sw.js` stores the whole app shell (the page, `js/`, `css/`, `data/`, the manifest; 35 files) once per release and serves it from that store, so opening never waits for the network and a page never runs with scripts from two versions.
 
 - `node tools/stamp.mjs` writes the release number onto the address of every shell file in `index.html` (`js/core.js?v=64`; for devices still run by the v62 worker, see [decisions.md](decisions.md)) and then the file list and a hash of each file into `sw.js`. A device installing a release copies unchanged files from the release it already holds and downloads the rest, checking each against its hash; any mismatch (the host still serving part of the previous release) refuses the install, and the device keeps what it has.
 - The page hears when a new release has taken over (`swUpdated` in `js/shell.js`): it reloads at once if nothing has been touched since the app opened, otherwise it offers **Refresh**. The ↻ button and pull-to-refresh (`appRefresh`) push unsent work, ask for the newest release, wait for it to finish storing, and reload. `checkForUpdate()` runs when the app returns to the foreground.
@@ -97,9 +98,21 @@ A personal deck for words outside class, deliberately separate from the course: 
 - Ids are `u` + a counter that only goes up; a deleted word's id is never reused.
 - `myQueue()` → `{learn, rev, fresh, ahead, waiting}`; `myRate(cid, grade)` is the same FSRS-5 arithmetic as `rate()` without the early-drill cap and without touching `S.log` or `S.intro`.
 - **Pinyin and meaning fill themselves in** (v62). `myGuess(t)` → `{p, m, alts, parts, src}`: the course's own reading and meaning if the course teaches the word, then the dictionary (`dcLook`), then pinyin character by character from `COMPONENTS`. In the add sheet `myFill()` runs on every change to the characters; a field is filled only while it is empty or still holds what was filled in last (`MY.auto`), so anything typed by hand stays. `myHint()` paints the note under the characters: other readings as buttons (`myUseAlt`), or the parts of a phrase the dictionary does not hold as one word. `myParse()` reads a pasted list and fills what each line leaves out; `myFillMissing()` does the same for words already in the deck.
-- **The dictionary** is `assets/dict.txt`: CC-CEDICT cut down by `tools/build_dict.py` to one line per word, `字<TAB>pinyin<TAB>gloss` and then further pinyin/gloss pairs for other readings ([content.md](content.md#the-dictionary)). `dcLoad()` fetches it (7 MB, about 3 MB over the air) the first time My words is opened and keeps it in a `Map` (`DC.map`); the service worker stores it with the other assets, so it works offline afterwards. `dcLook(t)` returns the word, or failing that its parts by longest match (pinyin only, with 一 and 不 written as spoken). Everything that uses it copes with `DC.map` being null (not loaded yet, or offline before the first fetch). After a rebuild, bump the `?v=` in `DC.url`.
+- The pinyin and meanings come from the dictionary's word list (`dcLook`, below).
 - **Topics** (v60) sort the deck by part of life (Food & drink, Getting around, …). `d.tp` is the ordered list `[{id:'t1', n:'Food & drink'}]`; ids are `t` + a counter (`d.tn`) that only goes up, and a word names its topics in `w.g` (absent when it has none; a word can have several). `myDeck()` seeds the twelve starting topics (`MY_TOPICS`) the first time, with the same ids on every device. Read a word's topics through `myTopicsOf(w)`, which drops ids of deleted topics; write them with `myTag(w, ids)`.
 - The list's filter is `MY.tp` (null, a topic id, or `'-'` for words with no topic) and `myQueue(filter)` builds the queue for it, so *Study* studies the topic on screen (`MY.scope` while the session runs). The daily allowance of new cards stays the deck's. The filter row shows only topics that hold a word; the chips in the add / edit sheet (`myChips`, selection in `MY.sel`) show all of them and change without repainting the sheet, so nothing typed is lost. `myTopicsSheet()` renames, deletes (with Undo) and adds.
+
+## The dictionary
+
+One entry sheet for any character or word, put together from what the app already holds (v65, `js/dict.js`). There is no dictionary tab: the entry opens from wherever a character is on screen, and the Library's search box searches it.
+
+- **The word list** is `assets/dict.txt`: CC-CEDICT cut down by `tools/build_dict.py` to one line per word, `字<TAB>pinyin<TAB>gloss` and then further pinyin/gloss pairs for other readings ([content.md](content.md#the-dictionary)). `dcLoad()` fetches it (7 MB, about 3 MB over the air) the first time it is needed and keeps it in a `Map` (`DC.map`); the service worker stores it with the other assets, so it works offline afterwards. `dcWarm()` fetches it once in the background, nine seconds after start-up, on a device whose worker does not hold it yet, and Settings → Offline & audio → Download stores it too. `dcLook(t)` returns the word, or failing that its parts by longest match (pinyin only, with 一 and 不 written as spoken). Everything that uses the list copes with `DC.map` being null (not loaded yet, or offline before the first fetch). After a rebuild, bump the `?v=` in `DC.url`.
+- **`dcOpen(text)` opens the entry**; `dcOpenWord(id)` for a course word. `dcZh(text)` returns a text with each Han character wrapped to open its own entry: use it wherever characters are shown as an answer (card backs, Library and My words rows, revealed drill answers, the Stories gloss), and never on a question side, where the entry would give the answer away. The anatomy line's characters and parts, the Brain's tiles and the ⓘ button open entries too.
+- **What an entry shows** (`dcRender`), for a character: the reading and a speaker; the learner's standing with it (stage, memory, first lesson, 简 form); the course's meanings, each with its lesson, then the dictionary's; stroke order with the stroke count; how it is built (`charStoryHtml`: parts, why, sound family); examples; the course's words that use it; more words from the dictionary; the outside look-up links. For a word: its characters as rows (each opens that character), strokes for up to four characters, examples, longer course words and dictionary phrases that contain it, and **Add to My words** when the course does not teach it. Entries opened from inside an entry stack (`DCV.stack`), with a back button.
+- **The examples are the app's own**: the usage phrases of every word and the example sentences of every grammar point, indexed once (`dcIdx`), about 7,700 lines. `dcSents` puts whole sentences before phrases, lessons the learner has reached before later ones and the earliest first, and for a character takes a different word in each where it can. A word the course does not teach has examples only if the course's sentences happen to use it.
+- **The course's side shows at once; the dictionary's side is filled in when the list is in memory** (`dcFill`: the "In the dictionary" lines and "More words"). An entry with nothing else to go on (a word from a search) is painted again when the list arrives.
+- **The search** is the Library's box. Under the course's matches, `libDictPaint` lists up to twenty of the dictionary's (`dcFind`), leaving out words the course teaches. By characters it needs only the word list; by pinyin without tones or by meaning it uses an index built once in slices (`dcIndex`, `DC.ix`), scored with the Library's own `libScore`, and only a whole reading, the start of one, or one complete sense counts. CC-CEDICT has no word frequencies, so lists of dictionary words are ordered by `dcRank`: words written only with characters the course teaches first, everyday senses before variants and surnames, short before long.
+- **The sheet has its own host** (`#dcSheet`), so it can open over a card. While it is up the first key listener on the page (`bootListen`) stops every key from reaching the screen under it, since a 3 would grade the card behind; Esc closes it. Stroke boxes keep their writers per host (`STROKE_W`), so **Replay strokes** on a card under the sheet still replays the card's.
 
 ## Scheduler
 
@@ -117,4 +130,4 @@ Whole-state, last-write-wins. `save()` → debounce 700 ms → `set(rooms/<code>
 
 - **Firebase** project `zika-sync` (Realtime Database, asia-southeast1, anonymous auth, Spark plan). Rules are in README.md.
 - **Notion** is not connected by API. The app holds page links (`NOTION`, `NOTION_LESSON`) and exports a confidence snapshot that is applied to Notion by hand.
-- **萌典** (moedict.tw) is fetched live for the dictionary panel and cached locally.
+- Nothing else is fetched while studying. The dictionary entry's look-up row links out to 萌典, MDBG, Pleco (on phones), Skritter and 字源; a character with no bundled stroke data (words outside the course) gets it from the Hanzi Writer data on jsDelivr.
