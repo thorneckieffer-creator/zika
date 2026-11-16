@@ -987,3 +987,6 @@ textarea.myin{min-height:120px;resize:vertical;line-height:1.5}
 
 /* links to the first learner's own notes: shown only where shLook() says this deck has them (html[data-links]) */
 html:not([data-links]) .nlink,html:not([data-links]) .nl{display:none!important}
+
+/* The last rule of the stylesheet, and it stays the last: start-up reads it to know the whole file arrived (bootLost in js/boot.js). */
+html{--zika-css-whole:1}

@@ -173,7 +173,8 @@ export const scenarios = [
      this way (v63, first pass), then reached the buttons under it with Tab, found the stylesheet's loss unreported
      and a cut-off file unnoticed (second pass). In every case: the message, the app not started, the deck closed,
      focus held on "Try again", nothing in storage changed, and a grade called directly not stored. */
-  ...[['other-file-lost', '?drop=js/home.js'], ['stylesheet-lost', '?drop=css/app.css'], ['file-cut-in-half', '?cut=js/review.js&keep=half'], ['file-cut-between-lines', '?cut=js/home.js&keep=1'], ['data-cut-in-half', '?cut=data/grammar.js&keep=half']].map(([name, query]) =>
+  ...[['other-file-lost', '?drop=js/home.js'], ['stylesheet-lost', '?drop=css/app.css'], ['file-cut-in-half', '?cut=js/review.js&keep=half'], ['file-cut-between-lines', '?cut=js/home.js&keep=1'], ['data-cut-in-half', '?cut=data/grammar.js&keep=half'],
+    ['stylesheet-cut-in-half', '?cut=css/app.css&keep=half'], ['stylesheet-cut-to-nothing', '?cut=css/app.css&keep=none'], ['qr-library-cut-at-its-line', '?cut=assets/qrcode.min.js&keep=1']].map(([name, query]) =>
   ({ name, fixture: 'deck', local: unlinked, sizes: ['phone'], query, steps: [
     { name: 'keys-under-the-cover', js: `window.__before = JSON.stringify(Object.keys(localStorage).sort().map(k => [k, localStorage.getItem(k)]));
         const press = (el, k) => el.dispatchEvent(new KeyboardEvent('keydown', { key: k, code: k === ' ' ? 'Space' : k, bubbles: true, cancelable: true }));

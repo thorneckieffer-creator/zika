@@ -303,14 +303,19 @@ function bootStart(){
 /* The app does not start with a piece missing: every step below would run, the missing one would be skipped quietly,
    and what is left could still be driven from the keyboard and save a grade. Two ways of knowing:
    - index.html has already seen a file fail to arrive or fail to run, and is saying so over the page (window.zikaFailed);
-   - every script reports when it has run to its last line (zikaWhole), and each data file leaves its tables. A file
-     cut off between two statements raises no error; it is caught here, by what it did not say. */
+   - every script reports when it has run to its last line (zikaWhole), each data file leaves its tables, the QR
+     library its name and the stylesheet its last rule. A file cut off between two statements raises no error; it
+     is caught here, by what it did not say. */
 function bootLost(){
   const got=window.zikaGot||{};
   for(const s of document.scripts){const src=s.getAttribute('src')||''; if(/^js\//.test(src)&&!/^js\/boot\.js/.test(src)&&!got[src])return src.split('?')[0];}
   const data=[['data/course.js',typeof BOOKS!=='undefined'&&typeof LESSON_TITLES!=='undefined'&&typeof DLGMAP!=='undefined'],['data/words.js',typeof WORDS!=='undefined'],
     ['data/grammar.js',typeof GRAMMAR!=='undefined'],['data/components.js',typeof COMPONENTS!=='undefined'],['data/readings.js',typeof READINGS!=='undefined'],['data/usage.js',typeof USAGE!=='undefined']];
   for(const [f,whole] of data)if(!whole)return f;
+  if(typeof qrcode==='undefined')return 'assets/qrcode.min.js';
+  /* the stylesheet's last rule sets this; a stylesheet that arrived empty or cut short has not got that far. Where
+     the browser will not say (no computed style), nothing is concluded. */
+  try{const cs=getComputedStyle(document.documentElement); if(cs&&cs.getPropertyValue('--zika-css-whole').trim()!=='1')return 'css/app.css';}catch(e){}
   return '';
 }
 {const lost=bootLost(); if(lost&&!window.zikaFailed&&window.zikaFail)window.zikaFail('A file did not arrive whole ('+lost+'). Check the connection.');}

@@ -20,7 +20,8 @@
    - a script that arrives but cannot be run, or stops while it is being read in (a file cut off on the way);
    - start-up itself stopping part-way (still not started when the page has finished loading).
    Each script of the app also reports that it ran to its last line (zikaWhole), and js/boot.js refuses to start
-   unless all of them have: a file cut off between two statements raises no error at all.
+   unless all of them have: a file cut off between two statements raises no error at all. It checks the same of
+   the data files (by their tables), the QR library (by its name) and the stylesheet (by its last rule).
 
    A failure closes the app for this load: window.zikaFailed keeps js/boot.js from starting it, the deck is taken
    back if start-up had already opened it (DECK_READY, js/core.js), and the page under the message is put out of
@@ -29,6 +30,10 @@
   var said=false, again=null;
   window.zikaWhole=function(){var s=document.currentScript; if(s)(window.zikaGot=window.zikaGot||{})[s.getAttribute('src')]=1;};
   function name(u){return String(u).split('?')[0].split('/').slice(-2).join('/');}
+  /* the app's own files are the ones under the folder this page is in; a script that something else put on the page
+     (an extension, a blocker) is not the app's, and its failure is not a failed start */
+  var home=String(location.href).split('#')[0].split('?')[0].replace(/[^\/]*$/,'');
+  function own(u){return String(u).indexOf(home)===0;}
   /* everything on the page but the message: not clickable, not focusable, not read out */
   function shut(){
     var kids=document.body?document.body.children:[];
@@ -78,7 +83,7 @@
     var t=e.target;
     if(t&&t!==window&&t.tagName){
       if(t.tagName==='SCRIPT'||(t.tagName==='LINK'&&/stylesheet/i.test(t.rel||''))){
-        var u=String(t.src||t.href||''); if(u)say('A file did not arrive ('+name(u)+'). Check the connection.');
+        var u=String(t.src||t.href||''); if(u&&own(u))say('A file did not arrive ('+name(u)+'). Check the connection.');
       }
       return;
     }
@@ -86,7 +91,7 @@
        or an error raised while a file is being read in (document.currentScript), which leaves that file half
        defined. An error in a handler that ran early is not a failed start. */
     var cs=document.currentScript, f=String(e.filename||(cs&&cs.src)||'');
-    if(!f||f.indexOf(location.origin+'/')!==0)return;
+    if(!f||!own(f))return;
     if((e.error&&e.error.name==='SyntaxError')||/SyntaxError/.test(String(e.message||'')))say('A file did not arrive whole ('+name(f)+'). Check the connection.');
     else if(cs&&cs.src)say('Something stopped it part-way.');
   },true);

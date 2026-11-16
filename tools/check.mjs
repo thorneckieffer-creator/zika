@@ -36,6 +36,8 @@ for (const f of onDisk) if (!code.includes(f)) fail(`${f} is not loaded by index
 if (code[code.length - 1] !== 'js/boot.js') fail('index.html: js/boot.js must be the last script (it starts the app once everything is defined)');
 /* every script of the app but the last ends by reporting that it ran to its end; start-up refuses to run without all of them */
 for (const f of code.filter(f => f !== 'js/boot.js')) if (!/\nif\(typeof zikaWhole==='function'\)zikaWhole\(\);[^\n]*\n?$/.test(read(f))) fail(`${f}: the last line must be  if(typeof zikaWhole==='function')zikaWhole();  (js/boot.js does not start the app unless every file reports in)`);
+for (const f of styles.filter(f => existsSync(join(root, f)))) if (!/\nhtml\{--zika-css-whole:1\}\s*$/.test(read(f))) fail(`${f}: the last rule must be  html{--zika-css-whole:1}  (start-up reads it to know the stylesheet arrived whole)`);
+if (!/--zika-css-whole/.test(read('js/boot.js')) || !/typeof qrcode===/.test(read('js/boot.js'))) fail('js/boot.js: bootLost must check the stylesheet (its last rule) and the QR library (its name)');
 if (!/bootLost\(\)/.test(read('js/boot.js')) || !/window\.zikaWhole=/.test(html)) fail('the check that every file arrived whole is missing (zikaWhole in index.html, bootLost in js/boot.js)');
 if (html.indexOf('window.zikaFail=') < 0 || html.indexOf('window.zikaFail=') > html.indexOf('<link rel="stylesheet"')) fail('index.html: the script that reports a failed start must come before the stylesheet, or a missing stylesheet is never heard of');
 /* the data files and the two libraries are scripts too: a cut-off file or an unclosed comment is a syntax error in the browser */
