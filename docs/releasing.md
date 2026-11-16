@@ -32,6 +32,7 @@ The release area: `tools/check.mjs`, `tools/stamp.mjs`, `tools/snap.mjs`, `tools
 
 How to do step 6 from Claude in Chrome, learned the slow way:
 
+- **A second look at the same version number needs the browser's cache bypassed.** `index.html?t=…` reloads the page, not the files it asks for: `js/core.js?v=65` is the same address before and after an edit, and Chrome may hand back the earlier copy (the checker's second pass on v65 ran one stale data file this way). Reload with the cache off, or clear the origin's cache first.
 - **Resizing the window does not resize the page.** Open any file on the local origin (the manifest will do), replace the document with same-origin iframes of 390 × 844, 820 × 1180 and 1180 × 796 pointing at `index.html?t=…`, and screenshot those. (The iPad's screen is 1180 × 820; the test size is a little shorter, so what fits at 796 fits on the tablet.)
 - **Reach into a frame with `frame.contentWindow.eval('…')`.** The app's state lives in top-level `let` and `const`, which are not properties of `window`; assigning `frame.contentWindow.drillScope = …` changes nothing.
 - **Check the deck before touching it.** The local origin (`127.0.0.1:8791`) held an unpaired throw-away deck in November 2026; confirm `SYNC.code` is empty before grading cards or saving, so a test never reaches the real sync room. Do not run tests on the live site's origin.
