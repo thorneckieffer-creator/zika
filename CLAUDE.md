@@ -75,7 +75,7 @@ Open work for every area is in one list: [docs/roadmap.md](docs/roadmap.md).
 2. **Never renumber or reuse a word id** (`w123`) or a grammar id (`n22-1`). Card state is keyed by them (`w123:rec`, `w123:prod`, `g:n22-1`). New words get new ids; lesson numbers of existing words do not change.
 3. **State changes need a migration.** One-time migrations are guarded by a flag in `S.settings` (`_v38`, …). They must be idempotent and must survive a cloud adopt (flags are carried across in `fbAdopt`).
 4. **Device-local settings do not sync.** Add new ones to `LOCAL_SETTINGS` (kept if the device has a value) or `STRICT_LOCAL` (never inherited from another device).
-5. **Never put a sync code in the repo.** It is the only secret; the Firebase web config is public by design.
+5. **Never put a secret in the repo.** Today that is a sync code; with the Supabase backend ([docs/decisions.md](docs/decisions.md)) it is also the service-role key and the database password. The Firebase web config, and a Supabase project address and publishable key, are public by design.
 6. **The live app is the study tool.** `main` deploys to GitHub Pages in about two minutes and every device takes the release the next time it is opened with a connection. Test locally first.
 
 ## Before changing the code
