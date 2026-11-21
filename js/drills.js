@@ -18,9 +18,9 @@ const DMODES=[
   ['rec','認字 Recognition','see it · know it'],
   ['tone','聲調 Tones','hear the pattern'],
   ['mtest','寫字測驗 Mastery test','English + pinyin → write it · ★ ~ ✗'],
+  ['wp','句型 Which pattern?','他十點＿＿來 · 就 or 才？ · the test that decides'],
   ['listen','聽力 Listening','dialogue lines read aloud · hide text · shadow'],
   ['sdict','句子聽寫 Sentence dictation','hear a sentence · write all of it'],
-  ['confuse','辨析 Which one?','不／沒 · 就／才 · 在／到 …'],
   ['read','閱讀 Reading sprint','ten sentences, tap what you don’t know'],
   ['sent','造句 Sentences','build with the grammar'],
   ['speak','口說 Speaking','say it · record it'],
@@ -59,8 +59,8 @@ function startDrill(mode){
   if(mode==='sdict')return startSdict();
   /* the listening player, on the lesson in scope */
   if(mode==='listen'){LP.ln=drillScope==='lesson'?drillLesson:(S.settings.curLesson||23);LP.src=DIALOGUES[LP.ln]?'dlg':'sent';return startListen();}
-  /* "which one?" and the reading sprint */
-  if(mode==='confuse')return startConfuse(null);if(mode==='read')return startRead();
+  /* the reading sprint */
+  if(mode==='read')return startRead();
   /* rec / tone / dict / sent / speak: build the question list */
   drillMode=mode; dq=null; recState=null;
   const qs=[];
@@ -197,14 +197,13 @@ function drillRenderScreens(){
   drillRenderCard();
   drillDictCard();
 }
-/* a "which one?" or reading-sprint question paints itself; anything else is the base screen, the confetti on a
-   finished set, and the "which one?" panel under the menu. Its early returns come back to drillRenderScreens' last step. */
+/* a reading-sprint question paints itself; anything else is the base screen and the confetti on a finished set.
+   Its early return comes back to drillRenderScreens' last step. */
 function drillRenderCard(){
   const el=document.getElementById('vDrill');
-  if(dq&&dq.i<dq.qs.length){const q=dq.qs[dq.i];if(q.mode==='confuse'){renderConfuse(el);return;}if(q.mode==='read'){renderRead(el);return;}}
+  if(dq&&dq.i<dq.qs.length){const q=dq.qs[dq.i];if(q.mode==='read'){renderRead(el);return;}}
   drillRenderBase();
   partyIfDone('#vDrill');
-  try{ if(!dq){el.insertAdjacentHTML('beforeend',confusePanel());} }catch(e){}
 }
 /* the menu, the score card, or one question of a rec / tone / dict / sent / speak drill */
 function drillRenderBase(){
@@ -361,134 +360,6 @@ function examCard(){
   </div>`;
 }
 
-/* ---- "Which one?" — the confusable pairs from Notion, with the rule of thumb each time ---- */
-const CONFUSE=[
- {k:'neg',t:'不 or 沒？',zh:'不／沒',rule:'不 = intention, habit, or a state/quality (不熱, 不好寫, 不去 = won’t go). 沒 = something that didn’t happen, or 有 (沒去 = didn’t go, 沒忘, 沒有錢).',opts:['不','沒'],q:[
-  {zh:'我覺得今天⬚熱，不必多穿一點。',a:'不',en:'I don’t think it’s hot today, no need to wear more.',why:'熱 is a state → 不.'},
-  {zh:'去年他來臺灣的時候太忙了，⬚去夜市。',a:'沒',en:'Last year he was too busy in Taiwan and didn’t go to the night market.',why:'It didn’t happen → 沒.'},
-  {zh:'我⬚忘！我等一下要去圖書館念書。',a:'沒',en:'I didn’t forget! I’m going to the library to study in a bit.',why:'沒忘 — the forgetting didn’t happen.'},
-  {zh:'中文很好學，可是中國字⬚好寫。',a:'不',en:'Chinese is easy to learn, but the characters aren’t easy to write.',why:'好寫 is a Vs (a quality) → 不.'},
-  {zh:'昨天我⬚去學校上課。',a:'沒',en:'Yesterday I didn’t go to class.',why:'Past event that didn’t happen → 沒.'},
-  {zh:'他明天⬚來，他要去台中。',a:'不',en:'He isn’t coming tomorrow, he’s going to Taichung.',why:'Intention / future → 不.'},
-  {zh:'我還⬚吃早飯，有一點餓。',a:'沒',en:'I haven’t eaten breakfast yet, I’m a bit hungry.',why:'還沒 + V = not yet.'},
-  {zh:'他⬚喜歡喝咖啡，每天都喝茶。',a:'不',en:'He doesn’t like coffee, he drinks tea every day.',why:'Habit / preference → 不.'}]},
- {k:'jiucai',t:'就 or 才？',zh:'就／才',rule:'就 = sooner, earlier, easier than expected (五歲就會了). 才 = later than expected, or merely / only (七歲才會, 才兩百塊).',opts:['就','才'],q:[
-  {zh:'如玉五歲⬚會寫字了。',a:'就',en:'Ruyu could already write at five.',why:'Earlier than expected → 就.'},
-  {zh:'安同七歲⬚會寫字。',a:'才',en:'Antong couldn’t write until he was seven.',why:'Later than expected → 才.'},
-  {zh:'你看！我買的這件衣服⬚兩百塊。',a:'才',en:'Look! This shirt I bought was only 200.',why:'才 + amount = merely.'},
-  {zh:'我以為垃圾車六點來，沒想到五點半⬚來了。',a:'就',en:'I thought the truck came at six; it turned out it came at 5:30.',why:'Sooner than expected → 就 … 了.'},
-  {zh:'他每天很晚⬚睡覺，所以上課很累。',a:'才',en:'He doesn’t sleep until very late, so he’s tired in class.',why:'Late → 才.'},
-  {zh:'我一到家⬚打電話給你。',a:'就',en:'I’ll call you as soon as I get home.',why:'一…就… = as soon as.'},
-  {zh:'電影八點開始，他九點⬚到。',a:'才',en:'The film started at eight; he didn’t arrive until nine.',why:'Later than expected → 才.'},
-  {zh:'下個星期⬚得準備考試了。',a:'就',en:'Next week we already have to prepare for the exam.',why:'Sooner than you’d like → 就.'}]},
- {k:'dian',t:'一點 or 有一點？',zh:'一點／有一點',rule:'有一點 + Vs = slightly, and always a complaint (有一點貴). Vs + 一點 = an instruction or a comparison (說慢一點, 冷一點). V + 一點 + N = a bit more of (多睡一點覺). 一點…也不 = not at all.',opts:['一點','有一點'],q:[
-  {zh:'這個房間⬚小，我不太喜歡。',a:'有一點',en:'This room is a bit small, I don’t really like it.',why:'Complaint before a Vs → 有一點.'},
-  {zh:'請你說慢⬚。',a:'一點',en:'Please speak a little slower.',why:'Instruction: Vs + 一點.'},
-  {zh:'醫生要他多睡⬚覺。',a:'一點',en:'The doctor wants him to sleep a bit more.',why:'多 + V + 一點 + O.'},
-  {zh:'我⬚餓了，我們去吃飯吧。',a:'有一點',en:'I’m a bit hungry, let’s go eat.',why:'Mild complaint → 有一點 餓.'},
-  {zh:'今天比昨天冷⬚。',a:'一點',en:'Today is a little colder than yesterday.',why:'Comparison: Vs + 一點.'},
-  {zh:'這件衣服⬚貴，可是很好看。',a:'有一點',en:'This shirt is a bit pricey, but it looks great.',why:'Complaint → 有一點 貴.'},
-  {zh:'我⬚咖啡也不喝。',a:'一點',en:'I don’t drink coffee at all.',why:'一點 + N + 也不 = not at all.'}]},
- {k:'modal',t:'能 · 會 · 可以？',zh:'能／會／可以',rule:'會 = a learned skill, or "will / likely" (會說中文, 明天會下雨). 能 = circumstances allow it (感冒了不能來). 可以 = permission (可以抽菸嗎).',opts:['能','會','可以'],q:[
-  {zh:'我⬚說中文，可是說得不好。',a:'會',en:'I can speak Chinese, but not well.',why:'Learned skill → 會.'},
-  {zh:'這裡⬚抽菸嗎？',a:'可以',en:'Is smoking allowed here?',why:'Permission → 可以.'},
-  {zh:'他感冒了，今天不⬚來上課。',a:'能',en:'He has a cold and can’t come to class today.',why:'Circumstances prevent it → 不能.'},
-  {zh:'明天⬚下雨，你帶傘吧。',a:'會',en:'It will rain tomorrow, bring an umbrella.',why:'Likely / will → 會.'},
-  {zh:'老師，我⬚早一點走嗎？',a:'可以',en:'Teacher, may I leave a little early?',why:'Asking permission → 可以.'},
-  {zh:'我沒有錢，不⬚買機車。',a:'能',en:'I have no money, I can’t buy a scooter.',why:'Circumstance (no money) → 不能.'},
-  {zh:'你⬚游泳嗎？',a:'會',en:'Can you swim?',why:'A skill you learned → 會.'},
-  {zh:'圖書館裡不⬚吃東西。',a:'可以',en:'No eating in the library.',why:'A rule about permission → 不可以.'}]},
- {k:'cause',t:'因為 · 為了 · 要不然 · 如果？',zh:'因果',rule:'因為 looks backwards to a cause and drags 所以 with it. 為了 looks forwards to a goal and never takes 所以. 要不然 = "or else" (only the bad way). 如果…就 = a condition, either direction.',opts:['因為','為了','要不然','如果'],q:[
-  {zh:'我⬚學中文來台灣。',a:'為了',en:'I came to Taiwan in order to study Chinese.',why:'A goal → 為了.'},
-  {zh:'我⬚喜歡台灣，所以來台灣。',a:'因為',en:'I came to Taiwan because I like it.',why:'A cause, with 所以 → 因為.'},
-  {zh:'⬚保護環境，台灣人天天做垃圾分類。',a:'為了',en:'To protect the environment, Taiwanese sort their rubbish every day.',why:'"In order to" fits → 為了.'},
-  {zh:'⬚下雨，所以我們沒去。',a:'因為',en:'Because it rained, we didn’t go.',why:'Cause + 所以 → 因為.'},
-  {zh:'你得把垃圾分類，⬚垃圾車不收。',a:'要不然',en:'You have to sort the rubbish, or else the truck won’t take it.',why:'"Or else" → 要不然.'},
-  {zh:'⬚你搬家了，我就少了一個朋友。',a:'如果',en:'If you move, I’ll have one friend fewer.',why:'A condition with 就 → 如果.'},
-  {zh:'快一點，⬚就追不到垃圾車了。',a:'要不然',en:'Hurry, or else you won’t catch the truck.',why:'Only the bad consequence → 要不然.'}]},
- {k:'zai',t:'在 or 到？',zh:'在／到',rule:'V + 到 + place: movement, the thing arrives somewhere (踢到, 搬到, 開到). V + 在 + place: placing, the thing stays there (放在, 寫在, 存在). 正在 + V = in progress right now.',opts:['在','到'],q:[
-  {zh:'那張椅子，請你放⬚樓下。',a:'在',en:'That chair, please put it downstairs.',why:'Placing verb, stays there → 在.'},
-  {zh:'我把球踢⬚學校外面了。',a:'到',en:'I kicked the ball outside the school.',why:'Movement, arrives somewhere → 到.'},
-  {zh:'這些字，我要寫⬚本子上。',a:'在',en:'These characters, I’ll write them in my notebook.',why:'寫在 — they stay on the page.'},
-  {zh:'他想把公司搬⬚台南。',a:'到',en:'He wants to move the company to Tainan.',why:'搬到 — moving to a destination.'},
-  {zh:'我正⬚網站上找租房子的資料。',a:'在',en:'I’m looking for rental info online right now.',why:'正在 + V = in progress.'},
-  {zh:'我們從台北開⬚台南。',a:'到',en:'We drove from Taipei to Tainan.',why:'從…V到… — arriving at the end point.'},
-  {zh:'錢存⬚銀行比較安全。',a:'在',en:'Money is safer kept in the bank.',why:'存在 — placed and stays.'}]},
- {k:'cmp',t:'比 · 比較 · 一樣 · 更 · 沒有？',zh:'比較',rule:'比 names the thing you compare against (A 比 B Vs). 比較 never names it (比較好吃). 跟…一樣 = the same as. 更 = even more. A 沒有 B (這麼) Vs = not as … as.',opts:['比','比較','一樣','更','沒有'],q:[
-  {zh:'台北的房租⬚台中貴。',a:'比',en:'Rent in Taipei is higher than in Taichung.',why:'B (台中) is named → 比.'},
-  {zh:'這家的牛肉麵⬚好吃。',a:'比較',en:'This place’s beef noodles are better.',why:'No B named → 比較.'},
-  {zh:'我的手機跟你的⬚。',a:'一樣',en:'My phone is the same as yours.',why:'跟…一樣.'},
-  {zh:'今天比昨天⬚冷。',a:'更',en:'Today is even colder than yesterday.',why:'比 + 更 = even more.'},
-  {zh:'他的中文⬚我這麼好。',a:'沒有',en:'His Chinese isn’t as good as mine.',why:'A 沒有 B 這麼 Vs = not as … as.'},
-  {zh:'哥哥⬚我高一點。',a:'比',en:'My older brother is a little taller than me.',why:'B named, + 一點 for how much.'}]},
- {k:'le',t:'Where does 了 go?',zh:'了',pick:true,rule:'V了 + object = completed. Sentence-final 了 = the situation changed. V了 + duration + 了 = still going. 太…了 is a frame. 沒 never takes 了.',q:[
-  {en:'I’ve been waiting for the bus for twenty minutes (and still am).',opts:['我等公車等了二十分鐘了。','我等了二十分鐘公車。','我等公車二十分鐘了。'],a:'我等公車等了二十分鐘了。',why:'V了 + duration + 了 = up to now, still going.'},
-  {en:'He lived in Taipei for three years (and then left).',opts:['他在台北住了三年。','他在台北住了三年了。','他在台北住三年了。'],a:'他在台北住了三年。',why:'No final 了 → the three years are finished.'},
-  {en:'Coffee got expensive.',opts:['咖啡貴了。','咖啡了貴。','咖啡很貴了。'],a:'咖啡貴了。',why:'Sentence-final 了 = change of state.'},
-  {en:'He didn’t eat breakfast.',opts:['他沒吃早飯。','他沒吃了早飯。','他不吃了早飯。'],a:'他沒吃早飯。',why:'沒 cancels the action; 了 never follows it.'},
-  {en:'It’s way too expensive!',opts:['太貴了！','太貴！','很太貴了！'],a:'太貴了！',why:'太…了 is one frame; the 了 belongs to it.'},
-  {en:'I don’t drink coffee anymore.',opts:['我不喝咖啡了。','我不喝了咖啡。','我沒喝咖啡了。'],a:'我不喝咖啡了。',why:'不…了 = not anymore (a change).'},
-  {en:'I bought two books.',opts:['我買了兩本書。','我買兩本書了。','我了買兩本書。'],a:'我買了兩本書。',why:'V了 + quantified object = completed action.'}]},
- {k:'laiqu',t:'來 or 去？',zh:'來／去',rule:'來 = toward where I am standing, 去 = away from it. Ask "am I inside or outside / upstairs or downstairs?" before you say it. Same test in 搬到樓上來／去 and 走出來／走進去.',opts:['來','去'],q:[
-  {zh:'（我在樓上）你把書搬到樓上⬚吧。',a:'來',en:'(I’m upstairs) Bring the books up here.',why:'Toward me → 來.'},
-  {zh:'（我在樓下）我把書搬到樓上⬚了。',a:'去',en:'(I’m downstairs) I took the books upstairs.',why:'Away from me → 去.'},
-  {zh:'（我在房間裡）你進⬚吧！',a:'來',en:'(I’m in the room) Come in!',why:'I’m inside, you move toward me → 進來.'},
-  {zh:'（我在外面）她拿著垃圾走出⬚了。',a:'來',en:'(I’m outside) She walked out with the rubbish.',why:'She comes toward where I stand → 出來.'},
-  {zh:'把瓶子丟進⬚。',a:'去',en:'Throw the bottle in.',why:'Into the bin, away from you → 進去.'},
-  {zh:'垃圾車開過⬚了，我們快下去。',a:'來',en:'The truck is coming over, let’s hurry down.',why:'Toward us → 過來.'},
-  {zh:'他走過⬚跟他們聊天。',a:'去',en:'He walked over to chat with them.',why:'Away from the speaker → 過去.'}]},
- {k:'li',t:'離 or 從？',zh:'離／從',rule:'A 離 B 遠／近 = distance between two points (nothing moves). 從 = a starting point: 從…到…, 從…往…, 從早上八點.',opts:['離','從'],q:[
-  {zh:'我家⬚學校很近。',a:'離',en:'My home is close to school.',why:'Distance → 離.'},
-  {zh:'⬚這裡往前走，就有一家超商。',a:'從',en:'Go straight from here and there’s a convenience store.',why:'Starting point + 往 → 從.'},
-  {zh:'師大⬚台北101不遠。',a:'離',en:'Shida isn’t far from Taipei 101.',why:'Distance → 離.'},
-  {zh:'他⬚早上八點工作到晚上六點。',a:'從',en:'He works from 8 am to 6 pm.',why:'從…到… in time.'},
-  {zh:'你家⬚捷運站遠不遠？',a:'離',en:'Is your place far from the MRT?',why:'Distance → 離.'},
-  {zh:'我們⬚台北開到台南。',a:'從',en:'We drove from Taipei to Tainan.',why:'從…V到… in space.'}]},
- {k:'time',t:'又…又 or 一邊…一邊？',zh:'又／一邊',rule:'又…又… = two qualities or states at once, same subject (又大又亮). 一邊…一邊… = two actions at the same time (一邊看電視一邊吃飯).',opts:['又','一邊'],q:[
-  {zh:'這個房間⬚大又亮。',a:'又',en:'This room is both big and bright.',why:'Two qualities → 又…又.'},
-  {zh:'小美⬚看電視，一邊吃飯。',a:'一邊',en:'Xiaomei eats while watching TV.',why:'Two actions → 一邊…一邊.'},
-  {zh:'他的女朋友⬚漂亮又聰明。',a:'又',en:'His girlfriend is both pretty and smart.',why:'Two Vs → 又…又.'},
-  {zh:'我常常⬚走路一邊聽音樂。',a:'一邊',en:'I often listen to music while walking.',why:'Two verbs happening together → 一邊.'}]},
- {k:'q',t:'還是 or 或是？',zh:'還是／或是',rule:'還是 = "or" inside a question (茶還是咖啡？) and 還是…吧 = you’d better. 或是 = "or" inside a statement (茶或是咖啡都可以).',opts:['還是','或是'],q:[
-  {zh:'你要喝茶⬚咖啡？',a:'還是',en:'Do you want tea or coffee?',why:'A question → 還是.'},
-  {zh:'我週末喝茶⬚喝咖啡都可以。',a:'或是',en:'On weekends tea or coffee is fine with me.',why:'A statement → 或是.'},
-  {zh:'我們⬚搭捷運去吧，開車太麻煩。',a:'還是',en:'Let’s take the MRT instead, driving is a hassle.',why:'還是…吧 = you’d better.'},
-  {zh:'你可以坐公車⬚坐捷運去學校。',a:'或是',en:'You can take the bus or the MRT to school.',why:'Statement → 或是.'}]}
-];
-
-/* ---- 2. Which one? ---- */
-function cfStat(k){return (S.cf||{})[k]||{n:0,ok:0};}
-function cfMark(k,ok){S.cf=S.cf||{};const s=S.cf[k]=S.cf[k]||{n:0,ok:0};s.n++;if(ok)s.ok++;s.last=Date.now();save();}
-function cfLevel(k){const s=cfStat(k);if(!s.n)return 0;const r=s.ok/s.n;return s.n<4?1:r>=0.9?4:r>=0.75?3:r>=0.6?2:1;}
-function buildConfuse(fams,n){
-  const pool=CONFUSE.filter(f=>!fams||fams.includes(f.k));
-  const items=[];
-  pool.forEach(f=>{const lv=cfLevel(f.k), wt=lv===0?3:lv===1?4:lv===2?2:1;f.q.forEach(q=>items.push({mode:'confuse',f,q,wt}));});
-  const out=[]; let bag=items.slice();
-  while(out.length<n&&bag.length){const tot=bag.reduce((a,x)=>a+x.wt,0);let r=Math.random()*tot,i=0;for(;i<bag.length;i++){r-=bag[i].wt;if(r<=0)break;}out.push(bag[i]);bag.splice(i,1);}
-  return out;
-}
-function startConfuse(fams){drillMode='confuse';dq={qs:buildConfuse(fams,fams&&fams.length===1?Math.min(8,CONFUSE.find(f=>f.k===fams[0]).q.length):12),i:0,ok:0,state:'ask',chosen:null,fams};go('drill');}
-function cfPick(i){
-  /* a miss comes back once at the end of the round */
-  try{const q=dq&&dq.qs[dq.i];if(q&&dq.state==='ask'){const opts=q.q.opts||q.f.opts;if(opts[i]!==q.q.a&&!q._requeued)dq.qs.push(Object.assign({},q,{_requeued:true}));}}catch(e){}
-  const q=dq.qs[dq.i];if(dq.state!=='ask')return;dq.chosen=i;const opts=q.q.opts||q.f.opts;const ok=opts[i]===q.q.a;cfMark(q.f.k,ok);if(ok)dq.ok++;dq.state='done';haptic(ok?'good':'again');renderDrill();}
-function renderConfuse(el){
-  const q=dq.qs[dq.i], f=q.f, it=q.q, done=dq.state==='done', opts=it.opts||f.opts, pick=!!f.pick;
-  const zh=pick?'':esc(it.zh).replace('⬚','<span class="blank">'+(done?esc(it.a):'&nbsp;&nbsp;&nbsp;')+'</span>');
-  el.innerHTML=`<div class="rev-top"><span class="qtype">Which one? · ${esc(f.t)}</span><span class="qprog">${dq.i+1} / ${dq.qs.length}</span></div>
-  <div class="qbox">
-    ${pick?`<div class="qen" style="font-size:15.5px;color:var(--ink)">Which one says: “${esc(it.en)}”</div>`:`<div class="qzh zh">${zh}</div><div class="qen">${esc(it.en)}</div>`}
-    <div class="opts ${pick?'sm':''}" ${pick?'style="grid-template-columns:1fr"':''}>${opts.map((o,i)=>`<button class="zh ${done?(o===it.a?'right':(dq.chosen===i?'wrong':'')):''}" onclick="cfPick(${i})">${esc(o)}</button>`).join('')}</div>
-    ${done?`<div class="why ${opts[dq.chosen]===it.a?'ok':'bad'}"><b>${opts[dq.chosen]===it.a?'✓':'✗'}</b> ${esc(it.why)} <a class="nlink" href="${NOTION.index}#辨析" target="_blank" rel="noopener">rule ↗</a></div>`:''}
-  </div>
-  ${done?`<div class="qfoot" style="margin-top:12px"><button class="btn" onclick="drillNext()">Next →</button></div>`:''}`;
-}
-function confusePanel(){
-  return `<div class="card"><div class="row spread" style="margin-bottom:6px"><div><div class="lab" style="margin:0">Which one? · 辨析</div><div class="small muted">weak families come up more often · rules are in the Grammar Index</div></div><button class="btn sm" onclick="startConfuse(null)">Mixed set · 12</button></div>
-    <div class="cfgrid">${CONFUSE.map(f=>{const lv=cfLevel(f.k),s=cfStat(f.k);return `<button class="cftile s${lv}" onclick="startConfuse(['${f.k}'])"><b class="zh">${esc(f.zh)}</b><span>${esc(f.t)}</span><i>${s.n?Math.round(s.ok/s.n*100)+'% · '+s.n:'new'}</i></button>`;}).join('')}</div></div>`;
-}
-
 /* ---- 6. Reading sprint ---- */
 const WORD_BY_T=(()=>{const m={};WORDS.forEach(w=>{const k=w.t.split('（')[0];if(!m[k]||w.l<m[k].l)m[k]=w;});return m;})();
 function readPool(){const cl=S.settings.curLesson||22, lo=Math.max(1,cl-4);const out=[];for(let l=lo;l<=cl;l++)(GRAMMAR[l]||[]).forEach(p=>p.s.forEach(s=>{if(s.zh.length>=8)out.push({p,s,l,wt:l===cl?3:l===cl-1?2:1});}));return out;}
@@ -531,9 +402,10 @@ function renderSdict(el){
 }
 function recKill(){try{if(REC_ACTIVE&&REC_ACTIVE.state!=='inactive')REC_ACTIVE.stop();}catch(e){}}
 /* ---- 4. drills: characters up front, sentences under More ---- */
-const DEMOTED=['listen','sdict','confuse','read','sent','speak'];
+const DEMOTED=['listen','sdict','read','sent','speak'];
 let moreDrills=false;
 /* Full-screen drill modes register here instead of wrapping startDrill / renderDrill again:
    DRILL_SCREENS[mode] = {start, render}. start() sets drillMode and calls go('drill'); render() paints #vDrill while dq is null. */
 const DRILL_SCREENS={};
+DRILL_SCREENS.wp={start:wpStart,render:wpRender};   /* 句型 Which pattern? (js/grammar.js) */
 if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

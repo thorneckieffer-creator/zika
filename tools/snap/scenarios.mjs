@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 const DAY = 86400000;
 const T0 = Date.parse('2026-11-20T09:30:00+08:00');
 const tabs = ['home', 'rev', 'drill', 'gram', 'brain', 'lib', 'set', 'exam', 'catch', 'my'];
-const drills = ['rec', 'tone', 'dict', 'sent', 'speak', 'confuse', 'read', 'listen', 'sdict', 'mtest', 'tcoach', 'story', 'usage'];
+const drills = ['rec', 'tone', 'dict', 'sent', 'speak', 'wp', 'read', 'listen', 'sdict', 'mtest', 'tcoach', 'story', 'usage'];
 const CODE = 'zika-test01';   /* a made-up sync code: the harness's cloud is in memory */
 const SHEETS = ', .modal-card, #syncModal';   /* sheets and modals sit outside the view they belong to */
 

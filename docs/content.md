@@ -80,3 +80,17 @@ For each word, a few short collocations and then one or two short sentences, so 
   - The 用法 drill opens on a start screen: pick the book and lesson, then a 12-phrase quiz, the whole lesson, or *Browse the phrases* (every word of the lesson with all its phrases). The hard list and the words due now can be quizzed too. A question gives the English and the phrase with the word blanked. `S.us[wordId] = [right, missed, last answer 1/0]` orders the quiz (never asked first, then missed last time) and draws the lesson's progress bar; a miss changes nothing else, and the finish screen offers to put the missed words on the hard list.
 - **Coverage:** every lesson of Books 1–3 that the app holds. `node tools/check.mjs` prints the totals.
 - **Who wrote them:** Claude, lesson by lesson; nobody who speaks Mandarin natively has reviewed them. If Thorne or a teacher flags a phrase, fix it in the source file and rerun `--write`.
+
+## Which pattern? (句型, v66)
+
+Pairs of patterns that both look as if they fit, each with the one-line test that decides between them. The drill shows a sentence with a blank and its English, and the pair as the choices; the answer side gives the right word, why, the test, and the same frame with each choice used correctly.
+
+- **The source is `tools/content/pairs.txt`**; its first lines describe the format. A pair is added there and nowhere else: no code changes.
+- **`python3 tools/check_pairs.py`** checks it, **`--list`** prints every sentence with its answer filled in to read through, and **`--write`** installs it as `PAIRS` in `data/pairs.js`.
+- **What the tool enforces**: every character is one the course teaches; a sentence is asked only from the lesson by which all its characters have been met (worked out by the tool and stored with the sentence), and never before the pair's own lesson; at least four of a pair's sentences can be asked at the pair's own lesson; one blank, an answer among the choices, every choice the answer somewhere and with a side-by-side line; no sentence that turns into another of the file's sentences when a wrong choice is put in.
+- **What only a reader can check**: that for the meaning the English gives, one choice is right and the others are wrong. The English is on the question side for exactly this reason (他十點___來 takes 就 or 才; "He didn't come until ten" takes one). Write it so that it says which.
+- **Whose they are**: the first eighteen pairs and their tests are Thorne's, from teacher-checked notes (21 November 2026). The other six, and 45 older sentences of six of the eighteen, were the "Which one?" drill's list in the code until v65; they were carried over with their keys, so the tallies in `S.cf` still belong to them. Five of those older sentences used characters the course does not teach (抽菸, 聰明 and others) and were reworded.
+- **A pair's key never changes** once it has shipped: the tally is kept under it.
+- **Pick-type sentences** (`pick:`) ask for the whole sentence instead of a word, for word order: where 了 goes, and time-when against duration.
+- Wording follows the course: Taiwan usage, plain English, no linguistics terms beyond the course's own (Vs).
+

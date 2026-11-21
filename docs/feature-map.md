@@ -56,7 +56,14 @@ The checker empties the deck on its own local origin before each run, so every r
 
 - **Where:** the Drill tab.
 - **How to test:** change the scope (A lesson · My hard list · Due now · Whole deck; then book and lesson). Start each drill the change touches and answer at least three questions. Leave with **exit**.
-- **Good looks like:** scope pickers at the top, then tiles: 聽寫 Dictation · 認字 Recognition · 聲調 Tones · 寫字測驗 Mastery test · 聲調教練 Tone coach · 短文 Stories · 用法 Phrases, and a fold "More drills · sentences, listening, grammar" holding six tiles: 聽力 Listening, 句子聽寫 Sentence dictation, 辨析 Which one?, 閱讀 Reading sprint, 造句 Sentences, 口說 Speaking. Below: 口試 Exam simulator (**Generate a prompt**), Which one? 辨析 (a mixed set and twelve families), and Your tones (the sixteen tone pairs). A scope line says how many words and grammar points are in play. Every drill has a progress header and a way out, and its end screen offers a next step.
+- **Good looks like:** scope pickers at the top, then tiles: 聽寫 Dictation · 認字 Recognition · 聲調 Tones · 寫字測驗 Mastery test · 聲調教練 Tone coach · 短文 Stories · 用法 Phrases, 句型 Which pattern?, and a fold "More drills · sentences, listening, grammar" holding five tiles: 聽力 Listening, 句子聽寫 Sentence dictation, 閱讀 Reading sprint, 造句 Sentences, 口說 Speaking. Below: 口試 Exam simulator (**Generate a prompt**) and Your tones (the sixteen tone pairs). A scope line says how many words and grammar points are in play. Every drill has a progress header and a way out, and its end screen offers a next step.
+
+## Which pattern? 句型 *(new in v66)*
+
+- **Where:** Drill tab → 句型 Which pattern?. Also Grammar tab → "Grasp · by family" → **Which one?** on a family that has a pair.
+- **How to test:** open it; change the lessons (Up to my lesson · Book 1 · Book 2 · Book 3 · From … to …); start a pair, answer right and wrong; start **Mixed set**; use the keys 1–4 and Enter; tap a character on the answer side; **Stop** and **← All drills**; finish a round. Phone, tablet and iPad landscape, day and night.
+- **Good looks like:** a grid of pairs (就／才, 被／讓 …), each with its book and lesson and "new" or a score. A question is one sentence with a blank, its English underneath, and the pair's two to four choices; nothing on it can be tapped for the dictionary and it has no speaker. Some pairs (了, time-when against duration) show three whole sentences to choose from instead. After an answer: the blank filled in, the right choice green and a wrong pick red, a line saying why, **The test** for the pair, and one line per choice showing the same frame with that choice used correctly, the right one marked; characters there open the dictionary, and the speaker reads the sentence. A miss comes back once at the end of the round ("again"). The end screen gives the score, the test of each pair missed, **Again** and **Pairs**. A sentence never uses a character from a lesson later than the range chosen. The pair's score on its tile moves, and so do the dots of the grammar point in the Grammar tab.
+- **Must not:** show the answer or a tappable character before the choice is made; grade twice on a double tap or a held key; leave a way to answer under the dictionary sheet.
 
 ## Tone coach *(walked)*
 
@@ -86,7 +93,7 @@ The checker empties the deck on its own local origin before each run, so every r
 
 - **Where:** the Grammar tab (phone: More).
 - **How to test:** scroll the families; pick a book and lesson; open one point (▶); tap **Drill** on it; tap **+ Add N cloze cards** on a throw-away deck.
-- **Good looks like:** "Grasp · by family" with a dot per pattern and Drill · Which one? · + cards; then a book and lesson picker, the lesson's title ("B1 L1 · Welcome to Taiwan!"), its points with a one-line explanation each, and whether each has a card.
+- **Good looks like:** "Grasp · by family" with a dot per pattern and Drill · Which one? (on a family that has a pair; it opens that pair in 句型 Which pattern?) · + cards; then a book and lesson picker, the lesson's title ("B1 L1 · Welcome to Taiwan!"), its points with a one-line explanation each, and whether each has a card.
 
 ## Brain *(walked)*
 

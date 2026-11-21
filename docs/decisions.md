@@ -13,6 +13,18 @@ Later the same evening Thorne wrote [master-plan.md](master-plan.md), which merg
 - **Before the 7 November merge is applied**, what the room sync does when a device with older unsent changes reconnects after an import is stated plainly, and the import runs with the iPad and iPhone closed.
 - **The native clip is the tone coach's answer key, and the clips and the coach are verified together** (V0 to V4 in [voice.md](voice.md)). He hears a wrong tone about a third of the time and it is not known which of the two is at fault. Audio is chosen by measured tone accuracy and a native ear, not by how natural it sounds. A rebuilt pack is licensed; a speaker's recordings are used only with their written agreement; a personal cloned voice stays on the device.
 
+## 2026-11-22 — v66: the "which pattern?" drill takes the place of "Which one?"
+
+The app already had a drill of this shape: 辨析 "Which one?", twelve families and 79 sentences written into `js/drills.js`, under the fold in the Drill tab. The master plan's drill and that one are the same idea, so there is one drill, not two:
+
+- **The old drill's code is deleted in the release that adds the new one** (`CONFUSE`, `startConfuse`, `cfPick`, `renderConfuse`, `confusePanel` and their friends), and its panel under the drill menu with it. The new one is `wp*` in `js/grammar.js`, a tile in the first row of the Drill tab.
+- **Its content is not deleted.** All 79 sentences went into `tools/content/pairs.txt` under the same keys, so what Thorne has already scored in `S.cf` stays attached. Six of the twelve families are among his eighteen pairs and took his test line; the other six (比較, 了, 來／去, 離／從, 又…又／一邊, 還是／或是) stay as pairs of their own.
+- **The tally is the one that existed, `S.cf`, by pair**, and the grammar point the right answer belongs to gets its own count through `gMark`, as the plan asks. No new field in the deck.
+- **The English is shown with the question.** Many of these frames take either word (他十點___來); what makes one right is the meaning, so the meaning has to be on the screen. This is the difference between the test he asked for and spotting a keyword.
+- **A sentence waits for its characters.** The tool stores with each sentence the lesson by which all its characters have been met, and the drill never shows it earlier.
+- **The data is a file of its own, `data/pairs.js`**, loaded with the other course data and checked at start-up like them.
+- **Fixed on the way**: the choice buttons of this and every choice drill were black on the dark panel at night (the checker's note from v63); they take the ink colour now.
+
 ## 2026-11-21 — toward a real product: three rules for now
 
 Added by Thorne to [master-plan.md](master-plan.md) later the same evening, so that nothing built this month blocks a real product later. None of it comes before the backend's own steps.

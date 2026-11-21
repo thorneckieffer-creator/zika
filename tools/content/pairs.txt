@@ -1,0 +1,410 @@
+# The "which pattern?" pairs — 句型, the drill in the Drill tab.
+#
+# A pair is two to four patterns that both look as if they fit. Each has the one-line test that decides between
+# them, a side-by-side line for every choice (the same frame with each choice used correctly), and sentences with
+# a blank. The English is shown with the sentence: it is what makes one choice right, so write it to say so.
+#
+#   == key | 就／才 | 1.11 → 2.11        the key the tallies are kept under (never change one), the pair as shown,
+#                                        and Book.Lesson: where the first pattern is taught → where the choice becomes real
+#   choices: 就 / 才                     2 to 4, in the order the buttons show. ∅ is "nothing goes here".
+#   test: …                              the test that decides it, one line, plain English
+#   points: 就=n11-2 才=n18-4            optional: the grammar point each choice belongs to (its tally moves too)
+#   side: 就 | 他八點就來了。 | He came at eight: early.
+#   中文 with ___ | answer | English | why        a sentence; add  | a/b  to offer other choices than the pair's
+#   pick: right sentence | wrong | wrong || English || why      for word order: choose the whole sentence
+#
+# A sentence is asked only from the lesson by which all its characters have been met; tools/check_pairs.py works
+# that out, checks the rest, and installs the file:   python3 tools/check_pairs.py --write
+# Read the list through after a change:              python3 tools/check_pairs.py --list
+#
+# The first eighteen pairs and their tests are Thorne's, from his teacher-checked notes (21 November 2026). The
+# last six, and the older sentences of six of the first eighteen, were the "Which one?" drill until v65.
+
+== zai | 到／在 | 1.5 → 2.6
+choices: 到 / 在
+test: Moving verbs take 到, placing verbs take 在. 坐、拿、走、放 take both and the meaning flips.
+points: 到=n21-1 在=n21-3
+side: 到 | 我把書搬到樓上。 | I moved the books upstairs: they travel there.
+side: 在 | 我把書放在樓上。 | I put the books upstairs: that is where they stay.
+那張椅子，請你放___樓下。 | 在 | That chair, please put it downstairs. | Placing verb, stays there → 在.
+我把球踢___學校外面了。 | 到 | I kicked the ball outside the school. | Movement, arrives somewhere → 到.
+這些字，我要寫___本子上。 | 在 | These characters, I’ll write them in my notebook. | 寫在 — they stay on the page.
+他想把公司搬___台南。 | 到 | He wants to move the company to Tainan. | 搬到 — moving to a destination.
+我正___網站上找租房子的資料。 | 在 | I’m looking for rental info online right now. | 正在 + V = in progress.
+我們從台北開___台南。 | 到 | We drove from Taipei to Tainan. | 從…V到… — arriving at the end point.
+錢存___銀行比較安全。 | 在 | Money is safer kept in the bank. | 存在 — placed and stays.
+他每天坐公車___學校。 | 到 | He takes the bus to school every day. | 坐…到 — the ride ends there.
+你的名字請寫___這裡。 | 在 | Please write your name here. | 寫在 — it stays on the page.
+請你把車開___我家前面。 | 到 | Please drive the car to the front of my house. | 開到 — moving to a point.
+老師坐___我旁邊。 | 在 | The teacher is sitting next to me. | 坐在 — where she ends up sitting.
+
+== jiucai | 就／才 | 1.11 → 2.11
+choices: 就 / 才
+test: 就 = sooner or more than expected, 才 = later or less. 才 also = "only if". 才 refuses a final 了.
+points: 就=n11-2 才=n18-4
+side: 就 | 他八點就來了。 | He came at eight: earlier than I expected.
+side: 才 | 他八點才來。 | He didn't come until eight: later than I expected.
+如玉五歲___會寫字了。 | 就 | Ruyu could already write at five. | Earlier than expected → 就.
+安同七歲___會寫字。 | 才 | Antong couldn’t write until he was seven. | Later than expected → 才.
+你看！我買的這件衣服___兩百塊。 | 才 | Look! This shirt I bought was only 200. | 才 + amount = merely.
+我以為垃圾車六點來，沒想到五點半___來了。 | 就 | I thought the truck came at six; it turned out it came at 5:30. | Sooner than expected → 就 … 了.
+他每天很晚___睡覺，所以上課很累。 | 才 | He doesn’t sleep until very late, so he’s tired in class. | Late → 才.
+我一到家___打電話給你。 | 就 | I’ll call you as soon as I get home. | 一…就… = as soon as.
+電影八點開始，他九點___到。 | 才 | The film started at eight; he didn’t arrive until nine. | Later than expected → 才.
+下個星期___得準備考試了。 | 就 | Next week we already have to prepare for the exam. | Sooner than you’d like → 就.
+他十點___來。 | 才 | He didn't come until ten. | Later than expected, and no 了 at the end → 才.
+你做完功課___可以出去玩。 | 才 | You may go out to play only once your homework is done. | "Only if" → 才.
+
+== beirang | 被／讓 | 2.11 → 2.12
+choices: 被 / 讓
+test: Where does the verb land? On the front noun → 被. On the second noun → 讓.
+points: 被=g26-1 讓=g27-1
+side: 被 | 弟弟被媽媽罵了。 | My little brother got told off by Mom: the telling-off lands on him.
+side: 讓 | 媽媽讓弟弟去睡覺。 | Mom made my little brother go to bed: going to bed is what he does.
+蛋糕___弟弟吃完了。 | 被 | The cake got eaten up by my little brother. | 吃完 lands on the cake, the front noun → 被.
+媽媽___我去買菜。 | 讓 | Mom had me go and buy groceries. | 去買菜 is what I do, the second noun → 讓.
+我的腳踏車___人偷了。 | 被 | My bike got stolen. | 偷 lands on the bike → 被.
+老師___我們早一點回家。 | 讓 | The teacher let us go home a bit early. | 回家 is what we do → 讓.
+那本書___同學借走了。 | 被 | That book was borrowed by a classmate. | 借走 lands on the book → 被.
+這件事___我很高興。 | 讓 | This made me very happy. | 高興 is how I feel, the second noun → 讓.
+垃圾___垃圾車收走了。 | 被 | The rubbish was taken away by the truck. | 收走 lands on the rubbish → 被.
+老闆不___他請假。 | 讓 | The boss won't let him take time off. | 請假 is what he would do → 讓.
+他說的話___大家都笑了。 | 讓 | What he said made everyone laugh. | 笑 is what everyone does → 讓.
+我的手機___妹妹拿去用了。 | 被 | My phone was taken by my little sister to use. | 拿去 lands on the phone → 被.
+
+== youzai | 又／再 | 2.11 → 2.11
+choices: 又 / 再
+test: Already happened → 又. Not yet → 再. Complaining is always 又.
+points: 又=g30-2
+side: 又 | 他昨天又來了。 | He came again yesterday: it has happened.
+side: 再 | 請你明天再來。 | Please come again tomorrow: it has not happened yet.
+他昨天沒來上課，今天___沒來。 | 又 | He didn't come to class yesterday, and again today he didn't come. | It has already happened → 又.
+這部電影很好看，我想___看一次。 | 再 | This film is great; I want to watch it once more. | Not yet → 再.
+你怎麼___忘了帶手機？ | 又 | How did you forget your phone again? | A complaint about what happened → 又.
+我們明天___來吧。 | 再 | Let's come again tomorrow. | Tomorrow has not happened → 再.
+外面___下雨了。 | 又 | It's raining again. | It is already raining → 又.
+這家餐廳的菜很好吃，下次我們___來。 | 再 | The food here is great; we'll come again next time. | Next time → 再.
+他上個月買了一支手機，這個月___買了一支。 | 又 | He bought a phone last month and bought another this month. | Already done → 又.
+請你___說一次，我沒聽懂。 | 再 | Please say it once more; I didn't understand. | A request for what has not happened → 再.
+你___在玩手機！快去寫功課。 | 又 | You're on your phone again! Go and do your homework. | Complaining is always 又.
+這個字我不會寫，請你___寫一次給我看。 | 再 | I can't write this character; please write it once more for me. | Not yet → 再.
+
+== wanhao | 完／好 | 2.8 → 2.9
+choices: 完 / 好
+test: 完 = it's over, 好 = done properly and ready. 報告寫完了，可是還沒寫好。
+points: 完=n23-8 好=g24-1
+side: 完 | 報告寫完了。 | The report is finished: I have reached the end of it.
+side: 好 | 報告寫好了。 | The report is done properly: it is ready to hand in.
+這本書我看___了，可以還給你了。 | 完 | I've finished this book; I can give it back to you. | Reached the end → 完.
+晚飯做___了，大家來吃吧！ | 好 | Dinner is ready, come and eat! | Done and ready → 好.
+你準備___了嗎？我們要走了。 | 好 | Are you ready? We're about to leave. | Ready → 好.
+錢都用___了，我得去銀行。 | 完 | The money is all used up; I have to go to the bank. | Nothing left → 完.
+電影演___了，我們回家吧。 | 完 | The film is over; let's go home. | It's over → 完.
+位子我已經訂___了，我們七點到就可以了。 | 好 | I've already got the seats booked; we just need to be there at seven. | Arranged and ready → 好.
+咖啡喝___了，我再去買一杯。 | 完 | The coffee is finished; I'll go and buy another cup. | Nothing left → 完.
+請大家坐___，車要開了。 | 好 | Everyone sit properly, the bus is about to leave. | Properly → 好.
+我們說___了，星期六早上九點見。 | 好 | We've agreed: see you Saturday morning at nine. | Settled → 好.
+考試考___了，我們去吃好吃的吧！ | 完 | The exam is over; let's go and eat something good! | It's over → 完.
+
+== neg | 不／沒 | 1.13 → 2.7
+choices: 不 / 沒
+test: 有 → 沒有; Vs → 不; didn't happen → 沒.
+points: 不=g1-4 沒=n13-2
+side: 不 | 我不去。 | I'm not going: I don't intend to.
+side: 沒 | 我沒去。 | I didn't go: it didn't happen.
+我覺得今天___熱，不必多穿一點。 | 不 | I don’t think it’s hot today, no need to wear more. | 熱 is a state → 不.
+去年他來臺灣的時候太忙了，___去夜市。 | 沒 | Last year he was too busy in Taiwan and didn’t go to the night market. | It didn’t happen → 沒.
+我___忘！我等一下要去圖書館念書。 | 沒 | I didn’t forget! I’m going to the library to study in a bit. | 沒忘 — the forgetting didn’t happen.
+中文很好學，可是中國字___好寫。 | 不 | Chinese is easy to learn, but the characters aren’t easy to write. | 好寫 is a Vs (a quality) → 不.
+昨天我___去學校上課。 | 沒 | Yesterday I didn’t go to class. | Past event that didn’t happen → 沒.
+他明天___來，他要去台中。 | 不 | He isn’t coming tomorrow, he’s going to Taichung. | Intention / future → 不.
+我還___吃早飯，有一點餓。 | 沒 | I haven’t eaten breakfast yet, I’m a bit hungry. | 還沒 + V = not yet.
+他___喜歡喝咖啡，每天都喝茶。 | 不 | He doesn’t like coffee, he drinks tea every day. | Habit / preference → 不.
+我___有哥哥，只有一個妹妹。 | 沒 | I don't have an older brother, only a little sister. | 有 → 沒有.
+這家餐廳的菜___貴。 | 不 | The food at this restaurant isn't expensive. | 貴 is a Vs → 不.
+
+== xianzai | 再／然後 | 1.12 → 2.11
+choices: 再 / 然後
+test: Can a new subject follow? Yes → 然後. No → 再.
+points: 再=n12-1 然後=n19-5
+side: 然後 | 先吃飯，然後我們去看電影。 | First we eat, and then we go to a film: 我們 follows 然後.
+side: 再 | 先吃飯，我們再去看電影。 | First we eat, then we go to a film: 再 comes after 我們, before the verb.
+我先去銀行，___我太太去超市買東西。 | 然後 | I go to the bank first, and then my wife goes to the supermarket. | A new subject (我太太) follows → 然後.
+我們先吃飯，我___送你回家。 | 再 | Let's eat first, then I'll take you home. | It comes after the subject 我 → 再.
+你先往前走，___你會看到一家超商。 | 然後 | Go straight first, and then you'll see a convenience store. | 你 follows it → 然後.
+你先休息一下，我們___出發。 | 再 | You rest a bit first, then we'll set off. | After the subject 我們 → 再.
+他先打電話給我，___我們一起去了車站。 | 然後 | He called me first, and then we went to the station together. | 我們 follows it → 然後.
+你先把功課寫完，我們___去公園玩。 | 再 | Finish your homework first, then we'll go and play in the park. | After the subject 我們 → 再.
+老師先說了一次，___學生跟著說。 | 然後 | The teacher said it once first, and then the students repeated it. | A new subject (學生) follows → 然後.
+你先想一想，明天___告訴我。 | 再 | Think it over first, and tell me tomorrow. | Before the verb, no subject after it → 再.
+我們先坐捷運，___我朋友開車來接我們。 | 然後 | We take the MRT first, and then my friend comes to pick us up by car. | 我朋友 follows it → 然後.
+我先看看，等一下___決定。 | 再 | I'll have a look first, and decide in a bit. | Before the verb → 再.
+
+== measure | 趟／遍／次／下 | 2.11 → 2.11
+choices: 趟 / 遍 / 次 / 下
+test: Out and back → 趟; start to finish → 遍; bare count → 次; one quick action → 下.
+points: 趟=g26-5 遍=g26-5
+side: 趟 | 我去了一趟台南。 | I made a trip to Tainan: there and back.
+side: 遍 | 這本書我看了一遍。 | I read this book through once: from start to finish.
+side: 次 | 我去過一次台南。 | I have been to Tainan once: just a count.
+side: 下 | 你看一下這本書。 | Have a quick look at this book: one quick action.
+銀行沒開，我白跑了一___。 | 趟 | The bank was closed; I made the trip there and back for nothing. | Out and back → 趟.
+麻煩你幫我跑一___郵局。 | 趟 | Could you make a run to the post office and back for me? | Out and back → 趟.
+這一課的課文，請大家從第一句到最後一句念一___。 | 遍 | Everyone read this lesson's text through once, from the first sentence to the last. | Start to finish → 遍.
+這是我第一___來臺灣。 | 次 | This is my first time in Taiwan. | 第一次 — a bare count → 次.
+請等一___，我馬上來。 | 下 | Wait a moment, I'll be right there. | One quick action → 下.
+我每個星期上三___中文課。 | 次 | I have Chinese class three times a week. | Counting times → 次.
+老師，這個字我不會念，可以問一___嗎？ | 下 | Teacher, I can't read this character; may I ask quickly? | One quick action → 下.
+這一課的字，請你從第一個到最後一個寫一___。 | 遍 | Please write this lesson's characters through once, from the first to the last. | Start to finish → 遍.
+下個月我得回一___美國，兩個星期以後回來。 | 趟 | Next month I have to make a trip back to the States; I'll return in two weeks. | Out and back → 趟.
+上___考試我考得不好。 | 次 | I did badly in the last exam. | 上次 — a bare count → 次.
+你來看一___，這是什麼？ | 下 | Come and have a quick look: what is this? | One quick action → 下.
+
+== other | 其他／別的／另外 | 2.11 → 2.11
+choices: 另外 / 別的 / 其他
+test: Can a number go before the noun? Yes → 另外.
+points: 另外=n20-3
+side: 另外 | 我想看看另外一件。 | I'd like to see another one: a number (一件) follows.
+side: 別的 | 我想看看別的衣服。 | I'd like to see some other clothes: no number.
+side: 其他 | 其他的衣服都太貴了。 | The rest of the clothes are all too expensive: the others of a known group.
+這件太小了，我想看看___一件。 | 另外 | This one is too small; I'd like to see another one. | A number (一件) follows → 另外.
+我不喜歡這個顏色，有沒有___？ | 別的 | I don't like this colour; do you have a different one? | No number, something different → 別的. | 別的/另外
+我們班有十個學生，三個是日本人，___七個是美國人。 | 另外 | Our class has ten students; three are Japanese and the other seven are American. | A number (七個) follows → 另外. | 另外/別的
+除了咖啡，你們還有___飲料嗎？ | 別的 | Besides coffee, do you have any other drinks? | No number → 別的. | 別的/另外
+只有小明來了，___的人呢？ | 其他 | Only Xiaoming has come; where are the rest? | The rest of a known group, no number → 其他. | 其他/另外
+我買了一本書，___還買了兩支筆。 | 另外 | I bought a book, and in addition two pens. | "In addition", standing alone before the verb → only 另外 can.
+這家店今天休息，我們去___兩家看看吧。 | 另外 | This shop is closed today; let's go and look at two others. | A number (兩家) follows → 另外. | 另外/別的
+我今天很忙，沒有時間做___事。 | 別的 | I'm busy today; I have no time to do anything else. | No number → 別的. | 別的/另外
+這個問題我會，___的問題我都不會。 | 其他 | This question I can do; all the rest I can't. | The rest of a known set, no number → 其他. | 其他/另外
+我有兩個哥哥，一個在臺北，___一個在美國。 | 另外 | I have two older brothers: one in Taipei, the other in the States. | A number (一個) follows → 另外.
+
+== shangzhe | V上／V著 | 1.5 → 2.11
+choices: 上 / 著
+test: 上 = the moment it connects, 著 = the state. 穿上鞋子 vs 穿著鞋子.
+points: 著=n16-3
+side: 上 | 他穿上鞋子，出門了。 | He put his shoes on and went out: the moment they go on.
+side: 著 | 他穿著鞋子睡覺。 | He sleeps with his shoes on: the state he is in.
+外面很冷，你出門以前穿___外套吧。 | 上 | It's cold out; put a coat on before you leave. | The moment it goes on → 上.
+他今天穿___一件紅色的外套。 | 著 | He is wearing a red coat today. | The state → 著.
+請把門關___。 | 上 | Please shut the door. | The moment it closes → 上.
+門開___，你進來吧。 | 著 | The door is open, come in. | The state it is in → 著.
+他們在客廳坐___聊天。 | 著 | They are sitting in the living room chatting. | The state they are in → 著.
+他考___了他最想念的大學。 | 上 | He got into the university he most wanted to attend. | The moment he makes it → 上.
+桌子上放___很多書。 | 著 | There are a lot of books lying on the table. | The state → 著.
+他愛___了那個女孩。 | 上 | He has fallen in love with that girl. | The moment it connects → 上.
+他手裡拿___一杯咖啡。 | 著 | He is holding a cup of coffee. | The state → 著.
+請在這裡寫___你的名字。 | 上 | Please write your name in here. | The moment it goes onto the page → 上.
+
+== modal | 會／能／可以 | 1.4 → 2.8
+choices: 會 / 能 / 可以
+test: Learned skill → 會; circumstances allow → 能; someone permits → 可以.
+points: 會=g5-4 能=g4-3 可以=g4-3
+side: 會 | 我會開車。 | I can drive: I learned how.
+side: 能 | 我今天能開車。 | I'm able to drive today: nothing is stopping me.
+side: 可以 | 我可以開你的車嗎？ | May I drive your car? You decide.
+我___說中文，可是說得不好。 | 會 | I can speak Chinese, but not well. | Learned skill → 會.
+這裡___拍照嗎？ | 可以 | Is taking photos allowed here? | Permission → 可以.
+他感冒了，今天不___來上課。 | 能 | He has a cold and can’t come to class today. | Circumstances prevent it → 不能.
+明天___下雨，你帶傘吧。 | 會 | It will rain tomorrow, bring an umbrella. | Likely / will → 會.
+老師，我___早一點走嗎？ | 可以 | Teacher, may I leave a little early? | Asking permission → 可以.
+我沒有錢，不___買機車。 | 能 | I have no money, I can’t buy a scooter. | Circumstance (no money) → 不能.
+你___游泳嗎？ | 會 | Can you swim? | A skill you learned → 會.
+圖書館裡不___吃東西。 | 可以 | No eating in the library. | A rule about permission → 不可以.
+
+== dian | 一點／有一點 | 1.5 → 2.2
+choices: 一點 / 有一點
+test: 有一點 before Vs = mild complaint; Vs + 一點 = comparison or request.
+points: 一點=n15-4 有一點=g5-3
+side: 有一點 | 這件衣服有一點大。 | This shirt is a bit big: a mild complaint.
+side: 一點 | 我要大一點的。 | I want a slightly bigger one: a comparison, a request.
+這個房間___小，我不太喜歡。 | 有一點 | This room is a bit small, I don’t really like it. | Complaint before a Vs → 有一點.
+請你說慢___。 | 一點 | Please speak a little slower. | Instruction: Vs + 一點.
+醫生要他多睡___覺。 | 一點 | The doctor wants him to sleep a bit more. | 多 + V + 一點 + O.
+我___餓了，我們去吃飯吧。 | 有一點 | I’m a bit hungry, let’s go eat. | Mild complaint → 有一點 餓.
+今天比昨天冷___。 | 一點 | Today is a little colder than yesterday. | Comparison: Vs + 一點.
+這件衣服___貴，可是很好看。 | 有一點 | This shirt is a bit pricey, but it looks great. | Complaint → 有一點 貴.
+我___咖啡也不喝。 | 一點 | I don’t drink coffee at all. | 一點 + N + 也不 = not at all.
+今天___冷，你多穿一點吧。 | 有一點 | It's a bit cold today; put a bit more on. | Before the Vs, a mild complaint → 有一點.
+老闆，可以便宜___嗎？ | 一點 | Boss, could it be a little cheaper? | A request, after the Vs → 一點.
+
+== cause | 因為／為了 | 1.10 → 2.7
+choices: 因為 / 為了
+test: 因為 takes a cause, 為了 takes a goal.
+points: 因為=n10-5 為了=n22-3
+side: 因為 | 因為想學中文，所以我來臺灣。 | Because I want to learn Chinese, I came to Taiwan: the cause.
+side: 為了 | 為了學中文，我來臺灣。 | In order to learn Chinese, I came to Taiwan: the goal.
+我___學中文來台灣。 | 為了 | I came to Taiwan in order to study Chinese. | A goal → 為了.
+我___喜歡台灣，所以來台灣。 | 因為 | I came to Taiwan because I like it. | A cause, with 所以 → 因為.
+___保護環境，台灣人天天做垃圾分類。 | 為了 | To protect the environment, Taiwanese sort their rubbish every day. | "In order to" fits → 為了.
+___下雨，所以我們沒去。 | 因為 | Because it rained, we didn’t go. | Cause + 所以 → 因為.
+你得把垃圾分類，___垃圾車不收。 | 要不然 | You have to sort the rubbish, or else the truck won’t take it. | "Or else" → 要不然. | 因為/為了/要不然/如果
+___你搬家了，我就少了一個朋友。 | 如果 | If you move, I’ll have one friend fewer. | A condition with 就 → 如果. | 因為/為了/要不然/如果
+快一點，___就追不到垃圾車了。 | 要不然 | Hurry, or else you won’t catch the truck. | Only the bad consequence → 要不然. | 因為/為了/要不然/如果
+___學好中文，他每天都跟臺灣朋友聊天。 | 為了 | In order to learn Chinese well, he chats with Taiwanese friends every day. | A goal → 為了.
+他___生病，所以今天沒來上課。 | 因為 | He didn't come to class today because he is ill. | A cause, with 所以 → 因為.
+___找工作，他去了很多家公司。 | 為了 | To find a job, he went to many companies. | A goal → 為了.
+
+== zhuyi | 注意／小心 | 2.11 → 2.11
+choices: 注意 / 小心
+test: Could something hurt you? Yes → 小心.
+side: 小心 | 小心！車子來了。 | Careful! A car is coming: it could hurt you.
+side: 注意 | 請注意！車子要開了。 | Attention please! The bus is about to leave: nothing dangerous.
+___！地上很滑。 | 小心 | Careful! The floor is slippery. | You could fall → 小心.
+你有沒有___到他今天穿什麼？ | 注意 | Did you notice what he's wearing today? | Noticing, no danger → 注意.
+這碗湯很熱，___一點！ | 小心 | This soup is very hot, be careful! | It could burn you → 小心.
+上課的時候要___聽老師說話。 | 注意 | In class you should pay attention to what the teacher says. | Paying attention, no danger → 注意.
+他開車很___，從來沒出過事。 | 小心 | He drives very carefully and has never had an accident. | Careful about danger → 小心.
+請大家___，考試是下個星期三。 | 注意 | Attention everyone: the exam is next Wednesday. | An announcement, no danger → 注意.
+下雨的時候騎機車，一定要___。 | 小心 | When you ride a scooter in the rain, you must be careful. | You could get hurt → 小心.
+我沒___他是什麼時候走的。 | 注意 | I didn't notice when he left. | Noticing → 注意.
+晚上一個人回家要___。 | 小心 | Be careful going home alone at night. | Something could happen to you → 小心.
+寫字的時候要___筆順。 | 注意 | When you write characters, pay attention to the stroke order. | Paying attention, no danger → 注意.
+
+== chen | 趁／順便／的時候 | 2.10 → 2.11
+choices: 趁 / 順便 / 的時候
+test: Window closing → 趁; passing anyway → 順便; just a time → 的時候.
+points: 趁=g25-1 順便=g26-2 的時候=g7-6
+side: 趁 | 趁天氣好，我們去爬山吧。 | While the weather is still good, let's go hiking: the chance won't last.
+side: 順便 | 我去爬山，順便拍了幾張照片。 | I went hiking and took a few photos while I was at it: I was there anyway.
+side: 的時候 | 爬山的時候，我喜歡拍照。 | When I hike, I like taking photos: just the time.
+___年輕，應該多去別的國家看看。 | 趁 | While you're still young, you should go and see more of other countries. | The window is closing → 趁.
+我去超市買菜，___買了一點水果。 | 順便 | I went to the supermarket for groceries and bought a little fruit while I was there. | I was there anyway → 順便.
+上課___不可以用手機。 | 的時候 | You can't use your phone during class. | Just a time → 的時候.
+___熱吃吧！ | 趁 | Eat it while it's hot! | It won't stay hot → 趁.
+你回家的路上，___把垃圾拿出去，好嗎？ | 順便 | On your way home, take the rubbish out while you're at it, OK? | Passing anyway → 順便.
+我吃飯___喜歡看電視。 | 的時候 | I like watching TV when I eat. | Just a time → 的時候.
+___老闆不在，我們休息一下吧。 | 趁 | While the boss is out, let's take a break. | The chance won't last → 趁.
+他來臺北開會，___來看看我。 | 順便 | He came to Taipei for a meeting and dropped in on me while he was here. | He was here anyway → 順便.
+我在美國___，常常去打球。 | 的時候 | When I was in the States, I often played ball. | Just a time → 的時候.
+___還沒下雨，快把衣服收進來。 | 趁 | Before the rain starts, quickly bring the washing in. | The window is closing → 趁.
+
+== when | 時間：什麼時候／多久 | 1.9 → 1.14
+choices: 前 / 後
+test: When → before the verb; how long → after it. ✗我看書三個鐘頭
+points: *=n14-1
+side: 前 | 我每天七點吃早飯。 | I have breakfast at seven every day: when, so before the verb.
+side: 後 | 我每天學三個鐘頭的中文。 | I study Chinese for three hours a day: how long, so after the verb.
+pick: 我看了三個鐘頭的書。 | 我三個鐘頭看了書。 | 我看書三個鐘頭。 || I read for three hours. || How long → after the verb, before the object.
+pick: 我每天七點吃早飯。 | 我每天吃早飯七點。 | 我吃早飯每天七點。 || I have breakfast at seven every day. || When → before the verb.
+pick: 他學了兩年中文。 | 他兩年學了中文。 | 他學中文兩年。 || He studied Chinese for two years. || How long → after the verb.
+pick: 我們明天早上九點上課。 | 我們上課明天早上九點。 | 我們明天上課早上九點。 || We have class at nine tomorrow morning. || When → before the verb.
+pick: 我等了半個鐘頭。 | 我半個鐘頭等了。 | 我半個鐘頭等。 || I waited for half an hour. || How long → after the verb.
+pick: 她每天工作八個鐘頭。 | 她每天八個鐘頭工作。 | 她工作每天八個鐘頭。 || She works eight hours a day. || When (每天) before, how long (八個鐘頭) after.
+pick: 我下個星期五去臺南。 | 我去臺南下個星期五。 | 我去下個星期五臺南。 || I'm going to Tainan next Friday. || When → before the verb.
+pick: 我每天早上運動一個鐘頭。 | 我每天早上一個鐘頭運動。 | 我運動每天早上一個鐘頭。 || I exercise for an hour every morning. || When before the verb, how long after it.
+
+== same | 跟…一樣／像…一樣 | 1.13 → 2.9
+choices: 跟 / 像
+test: The same as vs. like.
+points: 像=g25-6
+side: 跟 | 他的手機跟我的一樣。 | His phone is the same as mine: the two really are the same.
+side: 像 | 他的手機像電腦一樣。 | His phone is like a computer: it is not one, it resembles one.
+我的手機___你的一樣，都是新的。 | 跟 | My phone is the same as yours; both are new. | Really the same → 跟.
+他說中文說得___臺灣人一樣。 | 像 | He speaks Chinese like a Taiwanese person. | He isn't one, he resembles one → 像.
+你的想法___我的一樣。 | 跟 | Your idea is the same as mine. | The same → 跟.
+今天熱得___夏天一樣。 | 像 | It's hot like summer today. | It isn't summer, it resembles it → 像.
+這支手機___那支一樣貴。 | 跟 | This phone costs the same as that one. | The same → 跟.
+老師對我們___對自己的孩子一樣。 | 像 | The teacher treats us like her own children. | We aren't her children → 像.
+我___你一樣，也是學生。 | 跟 | Same as you, I'm a student too. | The same → 跟.
+那個小孩笑的時候___太陽一樣。 | 像 | When that child smiles, it's like the sun. | A likeness → 像.
+今天的天氣___昨天一樣，還是很冷。 | 跟 | Today's weather is the same as yesterday's: still cold. | The same → 跟.
+這個地方___沒有人住一樣，一點聲音也沒有。 | 像 | This place is as if nobody lived here: not a sound. | "As if" → 像.
+
+== bian | 變／了 | 1.10 → 2.12
+choices: 變 / ∅
+test: 變 when the change itself is the news (她變胖了).
+points: 變=g27-3 ∅=g4-6
+side: 變 | 天氣變了。 | The weather has changed: the change is the news, and 變 is the verb that says it.
+side: ∅ | 天氣冷了。 | It has turned cold: 了 alone shows the change.
+天氣___了，你多穿一點。 | 變 | The weather has changed; put more on. | The change itself is the news, and it needs a verb → 變.
+我___會開車了。 | ∅ | I can drive now. | Before 會, 了 alone shows the change.
+他有了工作以後，___得很忙。 | 變 | Since he got a job, he has become very busy. | 變得 + how he is now.
+弟弟___是大學生了。 | ∅ | My little brother is a university student now. | Before 是, 了 alone.
+十年不見，你一點也沒___。 | 變 | Ten years on, you haven't changed a bit. | Changing is the verb here → 變.
+外面___下雨了。 | ∅ | It has started raining outside. | Before a verb, 了 alone.
+她___了很多，我差一點不認識她了。 | 變 | She has changed a lot; I nearly didn't recognise her. | The change is the news → 變.
+我___不想去了。 | ∅ | I don't want to go any more. | Before 不想, 了 alone.
+這個地方___得跟以前不一樣了。 | 變 | This place has become different from before. | 變得 + how it is now.
+他___有女朋友了。 | ∅ | He has a girlfriend now. | Before 有, 了 alone.
+
+== cmp | 比較 | 1.8 → 1.14
+choices: 比 / 比較 / 一樣 / 更 / 沒有
+test: 比 names the thing you compare against (A 比 B Vs). 比較 never names it. 跟…一樣 = the same as. 更 = even more. A 沒有 B (這麼) Vs = not as … as.
+points: 比=g8-2 比較=g8-3 更=n14-4
+side: 比 | 今天比昨天冷。 | Today is colder than yesterday: yesterday is named.
+side: 比較 | 今天比較冷。 | Today is colder: nothing is named.
+side: 一樣 | 今天跟昨天一樣冷。 | Today is as cold as yesterday.
+side: 更 | 今天比昨天更冷。 | Today is even colder than yesterday.
+side: 沒有 | 今天沒有昨天這麼冷。 | Today is not as cold as yesterday.
+台北的房租___台中貴。 | 比 | Rent in Taipei is higher than in Taichung. | B (台中) is named → 比.
+這家的牛肉麵___好吃。 | 比較 | This place’s beef noodles are better. | No B named → 比較.
+我的手機跟你的___。 | 一樣 | My phone is the same as yours. | 跟…一樣.
+今天比昨天___冷。 | 更 | Today is even colder than yesterday. | 比 + 更 = even more.
+他的中文___我這麼好。 | 沒有 | His Chinese isn’t as good as mine. | A 沒有 B 這麼 Vs = not as … as.
+哥哥___我高一點。 | 比 | My older brother is a little taller than me. | B named, + 一點 for how much.
+
+== le | 了 | 1.4 → 1.14
+choices: 了
+test: V了 + object = completed. Sentence-final 了 = the situation changed. V了 + duration + 了 = still going. 太…了 is a frame. 沒 never takes 了.
+points: *=n13-2
+side: V了 | 我買了兩本書。 | I bought two books: done.
+side: 了。 | 咖啡貴了。 | Coffee has got expensive: the situation changed.
+pick: 我等公車等了二十分鐘了。 | 我等了二十分鐘公車。 | 我等公車二十分鐘了。 || I’ve been waiting for the bus for twenty minutes (and still am). || V了 + duration + 了 = up to now, still going.
+pick: 他在台北住了三年。 | 他在台北住了三年了。 | 他在台北住三年了。 || He lived in Taipei for three years (and then left). || No final 了 → the three years are finished.
+pick: 咖啡貴了。 | 咖啡了貴。 | 咖啡很貴了。 || Coffee got expensive. || Sentence-final 了 = change of state.
+pick: 他沒吃早飯。 | 他沒吃了早飯。 | 他不吃了早飯。 || He didn’t eat breakfast. || 沒 cancels the action; 了 never follows it.
+pick: 太貴了！ | 太貴！ | 很太貴了！ || It’s way too expensive! || 太…了 is one frame; the 了 belongs to it.
+pick: 我不喝咖啡了。 | 我不喝了咖啡。 | 我沒喝咖啡了。 || I don’t drink coffee anymore. || 不…了 = not anymore (a change).
+pick: 我買了兩本書。 | 我買兩本書了。 | 我了買兩本書。 || I bought two books. || V了 + quantified object = completed action.
+
+== laiqu | 來／去 | 1.11 → 2.6
+choices: 來 / 去
+test: 來 = toward where I am standing, 去 = away from it. Ask "am I inside or outside, upstairs or downstairs?" before you say it.
+side: 來 | （我在樓上）你上來吧。 | (I'm upstairs) Come up: toward me.
+side: 去 | （我在樓下）你上去吧。 | (I'm downstairs) Go up: away from me.
+（我在樓上）你把書搬到樓上___吧。 | 來 | (I’m upstairs) Bring the books up here. | Toward me → 來.
+（我在樓下）我把書搬到樓上___了。 | 去 | (I’m downstairs) I took the books upstairs. | Away from me → 去.
+（我在房間裡）你進___吧！ | 來 | (I’m in the room) Come in! | I’m inside, you move toward me → 進來.
+（我在外面）她拿著垃圾走出___了。 | 來 | (I’m outside) She walked out with the rubbish. | She comes toward where I stand → 出來.
+把瓶子丟進___。 | 去 | Throw the bottle in. | Into the bin, away from you → 進去.
+垃圾車開過___了，我們快下去。 | 來 | The truck is coming over, let’s hurry down. | Toward us → 過來.
+他走過___跟他們聊天。 | 去 | He walked over to chat with them. | Away from the speaker → 過去.
+
+== li | 離／從 | 1.6 → 2.1
+choices: 離 / 從
+test: A 離 B 遠／近 = the distance between two points, nothing moves. 從 = a starting point: 從…到…, 從…往…
+points: 離=n16-5 從=g7-2
+side: 離 | 我家離學校很近。 | My home is close to school: a distance, nothing moves.
+side: 從 | 我從我家走到學校。 | I walk from my home to school: a starting point.
+我家___學校很近。 | 離 | My home is close to school. | Distance → 離.
+___這裡往前走，就有一家超商。 | 從 | Go straight from here and there’s a convenience store. | Starting point + 往 → 從.
+師大___台北101不遠。 | 離 | Shida isn’t far from Taipei 101. | Distance → 離.
+他___早上八點工作到晚上六點。 | 從 | He works from 8 am to 6 pm. | 從…到… in time.
+你家___捷運站遠不遠？ | 離 | Is your place far from the MRT? | Distance → 離.
+我們___台北開到台南。 | 從 | We drove from Taipei to Tainan. | 從…V到… in space.
+
+== time | 又…又／一邊…一邊 | 1.8 → 2.1
+choices: 又 / 一邊
+test: 又…又… = two qualities at once, same subject. 一邊…一邊… = two actions at the same time.
+points: 又=g8-4 一邊=n16-4
+side: 又 | 這個房間又大又亮。 | This room is both big and bright: two qualities.
+side: 一邊 | 他一邊吃飯一邊看書。 | He reads while he eats: two actions.
+這個房間___大又亮。 | 又 | This room is both big and bright. | Two qualities → 又…又.
+小美___看電視，一邊吃飯。 | 一邊 | Xiaomei eats while watching TV. | Two actions → 一邊…一邊.
+他的女朋友___高又漂亮。 | 又 | His girlfriend is both tall and pretty. | Two Vs → 又…又.
+我常常___走路一邊聽音樂。 | 一邊 | I often listen to music while walking. | Two verbs happening together → 一邊.
+這家店的東西___便宜又好。 | 又 | This shop's things are both cheap and good. | Two qualities → 又…又.
+我喜歡___喝咖啡一邊看書。 | 一邊 | I like to read while drinking coffee. | Two actions together → 一邊.
+
+== q | 還是／或是 | 1.3 → 1.8
+choices: 還是 / 或是
+test: 還是 = "or" inside a question, and 還是…吧 = you'd better. 或是 = "or" inside a statement.
+points: 還是=g8-6 或是=g8-6
+side: 還是 | 你要喝茶還是咖啡？ | Do you want tea or coffee? A question.
+side: 或是 | 茶或是咖啡都可以。 | Tea or coffee, either is fine. A statement.
+你要喝茶___咖啡？ | 還是 | Do you want tea or coffee? | A question → 還是.
+我週末喝茶___喝咖啡都可以。 | 或是 | On weekends tea or coffee is fine with me. | A statement → 或是.
+我們___搭捷運去吧，開車太麻煩。 | 還是 | Let’s take the MRT instead, driving is a hassle. | 還是…吧 = you’d better.
+你可以坐公車___坐捷運去學校。 | 或是 | You can take the bus or the MRT to school. | Statement → 或是.
+你是美國人___日本人？ | 還是 | Are you American or Japanese? | A question → 還是.
+今天___明天，我都有空。 | 或是 | Today or tomorrow, I'm free on both. | A statement → 或是.

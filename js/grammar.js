@@ -282,15 +282,127 @@ function gramSetPanel(){const s=S.settings,n=Object.keys(S.cards).filter(isGram)
 function graspMap(){
   const cl=S.settings.curLesson||22;
   const rows=GFAM.map(f=>{const pts=[];for(let l=1;l<=cl;l++)(GRAMMAR[l]||[]).forEach(p=>{if(famOf(p)===f.k)pts.push({p,l});});return {f,pts};}).filter(r=>r.pts.length);
-  const cfk=CONFUSE.map(f=>f.k);
+  const cfk=PAIRS.map(p=>p.k);
   return `<div class="card"><div class="row spread" style="margin-bottom:8px"><div><div class="lab" style="margin:0">Grasp · by family</div><div class="small muted">one dot per pattern · explanations live in Notion</div></div><a class="nlink" href="${NOTION.index}" target="_blank" rel="noopener">Grammar Index ↗</a></div>
   <div class="famlist">${rows.map(r=>{
     const lv=r.pts.map(x=>gramGrasp(x.p.id)); const solid=lv.filter(v=>v>=3).length, shaky=lv.filter(v=>v===1).length, none=lv.filter(v=>v===0).length;
     const hasCf=cfk.includes(r.f.k);
     return `<div class="fam"><div class="fam-h"><b>${esc(r.f.t)}</b><span class="small muted">${solid}/${r.pts.length} solid${shaky?` · <span style="color:var(--red)">${shaky} shaky</span>`:''}${none?` · ${none} untouched`:''}</span></div>
       <div class="fam-dots">${r.pts.map((x,i)=>`<i class="s${lv[i]}" title="${esc(x.p.t)} · ${esc(lnLabel(x.l))} · ${GRASP_T[lv[i]]}" onclick="gramLesson=${x.l};gramOpen={};renderGram();setTimeout(()=>{const g=document.querySelectorAll('#vGram .gpt')[${(GRAMMAR[x.l]||[]).indexOf(x.p)}];if(g)g.scrollIntoView({behavior:'smooth',block:'center'});},30)"></i>`).join('')}</div>
-      <div class="fam-acts"><button class="btn sm ghost" onclick="startGramQuiz(famPoints('${r.f.k}'))">Drill</button>${hasCf?`<button class="btn sm ghost" onclick="startConfuse(['${r.f.k}'])">Which one?</button>`:''}<button class="btn sm ghost" onclick="trackGramIds(famPoints('${r.f.k}').map(p=>p.id))" title="add these patterns as cloze cards">+ cards</button></div></div>`;}).join('')}</div></div>`;
+      <div class="fam-acts"><button class="btn sm ghost" onclick="startGramQuiz(famPoints('${r.f.k}'))">Drill</button>${hasCf?`<button class="btn sm ghost" onclick="wpGo('${r.f.k}')">Which one?</button>`:''}<button class="btn sm ghost" onclick="trackGramIds(famPoints('${r.f.k}').map(p=>p.id))" title="add these patterns as cloze cards">+ cards</button></div></div>`;}).join('')}</div></div>`;
 }
 function famPoints(k){const cl=S.settings.curLesson||22,out=[];for(let l=1;l<=cl;l++)(GRAMMAR[l]||[]).forEach(p=>{if(famOf(p)===k)out.push(p);});return out;}
 function trackGramIds(ids){let n=0;ids.forEach(id=>{const gp=GP[id];if(gp&&gramClozable(gp.p)&&!S.cards[gramCid(id)]){S.cards[gramCid(id)]={};n++;}});save();badge();toast(n?n+' cloze card'+(n>1?'s':'')+' added':'already in the deck');renderGram();}
+
+/* ---- 句型 "which pattern?": pairs of patterns that both look as if they fit (data/pairs.js, installed by
+   tools/check_pairs.py from tools/content/pairs.txt). A sentence with a blank and the pair as the choices; the answer
+   side gives the test that decides it and the same frame with each choice used correctly. A tally is kept per pair
+   in S.cf, and the grammar point the right answer belongs to gets its own (gMark), so the deck gains no field. ---- */
+const WP={mode:'mine',book:1,lo:1,hi:1,qs:null,i:0,ok:0,state:'ask',chosen:null,ks:null};
+const WP_NONE='∅';      /* the choice "nothing goes here" */
+function wpStat(k){return (S.cf||{})[k]||{n:0,ok:0};}
+function wpLevel(k){const s=wpStat(k);if(!s.n)return 0;const r=s.ok/s.n;return s.n<4?1:r>=0.9?4:r>=0.75?3:r>=0.6?2:1;}
+function wpMark(p,q,ok){
+  S.cf=S.cf||{};const s=S.cf[p.k]=S.cf[p.k]||{n:0,ok:0};s.n++;if(ok)s.ok++;s.last=Date.now();
+  const id=p.pts&&(p.pts[q.a]||p.pts['*']);
+  if(id&&GP[id])gMark(id,ok);else save();
+}
+/* the lessons in scope: up to the learner's own, one book, or a range chosen book by book */
+function wpRange(){
+  if(WP.mode==='book')return bookRange(WP.book);
+  if(WP.mode==='range')return [WP.lo,Math.max(WP.lo,WP.hi)];
+  return [1,S.settings.curLesson||22];
+}
+/* a pair is in scope when the lesson that makes it a real choice is; a sentence, when all its characters have been met */
+function wpPairs(){const [lo,hi]=wpRange();return PAIRS.filter(p=>p.to>=lo&&p.to<=hi).map(p=>({p,qs:p.q.filter(q=>q.l<=hi)})).filter(x=>x.qs.length);}
+function wpSet(mode,a,b){
+  WP.mode=mode;
+  if(mode==='book')WP.book=a;
+  if(mode==='range'){if(a)WP.lo=a;if(b)WP.hi=b;if(WP.hi<WP.lo)WP.hi=WP.lo;}
+  wpRender();
+}
+function wpStart(){
+  try{tcRelease();recKill();lpStop();}catch(e){}
+  drillMode='wp';dq=null;WP.qs=null;go('drill');
+}
+/* a round: one pair (up to eight of its sentences) or a mixed twelve, the weaker pairs more often */
+function wpBegin(ks){
+  let pool=wpPairs();
+  if(ks){const cl=S.settings.curLesson||22;pool=PAIRS.filter(p=>ks.includes(p.k)).map(p=>({p,qs:p.q.filter(q=>q.l<=Math.max(cl,p.to,wpRange()[1]))}));}
+  const items=[];
+  pool.forEach(x=>{const lv=wpLevel(x.p.k),wt=lv===0?3:lv===1?4:lv===2?2:1;x.qs.forEach(q=>items.push({p:x.p,q,wt}));});
+  if(!items.length){toast('No pairs in these lessons yet');return;}
+  const n=ks&&ks.length===1?Math.min(8,items.length):Math.min(12,items.length), out=[];let bag=items.slice();
+  while(out.length<n&&bag.length){const tot=bag.reduce((a,x)=>a+x.wt,0);let r=Math.random()*tot,i=0;for(;i<bag.length-1;i++){r-=bag[i].wt;if(r<=0)break;}out.push(bag[i]);bag.splice(i,1);}
+  out.forEach(it=>{it.opts=it.q.pick?shuf(it.q.opts):(it.q.opts||it.p.opts);});
+  drillMode='wp';dq=null;WP.ks=ks||null;WP.qs=out;WP.i=0;WP.ok=0;WP.state='ask';WP.chosen=null;
+  if(view!=='drill')go('drill');else wpRender();
+  window.scrollTo(0,0);
+}
+function wpGo(k){wpBegin([k]);}
+function wpPick(i){
+  const it=WP.qs&&WP.qs[WP.i];if(!it||WP.state!=='ask'||!it.opts[i])return;
+  const ok=it.opts[i]===it.q.a;
+  /* a miss comes back once at the end of the round */
+  if(!ok&&!it.again)WP.qs.push({p:it.p,q:it.q,opts:it.q.pick?shuf(it.q.opts):it.opts,again:true});
+  WP.chosen=i;WP.state='done';if(ok)WP.ok++;
+  wpMark(it.p,it.q,ok);haptic(ok?'good':'again');wpRender();
+}
+function wpNext(){if(!WP.qs||WP.state!=='done')return;WP.i++;WP.state='ask';WP.chosen=null;wpRender();window.scrollTo(0,0);}
+function wpHome(){WP.qs=null;wpRender();window.scrollTo(0,0);}
+function wpStop(){WP.qs=null;drillMode=null;renderDrill();}
+function wpOpt(o){return o===WP_NONE?'∅ nothing':esc(o);}
+function wpRender(){
+  const el=document.getElementById('vDrill');if(!el||drillMode!=='wp')return;
+  const top=(l,r)=>`<div class="rev-top"><span class="qtype">句型 · Which pattern?${l?' · '+l:''}</span><span class="row" style="gap:10px"><span class="qprog">${r}</span></span></div>`;
+  /* ---- the pairs ---- */
+  if(!WP.qs){
+    const [lo,hi]=wpRange(), list=wpPairs(), later=PAIRS.filter(p=>p.to>hi).length;
+    el.innerHTML=top('',list.length+' pair'+(list.length===1?'':'s'))+`
+    <div class="segbar"><span class="cap">Lessons</span>
+      <button class="${WP.mode==='mine'?'on':''}" onclick="wpSet('mine')">Up to ${esc(lnLabel(S.settings.curLesson||22))}</button>
+      ${BOOKS.map(b=>`<button class="${WP.mode==='book'&&WP.book===b.n?'on':''}" onclick="wpSet('book',${b.n})">Book ${b.n}</button>`).join('')}
+      <button class="${WP.mode==='range'?'on':''}" onclick="wpSet('range',${lo},${hi})">From … to …</button>
+      ${WP.mode==='range'?lessonPick(WP.lo,"wpSet('range',v,0)")+'<span class="small muted">to</span>'+lessonPick(WP.hi,"wpSet('range',0,v)"):''}
+    </div>
+    <div class="card"><div class="row spread" style="margin-bottom:6px"><div><div class="lab" style="margin:0">Pick a pair</div><div class="small muted">Both look as if they fit. One test decides. The weaker pairs come up more often.</div></div>${list.length?`<button class="btn sm" onclick="wpBegin(null)">Mixed set · ${Math.min(12,list.reduce((a,x)=>a+x.qs.length,0))}</button>`:''}</div>
+      ${list.length?`<div class="cfgrid">${list.map(x=>{const lv=wpLevel(x.p.k),s=wpStat(x.p.k);return `<button class="cftile s${lv}" onclick="wpGo('${x.p.k}')"><b class="zh">${esc(x.p.zh)}</b><span>Book ${bookOf(x.p.to)} · Lesson ${lnInBook(x.p.to)}</span><i>${s.n?Math.round(s.ok/s.n*100)+'% · '+s.n:'new'}</i></button>`;}).join('')}</div>`
+        :`<div class="small muted" style="margin-top:10px">No pair becomes a real choice in these lessons. Try a wider range.</div>`}
+      ${later&&WP.mode==='mine'?`<div class="small muted" style="margin-top:12px">${later} more pair${later===1?'':'s'} come with later lessons.</div>`:''}
+    </div>
+    <div class="qfoot"><button class="btn ghost sm" onclick="wpStop()">← All drills</button></div>`;
+    return;
+  }
+  /* ---- the round is over ---- */
+  if(WP.i>=WP.qs.length){
+    const n=WP.qs.length, pct=Math.round(WP.ok/n*100), by={};
+    WP.qs.forEach(it=>{const b=by[it.p.k]=by[it.p.k]||{p:it.p,n:0};b.n++;});
+    const missed=[...new Set(WP.qs.filter(it=>it.again).map(it=>it.p))];
+    el.innerHTML=`<div class="card done"><div class="zhd zh">${pct>=80?'太好了！':pct>=50?'不錯！':'加油！'}</div>
+      <div style="font-weight:600;font-size:16px">${WP.ok} / ${n} · ${pct}%</div>
+      ${missed.length?`<div class="wp-side" style="margin-top:12px">${missed.map(p=>`<div class="wp-row"><b class="zh">${esc(p.zh)}</b><span class="e" style="font-size:13.5px;color:var(--ink)">${esc(p.test)}</span></div>`).join('')}</div>`:''}
+      <div class="qfoot" style="margin-top:14px"><button class="btn" onclick="wpBegin(WP.ks)">Again</button><button class="btn ghost" onclick="wpHome()">Pairs</button></div></div>`;
+    partyIfDone('#vDrill');
+    return;
+  }
+  /* ---- one sentence ---- */
+  const it=WP.qs[WP.i], p=it.p, q=it.q, done=WP.state==='done', pick=!!q.pick, right=done&&it.opts[WP.chosen]===q.a;
+  window.AUDS=window.AUDS||[];
+  const aud=t=>{const i=AUDS.push(t)-1;return '<button class="spk" title="listen" onclick="event.stopPropagation();playAudio(AUDS['+i+'])">'+SPK_SVG+'</button>';};
+  const ans=q.a===WP_NONE?'':q.a;
+  /* every choice's line, or with more than three choices the right one, the one picked and one more, in the pair's order */
+  let sides=p.side;
+  if(done&&sides.length>3){const keep=[...new Set([q.a,it.opts[WP.chosen]])];sides.forEach(x=>{if(keep.length<3&&!keep.includes(x[0]))keep.push(x[0]);});sides=sides.filter(x=>keep.includes(x[0])).slice(0,3);}
+  let zh='';
+  if(!pick){const [a,b]=q.zh.split('⬚');zh=done?dcZh(a)+'<span class="blank">'+(ans?dcZh(ans):'&nbsp;')+'</span>'+dcZh(b||''):esc(a)+'<span class="blank">&nbsp;&nbsp;&nbsp;</span>'+esc(b||'');}
+  el.innerHTML=top(esc(p.zh),(WP.i+1)+' / '+WP.qs.length+(it.again?' · again':''))+`
+  <div class="qbox wp">
+    ${pick?`<div class="qen" style="font-size:15.5px;color:var(--ink)">Which one says: “${esc(q.en)}”</div>`:`<div class="qzh zh">${zh}${done?' '+aud(q.zh.replace('⬚',ans)):''}</div><div class="qen">${esc(q.en)}</div>`}
+    <div class="opts ${pick?'sm':''}" ${pick?'style="grid-template-columns:1fr"':''}>${it.opts.map((o,i)=>`<button class="zh ${done?(o===q.a?'right':(WP.chosen===i?'wrong':'')):''}" onclick="wpPick(${i})">${done&&pick?dcZh(o):wpOpt(o)}</button>`).join('')}</div>
+    ${done?`<div class="why ${right?'ok':'bad'}"><b>${right?'✓':'✗'}</b> ${esc(q.why)}</div>
+    <div class="wp-test"><div class="lab">The test</div>${esc(p.test)}</div>
+    <div class="wp-side">${sides.map(s=>`<div class="wp-row${s[0]===q.a?' on':''}"><b class="zh">${wpOpt(s[0])}</b><span class="z zh">${dcZh(s[1])}</span><span class="e">${esc(s[2])}</span></div>`).join('')}</div>`:''}
+  </div>
+  <div class="qfoot" style="margin-top:12px">${done?`<button class="btn" onclick="wpNext()">Next →</button>`:''}<button class="btn ghost sm" onclick="wpHome()">Stop</button></div>`;
+}
 if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */

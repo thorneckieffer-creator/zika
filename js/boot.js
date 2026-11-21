@@ -198,6 +198,15 @@ function bootListen(){
     if(e.key==='f'&&view==='rev'){e.preventDefault();document.body.classList.toggle('focus');return;}
     const v=KEYMAP[e.key]; if(v&&!e.shiftKey){e.preventDefault();go(v);}
   });
+  /* 句型 Which pattern?: 1–4 choose, Enter or Space goes on, Escape goes back to the pairs. A held key does nothing. */
+  document.addEventListener('keydown',e=>{
+    if(view!=='drill'||drillMode!=='wp'||!WP.qs||WP.i>=WP.qs.length||e.repeat||e.metaKey||e.ctrlKey||e.altKey)return;
+    const tg=e.target;if(tg&&(/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)||tg.isContentEditable))return;
+    const n='1234'.indexOf(e.key);
+    if(n>=0&&WP.state==='ask'&&WP.qs[WP.i].opts[n]){e.preventDefault();e.stopImmediatePropagation();wpPick(n);}
+    else if((e.key==='Enter'||e.code==='Space')&&WP.state==='done'){e.preventDefault();e.stopImmediatePropagation();wpNext();}
+    else if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();wpHome();}
+  },true);
   /* keyboard map: never while a drill is running, never a no-op restart of the same view */
   document.addEventListener('keydown',e=>{ if(e.defaultPrevented)return; if(KEYMAP[e.key]&&!e.metaKey&&!e.ctrlKey&&!e.altKey){const tg=e.target;if(tg&&(/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)||tg.isContentEditable))return; if((view==='drill'&&dq)||(KEYMAP[e.key]===view)||(view==='drill'&&drillMode==='mtest'))e.stopImmediatePropagation();} },true);
   /* ---- 2. swipe grading (touch only) ---- */
@@ -322,7 +331,7 @@ function bootLost(){
   const got=window.zikaGot||{};
   for(const s of document.scripts){const src=s.getAttribute('src')||''; if(/^js\//.test(src)&&!/^js\/boot\.js/.test(src)&&!got[src])return src.split('?')[0];}
   const data=[['data/course.js',typeof BOOKS!=='undefined'&&typeof LESSON_TITLES!=='undefined'&&typeof DLGMAP!=='undefined'],['data/words.js',typeof WORDS!=='undefined'],
-    ['data/grammar.js',typeof GRAMMAR!=='undefined'],['data/components.js',typeof COMPONENTS!=='undefined'],['data/readings.js',typeof READINGS!=='undefined'],['data/usage.js',typeof USAGE!=='undefined']];
+    ['data/grammar.js',typeof GRAMMAR!=='undefined'],['data/components.js',typeof COMPONENTS!=='undefined'],['data/readings.js',typeof READINGS!=='undefined'],['data/usage.js',typeof USAGE!=='undefined'],['data/pairs.js',typeof PAIRS!=='undefined']];
   for(const [f,whole] of data)if(!whole)return f;
   if(typeof qrcode==='undefined')return 'assets/qrcode.min.js';
   /* the stylesheet's last rule sets this; a stylesheet that arrived empty or cut short has not got that far. Where

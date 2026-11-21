@@ -30,7 +30,7 @@ for (const f of styles.filter(f => existsSync(join(root, f)))) { const css = rea
   if (srcs[firstJs] !== 'js/core.js') fail('index.html: js/core.js must be the first script of the app (it defines the deck and reads the saved one)'); }
 /* what the worker fetches into its long-lived cache exists */
 for (const m of (read('sw.js').match(/const ASSET_FILES = \[([^\]]*)\]/) || ['', ''])[1].matchAll(/'\.\/([^'?]+)/g)) if (!onDiskExactly(m[1])) fail(`sw.js: ASSET_FILES names ${m[1]}, which does not exist`);
-for (const f of ['data/course.js', 'data/words.js', 'data/grammar.js', 'data/components.js', 'data/readings.js', 'data/usage.js']) if (!srcs.includes(f)) fail(`index.html does not load ${f}`);
+for (const f of ['data/course.js', 'data/words.js', 'data/grammar.js', 'data/components.js', 'data/readings.js', 'data/usage.js', 'data/pairs.js']) if (!srcs.includes(f)) fail(`index.html does not load ${f}`);
 if (!/window\.zikaStarted=true/.test(read('js/boot.js'))) fail('js/boot.js: the last line must set window.zikaStarted (index.html reports a failed start by its absence)');
 for (const f of onDisk) if (!code.includes(f)) fail(`${f} is not loaded by index.html`);
 if (code[code.length - 1] !== 'js/boot.js') fail('index.html: js/boot.js must be the last script (it starts the app once everything is defined)');

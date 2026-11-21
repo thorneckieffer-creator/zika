@@ -339,7 +339,7 @@ function planAct(k,arg){
     speak:()=>{drillScope='lesson';drillLesson=cl;go('drill');startDrill('speak');},
     exam:()=>{drillLesson=cl;go('drill');makeExam();setTimeout(()=>{const e=document.querySelector('.examcard');if(e)e.scrollIntoView({behavior:'smooth',block:'center'});},50);},
     triage:()=>{const ln=arg&&arg.ln||cl;libBook=bookOf(ln);go('lib');startTriage(ln,hasDlg(ln)?(arg&&arg.dlg):0);},
-    confuse:()=>startConfuse(null), read:()=>startRead(), rev:()=>go('rev'),
+    read:()=>startRead(), rev:()=>go('rev'),
     lib:()=>{const ln=arg&&arg.ln||cl;libBook=bookOf(ln);openLessons[ln]=true;go('lib');setTimeout(()=>{const e=document.querySelector('.lesson[data-ln="'+ln+'"]');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});},60);}
   };
   if(acts[k])acts[k]();

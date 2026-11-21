@@ -27,8 +27,8 @@ Because the scope is shared, a function in any file can call a function in any o
 | `review.js` | The review sitting: queue for the session, the card, grading, undo, the session summary. |
 | `library.js` | Library search and lesson lists, triage, word rows, confidence levels, the dialogue map. |
 | `brain.js` | The Brain views, the time-lapse, word-type categories, phonetic series. |
-| `grammar.js` | Grammar tab and quiz, grammar cards in the queue, families and the grasp map. |
-| `drills.js` | The Drill tab: `DMODES`, `DRILL_SCREENS`, recognition, tones, dictation, sentences, speaking, which-one, reading sprint, sentence dictation, 口試. |
+| `grammar.js` | Grammar tab and quiz, grammar cards in the queue, families and the grasp map; 句型 "which pattern?" (`wp*`), the drill of pairs from `data/pairs.js`, with its tally per pair in `S.cf`. |
+| `drills.js` | The Drill tab: `DMODES`, `DRILL_SCREENS`, recognition, tones, dictation, sentences, speaking, reading sprint, sentence dictation, 口試. |
 | `listen.js`, `mtest.js`, `exam.js`, `catchup.js`, `stories.js`, `usage.js` | The listening player, the writing mastery test, 大考試, the Catch-up tab, Stories, usage phrases. |
 | `settings.js` | Settings and its panels, export and import. |
 | `tone-analysis.js`, `tone.js` | The tone coach: pitch tracking and tone classification (pure, loaded by the tools as it is), then the coach itself. |
