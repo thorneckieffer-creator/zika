@@ -142,3 +142,29 @@ The roadmap's merge (compare, merge on copies by rule, show the counts, apply on
 | Time-when / duration | B1 L9 → B1 L14 | When → before the verb; how long → after it. ✗我看書三個鐘頭 |
 | 跟…一樣 / 像…一樣 | B1 L13 → B2 L9 | The same as vs. like |
 | 變 / bare 了 | B1 L10 → B2 L12 | 變 when the change itself is the news (她變胖了) |
+
+## Toward a real product (added 21 November, later the same evening)
+
+None of this comes before the backend's own steps. These are rules for now, so nothing built this month blocks a real product later, and items for step 12. Fold each into the roadmap where it belongs.
+
+**Rules for now**
+
+- **Do not change the app's web address before accounts exist (v68).** The deck lives in each browser's storage, and that storage belongs to the address: a device opening the app at a new address starts empty. Moving the app to another host (see "code and hosting" below) happens only once decks come back through signing in, and gets its own rehearsal.
+- **Every running cost goes in `docs/costs.md`** as it appears: Supabase, Azure Speech, ElevenLabs, a mail service, any domain or host. The monthly figure, what it pays for, and when it would start. Thorne reads it before any of them is switched on.
+- **No tracking of learners without a privacy note.** Error reports and usage counts come with step 12, never record audio or what is in a deck, and say plainly what they collect.
+
+**Add to step 12 (before anyone outside)**
+
+- **Error reports**: a way to know when the app fails on someone else's device; today only Thorne would notice. Small, no audio, no deck content.
+- **The few numbers a business needs** (learners signed up, who came back after a week, reviews a day), counted in the database, not by a third-party tracker.
+- **Database backups**: until the real project is on a plan with automatic backups, a nightly export of it to a file Thorne owns.
+- **Code and hosting**: decide whether the repository goes private. Pages from a private repository needs a paid GitHub plan; Vercel or Cloudflare Pages can host a private repository. Bound by the address rule above.
+- **Personal data**: emails and any voice recordings are personal data. A privacy note, delete-my-data (step 7's account delete), and where the data is kept (the project is in Tokyo).
+- **A human engineer's review** of the database rules, the accounts flow and the keys before the first outside learner. Write a short brief (what is stored, who can reach what, how a deck moves between devices) that a software engineer can read in an hour.
+- **A closed beta**: three to five classmates at MTC, after v69 and after the rights question has an answer. An invite list, a feedback button, and Thorne's own deck untouched by it.
+
+**Thorne's decisions, not the agents'** (listed so no session decides them):
+
+- Who the app is for: students of this one textbook series (needs the publisher's permission) or any learner bringing their own words.
+- Asking NTNU MTC / Linking Publishing about the word lists. It is the longest wait in the whole plan and needs no code, so it can start now.
+- The name, the price, and whether payments come at all.
