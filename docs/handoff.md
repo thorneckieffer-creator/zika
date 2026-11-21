@@ -2,7 +2,7 @@
 
 Written at 23:25 when Thorne said to stop for the night. Read [master-plan.md](master-plan.md) first; this file says where its "Order of work" stands. Replace this file at the end of the next session.
 
-**Nothing is uncommitted, in any folder. Nothing was pushed after the no-push rule was given.** `main` is 12 commits ahead of GitHub.
+**Nothing is uncommitted, in any folder. Nothing was pushed after the no-push rule was given.** `main` is ahead of GitHub by every commit in the table below (`git log origin/main..main`).
 
 One thing was pushed earlier the same evening, before the rule existed: the branch `backend`, twice (`f9f7158`, then `33ea621`). It is on GitHub at `33ea621`. It holds notes, SQL and a test; no app file.
 
