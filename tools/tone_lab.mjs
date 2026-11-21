@@ -10,7 +10,7 @@
    Voices: pack (the bundled 曉臻 clips), syl and hsk (two people, github.com/hugolpz/audio-cmn, CC-BY-SA; the audio is
    only measured here, never shipped), say-* (macOS voices), yunjhe (雲哲 clips, if a pack build left them in the cache).
    Labels are each word's pinyin with third-tone sandhi; a voice that reads a character differently adds a little noise. */
-import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync, statSync, realpathSync } from 'node:fs';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { homedir } from 'node:os';
@@ -146,7 +146,12 @@ function prepare() {
   console.log('recordings are in', DATA);
 }
 
-/* ---- commands ---- */
+/* tools/voice_audit.mjs measures the voice packs with the same code: it imports these instead of keeping a copy */
+export { ROOT, DATA, app, trackKey, WORDS, hanKey, byId, readWav, voices, load, feat, forward, train, weights };
+
+/* ---- commands (only when this file is the one being run) ---- */
+if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) commands();
+function commands() {
 if (cmd === 'prepare') { prepare(); process.exit(0); }
 const V = voices(), names = Object.keys(V).filter(n => V[n].length);
 if (!names.length) { console.error(`No recordings under ${DATA}. Run:  node tools/tone_lab.mjs prepare`); process.exit(1); }
@@ -166,3 +171,4 @@ if (cmd === 'check') {
   if (WRITE) { const a = tcSrc.indexOf('const TC_NET={'), b = tcSrc.indexOf('};', a) + 2; writeFileSync(TONE_FILE, tcSrc.slice(0, a) + js + tcSrc.slice(b)); console.log('TC_NET written to js/tone-analysis.js — run `check`, and bump the version before releasing'); }
   else console.log('\n' + js + '\n\n(not written; add --write to install it)');
 } else { console.error('usage: node tools/tone_lab.mjs prepare | check | cv | fit [--write]'); process.exit(1); }
+}
