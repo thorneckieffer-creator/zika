@@ -13,7 +13,7 @@ Later the same evening Thorne wrote [master-plan.md](master-plan.md), which merg
 - **Before the 7 November merge is applied**, what the room sync does when a device with older unsent changes reconnects after an import is stated plainly, and the import runs with the iPad and iPhone closed.
 - **The native clip is the tone coach's answer key, and the clips and the coach are verified together** (V0 to V4 in [voice.md](voice.md)). He hears a wrong tone about a third of the time and it is not known which of the two is at fault. Audio is chosen by measured tone accuracy and a native ear, not by how natural it sounds. A rebuilt pack is licensed; a speaker's recordings are used only with their written agreement; a personal cloned voice stays on the device.
 
-## 2026-11-22 — the sync contract is frozen (step 4a), and what the first voice audit found
+## 2026-11-21 — the sync contract is frozen (step 4a), and what the first voice audit found
 
 **The contract** is [sync.md](sync.md), with a model of the database in plain JavaScript (`tools/lib/recmodel.js`) that passes the same checks as the real project (`node tools/dbtest.mjs --model`: 122; the real project: 97). The engine, the adapter, the app-readying release and the accounts module are built against it side by side. What it decides, each with its reason there:
 
@@ -36,7 +36,7 @@ Later the same evening Thorne wrote [master-plan.md](master-plan.md), which merg
 
 V1 has no winner: Azure was not run (no key), ElevenLabs stopped at 9 of 62 words (its free queue refused the rest), BreezyVoice was not started (the Mac's swap was full). What each would cost for the full set is in [costs.md](costs.md).
 
-## 2026-11-22 — v66: the "which pattern?" drill takes the place of "Which one?"
+## 2026-11-21 — v66: the "which pattern?" drill takes the place of "Which one?"
 
 The app already had a drill of this shape: 辨析 "Which one?", twelve families and 79 sentences written into `js/drills.js`, under the fold in the Drill tab. The master plan's drill and that one are the same idea, so there is one drill, not two:
 

@@ -74,7 +74,7 @@ Open work for every area is in one list: [docs/roadmap.md](docs/roadmap.md).
 | `tools/build_voice_pack.py` | Builds a voice pack from WORDS with edge-tts. | Voice |
 | `tools/tone_lab.mjs` | The tone coach's test bench: runs the app's own tone code on recordings with known tones (`check`, `cv`), and refits the classifier (`fit --write`). | Voice |
 | `tools/build_voice_pack_breezy.py`, `tools/build_voice_staged.sh`, `tools/build_readings.py` | Cloned-voice pack with BreezyVoice, run in stages; the readings file it pins pronunciations with. | Voice |
-| `docs/` | Thorne's master plan (`master-plan.md`, read first), the notes for each area, the roadmap, the running costs (`costs.md`, written before any of them is switched on), the feature map and the checklist the checker works from. | Release |
+| `docs/` | Thorne's master plan (`master-plan.md`, read first), where the last session stopped (`handoff.md`, read second and replaced at the end of each session), the notes for each area, the roadmap, the running costs (`costs.md`, written before any of them is switched on), the feature map and the checklist the checker works from. | Release |
 
 ## Rules that protect progress
 
