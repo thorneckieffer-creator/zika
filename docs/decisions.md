@@ -13,6 +13,16 @@ Later the same evening Thorne wrote [master-plan.md](master-plan.md), which merg
 - **Before the 7 November merge is applied**, what the room sync does when a device with older unsent changes reconnects after an import is stated plainly, and the import runs with the iPad and iPhone closed.
 - **The native clip is the tone coach's answer key, and the clips and the coach are verified together** (V0 to V4 in [voice.md](voice.md)). He hears a wrong tone about a third of the time and it is not known which of the two is at fault. Audio is chosen by measured tone accuracy and a native ear, not by how natural it sounds. A rebuilt pack is licensed; a speaker's recordings are used only with their written agreement; a personal cloned voice stays on the device.
 
+## 2026-11-21 — toward a real product: three rules for now
+
+Added by Thorne to [master-plan.md](master-plan.md) later the same evening, so that nothing built this month blocks a real product later. None of it comes before the backend's own steps.
+
+- **The app's web address does not change before accounts exist (v68).** The deck is in each browser's storage and that storage belongs to the address; at a new address a device starts empty. So no custom domain, no other host and no second copy under another address for real use until a deck comes back by signing in, and then only after a rehearsal. This is also why the archive of v65 is opened on this Mac and never served.
+- **Every running cost is written down before it is switched on** ([costs.md](costs.md)): Supabase, Azure Speech, ElevenLabs, a mail service, any domain or host. The monthly figure, what it pays for, when it would start.
+- **No tracking of learners without a privacy note.** Error reports and the numbers a business needs belong to step 12, are counted in the app's own database and not by a third-party tracker, and never include audio or what is in a deck.
+
+What step 12 gained from the same section is in [roadmap.md](roadmap.md#app). Three things are his to decide and no session's: who the app is for, asking the publisher about the word lists, and the name, the price and whether payments come at all.
+
 ## 2026-11-21 — the room code stays until the three devices agree; the move is rehearsed; a feature before term
 
 Thorne asked for the next steps to be mapped out and added five things to the plan. Three of them are decisions:

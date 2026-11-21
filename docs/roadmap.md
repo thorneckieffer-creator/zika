@@ -49,7 +49,16 @@ Next for the product:
   9. The real-iPhone test from the Home Screen, with a test account: create, confirm, reopen, sign in on a second device, sign out, delete; the keyboard and the password manager on the fields.
   10. **Thorne's deck moves** (the next item).
   11. **The removal release** (v69), once he has said the three devices agree: the room-code sync (`fb*` in `js/sync.js`), the QR link and its library, the Firebase SDK, the 30-second push timer in `js/boot.js` and the room-code cards on Today and in Settings come out; the harness's stand-in for Firebase goes. `CLAUDE.md`'s first and third rules and the notes on sync change in that commit.
-  12. Before anyone outside: the real project moved to a plan that does not pause and keeps backups; a mail service for the confirmation and reset emails; a privacy note; the rights questions in [multi-user.md](multi-user.md); the publisher's wording listed and replaced (Content, above).
+  12. Before anyone outside (the list grew on 21 November, [master-plan.md](master-plan.md#toward-a-real-product-added-21-november-later-the-same-evening); every cost in it goes into [costs.md](costs.md) before it is switched on):
+      - the real project moved to a plan that does not pause and keeps backups; until it is on one, a nightly export of it to a file Thorne owns;
+      - a mail service for the confirmation and reset emails;
+      - personal data: emails and any voice recordings are personal data. A privacy note, delete-my-data (step 7's account delete), and where the data is kept (the project is in Tokyo);
+      - error reports, so that a failure on someone else's device is known about (today only Thorne would notice): small, no audio, nothing of what is in a deck, and saying plainly what they collect;
+      - the few numbers a business needs (learners signed up, who came back after a week, reviews a day), counted in the database and not by a third-party tracker;
+      - code and hosting: whether the repository goes private (Pages from a private repository needs a paid GitHub plan; Vercel or Cloudflare Pages can host one). A move of host is a move of address, so it is bound by the address rule under Release and repo and gets a rehearsal of its own;
+      - a human engineer's review of the database rules, the accounts flow and the keys, from a short brief to write (what is stored, who can reach what, how a deck moves between devices) that a software engineer can read in an hour;
+      - the rights questions in [multi-user.md](multi-user.md), and the publisher's wording listed and replaced (Content, above);
+      - then a closed beta: three to five classmates at MTC, after v69 and after the rights question has an answer, with an invite list, a feedback button, and Thorne's own deck untouched by it.
   13. A month after step 11: delete the room in Firebase (ask Thorne first).
 - **Moving Thorne's deck** (step 10; his conditions of 21 November). Nothing here starts before steps 8 and 9 are done.
   1. First every copy that holds a deck is listed (the browsers on the Mac; on the iPad and the iPhone both the Home Screen app and any Safari tab, which keep separate storage) and the three devices are brought to agree through the room, which is still running. Then a dated backup from each device, Mac, iPad and iPhone, exported on the same day and kept in Drive and on the Mac.
@@ -79,6 +88,11 @@ Structure (the restructure of November 2026 shipped as v63; see [decisions.md](d
 - **Leaner sync.** Send changes rather than the whole deck: it comes with the backend above (352 bytes a review instead of the whole deck).
 
 ## Release and repo
+
+- **The app's web address does not change before accounts exist (v68).** The deck lives in each browser's storage, and that storage belongs to the address: a device that opens the app at a new address starts empty. A move to another host or domain happens only once decks come back by signing in, and is rehearsed first (Thorne, 21 November 2026).
+- **Every running cost is written in [costs.md](costs.md) as it appears**: the monthly figure, what it pays for, when it would start. Thorne reads it before any of them is switched on.
+- **No tracking of learners without a privacy note.** Error reports and usage counts come with step 12 of the backend, never record audio or what is in a deck, and say plainly what they collect.
+- **Thorne's decisions, which no session makes**: who the app is for (students of this one textbook series, which needs the publisher's permission, or any learner bringing their own words); asking NTNU MTC / Linking Publishing about the word lists (the longest wait in the whole plan, needing no code, so it can start now); the name, the price, and whether payments come at all.
 
 - **Nothing is pushed to GitHub without Thorne's yes** (21 November 2026). Work is committed locally and reported as ready to push ([releasing.md](releasing.md)).
 - **The single-user app is archived, and archived again before each release that changes how the deck is stored or synced.** Done for v65: the tag `single-user-v65` and the branch `archive/single-user` on `7d26dc5`, and a zip of the site as served in `~/Desktop/zika-archive/`. To do: the tag `single-user-final` on the last commit before v68 (accounts), and one before v69 (the room code removed). An archived copy is never served from the live address: it would share the storage key and the room with the real app and could overwrite the deck. Open the zip on this Mac on a local port instead.

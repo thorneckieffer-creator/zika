@@ -71,7 +71,7 @@ Open work for every area is in one list: [docs/roadmap.md](docs/roadmap.md).
 | `tools/build_voice_pack.py` | Builds a voice pack from WORDS with edge-tts. | Voice |
 | `tools/tone_lab.mjs` | The tone coach's test bench: runs the app's own tone code on recordings with known tones (`check`, `cv`), and refits the classifier (`fit --write`). | Voice |
 | `tools/build_voice_pack_breezy.py`, `tools/build_voice_staged.sh`, `tools/build_readings.py` | Cloned-voice pack with BreezyVoice, run in stages; the readings file it pins pronunciations with. | Voice |
-| `docs/` | The notes for each area, the roadmap, the feature map and the checklist the checker works from. | Release |
+| `docs/` | Thorne's master plan (`master-plan.md`, read first), the notes for each area, the roadmap, the running costs (`costs.md`, written before any of them is switched on), the feature map and the checklist the checker works from. | Release |
 
 ## Rules that protect progress
 
@@ -81,6 +81,7 @@ Open work for every area is in one list: [docs/roadmap.md](docs/roadmap.md).
 4. **Device-local settings do not sync.** Add new ones to `LOCAL_SETTINGS` (kept if the device has a value) or `STRICT_LOCAL` (never inherited from another device).
 5. **Never put a secret in the repo.** Today that is a sync code; with the Supabase backend ([docs/decisions.md](docs/decisions.md)) it is also the service-role key and the database password. The Firebase web config, and a Supabase project address and publishable key, are public by design.
 6. **The live app is the study tool.** `main` deploys to GitHub Pages in about two minutes and every device takes the release the next time it is opened with a connection. Test locally first.
+7. **The app's web address does not change before accounts exist (v68).** The deck lives in each browser's storage, and that storage belongs to the address: at a new address, host or domain a device starts empty. For the same reason no copy of the app, old or new, is served from the live address beside the real one.
 
 ## How Thorne wants it built
 
