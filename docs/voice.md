@@ -23,6 +23,24 @@ After changing a pack that devices may already hold, bump `ASSETS` in `sw.js` (a
 
 The 雲哲 pack (`audio-tw-m`, 2,044 clips, every word and character through Book 3 Lesson 4) was built in November 2026 with `tools/build_voice_pack.py --voice zh-TW-YunJheNeural --out audio-tw-m --pause 2.0`. The read-aloud service lets a few dozen requests through and then refuses for a minute or two, so expect about 190 clips an hour; the builder backs off and resumes by itself, and a second run fills any clips that failed.
 
+## The plan: one answer key for the clips and the tone coach
+
+Thorne, 21 November 2026 ([master-plan.md](master-plan.md#voice--one-answer-key-for-the-clips-and-the-tone-coach)). He hears the wrong tone about a third of the time (a third for a first, a second for a fourth). It is not yet known whether the clip plays it wrong, the tone coach grades him wrong, or both.
+
+**Why they go together.** The tone coach grades by comparing the learner's pitch with the native clip. A clip with the wrong tone teaches the wrong sound and marks a correct tone wrong. The goal is one verified native recording for every word, character and phrase, used for listening and as the coach's reference.
+
+**How it fits the rest.** Voice packs are static files, not database records: none of this touches the sync engine, the adapter or accounts, so it runs beside the backend. The "sounds wrong" log is kept on the device, outside the deck. A licensed rebuild and a speaker's written agreement close the voice-rights question that stands before other learners ([roadmap.md](roadmap.md#app), step 12). The personal cloned voice stays on the device only. API keys (Azure, ElevenLabs) live in `~/.config/zika/`, never in the repository.
+
+| # | Step | Done when |
+|---|---|---|
+| V0 | **Find out what is wrong, before changing anything** (tools only). The app's own tone analysis run over every clip in both packs (曉臻, 雲哲) against the expected tones (`tools/content/readings.json`'s 注音, plus sandhi); every clip whose measured tones disagree is listed. 40 flagged and 20 unflagged clips for Thorne and his girlfriend to mark right or wrong by ear. A **"sounds wrong"** action on the speaker button that logs the word and the voice, kept on the device, with a "copy list" button. | a table: the clips' real error rate, and how often the analysis agrees with a native ear. By 30 November |
+| V1 | **Side by side on about 60 hard words**: Taiwan readings (星期 xīngqí, 垃圾 lèsè, 和 hàn, 企業 qìyè), the heteronyms (得, 了, 當, 行), third-tone sandhi, the tone pairs Thorne misses most. Four sources: (a) the present packs; (b) Azure Speech, licensed, the same zh-TW voices, each syllable pinned with SSML `<phoneme alphabet="sapi" ph="…">` from the 注音; (c) ElevenLabs' best Mandarin voice; (d) BreezyVoice. Scored by `tools/tone_lab.mjs` and by his girlfriend listening blind. Each source's cost for the full set (words, characters, all usage phrases) reported. | a winner by both scores, with its cost. By 30 November |
+| V2 | **Rebuild from the winner**: every word, every character, a clip per reading for each heteronym (`字@pinyin`), and a new pack for the usage phrases (the system voice today). Covers the 338 words 曉臻 lacks. `ASSETS` bumped; the old packs kept until the new one is checked on all three devices. Before the phrases are recorded, a Taiwan-wording scan over the usage phrases, stories and grammar examples (`tools/check_register.py`: 視頻, 信息, 軟件, 出租車, 自行車, 地鐵, 摩托車, 網絡, erhua 兒 …), flagged for review and never replaced automatically, so that no mainland wording gets a native recording. | V0's check on the new pack, and a native ear on a fresh sample of 60, find no wrong clip. Week of 8 December |
+| V3 | **Human recordings as the answer key.** A Taiwanese speaker (his girlfriend if she agrees in writing, otherwise a paid speaker) records every word on a recorder page like `voice.html`, in short sessions. Three uses: a "native recording" choice when listening; the tone coach's reference; human voices for `tools/tone_lab.mjs`. A male speaker later. The session time is estimated first. | every course word recorded and checked, in a pack with the same layout |
+| V4 | **The tone coach, measured on a learner.** Measured again on the human set. Then Thorne records about 100 words, his girlfriend labels the tones he said, and the coach's grades are compared with hers. A **"not sure"** verdict, grading only when confident; the pitch curve shows either way. Nothing larger on the coach before this. | agreement with a native ear on Thorne's own voice, as a number |
+
+The V0 and V1 tables are shown to Thorne before V2 is built.
+
 ## Tone coach (聲調教練, beta; analysis rebuilt in v52)
 
 A drill mode (`tcoach`, functions prefixed `tc`) that records the learner saying a word, shows the pitch curve of each syllable against the native clip's, and grades each tone. It runs entirely in the browser; no audio leaves the device.

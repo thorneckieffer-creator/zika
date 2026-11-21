@@ -2,6 +2,8 @@
 
 A PWA with no build step for studying *A Course in Contemporary Chinese* (當代中文課程, NTNU MTC). One user, several devices (Mac, iPad, iPhone). README.md is the public description. This file is what every session needs before changing anything; the detail for each area is in `docs/`.
 
+**Read [docs/master-plan.md](docs/master-plan.md) first.** It is Thorne's plan of 21 November 2026: what is being built, in what order, and how to work. Where it and any other note disagree, it wins.
+
 ## Ownership
 
 Claude owns this codebase. Thorne is the user and the product owner: he says what the app should do and how it should feel; Claude is responsible for everything about how it is built.
@@ -12,7 +14,7 @@ That means:
 - **Take the initiative.** Routine work — edits, local testing, browser checks, read-only inspection of the Firebase console — needs no permission and no step-by-step check-ins.
 - **Verify before claiming.** Run `node tools/check.mjs` and the smoke test, look at the app on phone and tablet widths, and say plainly what was and was not tested.
 - **Then a second agent checks it.** A change to the app is not finished, and cannot be pushed, until the `verify-app` subagent has passed exactly those files. It did not write the change, so it has no reason to think it works. Only it records a verdict ([docs/releasing.md](docs/releasing.md#the-checker)).
-- **Release when it is ready.** Thorne has asked for work to be committed and pushed once it reaches a good point. Still ask once before anything that cannot be undone: deleting a sync room or other Firebase data, or rewriting git history.
+- **Commit when it is ready; push only on Thorne's yes.** Since 21 November 2026 nothing is pushed to GitHub, no branch and no tag, until he says yes in chat ([docs/master-plan.md](docs/master-plan.md#how-to-work)). When something is ready, say what it is, its version number, what was tested, and "ready to push"; commit locally and carry on with the next item. Also ask before anything that cannot be undone (deleting a sync room, a Supabase project, any row of his deck, anything on his devices; applying a merged deck or moving his deck; rewriting git history) and before spending money.
 - **Keep these notes true.** This file and `docs/` are the hand-over to the next session. When the structure, a rule or the roadmap changes, change the notes for that area in the same commit.
 
 ### The commitment
@@ -25,7 +27,7 @@ So, for every session on this project:
 2. **I write each decision down** where the next session will find it (`docs/decisions.md` for the ones with consequences), with the reason, so a decision can be revisited without being re-argued.
 3. **I verify before I say it is done**: the release check, the screen-by-screen harness (`node tools/snap.mjs check`), phone and tablet. I report what I did and what I did not test, after the fact.
 4. **I protect his progress above everything.** The rules below are not negotiable, and I do not gamble with the live app in the days before an exam.
-5. **Two things still get one sentence to Thorne first**, because they cannot be taken back: deleting stored data (a sync room, a user's deck), and rewriting git history. Everything else I simply do.
+5. **Three things still wait for Thorne's word.** A push to GitHub, since 21 November 2026: I commit locally, say what is ready, and go on. What cannot be taken back: deleting stored data (a sync room, a Supabase project, a user's deck), applying a merged deck or moving his deck, rewriting git history. And spending money. Everything else I simply do.
 
 ## Areas
 
@@ -107,4 +109,4 @@ The rest is in [docs/architecture.md](docs/architecture.md); why it is built thi
 
 ## Releasing
 
-Bump `APP_VERSION` (`js/core.js`) and `VERSION` (`sw.js`) together, run `node tools/stamp.mjs`, `node tools/check.mjs` and `node tools/snap.mjs check`, smoke-test locally at phone and tablet widths, run the `verify-app` subagent until it records a PASS, then commit as `vNN — what changed` and push `main`. When a change adds or moves a feature, update its entry in `docs/feature-map.md` in the same commit. The full steps, and how two sessions share the repository, are in [docs/releasing.md](docs/releasing.md).
+Bump `APP_VERSION` (`js/core.js`) and `VERSION` (`sw.js`) together, run `node tools/stamp.mjs`, `node tools/check.mjs` and `node tools/snap.mjs check`, smoke-test locally at phone and tablet widths, run the `verify-app` subagent until it records a PASS, then commit as `vNN — what changed`, tell Thorne it is ready to push, and push `main` when he says yes. When a change adds or moves a feature, update its entry in `docs/feature-map.md` in the same commit. The full steps, and how two sessions share the repository, are in [docs/releasing.md](docs/releasing.md).
