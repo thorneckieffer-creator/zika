@@ -1,13 +1,13 @@
 # Voice packs
 
-The voice area: `assets/audio-*`, `voice.html`, `tools/build_voice_pack.py`, `tools/build_voice_pack_breezy.py`, `tools/build_voice_staged.sh`, `tools/build_readings.py`, `tools/content/readings.json`, `tools/voice_audit.mjs` and `tools/voice_listen.html` (the packs measured against the answer key, and the page a native listener marks them on), and the audio functions in `js/audio.js` (`VOICE_PACKS`, `loadPack`, `playBundled`, `playAudio`, `pyKey`, `setVoice`). How playback falls through from pack to system voice is in [architecture.md](architecture.md#audio-playback).
+The voice area: `assets/audio-*`, `voice.html`, `tools/build_voice_pack.py`, `tools/build_voice_pack_breezy.py`, `tools/build_voice_staged.sh`, `tools/build_readings.py`, `tools/content/readings.json`, `tools/voice_audit.mjs` and `tools/voice_listen.html` (the packs measured against the answer key, and the page a native listener marks them on), `tools/voice_v1.mjs` and `tools/content/voice_v1_words.txt` (the side-by-side test of sources), and the audio functions in `js/audio.js` (`VOICE_PACKS`, `loadPack`, `playBundled`, `playAudio`, `pyKey`, `setVoice`). How playback falls through from pack to system voice is in [architecture.md](architecture.md#audio-playback).
 
 Three slots in `VOICE_PACKS`: `f` (`audio-tw`, 曉臻, the default), `m` (`audio-tw-m`, 雲哲) and `me` (`audio-me`, Thorne's own cloned voice). Settings offers only the packs whose index file exists. A clip key is the word's Han characters; words that share characters but not sound also have `字@pinyin` keys (`pyKey()` in the app, `py_id()` in the builder), and `speakWord` passes the word's pinyin so the right one plays.
 
 Two builders:
 
 - `tools/build_voice_pack.py` — Microsoft's read-aloud voices through edge-tts. Simple, but the service throttles hard (it stopped after 66 clips in November 2026).
-- `tools/build_voice_pack_breezy.py` — BreezyVoice (open source, MediaTek Research): clones the voice on a short reference recording. `voice.html` records that reference in the browser. `tools/build_readings.py` writes `tools/content/readings.json` (the publisher's 注音), which the builder uses to pin pronunciations.
+- `tools/build_voice_pack_breezy.py` — BreezyVoice (open source, MediaTek Research): clones the voice on a short reference recording. `--keys-file` renders a list of clip keys into a folder and writes no pack. `voice.html` records that reference in the browser. `tools/build_readings.py` writes `tools/content/readings.json` (the publisher's 注音), which the builder uses to pin pronunciations.
 
 BreezyVoice setup on this Mac lives in `~/.cache/zika-voice/bv/` (Miniforge, a Python 3.10 env with pynini from conda-forge, the BreezyVoice checkout, reference recordings in `prompts/`). Lessons learned the hard way:
 
@@ -39,7 +39,7 @@ Thorne, 21 November 2026 ([master-plan.md](master-plan.md#voice--one-answer-key-
 | V3 | **Human recordings as the answer key.** A Taiwanese speaker (his girlfriend if she agrees in writing, otherwise a paid speaker) records every word on a recorder page like `voice.html`, in short sessions. Three uses: a "native recording" choice when listening; the tone coach's reference; human voices for `tools/tone_lab.mjs`. A male speaker later. The session time is estimated first. | every course word recorded and checked, in a pack with the same layout |
 | V4 | **The tone coach, measured on a learner.** Measured again on the human set. Then Thorne records about 100 words, his girlfriend labels the tones he said, and the coach's grades are compared with hers. A **"not sure"** verdict, grading only when confident; the pitch curve shows either way. Nothing larger on the coach before this. | agreement with a native ear on Thorne's own voice, as a number |
 
-The V0 and V1 tables are shown to Thorne before V2 is built.
+The V0 and V1 tables are shown to Thorne before V2 is built. Both steps were run on 21 November as far as tools can take them, and both now wait for the listening session; V1 also waits for an Azure key and for the rest of two sources.
 
 ### V0 — what the audit found
 
@@ -98,6 +98,56 @@ node tools/voice_audit.mjs score ~/Downloads/voice-marks-v0.json
 ```
 
 `score` prints, per listener, how often the analysis and the ear agree, how often a flag is a wrong clip, how often an unflagged clip is wrong, and from those a rough error rate for each pack: the number the V0 row asks for. `node tools/voice_audit.mjs run` measures the packs again (about a minute; `clips.csv`, `clips.json`, `summary.md` and `summary.json` in `~/.cache/zika-voice/audit/`, one row per clip with expected and measured tones, the confidence of each syllable and the flags); `listen` draws the set again; `pagetest` opens the page in headless Chrome and checks that it loads, plays, marks, downloads and hides the flags.
+
+### V1 — side by side
+
+Run on 21 November 2026, tools only (`tools/voice_v1.mjs`, `tools/content/voice_v1_words.txt`, and the same listening page). **There is no winner yet**: one source could not be run and two ran only in part, and no native ear has listened. What is ready is the word list, each source's generator, the measurement, the blind page and the cost of the full set.
+
+**The words.** 62 words of the course, each with the reading it should have (`tools/content/voice_v1_words.txt`; `node tools/voice_v1.mjs test` checks every line against `data/words.js` and `readings.json`): 17 Taiwan readings (星期 xīngqí, 垃圾 lèsè, 和 hàn, 企業 qìyè, 炸 zhá, 喂 wéi, 研究 yánjiù, 法國 Fǎguó, 亞洲, 下載, 休息, 可惜, 認識, 成績, 微波, 除夕, 誰), 19 words that fix one reading of a character with several (得 three ways, 了, 當, 行, 便, 覺, 樂, 為, 應, 調, 著), 6 with two or three third tones together, 5 with 一 or 不, and 15 that V0 flagged (among them the pairs Thorne named and the ones both voices were measured alike on).
+
+**The table.** Agreement is the analysis against the expected tone, per graded syllable, with the app's classifier: a suspect, not a verdict. The words were chosen because they are hard and partly because V0 flagged them, so the packs' figures here are low by construction (over the whole packs they agree on 86.5% and 73.7% of syllables).
+
+| Source | Clips | Could not be measured | Tone agreement with the expected reading | The packs on the same words (曉臻, 雲哲) | Cost of the full set, one voice | May the audio be given to other learners |
+|---|---|---|---|---|---|---|
+| (a) The present packs: 曉臻 | 62 of 62 | 0 | 73 of 119 syllables (61%); held-out classifier 58% | | $0; about 45 hours, the service lets about 190 clips an hour through | No licence found. It is Microsoft Edge's read-aloud service reached through `edge-tts`; the project's README says nothing about terms, and an answer on Microsoft's own Q&A site (not an official statement) says commercial use without an Azure subscription "could be a violation of our terms of service" |
+| (a) The present packs: 雲哲 | 62 of 62 | 0 | 75 of 119 (63%); held out 57% | | the same | the same |
+| (b) Azure Speech, the same two voices, every syllable pinned | **not run: no key** (`~/.config/zika/` holds none) | | | | **$3.86** with every word, character and reading pinned (257,165 billed characters at $15 a million); $1.33 as plain text. Two voices pinned: $7.71 | **Yes, on the paid tier**: "For Customers of the paid tier TTS Service only, Customer may use the audio output of prebuilt neural voices … including for commercial purposes" (Microsoft Product Terms). Not for building a competing speech service. Wording on storing or redistributing clips: not verified. The free tier's 500,000 characters a month would hold one voice, but that clause does not cover the free tier |
+| (c) ElevenLabs, "Kate - Clear & Warm Taiwan Mandarin", model `eleven_v4` | **9 of 62** (the free queue refused the rest; see below) | 0 | 7 of 15 (47%) | 6 of 15, 10 of 15 | **$22**: 44,320 credits a voice at one credit a character is more than Starter's 30,000 a month ($6), so Creator for one month (121,000 credits; it also covers two voices, 88,640) | **Yes on a paid plan** ("All paid plans include a commercial license, provided you're not using Beta Services"); the free plan, which made these nine clips, "cannot be used for any commercial purpose". Whether `eleven_v4` counts as a beta service: not verified |
+| (d) BreezyVoice, Thorne's cloned voice | **5 of 62**, from the samples of 14 November; **the rest not run: memory** | 0 | 4 of 9 (44%) | 8 of 9, 6 of 9 | $0; about 52 hours of this Mac for the 8,633 clips at 21.6 s a clip (measured on short words; the phrases are longer), in stages | **Yes**: code and weights are Apache-2.0 (the project says it is partly derived from CosyVoice, whose licence was not checked). The voice it copies needs its owner's agreement: Thorne's own is his; a speaker's needs it in writing |
+
+By group, syllables agreeing: 曉臻 Taiwan readings 17/30, one reading of several 28/37, third tones together 7/13, 一 and 不 8/12, flagged in V0 13/27; 雲哲 22/30, 24/37, 8/13, 7/12, 14/27; ElevenLabs Taiwan readings 7/15 (its nine words are all from that group); BreezyVoice 1/2, 2/5, 1/2.
+
+**What the measurement shows so far.**
+
+- **On the Taiwan readings, three voices are measured the same way, and it is not the course's way.** 和 (hàn) is measured second tone in 曉臻, 雲哲 and ElevenLabs; 炸 (zhá) and 喂 (wéi) fourth in all three; 亞洲 (Yà-) third-first or third-second in all three; 下載 (-zài) fourth-third in all three. That is what one would measure if all three say hé, zhà, wèi, Yǎzhōu and xiàzǎi. An ear has to confirm it, but if so no voice says these words the course's way unless it is told to: the reading has to be pinned.
+- **Only two of the four sources can be pinned.** Azure takes the reading of every syllable (`<phoneme alphabet="sapi">`, bopomofo); BreezyVoice takes `字[:ㄓㄚ2]`. ElevenLabs is given the characters and nothing else through this route, and the read-aloud service refuses SSML it would not have produced itself.
+- **A third tone at the end of a word is where 曉臻 and the analysis part company.** 你好, 可以, 小姐, 哪裡 and 水果 are all measured second-fourth: the last syllable falls and does not rise. Whether that is a right Taiwanese third tone which the classifier takes for a fourth, or a wrong clip, is one of the things the listening session settles; it is also V0's second largest pair.
+- **The nine and the five clips are too few to rank anything.** ElevenLabs' 7 of 15 against the packs' 6 and 10 on the same words, and BreezyVoice's 4 of 9 against 8 and 6, are counts, not rates.
+
+**What was not run, and why.**
+
+- **(b) Azure: no key.** The generator is written and tested: `node tools/voice_v1.mjs ssml` prints what would be sent (`<phoneme alphabet="sapi" ph="ㄒㄧㄥ ㄑㄧˊ">星期</phoneme>` inside the voice and a −12% rate, the pace the packs were made at), and `test` checks 248 documents (62 words, two voices, tones as written and as spoken): one bopomofo syllable per character, the tone mark last (nothing for a first tone, ˊ ˇ ˋ, ˙ for neutral), reading back as the 注音. `node tools/voice_v1.mjs azure` reads `~/.config/zika/azure.json` (`{"key": "…", "region": "…"}`), says how many characters it will bill and writes `azure-f/` and `azure-m/`. Microsoft's own example pins 你好 with two third tones, so the default pins the written tones; `--spoken` pins them after sandhi. Which the service says right is not known until it runs.
+- **(c) ElevenLabs: 9 of 62.** The voice was chosen from the connector's list because it is labelled Taiwan Mandarin (the accent label `zh-taiwan-mandarin` exists; at least fourteen more voices carry it) and is described as clear and made for teaching; `eleven_v4` is the model the connector names as its default. One take a word, the bare word as the text, 15 credits in all, on the free plan (7,475 of 10,000 credits used after it). After nine clips the service answered "Free generations are busy right now: this take did not start. Nothing was charged." for 法國 and 休息. Those two were not asked for again and the other 51 words were not requested: 53 words, 106 characters, are still to make, when the free queue allows or on a paid plan.
+- **(d) BreezyVoice: memory.** At 22:58 on 21 November macOS reported memory pressure at warning (`kern.memorystatus_vm_pressure_level` 2) with 22.0 of 22.5 GB of swap in use, and the same at 23:05 (23.3 of 23.6 GB), so the model was not started. The five clips are the ones already in the voice's cache from 14 November (垃圾, 便宜, 你好, 得 děi, 為什麼; Whisper had flagged 垃圾 and 便宜 then). `tools/build_voice_pack_breezy.py --keys-file` now renders a list of keys and writes no pack, and `~/.cache/zika-voice/v1/breezy-run.sh <repository>` runs the 62 words in stages of 24 under the 7 GB cap, refusing to start a stage unless pressure is normal.
+
+**The full set, counted** (`node tools/voice_v1.mjs count`): 1,391 word clips (the 1,478 entries share some characters), 652 characters that are not words on their own, 6 clips for the three sets of characters the course reads two ways (得, 了, 當), and 6,584 distinct usage phrases (6,772 lines): **8,633 clips, 40,855 Han characters, 44,320 characters with punctuation** for one voice. Azure bills a Han character as two and bills the phoneme markup; ElevenLabs bills a credit a character.
+
+**Where the prices and terms were read, all on 21 November 2026.** Azure: $15 per million characters for neural text to speech from Microsoft's retail prices API (`prices.azure.com`, East US, "S1 Neural Text To Speech Characters"; the pricing page itself showed no figure), the free tier and "each Chinese character is counted as two characters for billing" and the markup rule from `learn.microsoft.com` (text-to-speech), the licence from the Product Terms (`microsoft.com/licensing/terms`), the phone set and its example from `learn.microsoft.com` (speech-ssml-phonetic-sets). ElevenLabs: plans and credits from `elevenlabs.io/pricing`, the licence from its help centre; the credit a character on `eleven_v4` is what the connector charged for these clips. BreezyVoice: its GitHub and Hugging Face pages. `edge-tts`: its README and the Microsoft Q&A answer. Whether a bopomofo symbol bills once or twice at Azure is not stated; it is counted twice here.
+
+**The blind page, and what remains for Thorne.**
+
+```
+node tools/voice_audit.mjs serve                 # the same server as V0
+http://127.0.0.1:8791/tools/voice_listen.html?set=v1
+node tools/voice_audit.mjs score ~/Downloads/voice-marks-v1.json
+```
+
+One card a word, with the reading it should have; under it the sources' clips as A, B, C…, unnamed, in an order that changes from word to word, as files with meaningless names (which is which is in `~/.cache/zika-voice/v1/listen-v1-key.json`, which the page never loads). Today that is 138 clips: both packs for all 62 words, ElevenLabs for 9, BreezyVoice for 5. The words are shuffled, so a session that stops half-way is still a fair sample. `score` prints, for each source, how many clips the ear called wrong and which words.
+
+1. **The listening session**: V0's 60 clips and V1's 138, about half an hour for two people.
+2. **An Azure key, if (b) is to run**: a Speech resource on the paid tier (the licence clause is for the paid tier; the whole set is under $8) and its key and region in `~/.config/zika/azure.json`. Then `node tools/voice_v1.mjs azure`.
+3. **A yes to the other 53 ElevenLabs words** (106 credits of the 2,525 left on the free plan), and to BreezyVoice when the Mac has memory to spare.
+4. After any of those: `node tools/voice_v1.mjs score`, then `blind`, and the page holds the new clips.
 
 ## Tone coach (聲調教練, beta; analysis rebuilt in v52)
 

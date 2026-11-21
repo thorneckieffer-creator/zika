@@ -22,6 +22,8 @@ What this adds on top of the model:
     syllables heard are not the syllables asked for. Clips that never pass are listed at the end.
 
 Use --sample N to render N everyday words into voice-samples/ for listening instead of a pack.
+Use --keys-file FILE to render only the clip keys listed in it (the first tab-separated field of each
+line; 字@pinyin for one reading of several) into --sample-dir, as <key>.mp3. No pack is written.
 
 It is built to stay out of the way on a machine that is being used: it runs at low priority, renders
 at most --stage clips per run (default 120) and then exits so all its memory is returned, frees GPU
@@ -81,6 +83,7 @@ def main():
     ap.add_argument('--out', default='audio-me', help='basename under assets/')
     ap.add_argument('--sample', type=int, default=0, help='render N sample words to --sample-dir and stop')
     ap.add_argument('--sample-dir', default=str(ROOT / 'voice-samples'))
+    ap.add_argument('--keys-file', help='render only the clip keys in this file into --sample-dir; no pack is written')
     ap.add_argument('--limit', type=int, default=0)
     ap.add_argument('--verify', action='store_true', help='listen back to every clip with Whisper')
     ap.add_argument('--device', default='auto', help='auto, mps or cpu')
@@ -116,6 +119,12 @@ def main():
             for pid, syl in variants:
                 jobs[f'{k}@{pid}'] = syl
     keys = list(jobs)
+    if a.keys_file:
+        only = [l.split('\t')[0].strip() for l in Path(a.keys_file).read_text(encoding='utf-8').split('\n') if l.strip() and not l.startswith('#')]
+        unknown = [k for k in only if k not in jobs]
+        if unknown:
+            sys.exit('not clip keys of this course: ' + ' '.join(unknown))
+        keys = only
     if a.limit:
         keys = keys[:a.limit]
     todo = [k for k in keys if not (cache / (k + '.mp3')).exists()]
@@ -244,6 +253,14 @@ def main():
             print(f'{len(flagged)} clips to check by ear (also in {report}):', flush=True)
             print('  ' + ' · '.join(flagged[:40]) + (' …' if len(flagged) > 40 else ''), flush=True)
 
+    if a.keys_file:
+        out = Path(a.sample_dir).expanduser()
+        out.mkdir(parents=True, exist_ok=True)
+        done = [k for k in keys if (cache / (k + '.mp3')).exists()]
+        for k in done:
+            (out / (k + '.mp3')).write_bytes((cache / (k + '.mp3')).read_bytes())
+        print(f'{len(done)} of {len(keys)} clips in {out}')
+        sys.exit(0 if len(done) == len(keys) else 3)
     if a.sample:
         out = Path(a.sample_dir) / f'breezy-{voice_id}'
         out.mkdir(parents=True, exist_ok=True)

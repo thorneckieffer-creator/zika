@@ -38,7 +38,7 @@ import { ROOT, app, trackKey, WORDS, hanKey, readWav, voices, load, feat, forwar
 export const HOME = join(homedir(), '.cache/zika-voice');
 export const OUT = process.env.VOICE_AUDIT || join(HOME, 'audit');
 export const PACKS = { f: { file: 'audio-tw', name: '曉臻' }, m: { file: 'audio-tw-m', name: '雲哲' } };
-const READINGS = JSON.parse(readFileSync(join(ROOT, 'tools/content/readings.json'), 'utf8'));
+export const READINGS = JSON.parse(readFileSync(join(ROOT, 'tools/content/readings.json'), 'utf8'));
 const NAMED = ['1>3', '3>1', '4>2', '2>4'];        /* the pairs Thorne named: a third for a first, a second for a fourth, either way round */
 const json = f => JSON.parse(readFileSync(f, 'utf8'));
 const put = (f, v) => { mkdirSync(join(f, '..'), { recursive: true }); writeFileSync(f, typeof v === 'string' ? v : JSON.stringify(v)); };
@@ -121,11 +121,11 @@ export function tracksFor(name, clips) {
    of one to three characters, evenly spread (tcNativeStats in js/tone.js needs a browser; this is the same selection). */
 export function statsOf(tracks, keys) {
   const all = []; for (const k of keys) { const t = tracks.get(k); if (t) for (const v of t.voiced) all.push(v); }
-  if (all.length < 200) return { base: 14.5, sd: 3.4, frames: all.length };
+  if (all.length < 200) return null;                        /* too little to know the voice */
   const mean = all.reduce((a, b) => a + b, 0) / all.length;
   return { base: mean, sd: Math.sqrt(all.reduce((a, b) => a + (b - mean) * (b - mean), 0) / all.length), frames: all.length };
 }
-function nativeKeys(idx) {
+export function nativeKeys(idx) {
   const keys = WORDS.filter(w => { const n = [...hanKey(w.t)].length; return n >= 1 && n <= 3; }).map(w => hanKey(w.t)).filter((k, i, a) => idx[k] && a.indexOf(k) === i), out = [];
   for (let i = 0; i < keys.length && i < 100; i++) out.push(keys[Math.floor(i * keys.length / 100)]);
   return out;
@@ -136,8 +136,9 @@ const best = p => { let k = 0; for (let i = 1; i < 4; i++) if (p[i] > p[k]) k = 
 /* tr: the track; e: the key's entry; sp: the speaker; held: a second classifier or null */
 export function judgeClip(tr, n, e, sp, held) {
   if (!tr || tr.voiced.length < 6) return { status: 'no pitch' };
-  const a = app.tcAnalyse(null, 0, n, sp, tr);
+  const a = app.tcAnalyse(null, 0, n, sp, tr);              /* sp null: judged against the take's own middle, as the coach does before it knows a voice */
   if (!a || a.syl.length !== n || a.syl.some(s => !s)) return { status: 'not cut' };
+  sp = a.sp;
   const heard = a.syl.map(s => s.tone);
   /* the second classifier is given the same syllables (tcAnalyse keeps each one's start but not its end: its `z` is the contour) */
   const heardHeld = held ? app.tcSyllables(tr.st, n, tr.rms).map(([from, to]) => best(forward(held, feat({ s: app.tcShape(tr.st, from, to), d: to - from, mean: sp.base, sd: sp.sd }, 'spk', false)).p) + 1) : null;
@@ -235,7 +236,7 @@ function auditPacks() {
     const idx = json(join(ROOT, 'assets', P.file + '-index.json')), pack = readFileSync(join(ROOT, 'assets', P.file + '.pack'));
     console.log(`${P.name}: ${Object.keys(idx).length} clips …`);
     const tracks = tracksFor('pack-' + v, Object.keys(idx).map(k => ({ k, bytes: () => pack.subarray(idx[k][0], idx[k][0] + idx[k][1]) })));
-    const sp = statsOf(tracks, nativeKeys(idx)), every = statsOf(tracks, Object.keys(idx)); speakers[v] = { sp, every };
+    const every = statsOf(tracks, Object.keys(idx)), sp = statsOf(tracks, nativeKeys(idx)) || every; speakers[v] = { sp, every };
     for (const k of Object.keys(idx)) {
       const e = key.lookup(k), n = [...k].length, w = e && e.words[0];
       const base = { voice: v, key: k, pinyin: w ? w.p : '', id: w ? w.id : '', n, alts: e ? e.cands.length : 0, differ: !!(e && e.differ), erhua: !!(e && e.erhua) };
