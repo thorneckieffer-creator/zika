@@ -13,6 +13,29 @@ Later the same evening Thorne wrote [master-plan.md](master-plan.md), which merg
 - **Before the 7 November merge is applied**, what the room sync does when a device with older unsent changes reconnects after an import is stated plainly, and the import runs with the iPad and iPhone closed.
 - **The native clip is the tone coach's answer key, and the clips and the coach are verified together** (V0 to V4 in [voice.md](voice.md)). He hears a wrong tone about a third of the time and it is not known which of the two is at fault. Audio is chosen by measured tone accuracy and a native ear, not by how natural it sounds. A rebuilt pack is licensed; a speaker's recordings are used only with their written agreement; a personal cloned voice stays on the device.
 
+## 2026-11-22 — the sync contract is frozen (step 4a), and what the first voice audit found
+
+**The contract** is [sync.md](sync.md), with a model of the database in plain JavaScript (`tools/lib/recmodel.js`) that passes the same checks as the real project (`node tools/dbtest.mjs --model`: 122; the real project: 97). The engine, the adapter, the app-readying release and the accounts module are built against it side by side. What it decides, each with its reason there:
+
+- **The adapter is four calls and the engine does the paging**: `head()`, `write(v, recs)`, `read(after)` (one page), `listen(onSignal, onState)`. The format number is the engine's and is passed in, so the two cannot disagree. An empty page proves nothing: the real project answers a signed-out device's read with no rows and no error.
+- **The cursor moves only to the number of the last row applied and stored**, never on an empty page and never to the head's number (expired rows leave the head above anything that can be read).
+- **The day's counts are one record per device per day, summed on the device.** The database never looks inside a value, and a device that is offline has to hold its own share anyway.
+- **Erase writes a mark that voids the counts up to its day**, not a negative share: negative shares let counts come back when an old device joins.
+- **What the app forgets is given a time to live** (three days on a sibling claim, thirty on a snapshot's tombstone), because the database has no "remove". These are judgements; they are settled before anything real is written, since changing them later is a change of format.
+- **The engine is attached to the deck as the last statement of start-up**, with no library and no network, and connected later. Edits made on an offline start are then stamped as the edits they are.
+- **A generation number in the deck and in the engine's own store** says which of the two is behind: one ahead is a crash between two writes (recover), more than one is a deck written elsewhere (join again by merging), behind is a deck that went back (take the cloud's, then send what was unsent).
+- **If IndexedDB cannot be used, sync is off on that device for that run, and says so.** Nothing falls back to localStorage.
+- **To be added to the database as `db/0003`** (the adapter's step applies it to `zika-dev`): `rec_read(after, lim)`, which refuses a signed-out caller instead of answering with nothing; an `epoch` per person, raised by hand after a restore, so a cloud that went backwards is noticed; and `account_delete()`.
+- **Sending again after a failed write, on a growing delay, is allowed only while there is something unsent.** It is sending, not asking; nothing reads on a timer.
+
+**The voice audit (V0)** ran the tone coach's own analysis over every clip of both packs ([voice.md](voice.md#v0--what-the-audit-found)). Three things change how the Voice plan reads:
+
+- **The tone coach does not grade against the clip.** Its verdict is its classifier against the tone the word should have; the clip is only drawn beside the learner's curve. So a wrong clip teaches a wrong sound, but it does not mark a right tone wrong: a wrong grade is the classifier's. The master plan's sentence that the coach "grades by comparing his pitch with the native clip" describes what V3 would make true, not what the app does today.
+- **The analysis cannot yet tell a bad clip from its own mistakes.** On people saying these tones right it is wrong about 12 to 15% of the time. It disagrees with 13.5% of 曉臻's syllables, which is all within that, and with 26.3% of 雲哲's, of which about half is not. The largest single thing is 雲哲's one-character clips: 207 first tones measured as falling. Only an ear settles whether those clips are wrong; the listening page is ready.
+- **Thirteen words have one reading in the 注音 file and another in the course's pinyin** (背包, 暑假, 天分, 只要, 古蹟, 待, 除了, 為了, 瓶子, 剛剛, 餓死了, 一會兒, 餡兒). They are settled before any voice is pinned to them in V2.
+
+V1 has no winner: Azure was not run (no key), ElevenLabs stopped at 9 of 62 words (its free queue refused the rest), BreezyVoice was not started (the Mac's swap was full). What each would cost for the full set is in [costs.md](costs.md).
+
 ## 2026-11-22 — v66: the "which pattern?" drill takes the place of "Which one?"
 
 The app already had a drill of this shape: 辨析 "Which one?", twelve families and 79 sentences written into `js/drills.js`, under the fold in the Drill tab. The master plan's drill and that one are the same idea, so there is one drill, not two:
