@@ -25,7 +25,7 @@ import { join, isAbsolute } from 'node:path';
 /* What is NOT the app. Everything else that GitHub Pages serves is, so a file or folder added later
    (css/, data/, a second page) is under review from its first commit without anyone remembering to list it.
    A new folder the devices never load (Firebase rules, say) is added here in the commit that adds it. */
-const NOT_APP = [/^docs\//, /^tools\//, /^\.claude\//, /^\.github\//, /\.md$/i, /^\.gitignore$/, /^\.gitattributes$/];
+const NOT_APP = [/^docs\//, /^tools\//, /^db\//, /^\.claude\//, /^\.github\//, /\.md$/i, /^\.gitignore$/, /^\.gitattributes$/];
 const isApp = path => !NOT_APP.some(re => re.test(path));
 const CHECKER = 'verify-app';                       /* the subagent in .claude/agents/, the only one that records a verdict */
 const ROUNDS = 3;                                   /* FAILs, and reminders in a row, before the problem goes to Thorne */

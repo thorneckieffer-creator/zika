@@ -33,7 +33,7 @@ The work divides into four areas. Each has its own notes; read the one you are a
 
 | Area | Notes | Covers |
 |---|---|---|
-| **App** | [docs/architecture.md](docs/architecture.md), [docs/design.md](docs/design.md), [docs/multi-user.md](docs/multi-user.md), [docs/review-users-branches.md](docs/review-users-branches.md) | The page (`index.html`), the code in `js/`, the styles in `css/app.css`, `sw.js`, `manifest.webmanifest`. How it should look; what opening it to other users takes. |
+| **App** | [docs/architecture.md](docs/architecture.md), [docs/design.md](docs/design.md), [docs/multi-user.md](docs/multi-user.md), [docs/review-users-branches.md](docs/review-users-branches.md), [docs/backend.md](docs/backend.md) | The page (`index.html`), the code in `js/`, the styles in `css/app.css`, `sw.js`, `manifest.webmanifest`. How it should look; what opening it to other users takes. |
 | **Content** | [docs/content.md](docs/content.md) | Books, words, grammar and characters: the files in `data/`, `assets/strokes.json`, the importers, `tools/content/`. |
 | **Voice** | [docs/voice.md](docs/voice.md) | Voice packs and how they are built: `assets/audio-*`, `voice.html`, the pack builders, `js/audio.js`, the tone coach (`js/tone-analysis.js`, `js/tone.js`). |
 | **Release and repo** | [docs/releasing.md](docs/releasing.md), [docs/feature-map.md](docs/feature-map.md), [docs/review-checklist.md](docs/review-checklist.md) | The release check, the checker and its gate, GitHub and Pages, these notes, the README. |
@@ -58,6 +58,7 @@ Open work for every area is in one list: [docs/roadmap.md](docs/roadmap.md).
 | `tools/snap.mjs`, `tools/snap/` | The screen-by-screen harness: records every screen, the saved state and a picture for scripted and seeded random use, and compares two recordings. `node tools/snap.mjs record` before a change, `check` after. | Release |
 | `tools/swtest.mjs` | Takes the service worker through a device's life in headless Chrome: first visit, offline, a release, a half-published release, the upgrade from an earlier release (`--from`), which carries a deck, a sync code and stored audio across. | Release |
 | `tools/applib.py`, `tools/lib/browser.mjs` | What the tools share: reading and writing `data/`; a static server and a Chrome driver. | Release |
+| `db/`, `tools/dbtest.mjs` | The record store on Supabase that accounts and sync will use, as SQL the project can be rebuilt from, and its test, run against the real project (`node tools/dbtest.mjs`; its accounts are in a file outside the repository). Nothing in the app uses it yet ([docs/backend.md](docs/backend.md)). | App |
 | `tools/review.mjs` | The review gate: ties the checker's PASS or FAIL to a fingerprint of the app files (everything but the notes and the tools), and stops a session finishing or a push leaving without a PASS. | Release |
 | `.claude/agents/verify-app.md`, `.claude/settings.json` | The checker subagent, and the hooks that call the gate: when a session tries to finish, and to keep anyone but the checker from recording a verdict. | Release |
 | `tools/import_dangdai.py` | Imports lessons from a downloaded DangDai volume (words, titles, BOOKS, DLGMAP, grammar). | Content |
@@ -86,7 +87,7 @@ Two rules he gave on 16 November 2026, for the backend above all, and for everyt
 1. **Subscribe, do not poll.** Nothing asks a server for data on a timer. What comes from the cloud arrives through a listener on changes the backend pushes.
 2. **Replace, do not layer.** No fallbacks, no backwards-compatibility paths, no new version built beside the old one "in case". Change the thing where it is, delete what it replaces in the same release, and make sure the new one works. This is the rule the wrapper layers broke for sixty versions.
 
-The backend they shape is decided: accounts and sync on Supabase, replacing the room-code sync in one release ([docs/decisions.md](docs/decisions.md), 16 November 2026).
+The backend they shape is decided: accounts and sync on Supabase ([docs/decisions.md](docs/decisions.md), 16 November 2026). The room-code sync is deleted in the release after Thorne has checked that his three devices agree on the new one, on his word of 21 November 2026; until then a device runs one or the other, never both.
 
 What rule 2 does not mean: his saved progress is still carried across every change (the rules above). Moving a deck once, tested, is not a compatibility layer; keeping the old code path alive afterwards would be.
 
