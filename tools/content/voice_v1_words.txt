@@ -1,0 +1,66 @@
+# Voice V1: the hard words every source is asked to say (docs/voice.md, "V1 — side by side").
+# key<TAB>word id<TAB>pinyin<TAB>注音, tone digit after each syllable, 5 = neutral (tools/content/readings.json)<TAB>group
+# The key is the clip key: the characters, with @pinyin where the course has the same characters with another reading.
+# `node tools/voice_v1.mjs test` checks every line against data/words.js and readings.json; change a line and it says so.
+星期	w310	xīngqí	ㄒㄧㄥ1 ㄑㄧ2	taiwan
+垃圾	w838	lèsè	ㄌㄜ4 ㄙㄜ4	taiwan
+和	w88	hàn	ㄏㄢ4	taiwan
+企業	w1166	qìyè	ㄑㄧ4 ㄧㄝ4	taiwan
+炸	w1073	zhá	ㄓㄚ2	taiwan
+喂	w397	wéi	ㄨㄟ2	taiwan
+研究	w1173	yánjiù	ㄧㄢ2 ㄐㄧㄡ4	taiwan
+法國	w654	Fǎguó	ㄈㄚ3 ㄍㄨㄛ2	taiwan
+亞洲	w724	Yàzhōu	ㄧㄚ4 ㄓㄡ1	taiwan
+下載	w593	xiàzài	ㄒㄧㄚ4 ㄗㄞ4	taiwan
+休息	w544	xiūxí	ㄒㄧㄡ1 ㄒㄧ2	taiwan
+可惜	w809	kěxí	ㄎㄜ3 ㄒㄧ2	taiwan
+認識	w691	rènshì	ㄖㄣ4 ㄕ4	taiwan
+成績	w424	chéngjī	ㄔㄥ2 ㄐㄧ1	taiwan
+微波	w135	wéibō	ㄨㄟ2 ㄅㄛ1	taiwan
+除夕	w1209	chúxì	ㄔㄨ2 ㄒㄧ4	taiwan
+誰	w60	shéi	ㄕㄟ2	taiwan
+覺得	w95	juéde	ㄐㄩㄝ2 ㄉㄜ5	heteronym
+得@děi	w244	děi	ㄉㄟ3	heteronym
+不得了	w778	bùdéliǎo	ㄅㄨ4 ㄉㄜ2 ㄌㄧㄠ3	heteronym
+了解	w696	liǎojiě	ㄌㄧㄠ3 ㄐㄧㄝ3	heteronym
+當然	w458	dāngrán	ㄉㄤ1 ㄖㄢ2	heteronym
+當@dàng	w1256	dàng	ㄉㄤ4	heteronym
+銀行	w245	yínháng	ㄧㄣ2 ㄏㄤ2	heteronym
+便宜	w153	piányí	ㄆㄧㄢ2 ㄧ2	heteronym
+方便	w220	fāngbiàn	ㄈㄤ1 ㄅㄧㄢ4	heteronym
+睡覺	w545	shuìjiào	ㄕㄨㄟ4 ㄐㄧㄠ4	heteronym
+音樂	w83	yīnyuè	ㄧㄣ1 ㄩㄝ4	heteronym
+快樂	w452	kuàilè	ㄎㄨㄞ4 ㄌㄜ4	heteronym
+為什麼	w157	wèishénme	ㄨㄟ4 ㄕㄣ2 ㄇㄜ5	heteronym
+以為	w842	yǐwéi	ㄧ3 ㄨㄟ2	heteronym
+應該	w332	yīnggāi	ㄧㄥ1 ㄍㄞ1	heteronym
+答應	w742	dāyìng	ㄉㄚ1 ㄧㄥ4	heteronym
+調味料	w996	tiáowèiliào	ㄊㄧㄠ2 ㄨㄟ4 ㄌㄧㄠ4	heteronym
+聲調	w1163	shēngdiào	ㄕㄥ1 ㄉㄧㄠ4	heteronym
+睡著	w1201	shuìzháo	ㄕㄨㄟ4 ㄓㄠ2	heteronym
+你好	w24	Nǐ hǎo	ㄋㄧ3 ㄏㄠ3	sandhi3
+可以	w113	kěyǐ	ㄎㄜ3 ㄧ3	sandhi3
+小姐	w7	xiǎojiě	ㄒㄧㄠ3 ㄐㄧㄝ3	sandhi3
+哪裡	w200	nǎlǐ	ㄋㄚ3 ㄌㄧ3	sandhi3
+水果	w340	shuǐguǒ	ㄕㄨㄟ3 ㄍㄨㄛ3	sandhi3
+展覽館	w630	zhǎnlǎn guǎn	ㄓㄢ3 ㄌㄢ3 ㄍㄨㄢ3	sandhi3
+不客氣	w23	búkèqì	ㄅㄨ2 ㄎㄜ4 ㄑㄧ4	yi-bu
+一定	w172	yídìng	ㄧ2 ㄉㄧㄥ4	yi-bu
+一起	w116	yìqǐ	ㄧ4 ㄑㄧ3	yi-bu
+第一手	w1136	dìyīshǒu	ㄉㄧ4 ㄧ1 ㄕㄡ3	yi-bu
+不錯	w190	búcuò	ㄅㄨ2 ㄘㄨㄛ4	yi-bu
+中文	w115	Zhōngwén	ㄓㄨㄥ1 ㄨㄣ2	v0-pair
+朋友	w215	péngyǒu	ㄆㄥ2 ㄧㄡ3	v0-pair
+游泳	w89	yóuyǒng	ㄧㄡ2 ㄩㄥ3	v0-pair
+人	w31	rén	ㄖㄣ2	v0-pair
+還是	w111	háishì	ㄏㄞ2 ㄕ4	v0-pair
+出門	w1217	chūmén	ㄔㄨ1 ㄇㄣ2	v0-pair
+啤酒	w1040	píjiǔ	ㄆㄧ2 ㄐㄧㄡ3	v0-pair
+教	w192	jiāo	ㄐㄧㄠ1	v0-pair
+差	w533	chā	ㄔㄚ1	v0-pair
+親戚	w765	qīnqī	ㄑㄧㄣ1 ㄑㄧ1	v0-pair
+大樓	w232	dàlóu	ㄉㄚ4 ㄌㄡ2	v0-pair
+小吃	w165	xiǎochī	ㄒㄧㄠ3 ㄔ1	v0-pair
+助教	w710	zhùjiào	ㄓㄨ4 ㄐㄧㄠ4	v0-pair
+車票	w285	chēpiào	ㄔㄜ1 ㄆㄧㄠ4	v0-pair
+體力	w906	tǐlì	ㄊㄧ3 ㄌㄧ4	v0-pair
