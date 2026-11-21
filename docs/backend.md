@@ -8,7 +8,7 @@ What the database is, the protocol a device speaks to it, how it is tested and h
 | `db/0002_signed_in.sql` | Every door asks whether the session still exists (`private.me()`). Migration `signed_in`. |
 | `tools/dbtest.mjs` | The store's promises and the attacks it must refuse, run against the real project. |
 
-The project is `zika-dev` (Supabase, free plan, Tokyo), made on 16 November 2026 for building and testing. It holds test accounts and nothing of anyone's. Real learners get a separate project on a plan that does not pause ([roadmap.md](roadmap.md#app), step 12); it is built by running the files in `db/` in order on an empty project and setting what is listed under [Rebuilding](#rebuilding).
+The project is `zika-dev` (Supabase, free plan, Tokyo), made on 16 November 2026 for building and testing. It holds test accounts and nothing of anyone's. Real decks, Thorne's first, go in a second project made before the accounts release ([roadmap.md](roadmap.md#app), step 8), so that nobody's progress sits in the one this test fills and floods; it is built by running the files in `db/` in order on an empty project and setting what is listed under [Rebuilding](#rebuilding).
 
 ## The shape
 
@@ -124,5 +124,5 @@ The project's address and its publishable key are public by design and go in the
 
 - The adapter (`sySupabase()`), the pinned client library, and a first run from a browser: step 5.
 - The engine that speaks this protocol: `js/sync-records.js` on `origin/users-sync`, with its review findings to fix first: step 4.
-- Deleting an account and its rows from the app; the confirmation and reset emails (the built-in sender is for testing only): steps 7 and 12.
+- Deleting an account: the rows go with the account (`on delete cascade`), but there is no function a signed-in person can call to do it yet (`db/0003`, step 7). The confirmation and reset emails (the built-in sender is for testing only) belong to steps 7 and 12.
 - Not decided, because it needs the engine in front of it: whether the day's counts stay one record per device, summed on the device, or become rows the database sums.
