@@ -57,7 +57,7 @@ function renderRevBase(){
     back=`<div class="rv-main"><div class="bigzh zh" style="font-size:56px">${dcZh(w.t)}</div>
       ${w.pos?`<div class="pos">${esc(w.pos)}</div>`:''}
       <div class="meaning">${esc(w.m)}</div>
-      <div class="row" style="justify-content:center;gap:9px"><span class="pyline">${tonePinyin(esc(w.p))}</span>${spkBtn(w.id)}${tcMicBtn(w.id)}</div>
+      <div class="row" style="justify-content:center;gap:9px"><span class="pyline">${tonePinyin(esc(w.p))}</span>${spkBtn(w.id)}${tcMicBtn(w.id)}${awBtn(w.t,w.p)}</div>
       ${w.s?`<div class="simpnote">简体 ${esc(w.s)}</div>`:''}
       ${compLines(w.t)}</div>
       ${window.usBlock?usBlock(w):''}`;
@@ -71,7 +71,7 @@ function renderRevBase(){
       ${S.settings.strokeAnim?`<div id="strokeHost" class="strokerow"></div>
       <div class="stroketools"><button class="btn sm ghost" onclick="playStrokes('strokeHost')">Replay strokes ▶</button></div>`:''}
       <div class="pos" style="text-align:center">${esc(w.m)}</div>
-      <div class="row" style="justify-content:center;gap:9px"><span class="pyline" style="font-size:21px">${tonePinyin(esc(w.p))}</span>${spkBtn(w.id)}${tcMicBtn(w.id)}</div>
+      <div class="row" style="justify-content:center;gap:9px"><span class="pyline" style="font-size:21px">${tonePinyin(esc(w.p))}</span>${spkBtn(w.id)}${tcMicBtn(w.id)}${awBtn(w.t,w.p)}</div>
       ${w.s?`<div class="simpnote">简体 ${esc(w.s)}</div>`:''}
       ${compLines(w.t)}</div>
       ${window.usBlock?usBlock(w):''}`;

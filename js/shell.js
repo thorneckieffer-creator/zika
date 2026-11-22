@@ -69,8 +69,8 @@ function shSaveWarn(){
     b=document.createElement('div'); b.id='saveBanner'; b.className='banner'; b.setAttribute('role','alert');
     after.insertAdjacentElement('afterend',b);
   }
-  b.innerHTML='<b>Your progress is not being saved on this device.</b> The browser would not store it at '+esc(fmtT(DECK_UNSTORED))
-    +' (its storage is full, or switched off), so what you study from then on is lost when this page closes. Keep a copy now: <b>Settings → Backup → Export</b>.';
+  b.innerHTML='<b>Progress is not being saved on this device since '+esc(fmtT(DECK_UNSTORED))+'.</b> The browser’s storage is full or switched off,'
+    +' so what you study now is lost when this page closes. Keep a copy: <b>Settings → Backup → Export</b>.';
   b.style.display='block';
 }
 let toastTimer=null;

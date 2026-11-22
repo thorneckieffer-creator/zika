@@ -48,6 +48,7 @@ function renderSet(){
       <button class="tgl ${s.autoplayAudio?'on':''}" onclick="S.settings.autoplayAudio=!S.settings.autoplayAudio;save();renderSet()"><i></i></button></div>
     <div class="set-row"><div><b>Audio speed</b><div class="d">applies to both the Taiwanese voice and the bundled recordings</div></div>
       <div class="row"><input type="range" min="60" max="120" value="${Math.round((s.audioSpeed||0.9)*100)}" oninput="S.settings.audioSpeed=this.value/100;save();this.nextElementSibling.textContent=this.value+'%'"><b>${Math.round((s.audioSpeed||0.9)*100)}%</b></div></div>
+    ${awRow()}
     <div class="set-row"><div><b>Stroke-order animations</b><div class="d">writing-card answers draw themselves stroke by stroke</div></div>
       <button class="tgl ${s.strokeAnim?'on':''}" onclick="S.settings.strokeAnim=!S.settings.strokeAnim;save();renderSet()"><i></i></button></div>
     <div class="set-row"><div><b>Pinyin under sentences</b><div class="d">tone-colored pinyin on grammar examples and drill answers</div></div>

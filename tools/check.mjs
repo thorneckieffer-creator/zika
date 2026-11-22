@@ -69,6 +69,9 @@ if (appV && swV && appV !== swV) fail(`version mismatch: js/core.js APP_VERSION=
 
 /* 3. the storage key that holds everyone's progress has not moved */
 if (!/const KEY='shida_b1_fsrs_v2'/.test(core)) fail("js/core.js: storage KEY must stay 'shida_b1_fsrs_v2' — changing it orphans all saved progress");
+/* the automatic backup file keeps its one name: a nightly job of Thorne's finds it in Drive by exactly that name (docs/master-plan.md).
+   Only a manual export carries a date and a device (exportName in js/settings.js). */
+if (!/suggestedName:'zika-progress\.json'/.test(read('js/backup.js'))) fail("js/backup.js: the automatic backup file must be offered as 'zika-progress.json', always — it is found by that name outside the app");
 
 /* 4. embedded data */
 const data = name => {

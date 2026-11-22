@@ -184,7 +184,7 @@ function dcRender(){
   if(M.my&&!M.cws.length&&M.my.m)senses+=`<div class="dc-sense">${esc(M.my.m)}</div>`;
   const mine=dcMine(M);
   const head=`<div class="dc-head"><div class="dc-big zh" lang="zh-Hant" style="font-size:${size}px">${M.single?esc(t):dcZh(t)}</div>
-      <div class="dc-id"><div class="row" style="gap:9px">${M.p?`<span class="pyline dc-py">${tonePinyin(esc(M.p))}</span>`:''}<button class="spk" title="pronounce" onclick="dcHear()">${SPK_SVG}</button></div>${dcStanding(M)}</div></div>
+      <div class="dc-id"><div class="row" style="gap:9px">${M.p?`<span class="pyline dc-py">${tonePinyin(esc(M.p))}</span>`:''}<button class="spk" title="pronounce" onclick="dcHear()">${SPK_SVG}</button>${awBtn(t,M.p)}</div>${dcStanding(M)}</div></div>
     <div class="dc-senses">${senses}<div id="dcDefs">${M.bare&&!M.dict&&!DC.map?'<div class="small muted">Looking it up…</div>':''}</div></div>
     ${M.han.length?`<div id="dcMy" class="row dc-my">${mine}</div>`:''}`;
   /* a word: its characters, each one tap from its own entry */

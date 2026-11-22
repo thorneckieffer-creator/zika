@@ -6,7 +6,7 @@ The list the checker holds every change against (`.claude/agents/verify-app.md`)
 
 ## Checked by the script, not by eye
 
-`node tools/review.mjs pass` runs `node tools/check.mjs` and refuses to record a PASS if it fails: every script block parses, the two version numbers agree, the storage key has not moved, the word, grammar and usage data are sound, the voice packs and dictionary are whole, the manifest has no `id`, the viewport still forbids zooming, and the tone coach still hears synthetic tones.
+`node tools/review.mjs pass` runs `node tools/check.mjs` and refuses to record a PASS if it fails: every script block parses, the two version numbers agree, the storage key has not moved, the automatic backup file is still offered as `zika-progress.json`, the word, grammar and usage data are sound, the voice packs and dictionary are whole, the manifest has no `id`, the viewport still forbids zooming, and the tone coach still hears synthetic tones.
 
 ## Every change
 

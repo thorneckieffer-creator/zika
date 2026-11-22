@@ -1032,5 +1032,14 @@ html:not([data-links]) .nlink,html:not([data-links]) .nl{display:none!important}
 .dc-my{gap:8px;margin-top:10px}
 .dc-my:empty{display:none}
 
+/* "Sounds wrong" beside a speaker (js/audio.js): a text button in the link colour. Its tick keeps its room whether or not
+   it shows, so marking a word moves nothing. Under a finger it is as tall to the touch as the speaker it sits beside, and
+   where a long reading sends it to a line of its own (a phone) that line is no taller than the words. */
+.awb{border:0;background:none;padding:4px 2px;margin:0;font-family:inherit;line-height:1.3;white-space:nowrap;flex:none}
+.awb i{font-style:normal;margin-left:3px;visibility:hidden}
+.awb[aria-pressed="true"]{color:var(--amber)}
+.awb[aria-pressed="true"] i{visibility:visible}
+@media(pointer:coarse){.awb{min-height:40px;margin:-6px 0}}
+
 /* The last rule of the stylesheet, and it stays the last: start-up reads it to know the whole file arrived (bootLost in js/boot.js). */
 html{--zika-css-whole:1}
