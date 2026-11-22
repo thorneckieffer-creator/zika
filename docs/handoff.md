@@ -2,50 +2,50 @@
 
 Read [master-plan.md](master-plan.md) first; this file says where its "Order of work" stands. Replace it at the end of each session.
 
-**Nothing has been pushed since the no-push rule of 21 November.** `main` is ahead of GitHub by everything below (`git log origin/main..main`). The branch `backend` is on GitHub at `33ea621` from before the rule.
+**v66 and v67 are live** (pushed on 22 November on Thorne's "yes to both"; `main` on GitHub at `2ef1bd9`; after each push the site's `sw.js` and the changed scripts were byte for byte the local ones). The tag `single-user-v65` and the branch `archive/single-user` are on GitHub too. Anything committed after `2ef1bd9` is local and waits for a yes of its own, as before.
 
-## Waiting for Thorne's yes to push
-
-| What | Tested | Checker |
-|---|---|---|
-| **v66**, the drill 句型 "Which pattern?" (`main`; app files as of `1277d75`, fingerprint `172ec434b4f3`). 25 pairs, 222 sentences, in place of the old "Which one?" drill. | Release check, pairs check, the harness (only the intended screens differ), every sentence of every pair answered once, phone, tablet and iPad landscape, day and night | **PASS** on its second pass, 22 November. The first pass failed it on eleven points; all are fixed. |
-| **v67**, "ready the app" (branch `ready`, worktree `.claude/worktrees/ready`; app files as of `711665e`, fingerprint `465bebb4611b`). Groundwork with the room-code sync untouched: My-words ids that include the device, a banner when the browser refuses to save, the Brain's snapshot found by date, one tone-coach marker, a manual export named with its date and device (the automatic backup is still `zika-progress.json`), and the **Sounds wrong** button beside the speaker, with its list in Settings → Audio. | Release check; the harness (the move alone identical to v66 in all 509 steps; every later difference accounted for); the upgrade test from v66 with a deck, a sync code and stored audio (22 checks); three sizes, day and night | **PASS** on its first pass, 22 November. Its verdict is recorded in that worktree, so v67 is pushed from there (`git push origin ready:main`), after v66. |
-| The tag `single-user-v65` and the branch `archive/single-user` (both at `7d26dc5`) | The zip of the same commit opens on a local port and is v65 | not needed |
-
-Pushing `main` releases v66 and carries every notes and tools commit since v65. `ready` holds `main` plus v67, so pushing it afterwards releases v67; pushing only `ready` would take the devices from v65 straight to v67, which the checker also tried (a v65 deck opens in v67 unchanged). Not tested by anyone: real Safari, an iPhone or iPad, touch, sound by ear.
+Not tested by anyone, still: real Safari, an iPhone or iPad, touch, sound by ear. Thorne's report from his devices is the open item.
 
 ## Where each piece of work is
 
 | Order of work | State | Where |
 |---|---|---|
 | 1–3 notes, archive, cleanup | done 21 November | `main` |
-| 4 v66 | built, checker PASS, waiting for a yes | `main` |
+| 4 v66 | **released 22 November** (checker PASS on its second pass) | `main` |
 | 5 Voice V0, V1 (tools) | done as far as tools go; no V1 winner | `main` |
 | 6 backend 4a, the contract | done | `main` (`docs/sync.md`, `tools/lib/recmodel.js`) |
-| 6 backend 4b, the engine | done 22 November; one weakness left (two devices sharing a device id), being worked on | branch `engine`, worktree `.claude/worktrees/engine` |
+| 6 backend 4b, the engine | done 22 November; its first real run was stopped part-way (below) | branch `engine`, worktree `.claude/worktrees/engine` |
 | 6 backend 5, the adapter | done 22 November; no client library | merged into `engine` (`e4529e8`); the branch `backend` is contained in it |
-| 6 backend 6, **v67** "ready the app" | built 22 November (`711665e`), checker PASS, waiting for a yes | branch `ready`, worktree `.claude/worktrees/ready` |
+| 6 backend 6, **v67** "ready the app" | **released 22 November** (checker PASS on its first pass); its worktree and branch are removed | `main` |
 | 7 the 7 November merge | the tool is written and self-tested (`tools/merge_deck.mjs`); **the file has not been found** | `main` |
 | 8 the rest of the backend, Voice V2 | from 8 December | — |
 
-`engine` and `ready` cannot go to `main` yet. `engine` adds two files under `js/` that the page does not load, which fails the release check until the accounts release wires them in (step 8). `ready` is v67 and follows v66.
+`engine` cannot go to `main` yet: it adds two files under `js/` that the page does not load, which fails the release check until the accounts release wires them in (step 8). It was cut before v67, so it takes `main` in (a merge, notes and v67's files) before its next piece of work.
 
-## Running when this was written
+## Stopped part-way: the engine's first real run
 
-- **The engine's first real run**, in `.claude/worktrees/engine`: one model instead of two, the engine through the adapter against `zika-dev` with a deck of real size, its store in a real browser's IndexedDB, the shared-device-id weakness, erase in the simulation, real numbers.
+Stopped at Thorne's word on 22 November, and committed where it stood, on `engine`:
 
-If it had not reported before the session ended, look at that folder's `git log` and `git status` first.
+| Commit | What | Tests when committed |
+|---|---|---|
+| `26a2a97` | One model of the database instead of two: the tests' cloud uses the model's own epoch and refusing read | green |
+| `b2b42d7` | **The first run against the real database**: `tools/enginetest.mjs` takes two engines through the real adapter to `zika-dev` as two devices of one person | green |
+| `e973234` | **Two devices with one id, made exact**: a device's share of a day is kept and sent by run of the app | green |
+| `196801c` | WIP: the engine's store against real IndexedDB in headless Chrome (`tools/enginetest.mjs --store`) | its own message says where it stood |
+| `b61bf46` | **WIP, not in a known-good state**: erase brought into the simulation, `tools/sync_numbers.js` ported, notes begun. 128 of 129 tests pass; **the simulation (300 seeds) fails**. The database model's 154 checks pass. | one failing |
+
+The helper was stopped before it reported, so its own account of the real run, of what it decided about the shared id, and of what rows it left in `zika-dev` was never written. Read the messages of those commits (`git log -5 --format=%B b61bf46`) and `docs/sync.md` on that branch before continuing. First thing to do there: `node --test tools/test/*.test.js`, find why the simulation fails (the erase oracle is the newest thing in it), and either finish it or take it back out.
 
 ## The next steps
 
-1. When Thorne says yes: push `main` (v66) with the tag and the archive branch, check the live copy is the one pushed, then v67 from `ready` when he says yes to that. After v67 is on `main`, remove the `ready` worktree.
-2. The engine's real run: read its report into `docs/decisions.md` and the roadmap.
-3. Then, until 1 December: nothing else in the backend is due (the master plan gives 4b, 5 and 6 until 30 November, and the rest starts on 8 December). Useful and unblocked: the repairs the checker listed on the roadmap as a small release; the Taiwan-wording scan for Voice V2 (`tools/check_register.py`, tools only).
-4. From 8 December: the accounts module (step 7), the independent break-it review of engine, adapter and accounts (7b), the accounts release v68.
+1. Thorne's word on how v66 and v67 behave on his devices; fix what he reports first.
+2. `engine`: merge `main` in; get the tests green again (above); then what the stopped run had left: the store in a real browser, the two-page exchange, the numbers in `docs/sync.md`. Check what the run left in `zika-dev` under the test accounts.
+3. Until 1 December nothing else in the backend is due. Unblocked and useful: the repairs the checker listed on the roadmap, as one small release (Today's greeting among them).
+4. From 8 December: the accounts module (step 7), the independent break-it review of engine, adapter and accounts (7b), the accounts release v68. Two things for step 8 found on the way: a device-local mark so a My word's id is never handed out twice after an import; the real-decks project, without which the adapter refuses at the live address.
 
 ## Questions for Thorne
 
-1. **Yes or no to pushing v66** (and the archive tag and branch), **and to v67** after it.
+1. **How do v66 and v67 behave on the iPhone and iPad?** Open the app twice on each (the first open fetches the release, the second runs it); Settings shows the version at the bottom.
 2. **The 7 November backup is not where it was said to be.** The backup folder is in the work Google account (thornek@archsolar.net); its trash is the one place not yet looked in, and only he can open it. Nothing else holds a copy: not the personal account's trash, not the current file's history (one version), not this Mac. Where did the note about that file come from?
 3. **Read the drill's sentences**: `~/Desktop/zika-which-pattern-list.txt`, all 222 with the answer filled in. Mark any where another choice also fits. Least sure: 趟／遍／次／下 and 其他／別的／另外.
 4. **Voice V1** needs an Azure key (the full set costs under $8), a yes to the other 53 ElevenLabs test words (106 free credits), and the listening session: `node tools/voice_audit.mjs serve` in the main folder, then `http://127.0.0.1:8791/tools/voice_listen.html?set=v0` and `?set=v1`.
