@@ -71,6 +71,7 @@ Open work for every area is in one list: [docs/roadmap.md](docs/roadmap.md).
 | `tools/build_dict.py` | Builds `assets/dict.txt`, the dictionary's word list (entries, the Library's search, pinyin and meanings in My words), out of CC-CEDICT, with the pinyin written the course's (Taiwan) way. | Content |
 | `tools/content/` | Original grammar write-ups per book, consumed by the importer; the Stories (`reading_passages.py`) and the usage phrases (`usage/*.txt`); `readings.json`, the publisher's 注音 per word. | Content, Voice |
 | `tools/check_pairs.py`, `tools/content/pairs.txt` | The "which pattern?" pairs (the pair, its test, its sentences) and the tool that checks them against the vocabulary and installs them into `data/pairs.js` (`--write`). A pair is added in the text file, with no code. | Content |
+| `tools/check_register.py` | Looks for mainland wording and erhua in the usage phrases, the stories, the grammar examples and the pairs, before a native voice records them. It only reports; a word the course teaches is never flagged. `--terms` prints its list. | Content, Voice |
 | `tools/check_reading.py`, `tools/check_usage.py` | Check the Stories and the usage phrases against the vocabulary learned so far, and install them into `data/` (`--write`). | Content |
 | `tools/build_voice_pack.py` | Builds a voice pack from WORDS with edge-tts. | Voice |
 | `tools/tone_lab.mjs` | The tone coach's test bench: runs the app's own tone code on recordings with known tones (`check`, `cv`), and refits the classifier (`fit --write`). | Voice |
