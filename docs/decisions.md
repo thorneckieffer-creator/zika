@@ -47,6 +47,7 @@ The app already had a drill of this shape: 辨析 "Which one?", twelve families 
 - **A sentence waits for its characters.** The tool stores with each sentence the lesson by which all its characters have been met, and the drill never shows it earlier.
 - **The data is a file of its own, `data/pairs.js`**, loaded with the other course data and checked at start-up like them.
 - **Fixed on the way**: the choice buttons of this and every choice drill were black on the dark panel at night (the checker's note from v63); they take the ink colour now.
+- **After the checker's FAIL of 22 November** (its first pass on v66): one rule says which sentences may be asked, wherever a round is started from, and it is the last lesson in scope (the first build let a tile and the Grammar tab reach past it); the side-by-side lines are held to the pair's own lesson by the tool; a pair has at most four choices, because the keys 1 to 4 choose, which split 要不然／如果 out of 因為／為了 and took 一樣 out of 比較; the Grammar tab offers "Which one?" only for a pair the learner's lesson has reached; a book with no pair is not offered; the tab shortcuts do not leave a question; on a phone the way on stays above the tab bar.
 
 ## 2026-11-21 — toward a real product: three rules for now
 

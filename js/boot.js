@@ -202,13 +202,15 @@ function bootListen(){
   document.addEventListener('keydown',e=>{
     if(view!=='drill'||drillMode!=='wp'||!WP.qs||WP.i>=WP.qs.length||e.repeat||e.metaKey||e.ctrlKey||e.altKey)return;
     const tg=e.target;if(tg&&(/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)||tg.isContentEditable))return;
+    const sheet=document.getElementById('shSheet');if(sheet&&sheet.style.display==='flex')return;
+    if(document.querySelector('.tabs.more'))return;      /* the phone's More row is open over the question */
     const n='1234'.indexOf(e.key);
     if(n>=0&&WP.state==='ask'&&WP.qs[WP.i].opts[n]){e.preventDefault();e.stopImmediatePropagation();wpPick(n);}
     else if((e.key==='Enter'||e.code==='Space')&&WP.state==='done'){e.preventDefault();e.stopImmediatePropagation();wpNext();}
     else if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();wpHome();}
   },true);
   /* keyboard map: never while a drill is running, never a no-op restart of the same view */
-  document.addEventListener('keydown',e=>{ if(e.defaultPrevented)return; if(KEYMAP[e.key]&&!e.metaKey&&!e.ctrlKey&&!e.altKey){const tg=e.target;if(tg&&(/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)||tg.isContentEditable))return; if((view==='drill'&&dq)||(KEYMAP[e.key]===view)||(view==='drill'&&drillMode==='mtest'))e.stopImmediatePropagation();} },true);
+  document.addEventListener('keydown',e=>{ if(e.defaultPrevented)return; if(KEYMAP[e.key]&&!e.metaKey&&!e.ctrlKey&&!e.altKey){const tg=e.target;if(tg&&(/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)||tg.isContentEditable))return; if((view==='drill'&&dq)||(KEYMAP[e.key]===view)||(view==='drill'&&drillMode==='mtest')||(view==='drill'&&drillMode==='wp'&&WP.qs&&WP.i<WP.qs.length))e.stopImmediatePropagation();} },true);
   /* ---- 2. swipe grading (touch only) ---- */
   (function(){
     let sx=0,sy=0,t0=0,active=false;

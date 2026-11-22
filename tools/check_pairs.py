@@ -13,8 +13,9 @@ Rules, enforced here:
   * a sentence is offered only from the lesson by which all its characters have been met (worked out here and
     stored with it), never before the pair's own lesson; at least four of a pair's sentences can be asked at the
     pair's own lesson;
-  * a blank sentence has exactly one blank and its answer is one of its choices; every choice of a pair is the
-    answer to at least one sentence and has a side-by-side line;
+  * a blank sentence has exactly one blank and its answer is one of its choices (four at most: the keys 1 to 4
+    choose); every choice of a pair is the answer to at least one sentence and has a side-by-side line, and a
+    side-by-side line uses only characters met by the pair's own lesson, since it is shown with every answer;
   * no sentence, once a wrong choice is put in its blank, reads the same as another sentence of the file;
   * two sentences with the same blanked text and different answers must differ in their English, since the
     English is what tells them apart on the screen;
@@ -156,8 +157,8 @@ def main():
         blanks = [q for q in p['q'] if not q.get('pick')]
         if blanks and len(p['opts']) < 2:
             errors.append(f'{w}: choices: needs at least two')
-        if len(p['opts']) > 5:
-            errors.append(f'{w}: more than five choices')
+        if len(p['opts']) > 4:
+            errors.append(f'{w}: more than four choices (the keys 1 to 4 choose)')
         for c, pid in p['pts'].items():
             if pid not in point_ids:
                 errors.append(f'{w}: there is no grammar point {pid}')
@@ -167,7 +168,9 @@ def main():
         if len(p['side']) < 2:
             errors.append(f'{w}: fewer than two side: lines')
         for s in p['side']:
-            need(s[1], w, errors)
+            late = need(s[1], w, errors)
+            if late > p['to']:
+                errors.append(f"{w}: the side: line for {s[0]} uses a character first met in {label(books, late)}, after the pair's own lesson ({s[1]})")
             if s[0] not in p['opts'] and blanks:
                 errors.append(f'{w}: a side: line is for {s[0]}, which is not one of the choices')
         if blanks:
@@ -192,8 +195,10 @@ def main():
                 continue
             if q['a'] not in opts:
                 errors.append(f'{qw}: the answer {q["a"]} is not among {" / ".join(opts)}')
-            if len(set(opts)) != len(opts) or len(opts) < 2:
-                errors.append(f'{qw}: the choices are not two or more different ones')
+            if len(set(opts)) != len(opts) or len(opts) < 2 or len(opts) > 4:
+                errors.append(f'{qw}: the choices are not two to four different ones')
+            if any(o not in sided for o in opts):
+                errors.append(f'{qw}: a choice offered here has no side: line in its pair')
             q['l'] = max([p['to'], need(filled(q), qw, errors)] + [need(o, qw, errors) for o in opts if o != NONE])
             every.setdefault(filled(q), []).append((p['k'], q))
         at_own = sum(1 for q in p['q'] if q.get('l', 10 ** 6) <= p['to'])

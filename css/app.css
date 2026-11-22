@@ -700,6 +700,7 @@ html{-webkit-tap-highlight-color:transparent;touch-action:pan-x pan-y}   /* an a
   .wrap{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
   /* the grade buttons stay in reach just above the tab bar, however long the answer above them is */
   #vRev .grades{position:sticky;bottom:calc(60px + env(safe-area-inset-bottom));z-index:5;background:var(--bg);padding:8px 0 15px;margin-top:6px}
+  .wp-foot{position:sticky;bottom:calc(60px + env(safe-area-inset-bottom));z-index:5;background:var(--bg);padding:8px 0 12px}
   #toastHost{bottom:calc(78px + env(safe-area-inset-bottom))}
   body.focus .wrap{padding-bottom:40px}
 }

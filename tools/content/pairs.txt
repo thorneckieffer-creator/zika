@@ -59,7 +59,7 @@ side: 才 | 他八點才來。 | He didn't come until eight: later than I expect
 choices: 被 / 讓
 test: Where does the verb land? On the front noun → 被. On the second noun → 讓.
 points: 被=g26-1 讓=g27-1
-side: 被 | 弟弟被媽媽罵了。 | My little brother got told off by Mom: the telling-off lands on him.
+side: 被 | 我的書被弟弟拿走了。 | My book got taken by my little brother: the taking lands on the book.
 side: 讓 | 媽媽讓弟弟去睡覺。 | Mom made my little brother go to bed: going to bed is what he does.
 蛋糕___弟弟吃完了。 | 被 | The cake got eaten up by my little brother. | 吃完 lands on the cake, the front noun → 被.
 媽媽___我去買菜。 | 讓 | Mom had me go and buy groceries. | 去買菜 is what I do, the second noun → 讓.
@@ -215,7 +215,7 @@ side: 可以 | 我可以開你的車嗎？ | May I drive your car? You decide.
 choices: 一點 / 有一點
 test: 有一點 before Vs = mild complaint; Vs + 一點 = comparison or request.
 points: 一點=n15-4 有一點=g5-3
-side: 有一點 | 這件衣服有一點大。 | This shirt is a bit big: a mild complaint.
+side: 有一點 | 這個房間有一點小。 | This room is a bit small: a mild complaint.
 side: 一點 | 我要大一點的。 | I want a slightly bigger one: a comparison, a request.
 這個房間___小，我不太喜歡。 | 有一點 | This room is a bit small, I don’t really like it. | Complaint before a Vs → 有一點.
 請你說慢___。 | 一點 | Please speak a little slower. | Instruction: Vs + 一點.
@@ -237,12 +237,23 @@ side: 為了 | 為了學中文，我來臺灣。 | In order to learn Chinese, I 
 我___喜歡台灣，所以來台灣。 | 因為 | I came to Taiwan because I like it. | A cause, with 所以 → 因為.
 ___保護環境，台灣人天天做垃圾分類。 | 為了 | To protect the environment, Taiwanese sort their rubbish every day. | "In order to" fits → 為了.
 ___下雨，所以我們沒去。 | 因為 | Because it rained, we didn’t go. | Cause + 所以 → 因為.
-你得把垃圾分類，___垃圾車不收。 | 要不然 | You have to sort the rubbish, or else the truck won’t take it. | "Or else" → 要不然. | 因為/為了/要不然/如果
-___你搬家了，我就少了一個朋友。 | 如果 | If you move, I’ll have one friend fewer. | A condition with 就 → 如果. | 因為/為了/要不然/如果
-快一點，___就追不到垃圾車了。 | 要不然 | Hurry, or else you won’t catch the truck. | Only the bad consequence → 要不然. | 因為/為了/要不然/如果
 ___學好中文，他每天都跟臺灣朋友聊天。 | 為了 | In order to learn Chinese well, he chats with Taiwanese friends every day. | A goal → 為了.
 他___生病，所以今天沒來上課。 | 因為 | He didn't come to class today because he is ill. | A cause, with 所以 → 因為.
 ___找工作，他去了很多家公司。 | 為了 | To find a job, he went to many companies. | A goal → 為了.
+== orelse | 要不然／如果 | 1.10 → 2.7
+choices: 要不然 / 如果
+test: 要不然 = "or else": only the bad thing that follows if you don't. 如果…就 = a condition, good or bad.
+points: 要不然=n22-2
+side: 要不然 | 你得多穿一點，要不然會感冒。 | You have to put more on, or else you'll catch a cold: the bad thing that follows.
+side: 如果 | 如果你不多穿一點，就會感冒。 | If you don't put more on, you'll catch a cold: a condition.
+你得把垃圾分類，___垃圾車不收。 | 要不然 | You have to sort the rubbish, or else the truck won’t take it. | "Or else" → 要不然.
+___你搬家了，我就少了一個朋友。 | 如果 | If you move, I’ll have one friend fewer. | A condition with 就 → 如果.
+快一點，___就追不到垃圾車了。 | 要不然 | Hurry, or else you won’t catch the truck. | Only the bad consequence → 要不然.
+___明天下雨，我們就不去了。 | 如果 | If it rains tomorrow, we won't go. | A condition, with 就 → 如果.
+你要早一點睡覺，___明天起不來。 | 要不然 | Go to bed early, or else you won't be able to get up tomorrow. | "Or else" → 要不然.
+___你有空，我們一起去看電影吧。 | 如果 | If you're free, let's go and see a film together. | A condition, and a good one → 如果.
+出門要帶傘，___下雨的時候很麻煩。 | 要不然 | Take an umbrella when you go out, or else it's a hassle when it rains. | Only the bad thing that follows → 要不然.
+___你不喜歡，可以不吃。 | 如果 | If you don't like it, you needn't eat it. | A condition → 如果.
 
 == zhuyi | 注意／小心 | 2.11 → 2.11
 choices: 注意 / 小心
@@ -328,20 +339,21 @@ side: ∅ | 天氣冷了。 | It has turned cold: 了 alone shows the change.
 他___有女朋友了。 | ∅ | He has a girlfriend now. | Before 有, 了 alone.
 
 == cmp | 比較 | 1.8 → 1.14
-choices: 比 / 比較 / 一樣 / 更 / 沒有
-test: 比 names the thing you compare against (A 比 B Vs). 比較 never names it. 跟…一樣 = the same as. 更 = even more. A 沒有 B (這麼) Vs = not as … as.
+choices: 比 / 比較 / 更 / 沒有
+test: 比 names the thing you compare against (A 比 B Vs). 比較 never names it. 更 = even more. A 沒有 B (這麼) Vs = not as … as.
 points: 比=g8-2 比較=g8-3 更=n14-4
 side: 比 | 今天比昨天冷。 | Today is colder than yesterday: yesterday is named.
 side: 比較 | 今天比較冷。 | Today is colder: nothing is named.
-side: 一樣 | 今天跟昨天一樣冷。 | Today is as cold as yesterday.
 side: 更 | 今天比昨天更冷。 | Today is even colder than yesterday.
 side: 沒有 | 今天沒有昨天這麼冷。 | Today is not as cold as yesterday.
 台北的房租___台中貴。 | 比 | Rent in Taipei is higher than in Taichung. | B (台中) is named → 比.
 這家的牛肉麵___好吃。 | 比較 | This place’s beef noodles are better. | No B named → 比較.
-我的手機跟你的___。 | 一樣 | My phone is the same as yours. | 跟…一樣.
 今天比昨天___冷。 | 更 | Today is even colder than yesterday. | 比 + 更 = even more.
 他的中文___我這麼好。 | 沒有 | His Chinese isn’t as good as mine. | A 沒有 B 這麼 Vs = not as … as.
 哥哥___我高一點。 | 比 | My older brother is a little taller than me. | B named, + 一點 for how much.
+我覺得這本書___有意思。 | 比較 | I find this book more interesting. | No B named → 比較.
+哥哥很高，弟弟比哥哥___高。 | 更 | The older brother is tall; the younger one is even taller. | 比 + 更 = even more.
+這家店的咖啡___那家的這麼貴。 | 沒有 | This shop's coffee isn't as expensive as that one's. | A 沒有 B 這麼 Vs = not as … as.
 
 == le | 了 | 1.4 → 1.14
 choices: 了

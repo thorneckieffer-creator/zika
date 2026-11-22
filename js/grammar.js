@@ -282,14 +282,14 @@ function gramSetPanel(){const s=S.settings,n=Object.keys(S.cards).filter(isGram)
 function graspMap(){
   const cl=S.settings.curLesson||22;
   const rows=GFAM.map(f=>{const pts=[];for(let l=1;l<=cl;l++)(GRAMMAR[l]||[]).forEach(p=>{if(famOf(p)===f.k)pts.push({p,l});});return {f,pts};}).filter(r=>r.pts.length);
-  const cfk=PAIRS.map(p=>p.k);
+  const cfk=wpReached();
   return `<div class="card"><div class="row spread" style="margin-bottom:8px"><div><div class="lab" style="margin:0">Grasp · by family</div><div class="small muted">one dot per pattern · explanations live in Notion</div></div><a class="nlink" href="${NOTION.index}" target="_blank" rel="noopener">Grammar Index ↗</a></div>
   <div class="famlist">${rows.map(r=>{
     const lv=r.pts.map(x=>gramGrasp(x.p.id)); const solid=lv.filter(v=>v>=3).length, shaky=lv.filter(v=>v===1).length, none=lv.filter(v=>v===0).length;
     const hasCf=cfk.includes(r.f.k);
     return `<div class="fam"><div class="fam-h"><b>${esc(r.f.t)}</b><span class="small muted">${solid}/${r.pts.length} solid${shaky?` · <span style="color:var(--red)">${shaky} shaky</span>`:''}${none?` · ${none} untouched`:''}</span></div>
       <div class="fam-dots">${r.pts.map((x,i)=>`<i class="s${lv[i]}" title="${esc(x.p.t)} · ${esc(lnLabel(x.l))} · ${GRASP_T[lv[i]]}" onclick="gramLesson=${x.l};gramOpen={};renderGram();setTimeout(()=>{const g=document.querySelectorAll('#vGram .gpt')[${(GRAMMAR[x.l]||[]).indexOf(x.p)}];if(g)g.scrollIntoView({behavior:'smooth',block:'center'});},30)"></i>`).join('')}</div>
-      <div class="fam-acts"><button class="btn sm ghost" onclick="startGramQuiz(famPoints('${r.f.k}'))">Drill</button>${hasCf?`<button class="btn sm ghost" onclick="wpGo('${r.f.k}')">Which one?</button>`:''}<button class="btn sm ghost" onclick="trackGramIds(famPoints('${r.f.k}').map(p=>p.id))" title="add these patterns as cloze cards">+ cards</button></div></div>`;}).join('')}</div></div>`;
+      <div class="fam-acts"><button class="btn sm ghost" onclick="startGramQuiz(famPoints('${r.f.k}'))">Drill</button>${hasCf?`<button class="btn sm ghost" onclick="wpFrom('${r.f.k}')">Which one?</button>`:''}<button class="btn sm ghost" onclick="trackGramIds(famPoints('${r.f.k}').map(p=>p.id))" title="add these patterns as cloze cards">+ cards</button></div></div>`;}).join('')}</div></div>`;
 }
 function famPoints(k){const cl=S.settings.curLesson||22,out=[];for(let l=1;l<=cl;l++)(GRAMMAR[l]||[]).forEach(p=>{if(famOf(p)===k)out.push(p);});return out;}
 function trackGramIds(ids){let n=0;ids.forEach(id=>{const gp=GP[id];if(gp&&gramClozable(gp.p)&&!S.cards[gramCid(id)]){S.cards[gramCid(id)]={};n++;}});save();badge();toast(n?n+' cloze card'+(n>1?'s':'')+' added':'already in the deck');renderGram();}
@@ -327,8 +327,8 @@ function wpStart(){
 }
 /* a round: one pair (up to eight of its sentences) or a mixed twelve, the weaker pairs more often */
 function wpBegin(ks){
-  let pool=wpPairs();
-  if(ks){const cl=S.settings.curLesson||22;pool=PAIRS.filter(p=>ks.includes(p.k)).map(p=>({p,qs:p.q.filter(q=>q.l<=Math.max(cl,p.to,wpRange()[1]))}));}
+  /* named pairs or every pair in scope; either way no sentence past the last lesson in scope */
+  const hi=wpRange()[1], pool=ks?PAIRS.filter(p=>ks.includes(p.k)).map(p=>({p,qs:p.q.filter(q=>q.l<=hi)})):wpPairs();
   const items=[];
   pool.forEach(x=>{const lv=wpLevel(x.p.k),wt=lv===0?3:lv===1?4:lv===2?2:1;x.qs.forEach(q=>items.push({p:x.p,q,wt}));});
   if(!items.length){toast('No pairs in these lessons yet');return;}
@@ -340,6 +340,9 @@ function wpBegin(ks){
   window.scrollTo(0,0);
 }
 function wpGo(k){wpBegin([k]);}
+/* from the Grammar tab: the pair of a family, held to the learner's own lesson whatever range the drill was left on */
+function wpFrom(k){WP.mode='mine';wpBegin([k]);}
+function wpReached(){const cl=S.settings.curLesson||22;return PAIRS.filter(p=>p.to<=cl&&p.q.some(q=>q.l<=cl)).map(p=>p.k);}
 function wpPick(i){
   const it=WP.qs&&WP.qs[WP.i];if(!it||WP.state!=='ask'||!it.opts[i])return;
   const ok=it.opts[i]===it.q.a;
@@ -361,7 +364,7 @@ function wpRender(){
     el.innerHTML=top('',list.length+' pair'+(list.length===1?'':'s'))+`
     <div class="segbar"><span class="cap">Lessons</span>
       <button class="${WP.mode==='mine'?'on':''}" onclick="wpSet('mine')">Up to ${esc(lnLabel(S.settings.curLesson||22))}</button>
-      ${BOOKS.map(b=>`<button class="${WP.mode==='book'&&WP.book===b.n?'on':''}" onclick="wpSet('book',${b.n})">Book ${b.n}</button>`).join('')}
+      ${BOOKS.filter(b=>PAIRS.some(p=>bookOf(p.to)===b.n)).map(b=>`<button class="${WP.mode==='book'&&WP.book===b.n?'on':''}" onclick="wpSet('book',${b.n})">Book ${b.n}</button>`).join('')}
       <button class="${WP.mode==='range'?'on':''}" onclick="wpSet('range',${lo},${hi})">From … to …</button>
       ${WP.mode==='range'?lessonPick(WP.lo,"wpSet('range',v,0)")+'<span class="small muted">to</span>'+lessonPick(WP.hi,"wpSet('range',0,v)"):''}
     </div>
@@ -394,15 +397,15 @@ function wpRender(){
   let sides=p.side;
   if(done&&sides.length>3){const keep=[...new Set([q.a,it.opts[WP.chosen]])];sides.forEach(x=>{if(keep.length<3&&!keep.includes(x[0]))keep.push(x[0]);});sides=sides.filter(x=>keep.includes(x[0])).slice(0,3);}
   let zh='';
-  if(!pick){const [a,b]=q.zh.split('⬚');zh=done?dcZh(a)+'<span class="blank">'+(ans?dcZh(ans):'&nbsp;')+'</span>'+dcZh(b||''):esc(a)+'<span class="blank">&nbsp;&nbsp;&nbsp;</span>'+esc(b||'');}
+  if(!pick){const [a,b]=q.zh.split('⬚');zh=done?dcZh(a)+(ans?'<span class="blank">'+dcZh(ans)+'</span>':'')+dcZh(b||''):esc(a)+'<span class="blank">&nbsp;&nbsp;&nbsp;</span>'+esc(b||'');}
   el.innerHTML=top(esc(p.zh),(WP.i+1)+' / '+WP.qs.length+(it.again?' · again':''))+`
   <div class="qbox wp">
-    ${pick?`<div class="qen" style="font-size:15.5px;color:var(--ink)">Which one says: “${esc(q.en)}”</div>`:`<div class="qzh zh">${zh}${done?' '+aud(q.zh.replace('⬚',ans)):''}</div><div class="qen">${esc(q.en)}</div>`}
+    ${pick?`<div class="qen" style="font-size:15.5px;color:var(--ink)">Which one says: “${esc(q.en)}”${done?' '+aud(q.a):''}</div>`:`<div class="qzh zh">${zh}${done?' '+aud(q.zh.replace('⬚',ans)):''}</div><div class="qen">${esc(q.en)}</div>`}
     <div class="opts ${pick?'sm':''}" ${pick?'style="grid-template-columns:1fr"':''}>${it.opts.map((o,i)=>`<button class="zh ${done?(o===q.a?'right':(WP.chosen===i?'wrong':'')):''}" onclick="wpPick(${i})">${done&&pick?dcZh(o):wpOpt(o)}</button>`).join('')}</div>
     ${done?`<div class="why ${right?'ok':'bad'}"><b>${right?'✓':'✗'}</b> ${esc(q.why)}</div>
     <div class="wp-test"><div class="lab">The test</div>${esc(p.test)}</div>
     <div class="wp-side">${sides.map(s=>`<div class="wp-row${s[0]===q.a?' on':''}"><b class="zh">${wpOpt(s[0])}</b><span class="z zh">${dcZh(s[1])}</span><span class="e">${esc(s[2])}</span></div>`).join('')}</div>`:''}
   </div>
-  <div class="qfoot" style="margin-top:12px">${done?`<button class="btn" onclick="wpNext()">Next →</button>`:''}<button class="btn ghost sm" onclick="wpHome()">Stop</button></div>`;
+  <div class="qfoot wp-foot" style="margin-top:12px">${done?`<button class="btn" onclick="wpNext()">Next →</button>`:''}<button class="btn ghost sm" onclick="wpHome()">Stop</button></div>`;
 }
 if(typeof zikaWhole==='function')zikaWhole();   /* the last line: this file arrived whole (index.html, js/boot.js) */
