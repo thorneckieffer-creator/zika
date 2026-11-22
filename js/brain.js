@@ -3,17 +3,23 @@
 
 /* ============ TIME-LAPSE SNAPSHOTS ============ */
 function stageString(){return WORDS.map(w=>wordStage(w.id)).join('');}
-/* `quiet` is for the entry start-up adds by itself: it is stored on this device without the cloud push, so that
+/* S.hist is two lists side by side, the days (d) and each day's stages (s), oldest first, 180 days at most.
+   Today's entry is found by its date. It is not always the last: with two devices a later day can already be
+   there (a clock ahead, a deck taken from a device in another time zone), and writing to "the last one" would then
+   put today's stages under that day's name, or add today a second time. A day that is not there yet goes in at
+   its place by date.
+   `quiet` is for the entry start-up adds by itself: it is stored on this device without the cloud push, so that
    merely opening the app never makes a device look as if it held unsent work */
 function takeSnapshot(quiet){
   const write=quiet?saveLocal:save;
   try{
     if(!S.hist)S.hist={d:[],s:[]};
-    const today=dkey(new Date()), s=stageString();
-    const n=S.hist.d.length;
-    if(n&&S.hist.d[n-1]===today){if(S.hist.s[n-1]!==s){S.hist.s[n-1]=s;write();}return;}
-    S.hist.d.push(today);S.hist.s.push(s);
-    if(S.hist.d.length>180){S.hist.d.shift();S.hist.s.shift();}
+    const H=S.hist, today=dkey(new Date()), s=stageString(), i=H.d.lastIndexOf(today);
+    if(i>=0){if(H.s[i]!==s){H.s[i]=s;write();}return;}
+    let at=H.d.length; while(at>0&&H.d[at-1]>today)at--;
+    if(at===0&&H.d.length>=180)return;            /* older than everything kept: it would be the one dropped */
+    H.d.splice(at,0,today);H.s.splice(at,0,s);
+    if(H.d.length>180){H.d.shift();H.s.shift();}
     write();
   }catch(e){}
 }

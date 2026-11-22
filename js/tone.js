@@ -13,22 +13,24 @@ async function tcDecode(buf){
 async function tcClip(key){ if(!(await loadPack())||!AIDX[key])return null; const [o,l]=AIDX[key]; return tcDecode(APACK.slice(o,o+l)); }
 async function tcNativeStats(){
   const id=APACK_ID||'f'; if(TC_NATIVE[id])return TC_NATIVE[id];
-  try{const c=JSON.parse(store.getItem('zika_tc_native2_'+id)||'null'); if(c&&c.sd){TC_NATIVE[id]=c;return c;}}catch(e){}
+  try{const c=JSON.parse(store.getItem('zika_tc_native'+TC_V+'_'+id)||'null'); if(c&&c.sd){TC_NATIVE[id]=c;return c;}}catch(e){}
   const all=[], keys=WORDS.filter(w=>{const n=[...audioKey(w.t)].length;return n>=1&&n<=3;}).map(w=>audioKey(w.t)).filter((k,i,a)=>AIDX[k]&&a.indexOf(k)===i);
   for(let i=0;i<keys.length&&i<100;i++){const c=await tcClip(keys[Math.floor(i*keys.length/100)]); if(!c)continue; for(const v of tcTrack(c.x,c.sr).voiced)all.push(v);}
   if(all.length<200)return {base:14.5,sd:3.4};
   const mean=all.reduce((a,b)=>a+b,0)/all.length;
   const s={base:mean,sd:Math.sqrt(all.reduce((a,b)=>a+(b-mean)*(b-mean),0)/all.length)};
-  TC_NATIVE[id]=s; try{store.setItem('zika_tc_native2_'+id,JSON.stringify(s));store.removeItem('zika_tc_native_'+id);}catch(e){} return s;
+  TC_NATIVE[id]=s; try{store.setItem('zika_tc_native'+TC_V+'_'+id,JSON.stringify(s));store.removeItem('zika_tc_native_'+id);}catch(e){} return s;
 }
 /* You: the app learns your mid pitch and your range from every recording, so "high" and "low" are judged
    against your own voice. Until it has heard about three seconds of you it leans on the current take. */
-/* S.tone = what the recordings say about your tones; S.vp = the picture of your voice. Both carry the version of the
-   analysis that made them (v:2 since v52): grades and pitch statistics from the first analysis are not comparable, so
-   they start again — the marker travels with the data, so an older device syncing its copy back cannot revive them. */
+/* S.tone = what the recordings say about your tones; S.vp = the picture of your voice. Each carries the version of the
+   analysis that made it, and both are held to the one marker, TC_V (js/tone-analysis.js): grades and pitch statistics
+   from an older analysis are not comparable, so they start again. The marker travels with the data, so an older
+   device's copy cannot revive them. Data from a newer analysis than this app knows is left as it is: if each
+   version started the other's again, two devices on different releases would wipe each other's results in turn. */
 function tcState(){
-  if(!S.tone||S.tone.v!==2)S.tone={v:2,n:0,by:{},conf:{},pair:{},w:{}};
-  if(!S.vp||S.vp.v!==2)S.vp={v:2,n:0,sum:0,sq:0};
+  if(!S.tone||!(S.tone.v>=TC_V))S.tone={v:TC_V,n:0,by:{},conf:{},pair:{},w:{}};
+  if(!S.vp||!(S.vp.v>=TC_V))S.vp={v:TC_V,n:0,sum:0,sq:0};
   S.tone.pair=S.tone.pair||{};
   return S.tone;
 }

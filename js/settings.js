@@ -138,10 +138,17 @@ function renderSetVoices(){try{
   if(voices.length>1)row.insertAdjacentHTML('beforebegin',`<div class="set-row"><div><b>Bundled voice</b><div class="d">Tap a voice to switch and hear a sample; the choice follows you to your other devices.</div></div>
     <div class="row" style="gap:6px;flex-wrap:wrap;justify-content:flex-end">${voices.map(v=>`<button class="btn sm ${voiceId()===v?'':'ghost'}" onclick="setVoice('${v}')">${VOICE_PACKS[v].name} · ${VOICE_PACKS[v].who}</button>`).join('')}</div></div>`);
 }catch(e){}}
+/* A manual export says when it was made and on which device (zika-progress-2026-12-14-iPhone.json), so that three
+   devices' copies cannot be taken for one another. The automatic backup file is another thing and keeps its one
+   name, zika-progress.json, always (js/backup.js): a nightly job of Thorne's finds it by that name. */
+function exportName(){
+  const dev=String(DEVICE.name||'').replace(/[^\p{L}\p{N}]+/gu,'-').replace(/^-+|-+$/g,'').slice(0,30)||'device';
+  return 'zika-progress-'+dkey(new Date())+'-'+dev+'.json';
+}
 function exportData(){
   const blob=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='zika-progress-'+dkey(new Date())+'.json';a.click();
+  a.download=exportName();a.click();
 }
 function importData(inp){
   const f=inp.files[0];if(!f)return;

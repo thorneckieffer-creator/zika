@@ -31,6 +31,7 @@ const otherSaves = change => `{ const o = JSON.parse(localStorage.getItem('shida
 
 /* one sitting of reviews through the real screen: show the answer, grade, next */
 const study = max => `{ go('rev'); let n = 0; while (cur && n < ${max}) { reveal(); const r = Math.random(); grade(r < 0.1 ? 1 : r < 0.25 ? 2 : r < 0.85 ? 3 : 4); __tick(15000); n++; } go('home'); }`;
+const saved = `const saved = () => new Promise(r => __realSetTimeout(r, 0));`;
 const nextMorning = `{ const d = new Date(__now() + ${DAY}); d.setHours(9, 12 + d.getDate(), 0, 0); __setNow(d.getTime()); }`;
 const knowLessons = (a, z) => `for (let l = ${a}; l <= ${z}; l++) (LESSON_WORDS[l] || []).forEach(w => markKnown(w.id));`;
 
@@ -250,6 +251,99 @@ export const scenarios = [
   { name: 'sync-burst', fixture: 'deck', sizes: ['phone'], local: linkedIdle, cloud: { code: CODE }, steps: [
     { name: 'burst', js: `go('rev'); for (let i = 0; i < 4 && cur; i++) { reveal(); grade(3); __tick(300); } fbPush(); reveal(); grade(2); fbPush(); __tick(100)`, noShot: true },
     { name: 'to-the-background', js: `reveal(); grade(3); document.dispatchEvent(new Event('visibilitychange')); window.dispatchEvent(new Event('pagehide')); __tick(3000)`, noShot: true }] },
+
+  /* ---- v67, "ready the app" ---- */
+  /* My words and topics made on this device carry the device in their id (uz9q79vcb-3, tz9q79vcb-14); the ones a deck
+     already holds keep theirs (u1, t13). Both kinds are listed, filtered, studied, edited, deleted and brought back,
+     survive a reload, go to the room whole, and arrive from another device with that device's ids. */
+  { name: 'my-words-ids', fixture: 'deck', cloud: { code: CODE },
+    local: { ...linkedIdle, shida_b1_fsrs_v2: altered([], S => { S.my.w.u1 = { t: '夜市', p: 'yèshì', m: 'night market', at: T0 - 9 * DAY, g: ['t1', 't13'] };
+      S.my.c['u1:rec'] = { st: 'rev', S: 4, D: 5, due: T0 - DAY, last: T0 - 5 * DAY, reps: 3, lapses: 0, days: 2 }; }) }, steps: [
+    { name: 'list', js: `go('my'); return [Object.keys(myDeck().w), myDeck().n, myDeck().tn, DEVICE.id]`, noShot: true },
+    { name: 'add-a-word', js: `myOpenAdd(); const put = (id, v) => { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); };
+        put('myT', '珍珠奶茶'); put('myP', 'zhēnzhū nǎichá'); put('myM', 'bubble tea'); mySaveOne(); shClose(); renderMy(); return [Object.keys(myDeck().w), myDeck().n]` },
+    { name: 'add-a-topic', js: `myTopicsSheet(); document.getElementById('myNewT').value = 'Night out'; myTopicNew(); shClose(); renderMy(); return [myDeck().tp.slice(-2).map(t => t.id + ' ' + t.n), myDeck().tn]`, noShot: true },
+    { name: 'sort-into-it', js: `const id = Object.keys(myDeck().w).find(k => k !== 'u1'), tp = myDeck().tp[myDeck().tp.length - 1].id; window.__w = id; window.__t = tp;
+        myOpenAdd(id); [...document.querySelectorAll('#myChips button')].find(b => b.textContent === 'Night out').click(); mySaveOne();
+        myOpenAdd('u1'); [...document.querySelectorAll('#myChips button')].find(b => b.textContent === 'Night out').click(); mySaveOne();
+        return [myDeck().w[id].g, myDeck().w.u1.g]`, noShot: true },
+    { name: 'filter-by-it', js: `[...document.querySelectorAll('#vMy .my-chips.bar button')].find(b => b.textContent.startsWith('Night out')).click(); return [MY.tp, document.querySelectorAll('#myList .my-row').length]` },
+    { name: 'study-both', js: `document.querySelector('#vMy .btn.big').click(); const seen = []; for (let i = 0; i < 6 && MY.cur; i++) { seen.push(MY.cur); myReveal(); myGrade(i ? 3 : 1); __tick(90000); } return [seen, Object.keys(myDeck().c).sort()]` },
+    { name: 'back-to-the-list', js: `myStop(); mySetTopic(''); document.querySelector('#myList .my-row .spk').click(); document.querySelector('#myList .my-row .info').click(); const open = dcTop(); dcClose(); return open`, noShot: true },
+    { name: 'open-again', reload: true },
+    { name: 'after-reload', js: `go('my'); const d = myDeck(); return [Object.keys(d.w), Object.keys(d.c).sort(), d.n, d.tn, d.tp.slice(-2).map(t => t.id), document.querySelectorAll('#myList .my-row').length]`, noShot: true },
+    { name: 'delete-and-undo', js: `const before = JSON.stringify(myDeck()); myDelete(window.__w || Object.keys(myDeck().w).find(k => k !== 'u1')); const gone = Object.keys(myDeck().w); document.querySelector('#toastHost .tact').click(); return [gone, Object.keys(myDeck().w), JSON.stringify(myDeck()) === before ? 'the deck is as it was' : 'THE DECK DIFFERS']`, noShot: true },
+    { name: 'delete-the-topic-and-undo', js: `const id = myDeck().tp[myDeck().tp.length - 1].id, before = JSON.stringify(myDeck()); myTopicDelete(id); const left = myDeck().tp.length; document.querySelector('#toastHost .tact').click(); return [id, left, myDeck().tp.length, JSON.stringify(myDeck()) === before ? 'the deck is as it was' : 'THE DECK DIFFERS']`, noShot: true },
+    { name: 'the-room-holds-it', js: `__tick(5000); await new Promise(r => __realSetTimeout(r, 60)); const o = JSON.parse(__cloud.read('rooms/' + SYNC.code + '/study_state').json); return [Object.keys(o.my.w), SYNC.dirty]`, noShot: true },
+    { name: 'another-device-adds', js: `__tick(60000);` + otherSaves(`o.my.w['uother9-7'] = { t: '悠遊卡', p: 'yōuyóukǎ', m: 'EasyCard', at: Date.now(), g: ['tother9-15'] }; o.my.tp.push({ id: 'tother9-15', n: 'Transit' }); o.my.n = 8; o.my.tn = 16`), noShot: true },
+    { name: 'its-word-is-here', js: `go('my'); return [Object.keys(myDeck().w), myDeck().n, myDeck().tn, SYNC.remoteDev]` },
+    { name: 'and-one-more-here', js: `const r = myAdd('滷肉飯', 'lǔròufàn', 'braised pork rice', ['tother9-15']); save(); renderMy(); const d = myDeck(), tn = d.tn; delete d.tn; myDeck(); return [r.id, d.n, 'the topic counter, rebuilt from the ids: ' + d.tn + ' (was ' + tn + ')']`, noShot: true },
+    { name: 'next-day', js: `__tick(${DAY}); go('my'); myStart(); const seen = []; for (let i = 0; i < 8 && MY.cur; i++) { seen.push(MY.cur); myReveal(); myGrade(3); __tick(30000); } myStop(); return seen`, noShot: true },
+  ] },
+  /* The browser refuses to store the deck (its storage is full). The page says so in a banner that stays, studying goes
+     on in memory and still reaches the room, and the banner goes when a save gets through again. The two refusals the
+     app makes on purpose (before start-up; an empty deck over a full one) are not this and say nothing. */
+  { name: 'storage-full', fixture: 'deck', local: linkedIdle, cloud: { code: CODE }, steps: [   /* `saved()`: a save is written at the end of the tick that asked for it */
+    { name: 'a-grade-is-stored', js: `${saved} go('rev'); reveal(); grade(3); await saved(); __tick(2000); return [!!document.getElementById('saveBanner'), DECK_UNSTORED]`, noShot: true },
+    { name: 'refusals-on-purpose-say-nothing', js: `const keep = S.cards; S.cards = {}; const empty = deckStore(), held = DECK_HELD; S.cards = keep; const back = deckStore();
+        DECK_READY = false; const early = deckStore(); DECK_READY = true;
+        return { emptyOverFull: empty, held, storedAgain: back, beforeStartUp: early, banner: !!document.getElementById('saveBanner'), unstored: DECK_UNSTORED }`, noShot: true },
+    { name: 'storage-fills', js: `${saved} window.__realSet = Storage.prototype.setItem; Storage.prototype.setItem = function (k, v) { if (k === 'shida_b1_fsrs_v2') throw new DOMException('The quota has been exceeded.', 'QuotaExceededError'); return window.__realSet.apply(this, arguments); };
+        reveal(); grade(3); await saved(); __tick(2000); const b = document.getElementById('saveBanner'); return [b && getComputedStyle(b).display, b && b.textContent, DECK_UNSTORED > 0]` },
+    { name: 'still-full', js: `${saved} const since = DECK_UNSTORED; reveal(); grade(1); await saved(); __tick(60000); reveal(); grade(3); await saved(); __tick(2000); go('home'); const b = document.getElementById('saveBanner'); return [getComputedStyle(b).display, DECK_UNSTORED === since ? 'since the first refusal' : 'THE TIME MOVED', document.querySelectorAll('#saveBanner').length]` },
+    { name: 'the-room-still-gets-it', js: `__tick(5000); await new Promise(r => __realSetTimeout(r, 60)); const o = JSON.parse(__cloud.read('rooms/' + SYNC.code + '/study_state').json), d = dkey(new Date()); return [JSON.stringify(o.log[d]) === JSON.stringify(S.log[d]) ? 'the room has today as it is in memory' : 'THE ROOM IS BEHIND', JSON.stringify(JSON.parse(localStorage.getItem('shida_b1_fsrs_v2')).log[d]) === JSON.stringify(S.log[d]) ? 'THE DEVICE HAS IT TOO?' : 'the device does not']`, noShot: true },
+    { name: 'settings-while-full', js: `go('set')`, noShot: true },
+    { name: 'room-again', js: `${saved} Storage.prototype.setItem = window.__realSet; go('rev'); reveal(); grade(3); await saved(); __tick(2000); const b = document.getElementById('saveBanner'); return [getComputedStyle(b).display, DECK_UNSTORED]` },
+    { name: 'open-again', reload: true }] },
+  /* Today's entry in the time-lapse is found by its date. Another device's later day is already in the list: today goes
+     in before it, is not added twice on the next open, and a change of stage is written to today and not to the last entry. */
+  { name: 'history-out-of-order', fixture: 'deck', sizes: ['phone'], noShots: true, local: { ...unlinked, shida_b1_fsrs_v2: altered([], S => { S.hist.d.push('2026-11-21'); S.hist.s.push(S.hist.s[S.hist.s.length - 1]); }) }, steps: [
+    { name: 'opened', js: `return [S.hist.d.slice(-4), S.hist.s.length === S.hist.d.length]` },
+    { name: 'a-word-moves-on', js: `const last = S.hist.s[S.hist.s.length - 1], i = S.hist.d.indexOf(dkey(new Date())), was = S.hist.s[i]; const w = WORDS.find(x => wordStage(x.id) === 0); markMastered(w.id); go('brain');
+        return [S.hist.d.slice(-4), S.hist.s[i] !== was ? 'today was rewritten' : 'TODAY WAS NOT', S.hist.s[S.hist.s.length - 1] === last ? 'the later day was left alone' : 'THE LATER DAY WAS OVERWRITTEN']` },
+    { name: 'open-again', reload: true },
+    { name: 'no-second-today', js: `go('brain'); const t = dkey(new Date()); return [S.hist.d.slice(-4), S.hist.d.filter(d => d === t).length]` },
+    { name: 'the-next-day-too', js: `__tick(${DAY}); go('home'); go('brain'); const t = dkey(new Date()); return [S.hist.d.slice(-4), S.hist.d.filter(d => d === t).length, JSON.stringify(S.hist.d) === JSON.stringify(S.hist.d.slice().sort()) ? 'in order' : 'OUT OF ORDER']` }] },
+  /* One marker for the tone coach (TC_V): results from an older analysis start again, the present ones and any from a
+     newer analysis than this app knows are left as they are. */
+  { name: 'tone-marker', fixture: 'deck', sizes: ['phone'], noShots: true, local: unlinked, steps: [
+    { name: 'as-saved', js: `const a = JSON.stringify([S.tone, S.vp]); tcState(); return [TC_V, JSON.stringify([S.tone, S.vp]) === a ? 'left as it was' : 'CHANGED', S.tone.v, S.vp.v]` },
+    { name: 'older-starts-again', js: `S.tone = { v: 1, n: 9, by: { 1: [3, 4] }, conf: {}, pair: {}, w: {} }; S.vp = { n: 900, sum: 12000, sq: 170000 }; tcState(); return [S.tone, S.vp]` },
+    { name: 'newer-is-kept', js: `S.tone = { v: 3, n: 9, by: { 1: [3, 4] }, conf: {}, pair: {}, w: {}, later: 1 }; S.vp = { v: 3, n: 900, sum: 12000, sq: 170000 }; tcState(); return [S.tone, S.vp]` },
+    { name: 'the-coach-opens-on-it', js: `go('drill'); startDrill('tcoach'); return [S.tone.v, S.vp.n, TC.state]` }] },
+  /* A manual export is named with its day and its device; what is in it has not changed. The automatic backup keeps its one name. */
+  { name: 'export-name', fixture: 'deck', sizes: ['phone'], noShots: true, local: unlinked, steps: [
+    { name: 'export', js: `const got = []; const realClick = HTMLAnchorElement.prototype.click, realUrl = URL.createObjectURL; let blob = null;
+        HTMLAnchorElement.prototype.click = function () { got.push(this.download); }; URL.createObjectURL = b => { blob = b; return 'blob:harness'; };
+        exportData(); const same = (await blob.text()) === JSON.stringify(S, null, 1);
+        DEVICE.name = 'iPhone'; exportData(); DEVICE.name = 'Thorne’s iPad (old) / 2'; exportData(); DEVICE.name = '我的手機'; exportData(); DEVICE.name = '///'; exportData(); DEVICE.name = '';
+        HTMLAnchorElement.prototype.click = realClick; URL.createObjectURL = realUrl;
+        return [got, same ? 'the file is the deck, as before' : 'THE FILE DIFFERS', (bkPanel().match(/zika-progress[^<"]*/g) || []).join(' | ') || 'no file chosen']` }] },
+  /* "Sounds wrong": beside the speaker on a card's answer side and in the dictionary entry, never on a question side. A
+     mark is kept on the device and not in the deck; the same button takes it off. Marking moves no grade button, and the
+     keys 1–4 still grade. Settings → Audio counts, copies and clears. */
+  { name: 'sounds-wrong', fixture: 'deck', local: unlinked, steps: [
+    { name: 'question-side', js: `go('rev'); return ['buttons on the question side: ' + document.querySelectorAll('#vRev .awb').length, modeOf(cur)]`, noShot: true },
+    { name: 'answer-side', js: `reveal(); const b = document.querySelector('#vRev .awb'); return [b.textContent, b.getAttribute('aria-pressed'), b.dataset.t, b.dataset.p]` },
+    { name: 'marked', js: `const g = () => JSON.stringify([...document.querySelectorAll('#vRev .grades button, #vRev .stage, #vRev .spk')].map(x => { const r = x.getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; })); const before = g(), deck = JSON.stringify(S);
+        document.querySelector('#vRev .awb').click();
+        return [before === g() ? 'nothing moved' : 'SOMETHING MOVED', document.querySelector('#vRev .awb').getAttribute('aria-pressed'), localStorage.getItem('zika_sounds_wrong_v1'), JSON.stringify(S) === deck ? 'the deck is untouched' : 'THE DECK CHANGED']` },
+    { name: 'key-3-still-grades', js: `const n = SES.n, c = cur; const b = document.querySelector('#vRev .awb'); b.focus(); b.dispatchEvent(new KeyboardEvent('keydown', { key: '3', bubbles: true, cancelable: true })); return [SES.n - n, cur !== c, awList().length]`, noShot: true },
+    { name: 'mark-and-take-off', js: `if (!revealed) reveal(); const b = () => document.querySelector('#vRev .awb'); b().click(); const on = [b().getAttribute('aria-pressed'), awList().length]; b().click(); return [on, b().getAttribute('aria-pressed'), awList().length]`, noShot: true },
+    { name: 'keys-1-2-4', js: `const out = []; for (const k of ['1', '2', '4']) { if (!revealed) reveal(); const n = SES.n; document.querySelector('#vRev .awb').click(); document.body.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true })); out.push(k + ':' + (SES.n - n)); __tick(20000); } return [out, awList().map(x => x.t + ' ' + x.v)]`, noShot: true },
+    { name: 'a-write-card', js: `go('home'); REV_FILTER = c => modeOf(c) === 'prod'; go('rev'); const q = document.querySelectorAll('#vRev .awb').length; reveal(); return [modeOf(cur), 'on the question side: ' + q, 'on the answer side: ' + document.querySelectorAll('#vRev .awb').length]` },
+    { name: 'a-grammar-card', js: `go('home'); REV_FILTER = isGram; go('rev'); const had = !!cur; if (cur) reveal(); return [had, document.querySelectorAll('#vRev .awb').length]`, noShot: true },
+    { name: 'dictionary', js: `go('lib'); libBook = 1; openLessons[3] = true; renderLib(); document.querySelector('#libResults .wrow .tr .dcc').click(); const b = document.querySelector('#dcSheet .awb'); const was = b.getAttribute('aria-pressed'); b.click(); return [dcTop(), was, document.querySelector('#dcSheet .awb').getAttribute('aria-pressed'), awList().length]` },
+    { name: 'a-word-in-it', js: `document.querySelector('#dcSheet .dc-w').click(); const b = document.querySelector('#dcSheet .awb'); b.click(); return [dcTop(), b.dataset.p, awList().length]`, noShot: true },
+    { name: 'settings-row', js: `dcClose(); go('set'); const r = document.getElementById('awRow'); r.scrollIntoView({ block: 'center' }); return [r.querySelector('b').textContent, [...r.querySelectorAll('button')].map(b => b.textContent + (b.disabled ? ' (off)' : ''))]` },
+    { name: 'copy', js: `let got = null; navigator.clipboard.writeText = t => { got = t; return Promise.resolve(); }; document.querySelector('#awRow button').click(); await new Promise(r => __realSetTimeout(r, 30)); return [got, document.querySelector('#toastHost').textContent]`, noShot: true },
+    { name: 'copy-where-the-browser-will-not', js: `navigator.clipboard.writeText = () => Promise.reject(new Error('not allowed')); awCopy(); await new Promise(r => __realSetTimeout(r, 30)); const box = document.getElementById('awBox'); return [!!box, box && box.value.split('\\n').length]` },
+    { name: 'clear', js: `shClose(); document.querySelectorAll('#awRow button')[1].click(); return [awList().length, localStorage.getItem('zika_sounds_wrong_v1'), document.getElementById('awRow').querySelector('b').textContent]`, noShot: true },
+    { name: 'undo-clear', js: `document.querySelector('#toastHost .tact').click(); return [awList().length, document.getElementById('awRow').querySelector('b').textContent]`, noShot: true },
+    { name: 'open-again', reload: true },
+    { name: 'still-there', js: `go('set'); const n = document.getElementById('awRow').querySelector('b').textContent; go('rev'); reveal(); return [n, Object.keys(S).includes('aw'), JSON.stringify(S).includes('zika_sounds_wrong')]`, noShot: true },
+    { name: 'night', js: `toggleTheme(); go('rev'); reveal(); document.querySelector('#vRev .awb').click()` },
+    { name: 'night-settings', js: `go('set'); document.getElementById('awRow').scrollIntoView({ block: 'center' })` }] },
 
   /* the whole app under random use, with days passing */
   { name: 'roam-a', fixture: 'deck', sizes: ['phone'], monkeys: [{ name: 'roam', steps: 260, seed: 7, dayEvery: 90 }] },

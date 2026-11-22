@@ -8,11 +8,21 @@ const MY={mode:'list',cur:null,shown:false,done:0,q:'',edit:null,tab:'one',
   scope:null};  /* the filter the running study session was started with */
 /* The topics a deck starts with: parts of life, not parts of speech. Every device seeds the same ids in the same order, so two that seed apart still agree. */
 const MY_TOPICS=['Food & drink','Getting around','Shopping & money','Home & daily life','School & study','Work','People & family','Health & body','Feelings & opinions','Free time','Travel & places','Slang & set phrases'];
+/* Ids. A word made before v67 is u<n> and a topic t<n>, from one counter each that only goes up (d.n, d.tn). Since v67 a
+   new one carries the device too: u<device>-<n>, t<device>-<n> (uk3j9x2a-12). Two devices that are apart can then never
+   give one id to two different words (docs/sync.md). The counters go on counting, so a device never reuses its own.
+   Ids already in a deck stay exactly as they are, for ever; the twelve starting topics are t1 to t12 on every device on
+   purpose. An id is only ever compared whole. Nothing reads a number out of one except myIdN, which knows both forms. */
+/* the device's part of an id: DEVICE.id (js/core.js) is up to eight of 0-9 and a-z as the app makes it; whatever else a
+   stored value might hold is left out, so that an id is always safe inside an id and inside an onclick */
+function myDev(){return String(DEVICE.id||'').replace(/[^0-9A-Za-z]/g,'')||'0';}
+const myNewId=(kind,n)=>kind+myDev()+'-'+n;
+const myIdN=id=>{const m=/(\d+)$/.exec(String(id));return m?+m[1]:0;};
 function myDeck(){
   if(!S.my||typeof S.my!=='object')S.my={n:1,w:{},c:{},intro:{},log:{}};
   const d=S.my; d.w=d.w||{}; d.c=d.c||{}; d.intro=d.intro||{}; d.log=d.log||{}; d.n=d.n||1;
   if(!Array.isArray(d.tp))d.tp=MY_TOPICS.map((n,i)=>({id:'t'+(i+1),n}));
-  if(!d.tn)d.tn=1+d.tp.reduce((m,t)=>Math.max(m,+String(t.id).slice(1)||0),MY_TOPICS.length);
+  if(!d.tn)d.tn=1+d.tp.reduce((m,t)=>Math.max(m,myIdN(t.id)),MY_TOPICS.length);
   return d;
 }
 const myIds=()=>Object.keys(myDeck().w);
@@ -21,7 +31,7 @@ const myWord=cid=>myDeck().w[cid.split(':')[0]];
 function myAdd(t,p,m,g){
   t=String(t||'').trim(); if(!t)return null;
   const d=myDeck(); for(const id in d.w)if(d.w[id].t===t)return {id,dup:true};
-  const id='u'+(d.n++); d.w[id]={t,p:String(p||'').trim(),m:String(m||'').trim(),at:Date.now()}; myTag(d.w[id],g);
+  const id=myNewId('u',d.n++); d.w[id]={t,p:String(p||'').trim(),m:String(m||'').trim(),at:Date.now()}; myTag(d.w[id],g);
   return {id};
 }
 /* ---- topics ---- */
@@ -33,7 +43,7 @@ const myScopeName=f=>f==='-'?'No topic':f?(myTopic(f)||{}).n||'':'';
 function myTopicAdd(name){
   name=String(name||'').replace(/\s+/g,' ').trim().slice(0,30); if(!name)return null;
   const d=myDeck(), had=d.tp.find(t=>t.n.toLowerCase()===name.toLowerCase()); if(had)return had.id;
-  const id='t'+(d.tn++); d.tp.push({id,n:name}); return id;
+  const id=myNewId('t',d.tn++); d.tp.push({id,n:name}); return id;
 }
 function myTopicCounts(){
   const d=myDeck(), c={'-':0};

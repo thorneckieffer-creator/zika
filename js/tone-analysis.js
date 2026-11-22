@@ -150,6 +150,11 @@ function tcTrack(x,sr){
    coach asks for a louder take instead of guessing. */
 function tcLoud(tr){const a=Array.from(tr.rms).sort((x,y)=>x-y);return a.length?a[Math.floor(a.length*0.95)]:0;}
 const TC_QUIET=0.005;
+/* The version of this analysis, and the one marker for everything on a device that holds its numbers: the learner's
+   results (S.tone.v), the picture of their voice (S.vp.v) and the native voice's measured range (js/tone.js). Raise it
+   when a change here makes earlier grades or pitch statistics no longer comparable; what was made by an older
+   analysis then starts again (tcState). It is 2 since the analysis was rebuilt in v52. */
+const TC_V=2;
 /* a track → per syllable its contour and the tone it sounds like. `sp` is the speaker's {base, sd}; without it
    the take is judged against its own middle. Pass `tr` to reuse a track instead of analysing the audio again. */
 function tcAnalyse(x,sr,count,sp,tr){

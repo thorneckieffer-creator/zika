@@ -58,6 +58,21 @@ function rerenderAfterSync(){
     else if(view==='set')renderSet(); else go(view);
   }catch(e){}
 }
+/* The browser would not store the deck (deckStore in js/core.js: storage full, or switched off under the page). Said in
+   a banner under the top bar, like the two in index.html, which stays until a later save has got through. Made here
+   and not in the page's markup, because nearly every device never needs it. */
+function shSaveWarn(){
+  let b=document.getElementById('saveBanner');
+  if(!DECK_UNSTORED){if(b)b.style.display='none';return;}
+  if(!b){
+    const after=document.getElementById('storageBanner'); if(!after)return;
+    b=document.createElement('div'); b.id='saveBanner'; b.className='banner'; b.setAttribute('role','alert');
+    after.insertAdjacentElement('afterend',b);
+  }
+  b.innerHTML='<b>Your progress is not being saved on this device.</b> The browser would not store it at '+esc(fmtT(DECK_UNSTORED))
+    +' (its storage is full, or switched off), so what you study from then on is lost when this page closes. Keep a copy now: <b>Settings → Backup → Export</b>.';
+  b.style.display='block';
+}
 let toastTimer=null;
 function toast(msg,o){
   o=o||{}; const host=document.getElementById('toastHost'); if(!host)return;

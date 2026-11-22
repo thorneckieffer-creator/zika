@@ -80,14 +80,23 @@ deckLoad();
    - nothing is written before start-up has loaded and migrated the deck (DECK_READY, set in js/boot.js);
    - a deck with no cards never replaces a stored one that has cards, unless the learner asked for exactly that
      (erase, import, restore, taking the cloud's copy: each sets DECK_EMPTY_OK). DECK_HELD says it was refused,
-     and while it is set nothing goes to the cloud or the backup file either. */
-let DECK_READY=false, DECK_EMPTY_OK=false, DECK_HELD=false;
+     and while it is set nothing goes to the cloud or the backup file either.
+   A third way of not being stored is not the app's doing: the browser refuses the write (its storage is full, or has
+   been switched off under the page). The deck in memory is then ahead of the one on the device and would be lost
+   with the page, so it is said on screen (shSaveWarn, js/shell.js) from the first write that fails (DECK_UNSTORED, the
+   time of it) until one succeeds. It answers true only when the deck is on the device. */
+let DECK_READY=false, DECK_EMPTY_OK=false, DECK_HELD=false, DECK_UNSTORED=0;
 function deckStore(){
   if(!DECK_READY)return false;
   try{
     if(!DECK_EMPTY_OK&&!Object.keys(S.cards||{}).length){const old=store.getItem(KEY);if(old&&/"cards":\{"/.test(old)){DECK_HELD=true;return false;}}
-    store.setItem(KEY,JSON.stringify(S)); DECK_HELD=false; return true;
-  }catch(e){return false;}
+    store.setItem(KEY,JSON.stringify(S)); DECK_HELD=false;
+  }catch(e){
+    if(!DECK_UNSTORED){DECK_UNSTORED=Date.now();try{shSaveWarn();}catch(e2){}}
+    return false;
+  }
+  if(DECK_UNSTORED){DECK_UNSTORED=0;try{shSaveWarn();}catch(e){}}
+  return true;
 }
 const MASTER_S=45; // days of stability = "mastered"
 /* Every change to S ends in save(). Many changes in one tick make one write (saveNow): the state is stored, the

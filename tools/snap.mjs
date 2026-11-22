@@ -107,8 +107,9 @@ const prelude = (t0, storage) => `(() => {
       return !DANGER.test(sig) && !/^(reset|erase|unlink|forget|delete everything)/i.test((e.textContent || '').trim());
     });
     if (!els.length) return 'RESTART (nothing to tap)';
-    /* prefer what has been tried least: a control's signature is its handler with digits blanked, so the 40 rows of a list count as one */
-    const sigOf = e => (e.tagName + '|' + (e.getAttribute('onclick') || e.getAttribute('onchange') || e.getAttribute('oninput') || e.id || (e.textContent || '').trim().slice(0, 24))).replace(/\\d+/g, '#').slice(0, 80);
+    /* prefer what has been tried least: a control's signature is its handler with digits blanked, so the 40 rows of a list count as one.
+       (A My-words or topic id made since v67 has the device in it, 'uz9q79vcb-3'; it is read as 'u3' first, so such a row counts with the others.) */
+    const sigOf = e => (e.tagName + '|' + (e.getAttribute('onclick') || e.getAttribute('onchange') || e.getAttribute('oninput') || e.id || (e.textContent || '').trim().slice(0, 24))).replace(/'([ut])[0-9A-Za-z]+-(\\d+)'/g, "'$1$2'").replace(/\\d+/g, '#').slice(0, 80);
     const wts = els.map(e => 1 / Math.pow(1 + (tried[sigOf(e)] || 0), 2)); let roll = mrand() * wts.reduce((a, b) => a + b, 0), at = 0;
     while (at < els.length - 1 && (roll -= wts[at]) > 0) at++;
     const e = els[at]; tried[sigOf(e)] = (tried[sigOf(e)] || 0) + 1;
