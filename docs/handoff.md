@@ -1,69 +1,61 @@
-# Handoff — night of 21 November 2026
+# Handoff — 22 November 2026
 
-Written at 23:25 when Thorne said to stop for the night. Read [master-plan.md](master-plan.md) first; this file says where its "Order of work" stands. Replace this file at the end of the next session.
+Read [master-plan.md](master-plan.md) first; this file says where its "Order of work" stands. Replace it at the end of each session.
 
-**Nothing is uncommitted, in any folder. Nothing was pushed after the no-push rule was given.** `main` is ahead of GitHub by every commit in the table below (`git log origin/main..main`).
+**Nothing has been pushed since the no-push rule of 21 November.** `main` is ahead of GitHub by everything below (`git log origin/main..main`). The branch `backend` is on GitHub at `33ea621` from before the rule.
 
-One thing was pushed earlier the same evening, before the rule existed: the branch `backend`, twice (`f9f7158`, then `33ea621`). It is on GitHub at `33ea621`. It holds notes, SQL and a test; no app file.
+## Waiting for Thorne's yes to push
 
-## Done tonight
-
-| Order of work | What | Commit |
+| What | Tested | Checker |
 |---|---|---|
-| — | The database work of 16 November saved: `db/`, `tools/dbtest.mjs`, `docs/backend.md`; the roadmap's build order | `f9f7158`, `33ea621` |
-| 1 | The master plan and the notes brought into line with it; no push without a yes | `8b71ed9` |
-| 1 | "Toward a real product" folded in: the address rule (rule 7 in `CLAUDE.md`), step 12's list, `docs/costs.md` | `4107abc`, `542f3d1` |
-| 2 | The archive: tag `single-user-v65` and branch `archive/single-user` on `7d26dc5` (local only); `~/Desktop/zika-archive/zika-v65-single-user.zip` with a `README.txt`. Opened on a local port: it is v65 and starts. | no commit: a tag, a branch, a zip |
-| 3 | Cleanup: eight worktrees pruned (five `agent-*`, `app`, `dev`, `usage`) and their eight merged branches deleted. All were clean but for three throw-away files; two of them are kept in `~/Desktop/zika-archive/worktree-leftovers/`. | no commit |
-| 4 | **v66, the "which pattern?" drill**: 24 pairs, 215 sentences, in place of the old "Which one?" drill | `ca44542` |
-| 5 | Voice V0 and V1, tools only (by an agent, merged) | `24c42f7`, `a841c39`, merge `f0a0713` |
-| 6 | Backend 4a, the contract: `docs/sync.md`, `tools/lib/recmodel.js`, the test run against both (by an agent, merged) | `5df9099`, merge `a9ea342` |
-| — | The decisions of 4a and the findings of V0 written into `decisions.md`, `costs.md`, `CLAUDE.md` | `e5a9b32` |
-| — | This file, and three entries I had dated the 22nd put back to the 21st | this commit |
+| **v66**, the drill 句型 "Which pattern?" (`main`; app files as of `1277d75`, fingerprint `172ec434b4f3`). 25 pairs, 222 sentences, in place of the old "Which one?" drill. | Release check, pairs check, the harness (only the intended screens differ), every sentence of every pair answered once, phone, tablet and iPad landscape, day and night | **PASS** on its second pass, 22 November. The first pass failed it on eleven points; all are fixed. |
+| The tag `single-user-v65` and the branch `archive/single-user` (both at `7d26dc5`) | The zip of the same commit opens on a local port and is v65 | not needed |
 
-## Half-done
+Pushing `main` releases v66 and carries every notes and tools commit since v65. Not tested by anyone: real Safari, an iPhone or iPad, touch, sound by ear.
 
-**Nothing is half-written on disk.** Three agents were running when the stop came and were stopped:
+## Where each piece of work is
 
-| What | Branch | State |
+| Order of work | State | Where |
 |---|---|---|
-| The independent check of v66 (`verify-app`) | `main` | **Stopped after a few minutes. No verdict.** It had served the folder and opened the app; it recorded nothing. `.claude/review/` (git-ignored) holds its probe file and the old v65 report. |
-| Backend 4b, the engine port | `engine` (worktree `.claude/worktrees/engine`) | Stopped two minutes in, while still reading. It wrote nothing: the branch equals `main`. |
-| Backend 5, the adapter and `db/0003` | `backend` (worktree `.claude/worktrees/backend`) | Stopped two minutes in. It wrote nothing and applied nothing: `zika-dev` still has only the migrations `records` and `signed_in`. The branch equals `main`. |
+| 1–3 notes, archive, cleanup | done 21 November | `main` |
+| 4 v66 | built, checker PASS, waiting for a yes | `main` |
+| 5 Voice V0, V1 (tools) | done as far as tools go; no V1 winner | `main` |
+| 6 backend 4a, the contract | done | `main` (`docs/sync.md`, `tools/lib/recmodel.js`) |
+| 6 backend 4b, the engine | done 22 November; one weakness left (two devices sharing a device id), being worked on | branch `engine`, worktree `.claude/worktrees/engine` |
+| 6 backend 5, the adapter | done 22 November; no client library | merged into `engine` (`e4529e8`); the branch `backend` is contained in it |
+| 6 backend 6, **v67** "ready the app" | built 22 November (`711665e`); the checker was started on it | branch `ready`, worktree `.claude/worktrees/ready` |
+| 7 the 7 November merge | the tool is written and self-tested (`tools/merge_deck.mjs`); **the file has not been found** | `main` |
+| 8 the rest of the backend, Voice V2 | from 8 December | — |
 
-So there is no WIP commit: there was no work in progress to save.
+`engine` and `ready` cannot go to `main` yet. `engine` adds two files under `js/` that the page does not load, which fails the release check until the accounts release wires them in (step 8). `ready` is v67 and follows v66.
 
-## The next step, exactly
+## Running when this was written
 
-1. **Run the `verify-app` checker on v66** in the main folder (`ca44542`; fingerprint `a7c43de1b132`). Tell it: the drill 句型 "Which pattern?" was added and replaces "辨析 Which one?"; tallies in `S.cf` must carry over; no new field in the deck; choice-button text takes the ink colour; check phone, tablet and iPad landscape, day and night, and an upgrade from v65 with a deck. It takes 30 to 60 minutes. On a FAIL, fix and run again.
-2. **Start backend 4b again** in `.claude/worktrees/engine`: bring `js/sync-records.js` and its tests over from `origin/users-sync` and the reproductions from `origin/review/users-sync`; port to the protocol in [sync.md](sync.md) first and alone, with the list of failing reproductions recorded; then F10+F1+F5, F3, F2, F4, F7, F6, F8, F9; then the strict simulation. It owns `js/sync-records.js`, `tools/test/` and small corrections to `docs/sync.md`.
-3. **Start backend 5 again** in `.claude/worktrees/backend`: `db/0003` (`rec_read`, an `epoch` per person, `account_delete`) applied to `zika-dev` with its checks in the test and the model; then `js/sync-supabase.js` to the contract; then `tools/adaptertest.mjs` from Node and two real browsers.
-4. **v67, "ready the app"** (step 6), in a worktree from `main`, only once v66 has its PASS. It takes the "sounds wrong" button of Voice V0, which did not go into v66.
-5. Steps 2 and 3 can run side by side. Keep to one browser job at a time: see "The Mac" below.
+- **The checker on v67**, in `.claude/worktrees/ready`. On a PASS: merge `ready` into `main` after v66 is pushed (or with it, if Thorne says so), then tell him v67 is ready. On a FAIL: fix every point in that folder's `.claude/review/verdict.txt` and run it again; after three FAILs, stop and tell him.
+- **The engine's first real run**, in `.claude/worktrees/engine`: one model instead of two, the engine through the adapter against `zika-dev` with a deck of real size, its store in a real browser's IndexedDB, the shared-device-id weakness, erase in the simulation, real numbers.
 
-## Ready for a yes to push
+If neither reported before the session ended, look at each folder's `git log` and `git status` first.
 
-| What | Tested | Checker | Ready? |
-|---|---|---|---|
-| The tag `single-user-v65` and the branch `archive/single-user` | Both point at `7d26dc5`; the zip opens and is v65 | not needed: no file changes | **Yes** |
-| **v66** (`main`, which also carries every notes and tools commit above) | `node tools/check.mjs` passes. `python3 tools/check_pairs.py` passes. The harness, against v65's code labelled 66, differs only in the Drill menu, the Grammar tab's "Which one?" buttons, the drill's own screens and the colour of choice text. Driven in headless Chrome at 390 × 844, 820 × 1180 and 1180 × 820, day and night: no error, no sideways scroll, a double tap grades once, keys 1–4, Enter and Escape work, no key reaches the drill under the dictionary sheet. | **None. The check was stopped part-way.** | **No, not until the checker has passed it**, or Thorne says to push without it. Not tested by anyone: real Safari, an iPhone or iPad. |
+## The next steps
 
-`main` cannot be pushed without v66 going live: the notes and tools commits sit on top of it. If the notes should reach GitHub before v66 is checked, say so and they can go on a branch.
+1. v67: act on the checker's verdict (above).
+2. The engine's real run: read its report into `docs/decisions.md` and the roadmap.
+3. Then, until 1 December: nothing else in the backend is due (the master plan gives 4b, 5 and 6 until 30 November, and the rest starts on 8 December). Useful and unblocked: the repairs the checker listed on the roadmap as a small release; the Taiwan-wording scan for Voice V2 (`tools/check_register.py`, tools only).
+4. From 8 December: the accounts module (step 7), the independent break-it review of engine, adapter and accounts (7b), the accounts release v68.
 
 ## Questions for Thorne
 
-1. **Read the drill's sentences.** `~/Desktop/zika-which-pattern-list.txt` lists all 215 with the answer filled in. A tool cannot tell whether two choices both fit a sentence; only a reader can. Mark any where the "wrong" choice is also right. Two pairs I am least sure of: 趟／遍／次／下 and 其他／別的／另外, where your test separates one choice cleanly and the others lean on the English.
-2. **Five of your older sentences were reworded** because they used characters the course does not teach (抽菸 → 拍照, 聰明 → 高, and three more). Say if you want the originals back; the sentence would then wait until its characters are taught, which for those is never.
-3. **Voice V1 needs three things from you to produce a winner**: an Azure key (a Speech resource on the paid tier; the whole set costs under $8, the 62 test words under $1); a yes to the other 53 ElevenLabs test words (106 free credits; its free queue refused them tonight); and the listening session with your girlfriend. The pages: `node tools/voice_audit.mjs serve` in the main folder, then `http://127.0.0.1:8791/tools/voice_listen.html?set=v0` and `?set=v1`.
-4. **Thirteen words have one reading in the 注音 file and another in the course's pinyin** (背包, 暑假, 天分, 只要, 古蹟, 待, 除了, 為了, 瓶子, 剛剛, 餓死了, 一會兒, 餡兒). Which is right for each, before a voice is pinned to it?
-5. Still open from the master plan: restoring the 7 November `zika-progress.json` from Drive's trash before about 7 December.
+1. **Yes or no to pushing v66** (and the archive tag and branch).
+2. **The 7 November backup is not where it was said to be.** The backup folder is in the work Google account (thornek@archsolar.net); its trash is the one place not yet looked in, and only he can open it. Nothing else holds a copy: not the personal account's trash, not the current file's history (one version), not this Mac. Where did the note about that file come from?
+3. **Read the drill's sentences**: `~/Desktop/zika-which-pattern-list.txt`, all 222 with the answer filled in. Mark any where another choice also fits. Least sure: 趟／遍／次／下 and 其他／別的／另外.
+4. **Voice V1** needs an Azure key (the full set costs under $8), a yes to the other 53 ElevenLabs test words (106 free credits), and the listening session: `node tools/voice_audit.mjs serve` in the main folder, then `http://127.0.0.1:8791/tools/voice_listen.html?set=v0` and `?set=v1`.
+5. **Thirteen words have two readings on file** (背包, 暑假, 天分, 只要, 古蹟, 待, 除了, 為了, 瓶子, 剛剛, 餓死了, 一會兒, 餡兒): which is right for each?
 
-## What to know before the next session
+## What to know
 
-- **The tone coach does not grade against the clip.** The audit found its verdict is its own classifier against the tone the word should have; the clip is only drawn. The master plan says it compares with the clip. A wrong clip teaches a wrong sound but does not mark a right tone wrong ([decisions.md](decisions.md), 21 November; [voice.md](voice.md#v0--what-the-audit-found)).
-- **V0's numbers cannot yet name a bad clip.** The analysis disagrees with 13.5% of 曉臻's syllables and 26.3% of 雲哲's, and is itself wrong 12 to 15% of the time on people saying the tones right. The one thing that stands out is 雲哲's one-character clips: 207 first tones measured as falling.
-- **The Mac was short of memory all evening**: swap was 23.2 of 23.5 GB at 23:10. BreezyVoice was not run for that reason. One harness run takes about seven minutes; do not run two at once.
-- **`zika-dev` was last used at about 23:00 on 21 November.** It pauses after about a week idle; `node tools/dbtest.mjs` wakes it (97 checks; `--model` runs 122 against the model).
-- **Port 8765 on this Mac belongs to another project.** The archive's README names another port.
-- Stopped before finishing: caffeinate was not running; the checker's local server on port 8793 was stopped. If a browser tab is still open at `127.0.0.1:8793`, it is the checker's and can be closed.
-- Files made outside the repository tonight: `~/Desktop/zika-archive/`, `~/Desktop/zika-which-pattern-list.txt`, `~/.cache/zika-voice/audit/` and `~/.cache/zika-voice/v1/` (the audit's tables and the listening sets), recordings in `~/.cache/zika-snap/zika/`. On the ElevenLabs account: one flow with nine clips and two empty ones.
+- **Decisions made on 22 November** are in [decisions.md](decisions.md): the adapter speaks to Supabase by hand, with no client library, and makes one request by a timer, once per join; the engine's record format gained one field; what is not right yet in the engine.
+- **The room-code sync still swaps whole decks**, so a device with unsent changes can still put an older deck over a newer one ([roadmap.md](roadmap.md), "The 7 November backup file"). If a deck is ever imported: sync and close the iPad and iPhone first, import on the Mac, then open them one at a time; if asked, **Use theirs**.
+- **The tone coach does not grade against the clip**; the master plan says it does ([voice.md](voice.md#v0--what-the-audit-found)).
+- **The Mac is short of memory** (swap about 22 of 23.5 GB all day). One browser job at a time; a harness run takes about seven minutes.
+- **`zika-dev`** now has four migrations (`records`, `signed_in`, `read_epoch_delete`, `signal`, then `signal_event`) and was last used on 22 November. `node tools/dbtest.mjs` on the `engine` branch is the test that matches it (125 checks); the copy on `main` is older and expects the database before `db/0003`.
+- Files outside the repository: `~/Desktop/zika-archive/`, `~/Desktop/zika-which-pattern-list.txt`, `~/.cache/zika-voice/audit/` and `v1/`, recordings in `~/.cache/zika-snap/`.
