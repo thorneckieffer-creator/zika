@@ -15,13 +15,13 @@ Because the scope is shared, a function in any file can call a function in any o
 
 | File | Holds |
 |---|---|
-| `core.js` | Version, books and lessons, storage, the state `S`, `save`, FSRS-5 (`rate`), cards and modes, the queue (`buildQueue` and its steps), the hard list, lanes, leeches, `normalizeState`. |
+| `core.js` | Version, books and lessons, storage, who this device is (`DEVICE`, `guessDevice`), the state `S`, `save`, which settings stay on the device (`LOCAL_SETTINGS`, `STRICT_LOCAL`), FSRS-5 (`rate`), cards and modes, the queue (`buildQueue` and its steps), the hard list, lanes, leeches, `normalizeState`, whether anything has been studied (`localEmpty`), times as text (`fmtT`, `ago`, `fmtDay`). |
 | `text.js` | Pinyin: tone marks, syllable splitting, tone colouring, tone sequences. No page, no deck: the tools load it as it is. |
-| `shell.js` | The view switch `go`, tab badges, theme and look (`sh*`), toasts, the *Where you are* sheet, icons, the keyboard map, the service worker and releases, the install hint, Notion links. |
+| `shell.js` | The view switch `go`, tab badges, the repaint after the deck has been replaced (`rerenderAfterSync`), theme and look (`sh*`), toasts, the *Where you are* sheet, icons, the keyboard map, the service worker and releases, the install hint, Notion links. |
 | `audio.js` | Voice packs, `playAudio`, the system voice as fallback. |
 | `chars.js` | Character components and etymology, the anatomy line on card backs, links to look a word up elsewhere, stroke order (Hanzi Writer). |
 | `dict.js` | The dictionary: the word list (`assets/dict.txt`), the entry sheet every tap on a character opens, the search the Library uses. |
-| `sync.js` | Cloud sync: config, device identity, connect, reconcile, push, the sync code and link, the Settings panel. |
+| `sync.js` | The room-code sync, and nothing the app needs without it (since v67): config, connect, reconcile, push, the sync code and link, the Settings panel. It is deleted in v69, with the lines elsewhere that call it. |
 | `backup.js` | The backup file (File System Access) and the in-browser snapshots. |
 | `home.js` | Today: the hero, lanes panel, plan, Up next queue, paper list, statistics, heatmap. |
 | `review.js` | The review sitting: queue for the session, the card, grading, undo, the session summary. |

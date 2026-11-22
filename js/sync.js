@@ -14,7 +14,7 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "804757392175",
   appId: "1:804757392175:web:6b37530a09b58e9317efda"
 };
-const FB_CFG_KEY='zika_fb_config', FB_ROOM_KEY='zika_sync_code', FB_DEV_KEY='zika_device', FB_META_KEY='zika_sync_meta';
+const FB_CFG_KEY='zika_fb_config', FB_ROOM_KEY='zika_sync_code', FB_META_KEY='zika_sync_meta';
 const FB_SDK='https://www.gstatic.com/firebasejs/10.12.0/';
 function fbConfig(){
   if(FIREBASE_CONFIG&&FIREBASE_CONFIG.databaseURL)return FIREBASE_CONFIG;
@@ -35,19 +35,6 @@ function fbSaveConfig(txt){
   fbLoad(); renderSet();
 }
 
-/* ---- 2. device identity ---- */
-function guessDevice(){
-  const ua=navigator.userAgent;
-  const ipad=/iPad/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-  if(ipad)return 'iPad'; if(/iPhone/.test(ua))return 'iPhone'; if(/Macintosh/.test(ua))return 'Mac';
-  if(/Android/.test(ua))return 'Android'; if(/Windows/.test(ua))return 'PC'; return 'Web';
-}
-const DEVICE={
-  id:(()=>{let id=store.getItem(FB_DEV_KEY+'_id');if(!id){id=Math.random().toString(36).slice(2,10);store.setItem(FB_DEV_KEY+'_id',id);}return id;})(),
-  get name(){return store.getItem(FB_DEV_KEY)||guessDevice();},
-  set name(v){if(v)store.setItem(FB_DEV_KEY,v);else store.removeItem(FB_DEV_KEY);}
-};
-
 /* ---- 3. sync state ---- */
 const SYNC={status:'off',code:'',at:0,remoteAt:0,remoteDev:'',dirty:false,timer:null,fb:null,unsub:null,uid:null,
   online:navigator.onLine,lastErr:'',pushing:false,again:false,revert:null,applying:false,first:true,retry:0,log:[],okTimer:null,quietTimer:null};
@@ -57,14 +44,6 @@ function syncMetaSave(){try{store.setItem(FB_META_KEY,JSON.stringify({at:SYNC.at
 function syncSaw(){if(Object.keys(S.cards||{}).length)SYNC.had=true;else if(DECK_EMPTY_OK||SYNC.had===undefined)SYNC.had=false;}
 function normCode(c){return String(c||'').toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,40);}
 function fbPath(){return 'rooms/'+SYNC.code+'/study_state';}
-/* nothing has been studied here: no started card, no hard list, no day with a review in it */
-function localEmpty(){
-  if(Object.values(S.cards||{}).some(c=>c&&c.st!==undefined))return false;
-  if((S.hard||[]).length)return false;
-  return !Object.keys(S.log||{}).some(k=>((S.log[k]||{}).rev||0)+((S.log[k]||{}).new||0)>0);
-}
-function fmtT(t){if(!t)return '—';const d=new Date(t);const today=dkey(new Date())===dkey(d);return (today?'':dkey(d)+' ')+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
-function ago(t){if(!t)return 'never';const s=Math.floor((Date.now()-t)/1000);if(s<8)return 'just now';if(s<60)return s+' s ago';if(s<3600)return Math.round(s/60)+' min ago';if(s<86400)return Math.round(s/3600)+' h ago';return Math.round(s/86400)+' d ago';}
 function fbLogLocal(kind,extra){SYNC.log.unshift({at:Date.now(),kind,extra:extra||''});if(SYNC.log.length>40)SYNC.log.pop();}
 
 /* the blob we write: the full state as JSON (Firebase drops empty objects and
@@ -151,10 +130,6 @@ function fbOnRemote(r){
   }
   fbAdopt(r,'live');
 }
-const LOCAL_SETTINGS=['voiceName','audioSrc','theme','lastBackup','bkName','autoBackup','haptics','_bkWarned'];   /* kept when this device has a value */
-const STRICT_LOCAL=['preloadedAt'];   /* facts about this device only: never inherited from another one */
-function strictLocalGet(){const own={};STRICT_LOCAL.forEach(k=>{if(S.settings&&k in S.settings)own[k]=S.settings[k];});return own;}
-function strictLocalPut(own){STRICT_LOCAL.forEach(k=>{if(k in own)S.settings[k]=own[k];else delete S.settings[k];});}
 function fbAdopt(r,how){
   let p=null; try{p=JSON.parse(r.json);}catch(e){}
   if(!p||!p.cards){SYNC.lastErr='Cloud state unreadable';syncUI('error');try{shLook();}catch(e){}return;}
@@ -184,16 +159,6 @@ function fbRevert(){
   const keep={}, own=strictLocalGet(); LOCAL_SETTINGS.forEach(k=>{if(S.settings&&k in S.settings)keep[k]=S.settings[k];});
   S=p; DECK_EMPTY_OK=true; S.settings=Object.assign({},S.settings||{},keep); strictLocalPut(own); SYNC.revert=null;
   save(); rerenderAfterSync(); toast('Reverted — this device\'s version is now the cloud version');
-}
-function rerenderAfterSync(){
-  QV++;
-  try{if(!S.settings.welcome&&document.getElementById('shWelcomeCard'))shClose();}catch(e){}   /* a deck has arrived: this is no longer a first run */   /* the deck was replaced: the kept queue is out of date */
-  try{
-    undoStack.length=0;
-    badge();
-    if(view==='rev'){ if(rq){rq=buildQueue();['learn','rev','fresh'].forEach(k=>{rq[k]=rq[k].filter(c=>c!==cur);});} if(cur&&!S.cards[cur])nextCard(); else renderRev(); }
-    else if(view==='set')renderSet(); else go(view);
-  }catch(e){}
 }
 function fbConflict(r,why){
   const host=document.getElementById('syncModal'); if(!host)return;

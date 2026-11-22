@@ -28,6 +28,22 @@ const bookButtons=(cur,onclick)=>BOOKS.map(b=>'<button class="'+(cur===b.n?'on':
 const store = (()=>{try{const t='__t';localStorage.setItem(t,'1');localStorage.removeItem(t);return localStorage;}catch(e){document.addEventListener('DOMContentLoaded',()=>{document.getElementById('storageBanner').style.display='block'});const m={};return{getItem:k=>k in m?m[k]:null,setItem:(k,v)=>{m[k]=String(v)},removeItem:k=>{delete m[k]}}}})();
 const KEY='shida_b1_fsrs_v2';
 
+/* ============ THIS DEVICE ============ */
+/* Who this device is: an id made once and kept in this browser's storage (zika_device_id), and a name the learner can
+   change in Settings (zika_device); until one is chosen, a guess from what the browser says it is. */
+const DEVICE_KEY='zika_device';
+function guessDevice(){
+  const ua=navigator.userAgent;
+  const ipad=/iPad/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  if(ipad)return 'iPad'; if(/iPhone/.test(ua))return 'iPhone'; if(/Macintosh/.test(ua))return 'Mac';
+  if(/Android/.test(ua))return 'Android'; if(/Windows/.test(ua))return 'PC'; return 'Web';
+}
+const DEVICE={
+  id:(()=>{let id=store.getItem(DEVICE_KEY+'_id');if(!id){id=Math.random().toString(36).slice(2,10);store.setItem(DEVICE_KEY+'_id',id);}return id;})(),
+  get name(){return store.getItem(DEVICE_KEY)||guessDevice();},
+  set name(v){if(v)store.setItem(DEVICE_KEY,v);else store.removeItem(DEVICE_KEY);}
+};
+
 /* ============ STATE ============ */
 let S = {cards:{}, settings:{retention:0.9, newPerDay:9, maxRev:200, modes:{rec:true,prod:true}, includeNames:false, ghost:true, earlyDrill:true, writeTarget:20, autoplayAudio:true, speechRate:0.85, voiceName:'', strokeAnim:true}, log:{}, intro:{}, hist:{d:[],s:[]} };
 /* The saved deck is read here, the moment S exists, and not at start-up: the page's buttons work as soon as their
@@ -95,6 +111,13 @@ function saveNow(){
   if(SYNC.applying)return;                    /* taking the cloud's copy is not a change made here */
   SYNC.dirty=true;syncMetaSave();fbSchedulePush();
 }
+
+/* Settings that belong to this device and not to the deck. When a deck arrives from somewhere else (another device's
+   copy, an imported file) these keep the value the device already has. New ones are added here (CLAUDE.md, rule 4). */
+const LOCAL_SETTINGS=['voiceName','audioSrc','theme','lastBackup','bkName','autoBackup','haptics','_bkWarned'];   /* kept when this device has a value */
+const STRICT_LOCAL=['preloadedAt'];   /* facts about this device only: never inherited from another one */
+function strictLocalGet(){const own={};STRICT_LOCAL.forEach(k=>{if(S.settings&&k in S.settings)own[k]=S.settings[k];});return own;}
+function strictLocalPut(own){STRICT_LOCAL.forEach(k=>{if(k in own)S.settings[k]=own[k];else delete S.settings[k];});}
 
 /* ============ FSRS-5 ============ */
 const W=[0.40255,1.18385,3.173,15.69105,7.1949,0.5345,1.4604,0.0046,1.54575,0.1192,1.01925,1.9395,0.11,0.29605,2.2698,0.2315,2.9898,0.51655,0.6621];
@@ -224,6 +247,12 @@ function wordStatus(wid){
   return{k:'ok',t:'learning'};
 }
 function dkey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+/* nothing has been studied here: no started card, no hard list, no day with a review in it */
+function localEmpty(){
+  if(Object.values(S.cards||{}).some(c=>c&&c.st!==undefined))return false;
+  if((S.hard||[]).length)return false;
+  return !Object.keys(S.log||{}).some(k=>((S.log[k]||{}).rev||0)+((S.log[k]||{}).new||0)>0);
+}
 
 /* ============ QUEUE ============ */
 /* What is ready to study now: {learn, rev, fresh}, each a list of card ids in the order they are served.
@@ -408,6 +437,9 @@ function laneCounts(){
   return out;
 }
 function fmtDay(ms){const d=new Date(ms),t=new Date();t.setHours(0,0,0,0);const dd=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-t)/DAY);const wd=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];return dd<=0?'today':dd===1?'tomorrow':dd<7?wd:(wd+' '+(d.getMonth()+1)+'/'+d.getDate());}
+/* a moment as text: the clock time (with the date when it is not today), and how long ago */
+function fmtT(t){if(!t)return '—';const d=new Date(t);const today=dkey(new Date())===dkey(d);return (today?'':dkey(d)+' ')+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function ago(t){if(!t)return 'never';const s=Math.floor((Date.now()-t)/1000);if(s<8)return 'just now';if(s<60)return s+' s ago';if(s<3600)return Math.round(s/60)+' min ago';if(s<86400)return Math.round(s/3600)+' h ago';return Math.round(s/86400)+' d ago';}
 
 /* one state shape, whatever path loaded it (import, snapshot restore, cloud adopt) */
 function normalizeState(){

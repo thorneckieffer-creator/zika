@@ -46,6 +46,18 @@ function badge(){
   try{const L=laneCounts();const n=L.catch.due+L.catch.fresh;const b=document.getElementById('bCatch');if(b){b.textContent=n;b.classList.toggle('zero',n===0);}}catch(e){}
   try{const n=exIds('no').length;const b=document.getElementById('bExam');if(b){b.textContent=n;b.classList.toggle('zero',n===0);}}catch(e){}
 }
+/* The deck in memory was replaced by another copy (the cloud's, or the one it replaced, put back): what was kept from
+   the old one is dropped, and whatever is on screen is painted again from the new one. */
+function rerenderAfterSync(){
+  QV++;   /* the deck was replaced: the kept queue is out of date */
+  try{if(!S.settings.welcome&&document.getElementById('shWelcomeCard'))shClose();}catch(e){}   /* a deck has arrived: this is no longer a first run */
+  try{
+    undoStack.length=0;
+    badge();
+    if(view==='rev'){ if(rq){rq=buildQueue();['learn','rev','fresh'].forEach(k=>{rq[k]=rq[k].filter(c=>c!==cur);});} if(cur&&!S.cards[cur])nextCard(); else renderRev(); }
+    else if(view==='set')renderSet(); else go(view);
+  }catch(e){}
+}
 let toastTimer=null;
 function toast(msg,o){
   o=o||{}; const host=document.getElementById('toastHost'); if(!host)return;
