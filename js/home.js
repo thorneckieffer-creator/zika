@@ -117,8 +117,8 @@ function renderHome(){
   homeIpadCard();
   /* lesson page chip */
   try{const meta=document.querySelector('#vHome .hero .hero-meta');if(meta&&!meta.querySelector('.nl')){const cl=S.settings.curLesson||26;meta.insertAdjacentHTML('beforeend',`<a class="chip nl" href="${notionLesson(cl)}" target="_blank" rel="noopener" style="color:var(--blue);text-decoration:none">lesson page ↗</a>`);}}catch(e){}
-  /* exam line */
-  homeExamLine();
+  /* crash course line */
+  homeCrashLine();
   /* shell: greeting, decks, fold */
   try{shHome();}catch(e){console.error(e);}
 }
@@ -189,12 +189,11 @@ function homeIpadCard(){try{
   if((typeof isIOS==='function')&&isIOS()){const html=ipadPanel(); if(old)old.outerHTML=html; else host.insertAdjacentHTML('afterbegin',html);}
 }catch(e){}}
 
-/* exam line */
-function homeExamLine(){try{
-  const v=document.getElementById('vHome');if(v.querySelector('.card.examline'))return;const X=exGet(),days=exDays();if(days<-1)return;
-  const no=exIds('no').length,so=exIds('sorta').length,un=exStats().todo;
+/* the crash course line, under the hero until every word of it is sorted and nothing is left in the lane */
+function homeCrashLine(){try{
+  const v=document.getElementById('vHome');if(v.querySelector('.card.crashline'))return;const T=mtGet(),n=mtStats();if(!n.n)return;
   const hero=v.querySelector('.card.hero');if(!hero)return;
-  hero.insertAdjacentHTML('afterend',`<div class="card examline" style="border-left:3px solid var(--red)"><div class="row spread" style="flex-wrap:wrap;gap:8px"><div><div class="lab" style="margin:0">🎯 ${esc(X.name)} · ${esc(exDateLabel())} · ${days>1?days+' days':days===1?'tomorrow':'today'}</div><div class="small muted">${esc(lnLabel(X.lo))} → ${esc(lnLabel(X.hi))} · <span style="color:var(--red)">✗ ${no}</span> · ~ ${so} · ${un} untested</div></div><button class="btn sm" onclick="go('exam')">Open</button></div></div>`);
+  hero.insertAdjacentHTML('afterend',`<div class="card crashline" style="border-left:3px solid var(--red)"><div class="row spread" style="flex-wrap:wrap;gap:8px"><div><div class="lab" style="margin:0">寫字測驗 · Crash course · ${esc(lnLabel(T.lo))} → ${esc(lnLabel(T.hi))}</div><div class="small muted">${n.done} of ${n.n} sorted · ★ ${n.m} · ~ ${n.w} can’t write · <span style="color:var(--red)">✗ ${n.x} can’t read</span></div></div>${n.todo?`<button class="btn sm" onclick="mtResume()">${n.done?'Continue':'Start'}</button>`:`<button class="btn sm" onclick="go('catch')">Catch-up</button>`}</div></div>`);
 }catch(e){}}
 var qOpen=false;
 

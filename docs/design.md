@@ -20,8 +20,8 @@ v48 tried putting the rest of the old look back as well (the paper grain, 明體
 ## The shell
 
 - **Top bar** (`.mast`): the mark and name on the left; sync status, refresh, day/night and (on wide screens) Settings on the right. It stays in view.
-- **Navigation**: phones have a bottom bar of five labelled icons — Today, Review, Drill, 大考試, More — and More opens the rest as a sheet. Tablets and desktop have a text row under the top bar. A new destination gets an entry in `TAB_ICON`.
-- **Today**: greeting and date → course chip (opens *Where you are*) → the hero with the one button → exam countdown → two decks (the course lesson, My words) → the three lanes → a fold holding plan, queue and statistics.
+- **Navigation**: phones have a bottom bar of four labelled icons — Today, Review, Drill, More — and More opens the rest as a sheet. Tablets and desktop have a text row under the top bar. A new destination gets an entry in `TAB_ICON`.
+- **Today**: greeting and date → course chip (opens *Where you are*) → the hero with the one button → the crash course line → two decks (the course lesson, My words) → the three lanes → a fold holding plan, queue and statistics.
 - **Sheets**: `shHost()` gives the modal host; build the card with `.sheet-h`, `.frow`, `.myin`, `.seg`. Do not use browser `alert` / `confirm`; use a sheet, or act and offer Undo in a toast.
 
 ## Tokens

@@ -16,21 +16,21 @@ Written 21 November 2026 for Thorne, as the brief every session reads before wor
 
 ## Two lines of code, and an archive of what works today
 
-Thorne's study app stays on `main`. The multi-user work already lives apart from it: `backend`, the `engine` and `accounts` worktrees, and `users-sync` / `users-accounts` with their review branches. Nothing of it reaches `main` before v68. So the "new line of code for the multi-user base" exists already; the job is to keep it that way and to archive today's working version before anything changes.
+Thorne's study app stays on `main`. The multi-user work already lives apart from it: `backend`, the `engine` and `accounts` worktrees, and `users-sync` / `users-accounts` with their review branches. Nothing of it reaches `main` before v69. So the "new line of code for the multi-user base" exists already; the job is to keep it that way and to archive today's working version before anything changes.
 
 1. **Tag today's live app**: an annotated tag `single-user-v65` on the commit that is live now (`7d26dc5`, v65), and a branch `archive/single-user` at the same commit. Never move or delete either. Pushed with the next push Thorne approves.
 2. **A zip of the site as it is served** (every file Pages serves at v65) in `~/Desktop/zika-archive/zika-v65-single-user.zip`, outside the repository, with a short `README.txt` beside it saying what it is and the commit it came from.
 3. **Never serve an archived copy from the live address.** A copy under `thorneckieffer-creator.github.io` shares the browser storage key `shida_b1_fsrs_v2` and the room sync with the real app, and could overwrite the deck. To look at the old version, open the zip on this Mac on a local port.
-4. **Tag again before each release that changes how the deck is stored or synced**: `single-user-final` on the last commit before v68 (accounts), and one before v69 (the room code removed).
+4. **Tag again before each release that changes how the deck is stored or synced**: `single-user-final` on the last commit before v69 (accounts), and one before v70 (the room code removed).
 5. **One codebase, not two apps.** A separate product (another name, no publisher wording) is a decision for step 12 of the backend, not now.
 
 ## Where things stand (21 November)
 
 - **v65 is live** (the dictionary) and passed the checker. No branch holds unreleased app work.
 - **The database (step 3) is done and saved**: `backend` at `33ea621`, 93 of 93 checks against `zika-dev`. After a few idle days Supabase refuses the first join to a channel; the adapter joins again and asks for the head once.
-- **The developer's check of the build order found** (already in the roadmap on `backend`): a second Supabase project for real decks before v68, so Thorne's deck never lands in the test project; signing in removes the room code from the device, so a later sign-out cannot let the old sync take the room's older copy; `db/0003 account_delete()` is missing and comes with the accounts module; every copy holding a deck is listed before the move (on iPad and iPhone the Home Screen app and any Safari tab keep separate storage); the move happens in one sitting; an old Safari copy is replaced, not merged.
+- **The developer's check of the build order found** (already in the roadmap on `backend`): a second Supabase project for real decks before v69, so Thorne's deck never lands in the test project; signing in removes the room code from the device, so a later sign-out cannot let the old sync take the room's older copy; `db/0003 account_delete()` is missing and comes with the accounts module; every copy holding a deck is listed before the move (on iPad and iPhone the Home Screen app and any Safari tab keep separate storage); the move happens in one sitting; an old Safari copy is replaced, not merged.
 - **The audio is wrong too often to trust.** Thorne hears the wrong tone about a third of the time (3rd for 1st, 2nd for 4th). Not yet known whether the clip plays it wrong, the tone coach grades him wrong, or both. The Voice section fixes them together.
-- **Releases**: v66 the drill, v67 "ready the app", v68 accounts, v69 the room code removed. The Voice V2 release takes the next free number when it is ready.
+- **Releases**: v66 the drill, v67 "ready the app", v68 the crash course (asked for on 25 November, the day the semester ended), v69 accounts, v70 the room code removed. The Voice V2 release takes the next free number when it is ready.
 
 ## Dates
 
@@ -107,7 +107,7 @@ The roadmap's merge (compare, merge on copies by rule, show the counts, apply on
 
 ## Decisions to add to `docs/decisions.md` (21 November)
 
-- Today's working app is archived before anything changes: tag `single-user-v65`, branch `archive/single-user`, a zip outside the repository. No archived copy is ever served from the live address. The multi-user work stays off `main` until v68; one codebase, not two apps.
+- Today's working app is archived before anything changes: tag `single-user-v65`, branch `archive/single-user`, a zip outside the repository. No archived copy is ever served from the live address. The multi-user work stays off `main` until v69; one codebase, not two apps.
 - No push to GitHub without Thorne's yes. Everything else proceeds without asking, except deleting unrecoverable data and spending money.
 - The "which pattern?" drill is a choice between competing patterns with the blank in the sentence, built from Thorne's pairs and tests, not recognition of a finished sentence.
 - The automatic backup file is always named `zika-progress.json`; device-and-date names are for manual exports only.
@@ -149,7 +149,7 @@ None of this comes before the backend's own steps. These are rules for now, so n
 
 **Rules for now**
 
-- **Do not change the app's web address before accounts exist (v68).** The deck lives in each browser's storage, and that storage belongs to the address: a device opening the app at a new address starts empty. Moving the app to another host (see "code and hosting" below) happens only once decks come back through signing in, and gets its own rehearsal.
+- **Do not change the app's web address before accounts exist (v69).** The deck lives in each browser's storage, and that storage belongs to the address: a device opening the app at a new address starts empty. Moving the app to another host (see "code and hosting" below) happens only once decks come back through signing in, and gets its own rehearsal.
 - **Every running cost goes in `docs/costs.md`** as it appears: Supabase, Azure Speech, ElevenLabs, a mail service, any domain or host. The monthly figure, what it pays for, and when it would start. Thorne reads it before any of them is switched on.
 - **No tracking of learners without a privacy note.** Error reports and usage counts come with step 12, never record audio or what is in a deck, and say plainly what they collect.
 
@@ -161,7 +161,7 @@ None of this comes before the backend's own steps. These are rules for now, so n
 - **Code and hosting**: decide whether the repository goes private. Pages from a private repository needs a paid GitHub plan; Vercel or Cloudflare Pages can host a private repository. Bound by the address rule above.
 - **Personal data**: emails and any voice recordings are personal data. A privacy note, delete-my-data (step 7's account delete), and where the data is kept (the project is in Tokyo).
 - **A human engineer's review** of the database rules, the accounts flow and the keys before the first outside learner. Write a short brief (what is stored, who can reach what, how a deck moves between devices) that a software engineer can read in an hour.
-- **A closed beta**: three to five classmates at MTC, after v69 and after the rights question has an answer. An invite list, a feedback button, and Thorne's own deck untouched by it.
+- **A closed beta**: three to five classmates at MTC, after v70 and after the rights question has an answer. An invite list, a feedback button, and Thorne's own deck untouched by it.
 
 **Thorne's decisions, not the agents'** (listed so no session decides them):
 

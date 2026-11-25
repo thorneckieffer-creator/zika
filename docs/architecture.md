@@ -29,7 +29,7 @@ Because the scope is shared, a function in any file can call a function in any o
 | `brain.js` | The Brain views, the time-lapse, word-type categories, phonetic series. |
 | `grammar.js` | Grammar tab and quiz, grammar cards in the queue, families and the grasp map; 句型 "which pattern?" (`wp*`), the drill of pairs from `data/pairs.js`, with its tally per pair in `S.cf`. |
 | `drills.js` | The Drill tab: `DMODES`, `DRILL_SCREENS`, recognition, tones, dictation, sentences, speaking, reading sprint, sentence dictation, 口試. |
-| `listen.js`, `mtest.js`, `exam.js`, `catchup.js`, `stories.js`, `usage.js` | The listening player, the writing mastery test, 大考試, the Catch-up tab, Stories, usage phrases. |
+| `listen.js`, `mtest.js`, `catchup.js`, `stories.js`, `usage.js` | The listening player, the writing test (since v68 a crash course with six piles), the Catch-up tab, Stories, usage phrases. |
 | `settings.js` | Settings and its panels, export and import. |
 | `tone-analysis.js`, `tone.js` | The tone coach: pitch tracking and tone classification (pure, loaded by the tools as it is), then the coach itself. |
 | `my-words.js` | My words. |
@@ -75,7 +75,7 @@ Until November 2026 the app was version blocks, each wrapping or replacing earli
 - `WORDS` — `{id, l, t, p, pos, m, s?}`: lesson, traditional, pinyin, part of speech, meaning, simplified if different.
 - `GRAMMAR` — `{ "<lesson>": [{id, t, e, pat, tgt, alt, s:[{zh, en, py}], …}] }`.
 - `COMPONENTS` — per character `{p, g, d:[parts], t:type, s:semantic, ph:phonetic}`.
-- `S` (state) — `my` (the personal deck, see My words), `cards`, `settings`, `log` (per-day counts), `intro`/`cintro`/`gintro` (per-day intake by lane), `hard`, `pick`, `sib`, `hist`, `mtest` (writing-test results `m`/`l`/`h`), `exam`, `gram`, `cf`, `conf`, `listen`, `read` (stories read), `us` (usage-phrase practice per word, see [content.md](content.md#usage-phrases-用法)), `tone` and `vp` (the tone coach's results and its picture of the learner's voice; each carries the version of the analysis that made it, held to the one constant `TC_V`, see [voice.md](voice.md)).
+- `S` (state) — `my` (the personal deck, see My words), `cards`, `settings`, `log` (per-day counts), `intro`/`cintro`/`gintro` (per-day intake by lane), `hard`, `pick`, `sib`, `hist`, `mtest` (the crash course: its range, `cc:1` once converted, results per word `h`/`s`/`b`/`l`/`r`/`m` from "don’t know it" to "wrote it", and `was`, the range and results of the test before v68), `exam` (the removed 大考試 tab’s range and date; left in decks that have it, read by nothing), `gram`, `cf`, `conf`, `listen`, `read` (stories read), `us` (usage-phrase practice per word, see [content.md](content.md#usage-phrases-用法)), `tone` and `vp` (the tone coach's results and its picture of the learner's voice; each carries the version of the analysis that made it, held to the one constant `TC_V`, see [voice.md](voice.md)).
 - A card: `{st:'learn'|'rev'|'relearn', S, D, due, last, reps, lapses, days, known?, susp?, leech?, mastAt?}`. A card object with no `st` is queued but not started.
 
 ## App shell
@@ -88,7 +88,7 @@ How it should look and why is in [design.md](design.md). The pieces:
 - Tabs created after start-up get their icon from `TAB_ICON` through `shTabIcons()`.
 - A sheet (`.modal-card`) is never taller than the screen: it scrolls inside itself (v60). Toasts sit above sheets, so an Undo offered while a sheet is open can be tapped.
 
-- Phones (≤700 px): the tab bar is fixed to the bottom — Today, Review, Drill, 大考試, More. The other tabs carry class `t2` and sit behind More. Tablets and desktop keep the top bar. In Review the grade buttons are sticky just above that bar (`#vRev .grades`), so a long answer never pushes them off the screen.
+- Phones (≤700 px): the tab bar is fixed to the bottom — Today, Review, Drill, More (four since v68, when 大考試 was removed). The other tabs carry class `t2` and sit behind More. Tablets and desktop keep the top bar. In Review the grade buttons are sticky just above that bar (`#vRev .grades`), so a long answer never pushes them off the screen.
 - The page never zooms (`maximum-scale=1`, `touch-action: pan-x pan-y`): it is an app, not a document.
 - Refresh: the ↻ button, pull-down inside the Home Screen app, and `checkForUpdate()` when the app returns to the foreground (it compares `sw.js` on the server with `APP_VERSION`); see *The service worker and releases* above.
 

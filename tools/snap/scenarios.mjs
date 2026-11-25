@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 const DAY = 86400000;
 const T0 = Date.parse('2026-11-20T09:30:00+08:00');
-const tabs = ['home', 'rev', 'drill', 'gram', 'brain', 'lib', 'set', 'exam', 'catch', 'my'];
+const tabs = ['home', 'rev', 'drill', 'gram', 'brain', 'lib', 'set', 'catch', 'my'];
 const drills = ['rec', 'tone', 'dict', 'sent', 'speak', 'wp', 'read', 'listen', 'sdict', 'mtest', 'tcoach', 'story', 'usage'];
 const CODE = 'zika-test01';   /* a made-up sync code: the harness's cloud is in memory */
 const SHEETS = ', .modal-card, #syncModal';   /* sheets and modals sit outside the view they belong to */
@@ -42,7 +42,6 @@ const areaMonkeys = n => [
   { name: 'grammar', start: `go('gram')`, scope: '#vGram' + SHEETS, steps: n },
   { name: 'brain', start: `go('brain')`, scope: '#vBrain' + SHEETS, steps: n },
   { name: 'library', start: `go('lib')`, scope: '#vLib' + SHEETS, steps: n },
-  { name: 'exam', start: `go('exam')`, scope: '#vExam' + SHEETS, steps: n },
   { name: 'catch-up', start: `go('catch')`, scope: '#vCatch' + SHEETS, steps: Math.ceil(n / 2) },
   { name: 'my-words', start: `go('my')`, scope: '#vMy' + SHEETS, steps: 2 * n },
   { name: 'settings', start: `go('set')`, scope: '#vSet' + SHEETS, steps: n },
@@ -72,7 +71,7 @@ export const scenarios = [
   { name: 'first-run', steps: [
     { name: 'name', js: `const i = document.getElementById('shWelName'); i.value = 'Mei'; i.dispatchEvent(new Event('input', { bubbles: true }))` },
     { name: 'start', js: `shWelcomeDone()` }, { name: 'review', js: `go('rev')` }, { name: 'answer', js: `reveal()` },
-    { name: 'exam-tab', js: `go('exam')` }, { name: 'settings', js: `go('set')`, noShot: true }, { name: 'open-again', reload: true }] },
+    { name: 'catch-up-tab', js: `go('catch')` }, { name: 'settings', js: `go('set')`, noShot: true }, { name: 'open-again', reload: true }] },
   { name: 'first-run-book-2', sizes: ['phone'], steps: [
     { name: 'pick-lesson', js: `WELCOME.ln = 22; shWelcome()` }, { name: 'know-earlier', js: `WELCOME.known = true; shWelcome()` },
     { name: 'start', js: `shWelcomeDone()` }, { name: 'library', js: `go('lib')`, noShot: true }, { name: 'grammar', js: `go('gram')`, noShot: true }] },

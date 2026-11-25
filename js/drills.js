@@ -17,7 +17,7 @@ const DMODES=[
   ['dict','聽寫 Dictation','audio → write it'],
   ['rec','認字 Recognition','see it · know it'],
   ['tone','聲調 Tones','hear the pattern'],
-  ['mtest','寫字測驗 Mastery test','English + pinyin → write it · ★ ~ ✗'],
+  ['mtest','寫字測驗 Crash course','English + pinyin → write it · sort into six piles'],
   ['wp','句型 Which pattern?','他十點＿＿來 · 就 or 才？ · the test that decides'],
   ['listen','聽力 Listening','dialogue lines read aloud · hide text · shadow'],
   ['sdict','句子聽寫 Sentence dictation','hear a sentence · write all of it'],
@@ -30,8 +30,6 @@ const DMODES=[
 let drillMode=null, drillScope='lesson', drillLesson=21, dq=null, recState=null;
 
 function drillWords(){
-  /* a pile from the exam set */
-  if(drillScope==='examset')return EXAM_POOL.map(id=>byId[id]).filter(Boolean).filter(w=>S.settings.includeNames||!isName(w));
   /* a frequency tier */
   let pool;
   if(drillScope==='hard') pool=(S.hard||[]).map(id=>byId[id]).filter(Boolean);
@@ -180,10 +178,9 @@ function renderDrill(){
   /* the drill menu (and only the menu) ends with the tone summary and the tone-pair map */
   try{const el=document.getElementById('vDrill');if(!dq&&el&&el.querySelector('.dgrid')&&!el.querySelector('.tc-panel'))el.insertAdjacentHTML('beforeend','<div class="tc-panel">'+tcPanel()+'</div>');}catch(e){}
 }
-/* renderDrill without the tone coach and the registered full-screen modes: the exam-set test, or the tab itself
+/* renderDrill without the tone coach and the registered full-screen modes: the tab itself
    followed by the answer flash and the "More drills" fold. Its early return comes back to renderDrill's last step. */
 function drillRenderInner(){
-  if(drillMode==='extest'&&!dq){exRender();return;}
   drillRenderScreens();
   drillAnswerFlash();
   drillMenuDemote();

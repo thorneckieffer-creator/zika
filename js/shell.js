@@ -28,11 +28,10 @@ function go(v){
   ['Home','Rev','Drill','Gram','Brain','Lib','Set'].forEach(x=>{document.getElementById('tab'+x).classList.toggle('on',v===x.toLowerCase());document.getElementById('v'+x).style.display=v===x.toLowerCase()?'':'none';});
   if(v==='home')renderHome(); if(v==='drill')renderDrill(); if(v==='gram')renderGram(); if(v==='brain')renderBrain(); if(v==='lib')renderLib(); if(v==='rev')startReview(); if(v==='set')renderSet();
   try{if(animOn()){const el=document.getElementById('v'+v.charAt(0).toUpperCase()+v.slice(1));if(el){el.classList.remove('view-in');void el.offsetWidth;el.classList.add('view-in');}}}catch(e){}
-  /* the tabs added after the first seven: catch-up, the exam, My words */
+  /* the tabs added after the first seven: catch-up, My words */
   {const t=document.getElementById('tabCatch'), c=document.getElementById('vCatch');
    if(t)t.classList.toggle('on',v==='catch'); if(c)c.style.display=v==='catch'?'':'none';
    if(v==='catch')renderCatch();}
-  {const t=document.getElementById('tabExam'),c=document.getElementById('vExam');if(t)t.classList.toggle('on',v==='exam');if(c)c.style.display=v==='exam'?'':'none';if(v==='exam')renderExam();}
   try{tabsSync();tabIntoView();}catch(e){}
   {const t=document.getElementById('tabMy'), c=document.getElementById('vMy');
    if(t)t.classList.toggle('on',v==='my'); if(c)c.style.display=v==='my'?'':'none';
@@ -40,11 +39,10 @@ function go(v){
    if(v==='my'){renderMy(); try{if(animOn()){c.classList.remove('view-in');void c.offsetWidth;c.classList.add('view-in');}}catch(e){}}}
   try{tabsSync();if(from!==v)window.scrollTo(0,0);}catch(e){}   /* a new place starts at its top; re-rendering the same one keeps your position */
 }
-/* the counts on the tabs: cards ready now, catch-up cards, exam words still marked ✗ */
+/* the counts on the tabs: cards ready now, catch-up cards */
 function badge(){
   {const n=dueCount();const b=document.getElementById('bDue');b.textContent=n;b.classList.toggle('zero',n===0);}
   try{const L=laneCounts();const n=L.catch.due+L.catch.fresh;const b=document.getElementById('bCatch');if(b){b.textContent=n;b.classList.toggle('zero',n===0);}}catch(e){}
-  try{const n=exIds('no').length;const b=document.getElementById('bExam');if(b){b.textContent=n;b.classList.toggle('zero',n===0);}}catch(e){}
 }
 /* The deck in memory was replaced by another copy (the cloud's, or the one it replaced, put back): what was kept from
    the old one is dropped, and whatever is on screen is painted again from the new one. */
@@ -153,7 +151,7 @@ function showInstallHint(force){
 /* ---- B. lookups ---- */
 function isAndroidUA(){return /Android/.test(navigator.userAgent);}
 /* ---- D. keyboard: letters jump tabs, ? shows the map ---- */
-const KEYMAP={t:'home',r:'rev',d:'drill',c:'catch',g:'gram',b:'brain',l:'lib',s:'set',e:'exam',m:'my'};
+const KEYMAP={t:'home',r:'rev',d:'drill',c:'catch',g:'gram',b:'brain',l:'lib',s:'set',m:'my'};
 function toggleKeyHelp(){
   let h=document.getElementById('keyHelp');
   if(!h){h=document.createElement('div');h.id='keyHelp';h.className='modal';h.onclick=ev=>{if(ev.target===h)h.style.display='none';};document.body.appendChild(h);}
@@ -244,7 +242,6 @@ const ICON={
   rev:'<rect x="3" y="7" width="14" height="13" rx="2.5"/><path d="M7 4h11a3 3 0 0 1 3 3v10"/>',
   drill:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
   catch:'<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/>',
-  exam:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
   gram:'<path d="M8 3H7a2 2 0 0 0-2 2v4a2 2 0 0 1-2 2 2 2 0 0 1 2 2v4a2 2 0 0 0 2 2h1"/><path d="M16 3h1a2 2 0 0 1 2 2v4a2 2 0 0 0 2 2 2 2 0 0 0-2 2v4a2 2 0 0 1-2 2h-1"/>',
   brain:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
   lib:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>',
@@ -256,7 +253,7 @@ const ICON={
   sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
   down:'<path d="m6 9 6 6 6-6"/>'
 };
-const TAB_ICON={tabHome:'home',tabRev:'rev',tabDrill:'drill',tabCatch:'catch',tabExam:'exam',tabGram:'gram',tabBrain:'brain',tabLib:'lib',tabSet:'set',tabMy:'my',tabMore:'more'};
+const TAB_ICON={tabHome:'home',tabRev:'rev',tabDrill:'drill',tabCatch:'catch',tabGram:'gram',tabBrain:'brain',tabLib:'lib',tabSet:'set',tabMy:'my',tabMore:'more'};
 
 /* ---------- look: accent colour and the face study characters are set in ---------- */
 const ACCENTS={classic:'#2a241c',blue:'#2563eb',green:'#0b8457',violet:'#6d4aff',rose:'#d6336c',orange:'#d9480f'};   /* classic = ink buttons, tea-green links */
@@ -371,7 +368,7 @@ function shHome(){
   const date=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
   host.insertAdjacentHTML('afterbegin',`<div class="hello"><div><h1>${shGreeting()}</h1><div class="sub">${date}</div></div>
     <button class="coursechip" onclick="shCourse()" title="change your book and lesson">Book ${bookOf(ln)} · Lesson ${lnInBook(ln)}<i>${esc(LESSON_TITLES[ln]||'')}</i>${SVG(ICON.down)}</button></div>`);
-  const anchor=host.querySelector('.card.examline')||host.querySelector('.card.hero');
+  const anchor=host.querySelector('.card.crashline')||host.querySelector('.card.hero');
   if(anchor)anchor.insertAdjacentHTML('afterend',shDecks());
   /* everything below the lanes (plan, queue, statistics) folds away; the choice is remembered on this device */
   const lanes=[...host.children].find(el=>el.classList.contains('card')&&/^Three lanes/.test(((el.querySelector('.lab')||{}).textContent||'').trim()));

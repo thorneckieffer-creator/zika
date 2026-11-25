@@ -13,7 +13,7 @@ The list the checker holds every change against (`.claude/agents/verify-app.md`)
 1. The app loads at 390 × 844, 820 × 1180 and 1180 × 796 with no errors in the console from its own code, and no failed request for a file it ships.
 2. The version at the foot of Review is the one being released.
 3. Nothing scrolls sideways on the phone.
-4. The phone has its bottom bar of five (Today, Review, Drill, 大考試, More). Wider screens have the text row under the top bar. The top bar stays in view.
+4. The phone has its bottom bar of four (Today, Review, Drill, More). Wider screens have the text row under the top bar. The top bar stays in view.
 5. At 1180 × 796 the answer side of a review card and its four grade buttons fit without scrolling.
 6. On the phone the grade buttons stay above the bottom bar, however long the answer is.
 7. A sheet is never taller than the screen: it scrolls inside itself. A toast shows above an open sheet, so its Undo can be tapped.

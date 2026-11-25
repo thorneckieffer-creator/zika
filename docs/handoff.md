@@ -1,6 +1,10 @@
-# Handoff — 22 November 2026
+# Handoff — 25 November 2026
 
 Read [master-plan.md](master-plan.md) first; this file says where its "Order of work" stands. Replace it at the end of each session.
+
+**v68, the crash course, is committed on `main` and waits for Thorne's yes to push** (25 November; he asked for it ten minutes before a flight). 大考試 is removed; the writing test sorts every word from Book 1 Lesson 11 to Book 2 Lesson 15 into six piles ([decisions.md](decisions.md), [feature-map.md](feature-map.md)). The accounts release is therefore v69 and the removal of the room code v70. Tested: the release check, a headless smoke test at phone and tablet size, the checker (its verdict is in `.claude/review/`; `node tools/review.mjs status`). Not run: `node tools/snap.mjs check`, `tools/swtest.mjs`, WebKit, a real device. The harness's golden recording still shows the exam tab: `node tools/snap.mjs record` once v68 is out.
+
+Two questions from that session, for Thorne: **what was "the pull scan thing"** in his message (taken as the full pass over every word), and **should Catch-up take 大考試's place** in the phone's bottom bar. The next thing he wants is a new learning system for the semester that starts next week; he said later, and has not said what it is.
 
 **v66 and v67 are live** (pushed on 22 November on Thorne's "yes to both"; `main` on GitHub at `2ef1bd9`; after each push the site's `sw.js` and the changed scripts were byte for byte the local ones). The tag `single-user-v65` and the branch `archive/single-user` are on GitHub too. Anything committed after `2ef1bd9` is local and waits for a yes of its own, as before.
 
@@ -41,7 +45,7 @@ The helper was stopped before it reported, so its own account of the real run, o
 1. Thorne's word on how v66 and v67 behave on his devices; fix what he reports first.
 2. `engine`: merge `main` in; get the tests green again (above); then what the stopped run had left: the store in a real browser, the two-page exchange, the numbers in `docs/sync.md`. Check what the run left in `zika-dev` under the test accounts.
 3. Until 1 December nothing else in the backend is due. Unblocked and useful: the repairs the checker listed on the roadmap, as one small release (Today's greeting among them).
-4. From 8 December: the accounts module (step 7), the independent break-it review of engine, adapter and accounts (7b), the accounts release v68. Two things for step 8 found on the way: a device-local mark so a My word's id is never handed out twice after an import; the real-decks project, without which the adapter refuses at the live address.
+4. From 8 December: the accounts module (step 7), the independent break-it review of engine, adapter and accounts (7b), the accounts release v69. Two things for step 8 found on the way: a device-local mark so a My word's id is never handed out twice after an import; the real-decks project, without which the adapter refuses at the live address.
 
 ## Questions for Thorne
 

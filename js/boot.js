@@ -72,7 +72,6 @@ function bootMigrate(){
   if(!S.settings._v30){S.settings._v30=1;if(!S.settings.newCatchPerDay)S.settings.newCatchPerDay=5;if(S.settings.newPerDay===9)S.settings.newPerDay=8;try{save();}catch(e){}}
   if(!S.settings._v31){S.settings._v31=1;S.settings.newCatchPerDay=Math.max(S.settings.newCatchPerDay??0,12);if((S.settings.maxRev||0)<300)S.settings.maxRev=300;try{save();}catch(e){}}
   normalizeState();
-  if(!S.settings._v38){S.settings._v38=1;exGet();try{save();}catch(e){}}
   /* ---------- who and where: name, book and lesson ---------- */
   /* Decks that existed before names were a setting belong to Thorne. Runs on every start (not behind a flag),
      so a deck adopted from a device that has not updated yet is named too. */
@@ -99,12 +98,6 @@ function bootMount(){
       const drill=document.getElementById('tabDrill'); drill.insertAdjacentElement('afterend',b);
     }
     if(!document.getElementById('vCatch')){const d=document.createElement('div');d.id='vCatch';d.style.display='none';document.getElementById('vDrill').insertAdjacentElement('afterend',d);}
-  })();
-  (function(){
-    const tabs=document.querySelector('.tabs');if(tabs&&!document.getElementById('tabExam')){
-      const b=document.createElement('button');b.id='tabExam';b.innerHTML='大考試<span id="bExam" class="b zero">0</span>';b.style.whiteSpace='nowrap';b.onclick=()=>go('exam');
-      const after=document.getElementById('tabCatch')||document.getElementById('tabDrill');after.insertAdjacentElement('afterend',b);}
-    if(!document.getElementById('vExam')){const d=document.createElement('div');d.id='vExam';d.style.display='none';document.getElementById('vDrill').insertAdjacentElement('afterend',d);}
   })();
   /* version stamp */
   (function(){const el=document.getElementById('appVer');if(el)el.textContent='v'+APP_VERSION;})();
@@ -189,7 +182,7 @@ function bootListen(){
   document.addEventListener('keydown',e=>{if(view!=='drill'||!dq||dq.i>=dq.qs.length)return;const q=dq.qs[dq.i];if(q.mode!=='sdict')return;if(e.code==='Space'&&dq.state==='ask'){e.preventDefault();e.stopImmediatePropagation();dq.state='reveal';renderDrill();}},true);
   document.addEventListener('keydown',e=>{if(view!=='drill'||drillMode!=='mtest'||dq)return;const T=mtGet();if(!T.order[T.i])return;
     if(e.code==='Space'&&!MT.revealed){e.preventDefault();e.stopImmediatePropagation();MT.revealed=true;mtRender();}
-    else if(MT.revealed&&['1','2','3'].includes(e.key)){e.preventDefault();e.stopImmediatePropagation();mtMark(e.key==='1'?'h':e.key==='2'?'l':'m');}
+    else if(MT.revealed&&MT_GRADES[+e.key-1]){e.preventDefault();e.stopImmediatePropagation();mtMark(MT_GRADES[+e.key-1].r);}
   },true);
   document.addEventListener('keydown',e=>{
     if(e.metaKey||e.ctrlKey||e.altKey)return; const tg=e.target; if(tg&&(/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)||tg.isContentEditable))return;
@@ -221,10 +214,6 @@ function bootListen(){
       if(dx<0)grade(1); else grade(3);},{passive:true});
   })();
   document.addEventListener('keydown',e=>{if(view!=='rev'||!cur||e.repeat||e.metaKey||e.ctrlKey||e.altKey)return;const tg=e.target;if(tg&&/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName))return;if(e.key==='u'){e.preventDefault();doUndo();}});
-  document.addEventListener('keydown',e=>{if(view!=='drill'||drillMode!=='extest'||dq)return;const R=exGet().run;if(!R||!R.ids[R.i])return;
-    if(e.code==='Space'&&!EX.revealed){e.preventDefault();e.stopImmediatePropagation();EX.revealed=true;exRender();}
-    else if(EX.revealed&&['1','2','3'].includes(e.key)){e.preventDefault();e.stopImmediatePropagation();exMark(e.key==='1'?'h':e.key==='2'?'l':'m');}
-  },true);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkForUpdate();});
   /* pull down to refresh inside the Home Screen app, which has no reload button of its own */
   (function(){
